@@ -1,0 +1,198 @@
+'use client'
+
+import * as React from 'react'
+import type { Column, Table } from '@tanstack/react-table'
+import { Search, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { DataTableDateFilter } from '@/components/data-table/data-table-date-filter'
+import { DataTableExport } from '@/components/data-table/data-table-export'
+import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
+import { DataTableSliderFilter } from '@/components/data-table/data-table-slider-filter'
+import { DataTableViewOptions } from '@/components/data-table/data-table-view-options'
+import { DataTableAsyncSelectFilter } from './data-table-async-select-filter'
+
+interface DataTableToolbarProps<TData> extends React.ComponentProps<'div'> {
+  table: Table<TData>
+  hideViewOptions?: boolean
+  hideExport?: boolean
+  exportFilename?: string
+}
+
+export function DataTableToolbar<TData>({
+  table,
+  children,
+  className,
+  hideViewOptions,
+  hideExport = false,
+  exportFilename,
+  ...props
+}: DataTableToolbarProps<TData>) {
+  const { t } = useTranslation()
+  const isFiltered = table.getState().columnFilters.length > 0
+
+  const columns = React.useMemo(
+    () => table.getAllColumns().filter((column) => column.getCanFilter()),
+    [table]
+  )
+
+  const onReset = React.useCallback(() => {
+    table.resetColumnFilters()
+  }, [table])
+
+  return (
+    <div
+      role='toolbar'
+      aria-orientation='horizontal'
+      className={cn(
+        'flex w-full items-start justify-between gap-2 p-1',
+        className
+      )}
+      {...props}
+    >
+      <div className='flex flex-1 flex-wrap items-center gap-2'>
+        {columns.map((column) => (
+          <DataTableToolbarFilter
+            key={column.id}
+            column={column}
+            table={table}
+          />
+        ))}
+        {isFiltered && (
+          <Button
+            aria-label={t('dataTable.filter.resetFilters')}
+            variant='outline'
+            size='sm'
+            className='border-dashed'
+            onClick={onReset}
+          >
+            <X />
+            {t('dataTable.columnHeader.reset')}
+          </Button>
+        )}
+      </div>
+      <div className='flex items-center gap-2'>
+        {children}
+        {!hideExport && (
+          <DataTableExport
+            table={table}
+            filename={exportFilename}
+            align='end'
+          />
+        )}
+        {!hideViewOptions && <DataTableViewOptions table={table} align='end' />}
+      </div>
+    </div>
+  )
+}
+interface DataTableToolbarFilterProps<TData> {
+  column: Column<TData>
+  table: Table<TData>
+}
+
+function DataTableToolbarFilter<TData>({
+  column,
+  table,
+}: DataTableToolbarFilterProps<TData>) {
+  const columnMeta = table.getColumn(column.id)?.columnDef.meta
+  if (!columnMeta?.variant) return null
+
+  const SearchIcon = columnMeta.icon ?? Search
+
+  switch (columnMeta.variant) {
+    case 'text':
+      return (
+        <div className='relative'>
+          <SearchIcon
+            className='text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2'
+            aria-hidden='true'
+          />
+          <Input
+            placeholder={columnMeta.placeholder ?? columnMeta.label}
+            value={(column.getFilterValue() as string) ?? ''}
+            onChange={(event) => column.setFilterValue(event.target.value)}
+            className='h-8 w-56 pr-8 pl-8'
+          />
+          {Boolean(column?.getFilterValue()) && (
+            <Button
+              variant='ghost'
+              size='icon'
+              aria-label='Clear filter'
+              onClick={() => column.setFilterValue('')}
+              className='absolute top-1/2 right-1 size-6 -translate-y-1/2'
+            >
+              <X className='size-4' aria-hidden='true' />
+            </Button>
+          )}
+        </div>
+      )
+
+    case 'number':
+      return (
+        <div className='relative'>
+          <SearchIcon
+            className='text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2'
+            aria-hidden='true'
+          />
+          <Input
+            type='number'
+            inputMode='numeric'
+            placeholder={columnMeta.placeholder ?? columnMeta.label}
+            value={(column.getFilterValue() as string) ?? ''}
+            onChange={(event) => column.setFilterValue(event.target.value)}
+            className={cn('h-8 w-56 pl-8', columnMeta.unit && 'pr-8')}
+          />
+          {columnMeta.unit && (
+            <span className='bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 flex items-center rounded-r-md px-2 text-sm'>
+              {columnMeta.unit}
+            </span>
+          )}
+        </div>
+      )
+
+    case 'range':
+      return (
+        <DataTableSliderFilter
+          column={column}
+          title={columnMeta.label ?? column.id}
+        />
+      )
+
+    case 'date':
+    case 'dateRange':
+      return (
+        <DataTableDateFilter
+          column={column}
+          title={columnMeta.label ?? column.id}
+          multiple={columnMeta.variant === 'dateRange'}
+        />
+      )
+
+    case 'select':
+    case 'multiSelect':
+      return (
+        <DataTableFacetedFilter
+          column={column}
+          title={columnMeta.label ?? column.id}
+          options={columnMeta.options ?? []}
+          multiple={columnMeta.variant === 'multiSelect'}
+        />
+      )
+
+    case 'asyncSelect':
+    case 'multiAsyncSelect':
+      return (
+        <DataTableAsyncSelectFilter
+          column={column}
+          title={columnMeta.label ?? column.id}
+          multiple={columnMeta.variant === 'multiAsyncSelect'}
+          fetchOptions={columnMeta.fetchOptions}
+        />
+      )
+
+    default:
+      return null
+  }
+}

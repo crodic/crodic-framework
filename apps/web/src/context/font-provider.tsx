@@ -1,0 +1,86 @@
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react'
+import type { fonts } from '@/config/fonts'
+import { setCookie, removeCookie } from '@/lib/cookies'
+import {
+  applyPersonalFontPreference,
+  clearPersonalFontPreference,
+  DYNAMIC_THEME_FONT,
+  FONT_COOKIE_NAME,
+  getSavedPersonalFont,
+} from '@/lib/personal-font'
+import {
+  applyRuntimeThemeFont,
+  getCachedRuntimeTheme,
+  getCurrentThemeMode,
+} from '@/lib/runtime-theme/runtime-theme'
+
+type Font = (typeof fonts)[number]
+
+const FONT_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
+
+type FontContextType = {
+  font: Font
+  setFont: (font: Font) => void
+  resetFont: () => void
+}
+
+const FontContext = createContext<FontContextType | null>(null)
+
+export function FontProvider({ children }: { children: React.ReactNode }) {
+  const [font, _setFont] = useState<Font>(() => getSavedPersonalFont())
+
+  useEffect(() => {
+    if (font === DYNAMIC_THEME_FONT) {
+      clearPersonalFontPreference()
+      const runtimeTheme = getCachedRuntimeTheme()
+
+      if (runtimeTheme?.styles) {
+        applyRuntimeThemeFont(runtimeTheme.styles, getCurrentThemeMode())
+      }
+
+      return
+    }
+
+    applyPersonalFontPreference(font)
+  }, [font])
+
+  const resetFont = useCallback(() => {
+    removeCookie(FONT_COOKIE_NAME)
+    _setFont(DYNAMIC_THEME_FONT)
+  }, [])
+
+  const setFont = useCallback(
+    (newFont: Font) => {
+      if (newFont === DYNAMIC_THEME_FONT) {
+        resetFont()
+        return
+      }
+
+      setCookie(FONT_COOKIE_NAME, newFont, FONT_COOKIE_MAX_AGE)
+      _setFont(newFont)
+    },
+    [resetFont]
+  )
+
+  const contextValue = useMemo<FontContextType>(
+    () => ({ font, setFont, resetFont }),
+    [font, setFont, resetFont]
+  )
+
+  return <FontContext value={contextValue}>{children}</FontContext>
+}
+
+export const useFont = () => {
+  const context = useContext(FontContext)
+  if (!context) {
+    throw new Error('useFont must be used within a FontProvider')
+  }
+  return context
+}

@@ -1,0 +1,808 @@
+import { memo, useEffect, useRef } from 'react'
+import { format } from 'date-fns'
+import type { Table } from '@tanstack/react-table'
+import {
+  Copy,
+  Download,
+  Eye,
+  File,
+  FileArchive,
+  FileAudio,
+  FileCode,
+  FileSpreadsheet,
+  FileText,
+  Globe,
+  Link2,
+  Loader2,
+  Lock,
+  MoreVertical,
+  MoveRight,
+  Pencil,
+  RotateCcw,
+  Star,
+  Trash2,
+} from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { formatBytes } from '../columns'
+import {
+  getFileDiskLabel,
+  getFileDiskTooltip,
+  isFilePrivate,
+} from '../disk-helper'
+import { downloadFile } from '../download-helper'
+import {
+  FilePreviewThumbnail,
+  isPreviewableImage,
+  isPreviewableVideo,
+} from '../file-preview'
+import type { FileSchema } from '../schema'
+
+export interface FileGridViewProps {
+  files: FileSchema[]
+  table: Table<FileSchema>
+  isFetching?: boolean
+  inspectedFile: FileSchema | null
+  onInspectFile: (file: FileSchema) => void
+  onPreviewFile: (file: FileSchema) => void
+  onCopyUrl: (file: FileSchema) => void
+  onMoveFile: (file: FileSchema) => void
+  onDeleteFile: (file: FileSchema) => void
+  onRestoreFile?: (file: FileSchema) => void
+  onPermanentDeleteFile?: (file: FileSchema) => void
+  onRenameFile?: (file: FileSchema) => void
+  onShareFile?: (file: FileSchema) => void
+  isStarred?: (publicId?: string | null) => boolean
+  onToggleStar?: (publicId: string) => void
+  canUpdate?: boolean
+  canDelete?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  fetchNextPage?: () => void
+  totalItems?: number
+}
+
+function getFileExtension(filename: string): string {
+  return filename.split('?')[0]?.split('.').pop()?.toLowerCase() ?? ''
+}
+
+function getFileIconAndBadge(file: FileSchema) {
+  const ext = getFileExtension(file.original_name)
+  const mime = file.mime.toLowerCase()
+
+  if (ext === 'pdf' || mime.includes('pdf')) {
+    return {
+      icon: FileText,
+      color: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+      label: 'PDF',
+    }
+  }
+  if (
+    ['xls', 'xlsx', 'csv'].includes(ext) ||
+    mime.includes('spreadsheet') ||
+    mime.includes('csv')
+  ) {
+    return {
+      icon: FileSpreadsheet,
+      color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+      label: ext.toUpperCase() || 'EXCEL',
+    }
+  }
+  if (
+    ['doc', 'docx', 'txt', 'rtf', 'md'].includes(ext) ||
+    mime.includes('word') ||
+    mime.includes('text')
+  ) {
+    return {
+      icon: FileText,
+      color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+      label: ext.toUpperCase() || 'DOC',
+    }
+  }
+  if (
+    ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext) ||
+    mime.includes('archive') ||
+    mime.includes('compressed')
+  ) {
+    return {
+      icon: FileArchive,
+      color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+      label: ext.toUpperCase() || 'ZIP',
+    }
+  }
+  if (
+    [
+      'js',
+      'ts',
+      'jsx',
+      'tsx',
+      'json',
+      'html',
+      'css',
+      'py',
+      'sql',
+      'yaml',
+      'yml',
+    ].includes(ext)
+  ) {
+    return {
+      icon: FileCode,
+      color: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
+      label: ext.toUpperCase() || 'CODE',
+    }
+  }
+  if (
+    mime.startsWith('audio/') ||
+    ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)
+  ) {
+    return {
+      icon: FileAudio,
+      color: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
+      label: ext.toUpperCase() || 'AUDIO',
+    }
+  }
+
+  return {
+    icon: File,
+    color: 'text-muted-foreground bg-muted border-border',
+    label: ext.toUpperCase() || 'FILE',
+  }
+}
+
+interface FileCardItemProps {
+  file: FileSchema
+  isSelected: boolean
+  isInspected: boolean
+  canUpdate?: boolean
+  canDelete?: boolean
+  onInspectFile: (file: FileSchema) => void
+  onPreviewFile: (file: FileSchema) => void
+  onCopyUrl: (file: FileSchema) => void
+  onMoveFile: (file: FileSchema) => void
+  onDeleteFile: (file: FileSchema) => void
+  onRestoreFile?: (file: FileSchema) => void
+  onPermanentDeleteFile?: (file: FileSchema) => void
+  onRenameFile?: (file: FileSchema) => void
+  onShareFile?: (file: FileSchema) => void
+  onToggleSelect?: () => void
+  isStarred?: (publicId?: string | null) => boolean
+  onToggleStar?: (publicId: string) => void
+}
+
+const FileCardItem = memo(function FileCardItem({
+  file,
+  isSelected,
+  isInspected,
+  canUpdate,
+  canDelete,
+  onInspectFile,
+  onPreviewFile,
+  onCopyUrl,
+  onMoveFile,
+  onDeleteFile,
+  onRestoreFile,
+  onPermanentDeleteFile,
+  onRenameFile,
+  onShareFile,
+  onToggleSelect,
+  isStarred,
+  onToggleStar,
+}: FileCardItemProps) {
+  const { t } = useTranslation()
+  const isMedia = isPreviewableImage(file) || isPreviewableVideo(file)
+  const docBadge = getFileIconAndBadge(file)
+  const DocIcon = docBadge.icon
+
+  const cardBorderClass = isSelected
+    ? 'border-primary bg-primary/5 ring-primary/40 shadow-sm ring-2'
+    : cn(
+        'border-border/70 bg-card',
+        isInspected && 'border-primary/80 bg-accent/30 ring-primary/30 ring-1'
+      )
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          role='button'
+          tabIndex={0}
+          onClick={() => onInspectFile(file)}
+          onDoubleClick={() => onPreviewFile(file)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              onPreviewFile(file)
+            } else if (e.key === ' ') {
+              e.preventDefault()
+              onInspectFile(file)
+            } else if (e.key === 'F2') {
+              e.preventDefault()
+              onRenameFile?.(file)
+            }
+          }}
+          className={cn(
+            'group relative flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-xl border text-left transition-all duration-200 select-none',
+            'hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-md',
+            cardBorderClass
+          )}
+        >
+          {/* Top Toolbar Overlay */}
+          <div className='pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between p-2'>
+            {/* Checkbox */}
+            {canDelete && (
+              <div
+                className={cn(
+                  'pointer-events-auto transition-opacity',
+                  isSelected
+                    ? 'opacity-100'
+                    : 'opacity-0 group-hover:opacity-100'
+                )}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={onToggleSelect}
+                  aria-label={t('files.table.selectRow')}
+                  className='bg-background/90 border-border/80 shadow-xs backdrop-blur-xs'
+                />
+              </div>
+            )}
+
+            {/* Action Dropdown & Star */}
+            <div className='pointer-events-auto ml-auto flex items-center gap-1'>
+              {onToggleStar && (
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className={cn(
+                    'bg-background/85 text-foreground hover:bg-background size-7 rounded-lg shadow-xs backdrop-blur-xs transition-opacity',
+                    isStarred?.(file.public_id)
+                      ? 'opacity-100'
+                      : 'opacity-0 group-hover:opacity-100'
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleStar(file.public_id)
+                  }}
+                  title={
+                    isStarred?.(file.public_id)
+                      ? t('files.actions.unstar', 'Unstar file')
+                      : t('files.actions.star', 'Star file')
+                  }
+                  aria-label={
+                    isStarred?.(file.public_id)
+                      ? t('files.actions.unstar', 'Unstar file')
+                      : t('files.actions.star', 'Star file')
+                  }
+                >
+                  <Star
+                    className={cn(
+                      'size-3.5 transition-colors',
+                      isStarred?.(file.public_id)
+                        ? 'fill-amber-400 text-amber-500'
+                        : 'text-muted-foreground/60 hover:text-amber-500'
+                    )}
+                  />
+                </Button>
+              )}
+
+              <div
+                className='opacity-0 transition-opacity group-hover:opacity-100'
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='bg-background/85 text-foreground hover:bg-background size-7 rounded-lg shadow-xs backdrop-blur-xs'
+                    >
+                      <MoreVertical className='size-3.5' />
+                      <span className='sr-only'>
+                        {t('files.table.actions', 'Actions')}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end' className='w-44'>
+                    <DropdownMenuItem
+                      onClick={() => onPreviewFile(file)}
+                      className='gap-2'
+                    >
+                      <Eye className='size-4' />
+                      {t('files.actions.preview')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => downloadFile(file)}
+                      className='gap-2'
+                    >
+                      <Download className='size-4' />
+                      {t('files.actions.download', 'Download')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        onCopyUrl(file)
+                        toast.success(t('files.inspector.urlCopied'))
+                      }}
+                      className='gap-2'
+                    >
+                      <Copy className='size-4' />
+                      {t('files.actions.copyUrl')}
+                    </DropdownMenuItem>
+                    {isFilePrivate(file) && onShareFile && (
+                      <DropdownMenuItem
+                        onClick={() => onShareFile(file)}
+                        className='gap-2 text-amber-600 dark:text-amber-400'
+                      >
+                        <Link2 className='size-4' />
+                        {t('files.actions.share', 'Share link')}
+                      </DropdownMenuItem>
+                    )}
+                    {file.deletedAt ? (
+                      <>
+                        <DropdownMenuSeparator />
+                        {canUpdate && onRestoreFile && (
+                          <DropdownMenuItem
+                            onClick={() => onRestoreFile(file)}
+                            className='text-primary gap-2'
+                          >
+                            <RotateCcw className='size-4' />
+                            {t('files.actions.restore', 'Restore')}
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && onPermanentDeleteFile && (
+                          <DropdownMenuItem
+                            variant='destructive'
+                            onClick={() => onPermanentDeleteFile(file)}
+                            className='gap-2'
+                          >
+                            <Trash2 className='size-4' />
+                            {t(
+                              'files.actions.permanentDelete',
+                              'Delete permanently'
+                            )}
+                          </DropdownMenuItem>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {canUpdate && onRenameFile && (
+                          <DropdownMenuItem
+                            onClick={() => onRenameFile(file)}
+                            className='gap-2'
+                          >
+                            <Pencil className='size-4' />
+                            {t('files.actions.rename', 'Rename')}
+                          </DropdownMenuItem>
+                        )}
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={() => onMoveFile(file)}
+                            className='gap-2'
+                          >
+                            <MoveRight className='size-4' />
+                            {t('files.actions.move')}
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant='destructive'
+                              onClick={() => onDeleteFile(file)}
+                              className='gap-2'
+                            >
+                              <Trash2 className='size-4' />
+                              {t('files.actions.delete')}
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
+
+          {/* Thumbnail Box */}
+          <div className='bg-muted/40 border-border/50 relative flex aspect-16/10 w-full shrink-0 items-center justify-center overflow-hidden border-b'>
+            {isMedia ? (
+              <div className='size-full overflow-hidden transition-transform duration-300 group-hover:scale-105'>
+                <FilePreviewThumbnail
+                  file={file}
+                  className='size-full object-cover'
+                />
+              </div>
+            ) : (
+              <div className='flex flex-col items-center justify-center gap-1.5 p-4 transition-transform duration-300 group-hover:scale-105'>
+                <div
+                  className={cn(
+                    'flex size-12 items-center justify-center rounded-xl border',
+                    docBadge.color
+                  )}
+                >
+                  <DocIcon className='size-6' />
+                </div>
+                <span className='text-muted-foreground text-[10px] font-semibold tracking-wider uppercase'>
+                  {docBadge.label}
+                </span>
+              </div>
+            )}
+
+            {/* Media dimension tag */}
+            {file.width && file.height && (
+              <div className='absolute bottom-1.5 left-1.5 z-10'>
+                <span className='rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-xs'>
+                  {file.width}&times;{file.height}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Content Details */}
+          <div className='flex flex-1 flex-col justify-between gap-2.5 p-3'>
+            <div>
+              <p
+                title={file.original_name}
+                className='text-foreground group-hover:text-primary truncate text-sm font-medium transition-colors'
+              >
+                {file.original_name}
+              </p>
+
+              {/* Subtitle: Size & Disk / Visibility Badge */}
+              <div className='text-muted-foreground mt-1 flex items-center justify-between gap-2 text-xs'>
+                <span className='tabular-nums'>{formatBytes(file.size)}</span>
+                {(() => {
+                  const isPrivate = isFilePrivate(file)
+                  const diskLabel = getFileDiskLabel(file.disk, isPrivate)
+                  const diskTooltip = getFileDiskTooltip(file.disk, isPrivate)
+
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          className={cn(
+                            'inline-flex shrink-0 cursor-default items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-medium',
+                            isPrivate
+                              ? 'border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                              : 'bg-muted text-muted-foreground border-border/60 border'
+                          )}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {isPrivate ? (
+                            <Lock className='size-2.5' />
+                          ) : (
+                            <Globe className='size-2.5' />
+                          )}
+                          <span>{diskLabel}</span>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side='top' className='max-w-xs text-xs'>
+                        {diskTooltip}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                })()}
+              </div>
+            </div>
+
+            {/* Footer Row: Uploaded by & Last activity */}
+            <div className='border-border/50 text-muted-foreground flex items-center justify-between gap-2 border-t pt-2 text-[11px]'>
+              {(() => {
+                const uploader = file.createdByAdmin
+                const uploaderName =
+                  uploader?.fullName ||
+                  uploader?.email ||
+                  t('files.table.system', 'System')
+                const initials = (uploaderName[0] || 'S').toUpperCase()
+
+                return (
+                  <div
+                    className='flex min-w-0 items-center gap-1.5'
+                    title={t(
+                      'files.grid.uploadedByTooltip',
+                      'Uploaded by {{name}}',
+                      { name: uploaderName }
+                    )}
+                  >
+                    <Avatar className='border-border/60 size-4.5 shrink-0 border'>
+                      {uploader?.avatar && (
+                        <AvatarImage src={uploader.avatar} alt={uploaderName} />
+                      )}
+                      <AvatarFallback className='bg-primary/10 text-primary text-[9px] font-semibold'>
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className='text-foreground/80 max-w-24 truncate font-medium'>
+                      {uploaderName}
+                    </span>
+                  </div>
+                )
+              })()}
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className='text-muted-foreground shrink-0 cursor-default tabular-nums'>
+                    {format(
+                      new Date(file.updatedAt || file.createdAt),
+                      'dd/MM/yyyy'
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side='top' className='text-xs'>
+                  {file.updatedByAdmin
+                    ? t(
+                        'files.grid.lastActivityWithUser',
+                        'Updated on {{date}} by {{user}}',
+                        {
+                          date: format(
+                            new Date(file.updatedAt || file.createdAt),
+                            'PPpp'
+                          ),
+                          user:
+                            file.updatedByAdmin.fullName ||
+                            file.updatedByAdmin.email,
+                        }
+                      )
+                    : t('files.grid.lastActivityDate', 'Updated on {{date}}', {
+                        date: format(
+                          new Date(file.updatedAt || file.createdAt),
+                          'PPpp'
+                        ),
+                      })}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className='w-48'>
+        <ContextMenuItem onClick={() => onPreviewFile(file)} className='gap-2'>
+          <Eye className='size-4' />
+          {t('files.actions.preview')}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => downloadFile(file)} className='gap-2'>
+          <Download className='size-4' />
+          {t('files.actions.download', 'Download')}
+        </ContextMenuItem>
+        {file.deletedAt ? (
+          <>
+            <ContextMenuSeparator />
+            {canUpdate && onRestoreFile && (
+              <ContextMenuItem
+                onClick={() => onRestoreFile(file)}
+                className='text-primary gap-2'
+              >
+                <RotateCcw className='size-4' />
+                {t('files.actions.restore', 'Restore')}
+              </ContextMenuItem>
+            )}
+            {canDelete && onPermanentDeleteFile && (
+              <ContextMenuItem
+                variant='destructive'
+                onClick={() => onPermanentDeleteFile(file)}
+                className='gap-2'
+              >
+                <Trash2 className='size-4' />
+                {t('files.actions.permanentDelete', 'Delete permanently')}
+              </ContextMenuItem>
+            )}
+          </>
+        ) : (
+          <>
+            <ContextMenuItem
+              onClick={() => {
+                onCopyUrl(file)
+                toast.success(t('files.inspector.urlCopied'))
+              }}
+              className='gap-2'
+            >
+              <Copy className='size-4' />
+              {t('files.actions.copyUrl')}
+            </ContextMenuItem>
+            {isFilePrivate(file) && onShareFile && (
+              <ContextMenuItem
+                onClick={() => onShareFile(file)}
+                className='gap-2 text-amber-600 dark:text-amber-400'
+              >
+                <Link2 className='size-4' />
+                {t('files.actions.share', 'Share link')}
+              </ContextMenuItem>
+            )}
+            {canUpdate && onRenameFile && (
+              <ContextMenuItem
+                onClick={() => onRenameFile(file)}
+                className='gap-2'
+              >
+                <Pencil className='size-4' />
+                {t('files.actions.rename', 'Rename')}
+              </ContextMenuItem>
+            )}
+            {canUpdate && (
+              <ContextMenuItem
+                onClick={() => onMoveFile(file)}
+                className='gap-2'
+              >
+                <MoveRight className='size-4' />
+                {t('files.actions.move')}
+              </ContextMenuItem>
+            )}
+            {canDelete && (
+              <>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  variant='destructive'
+                  onClick={() => onDeleteFile(file)}
+                  className='gap-2'
+                >
+                  <Trash2 className='size-4' />
+                  {t('files.actions.delete')}
+                </ContextMenuItem>
+              </>
+            )}
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+})
+
+export function FileGridView({
+  files,
+  table,
+  isFetching,
+  inspectedFile,
+  onInspectFile,
+  onPreviewFile,
+  onCopyUrl,
+  onMoveFile,
+  onDeleteFile,
+  onRestoreFile,
+  onPermanentDeleteFile,
+  onRenameFile,
+  onShareFile,
+  isStarred,
+  onToggleStar,
+  canUpdate,
+  canDelete,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  totalItems,
+}: FileGridViewProps) {
+  const { t } = useTranslation()
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  // IntersectionObserver for auto-fetching next page
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || !fetchNextPage) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { rootMargin: '400px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  if (isFetching && files.length === 0) {
+    return (
+      <div className='grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4'>
+        {Array.from({ length: 12 }).map((_, idx) => (
+          <div
+            key={idx}
+            className='border-border/50 flex flex-col gap-2 rounded-xl border p-2.5'
+          >
+            <Skeleton className='aspect-16/10 w-full rounded-lg' />
+            <Skeleton className='h-4 w-3/4' />
+            <Skeleton className='h-3 w-1/2' />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (files.length === 0) {
+    return (
+      <div className='border-border/70 flex min-h-75 flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center'>
+        <div className='bg-muted/60 text-muted-foreground mb-3 flex size-14 items-center justify-center rounded-2xl'>
+          <File className='size-7' />
+        </div>
+        <h4 className='text-foreground text-sm font-semibold'>
+          {t('files.upload.empty')}
+        </h4>
+        <p className='text-muted-foreground mt-1 max-w-sm text-xs'>
+          {t('files.upload.description')}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className='flex w-full flex-col'>
+      {/* File Grid */}
+      <div className='grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4'>
+        {files.map((file) => {
+          const row = table.getRow(file.public_id)
+          const isSelected = row?.getIsSelected() ?? false
+          const isInspected = inspectedFile?.public_id === file.public_id
+
+          return (
+            <FileCardItem
+              key={file.public_id}
+              file={file}
+              isSelected={isSelected}
+              isInspected={isInspected}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+              onInspectFile={onInspectFile}
+              onPreviewFile={onPreviewFile}
+              onCopyUrl={onCopyUrl}
+              onMoveFile={onMoveFile}
+              onDeleteFile={onDeleteFile}
+              onRestoreFile={onRestoreFile}
+              onPermanentDeleteFile={onPermanentDeleteFile}
+              onRenameFile={onRenameFile}
+              onShareFile={onShareFile}
+              onToggleSelect={() => row?.toggleSelected()}
+              isStarred={isStarred}
+              onToggleStar={onToggleStar}
+            />
+          )
+        })}
+      </div>
+
+      {/* Sentinel trigger for infinite scroll */}
+      <div ref={sentinelRef} className='h-4 w-full' />
+
+      {/* Loading More Indicator */}
+      {isFetchingNextPage && (
+        <div className='text-muted-foreground flex animate-pulse items-center justify-center gap-2 py-6 text-xs'>
+          <Loader2 className='text-primary size-4 animate-spin' />
+          <span>{t('files.loadingMore', 'Loading more files...')}</span>
+        </div>
+      )}
+
+      {/* Loaded All Files Status */}
+      {!hasNextPage && files.length > 0 && (
+        <div className='text-muted-foreground/60 py-6 text-center text-xs'>
+          {totalItems
+            ? t('files.allLoadedWithCount', 'Showing all {{count}} files', {
+                count: totalItems,
+              })
+            : t('files.allLoaded', 'All files loaded')}
+        </div>
+      )}
+    </div>
+  )
+}

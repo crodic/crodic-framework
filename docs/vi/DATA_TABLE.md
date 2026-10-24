@@ -1,0 +1,403 @@
+# Hướng Dẫn Sử Dụng DataTable
+
+> [English](../en/DATA_TABLE.md) | **Tiếng Việt**
+
+Tài liệu này hướng dẫn cách sử dụng hệ thống DataTable dùng chung trong `apps/web`.
+Nội dung dành cho các trang cần bảng dữ liệu kiểu quản trị admin với phân trang đồng bộ qua URL,
+sắp xếp, lọc dữ liệu, ẩn hiện cột, chọn hàng (row selection), thao tác trên hàng, mở rộng
+hàng (expanding rows) và ảo hóa (virtualization).
+
+## Các Thành Phần Chính
+
+Hệ thống DataTable được chia thành 2 tầng rõ rệt: Tầng Pipeline Cấp Cao (khuyên dùng) và Tầng Primitive Cấp Thấp:
+
+### 1. Tầng Pipeline Cấp Cao (Recommended)
+
+- `useResourceTable` trong `apps/web/src/hooks/use-resource-table.ts`
+  - Pipeline chuẩn chuyên dùng cho các endpoint **NestJS Paginate** (`filter.status=$eq:...`).
+  - Gói gọn 6 bước lặp lại (đọc URL với `nuqs`, dựng `PaginateQueryBuilder`, dịch sort params, gọi React Query, khởi tạo TanStack Table) thành **1 hook duy nhất**.
+- `useRestResourceTable` trong `apps/web/src/hooks/use-rest-resource-table.ts`
+  - Pipeline chuyên dùng cho các endpoint chuẩn **REST / Spatie** (`filter[status]=...`, `sort=-createdAt`, `include=...`).
+  - Tích hợp liền mạch với `RestQueryBuilder` và `RestQueryParams`.
+
+### 2. Tầng Primitives Cấp Thấp
+
+- `useDataTable` trong `apps/web/src/hooks/use-data-table.ts`
+  - Khởi tạo instance nền tảng của TanStack Table.
+  - Quản lý trạng thái bảng: phân trang, sắp xếp, bộ lọc, chọn hàng, mở rộng hàng và ẩn hiện cột.
+  - Đồng bộ trang, kích thước trang, sắp xếp và bộ lọc vào URL query params qua thư viện `nuqs`.
+- `DataTable` trong `apps/web/src/components/data-table/data-table.tsx`
+  - Render giao diện bảng, trạng thái loading, trạng thái rỗng (`DataTableEmptyState`), phân trang, click hàng, panel chi tiết hàng con, virtualization.
+- `DataTableToolbar`
+  - Render các bộ lọc cột inline từ `columnDef.meta` (input, select, faceted chips).
+  - Điều khiển ẩn hiện cột qua `DataTableViewOptions`.
+- `DataTableSortList`
+  - Cung cấp popover "Sắp xếp" hỗ trợ đa tiêu chí sắp xếp.
+- `DataTableExport` tại `apps/web/src/components/data-table/data-table-export.tsx`
+  - Component dropdown xuất dữ liệu client-side hiệu năng cao, hỗ trợ **CSV (Excel)** và **JSON**.
+  - 2 chế độ: **Export Selected** (dòng đã tick chọn) và **Export Filtered** (dữ liệu đang lọc trên bảng).
+  - Tự động tích hợp sẵn vào `DataTableToolbar` (có thể tắt qua `hideExport={true}`, đặt tên file tùy chỉnh qua `exportFilename="roles"`).
+  - Tích hợp chuẩn UTF-8 BOM (`\uFEFF`) chống lỗi font tiếng Việt khi mở trực tiếp bằng Excel.
+- `DataTableColumnHeader`
+  - Component tiêu đề cột chuẩn được hầu hết các cột sử dụng.
+
+### Cấu Trúc Khuyên Dùng Cho Trang Danh Sách
+
+Các trang quản trị tổng quan (`admins`, `users`, `roles`, `white-labels`, `locations`, `permissions`, `activity-log`, `cms-pages`, `email-logs`,...) sử dụng `useResourceTable` cùng type helper `ResourceQueryBuilderFn`:
+
+```tsx
+import {
+  useResourceTable,
+  type ResourceQueryBuilderFn,
+} from "@/hooks/use-resource-table";
+
+const columns = useMemo(() => getMyTableColumns(), []);
+
+const buildQuery: ResourceQueryBuilderFn<typeof myFilterParsers> = useCallback(
+  (builder, filter) => {
+    // builder có type PaginateQueryBuilder (đầy đủ gợi ý code .ilike, .eq, .in)
+    // filter có type InferParsers<typeof myFilterParsers> sạch sẽ, 0 any
+    builder.ilike("name", filter.name);
+  },
+  [],
+);
+
+const { table, isFetching } = useResourceTable<
+  MySchema,
+  typeof myFilterParsers
+>({
+  columns,
+  allowedSorts: [ColumnKey.name, ColumnKey.createdAt],
+  filterParsers: myFilterParsers,
+  queryHook: useDataMyOverview,
+  buildQuery,
+  initialColumnPinning: { right: ["actions"] },
+  initialState: {
+    sorting: [{ id: ColumnKey.createdAt, desc: true }],
+  },
+  getRowId: (row) => row.id,
+});
+
+return (
+  <DataTable table={table} isFetching={isFetching}>
+    <DataTableToolbar table={table}>
+      <DataTableSortList table={table} />
+    </DataTableToolbar>
+  </DataTable>
+);
+```
+
+Đối với các endpoint chuẩn REST, chỉ cần đổi sang `useRestResourceTable` và `RestResourceQueryBuilderFn`:
+
+```tsx
+import {
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from "@/hooks/use-rest-resource-table";
+
+const buildQuery: RestResourceQueryBuilderFn<typeof myFilterParsers> =
+  useCallback((builder, filter) => {
+    builder.filterExact("status", filter.status);
+  }, []);
+
+const { table, isFetching } = useRestResourceTable<
+  MySchema,
+  typeof myFilterParsers
+>({
+  columns,
+  allowedSorts: [ColumnKey.name, ColumnKey.createdAt],
+  filterParsers: myFilterParsers,
+  queryHook: useDataMyRestOverview,
+  buildQuery,
+  getRowId: (row) => row.id,
+});
+```
+
+## Luồng Dữ Liệu Phía Server (Server-Side Data Flow)
+
+DataTable của dự án được thiết kế chủ yếu cho việc phân trang, sắp xếp và lọc từ phía server.
+
+`useDataTable` thiết lập:
+
+```ts
+manualPagination: true;
+manualSorting: true;
+manualFiltering: true;
+```
+
+Điều đó có nghĩa bảng không tự động fetch dữ liệu. Trang của bạn cần:
+
+1. Đọc các query params từ URL.
+2. Xây dựng tham số gọi API.
+3. Fetch dữ liệu với React Query.
+4. Truyền `data` và `pageCount` vào `useDataTable`.
+
+Ví dụ:
+
+```tsx
+const {
+  page,
+  perPage,
+  sorting: sort,
+  filter,
+} = useGetFilterParams<MySchema, typeof myFilterParsers>({
+  allowedSorts: [ColumnKey.email, ColumnKey.createdAt],
+  filterParsers: myFilterParsers,
+});
+
+const builder = new PaginateQueryBuilder()
+  .page(page)
+  .limit(perPage)
+  .ilike("email", filter.email)
+  .sortBy(sortParser(sort).sortBy, sortParser(sort).sortDirection);
+
+const { data, isFetching } = useMyOverview(builder.build());
+
+const { table } = useDataTable({
+  data: data?.data ?? [],
+  columns,
+  pageCount: data?.meta.totalPages ?? 0,
+  getRowId: (row) => row.id,
+});
+```
+
+## Trạng Thái URL Query
+
+Mặc định, `useDataTable` sử dụng các query key:
+
+- `page`
+- `perPage`
+- `sort`
+- `filters`
+- `joinOperator`
+
+Bạn có thể ghi đè khi có nhiều bảng trên cùng một trang:
+
+```tsx
+const { table } = useDataTable({
+  data,
+  columns,
+  pageCount,
+  queryKeys: {
+    page: "adminsPage",
+    perPage: "adminsPerPage",
+    sort: "adminsSort",
+    filters: "adminsFilters",
+    joinOperator: "adminsJoinOperator",
+  },
+});
+```
+
+## Định Nghĩa Cột (Defining Columns)
+
+Các cột là mảng `ColumnDef<TData>[]` chuẩn của TanStack Table.
+
+Sử dụng `id` ổn định khớp với:
+
+- Các trường có thể sắp xếp/lọc phía backend,
+- Các hằng số `ColumnKey`,
+- Bộ phân giải `useGetFilterParams`,
+- Các trường của `PaginateQueryBuilder`.
+
+Ví dụ:
+
+```tsx
+export function getAdminsTableColumns(): ColumnDef<AdminSchema>[] {
+  return [
+    {
+      id: ColumnKey.email,
+      accessorFn: (row) => row.email,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} label="Email" />
+      ),
+      cell: ({ row }) => <span>{row.original.email}</span>,
+      meta: {
+        label: "Email",
+        placeholder: "Tìm kiếm email...",
+        variant: "text",
+        icon: MailIcon,
+      },
+      enableColumnFilter: true,
+      enableSorting: true,
+    },
+  ];
+}
+```
+
+## Meta Cột và Bộ Lọc (Column Meta & Filters)
+
+`DataTableToolbar` đọc `column.columnDef.meta` để render các bộ lọc tương ứng.
+
+Các biến thể bộ lọc phổ biến:
+
+- `text`
+- `number`
+- `range`
+- `date`
+- `dateRange`
+- `select`
+- `multiSelect`
+- `asyncSelect`
+- `multiAsyncSelect`
+
+## Sắp Xếp (Sorting)
+
+Một cột có thể sắp xếp khi `enableSorting: true`.
+
+Sử dụng `DataTableSortList` bên trong `DataTableToolbar`:
+
+```tsx
+<DataTable table={table}>
+  <DataTableToolbar table={table}>
+    <DataTableSortList table={table} />
+  </DataTableToolbar>
+</DataTable>
+```
+
+## Phân Trang (Pagination)
+
+`DataTable` tự động render `DataTablePagination` theo mặc định.
+
+Các tùy chọn kích cỡ trang mặc định là:
+
+```ts
+[10, 20, 30, 40, 50];
+```
+
+## Chọn Hàng (Row Selection)
+
+`useDataTable` bật sẵn tính năng chọn hàng theo mặc định:
+
+```ts
+enableRowSelection: true;
+```
+
+Thêm cột `select` khi giao diện cần cho phép chọn:
+
+```tsx
+{
+  id: 'select',
+  header: ({ table }) => (
+    <Checkbox
+      checked={
+        table.getIsAllPageRowsSelected() ||
+        (table.getIsSomePageRowsSelected() && 'indeterminate')
+      }
+      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      aria-label="Chọn tất cả"
+    />
+  ),
+  cell: ({ row }) => (
+    <Checkbox
+      checked={row.getIsSelected()}
+      onCheckedChange={(value) => row.toggleSelected(!!value)}
+      aria-label="Chọn hàng"
+    />
+  ),
+  size: 32,
+  enableSorting: false,
+  enableHiding: false,
+}
+```
+
+Sử dụng `actionBar` cho các thao tác hàng loạt (bulk actions):
+
+```tsx
+<DataTable table={table} actionBar={<BulkActions table={table} />} />
+```
+
+## Hành Động Khi Nhấp Hàng (Row Click Actions)
+
+Truyền `onClickRowAction` để các ô thông thường có thể nhấp được:
+
+```tsx
+<DataTable
+  table={table}
+  onClickRowAction={(row) => navigate(`/admins/${row.id}/show`)}
+/>
+```
+
+## Cột Thao Tác Hàng (Actions Column)
+
+Sử dụng cột `actions` chuyên dụng cho menu thao tác từng hàng:
+
+```tsx
+{
+  id: 'actions',
+  cell: ({ row }) => <MyRowActions row={row} />,
+  enableSorting: false,
+  enableHiding: false,
+}
+```
+
+Ghim cột actions sang bên phải:
+
+```tsx
+initialState: {
+  columnPinning: { right: ['actions'] },
+}
+```
+
+## Mở Rộng Hàng Cây & Hàng Con Chi Tiết
+
+Đối với cây dữ liệu có cấp con:
+
+```tsx
+const { table } = useDataTable({
+  data,
+  columns,
+  pageCount: 1,
+  getRowId: (row) => row.id,
+  getSubRows: (row) => row.subRows,
+  enableExpanding: true,
+});
+```
+
+Đối với bảng mở rộng xem chi tiết (không phải cấu trúc cây):
+
+```tsx
+<DataTable
+  table={table}
+  renderSubRow={(row) => (
+    <div className="grid gap-2">
+      <p>{row.original.description}</p>
+    </div>
+  )}
+/>
+```
+
+## Ảo Hóa Hàng & Cuộn Vô Tận (Virtualization)
+
+Khi danh sách lên tới hàng nghìn mục, kích hoạt ảo hóa:
+
+```tsx
+<DataTable
+  table={table}
+  enableVirtualRows
+  virtualHeight={600}
+  virtualRowEstimateSize={48}
+  virtualOverscan={8}
+/>
+```
+
+Cuộn vô tận ảo với React Query:
+
+```tsx
+<DataTable
+  table={table}
+  enableVirtualRows
+  hidePagination
+  onVirtualEndReached={() => {
+    if (query.hasNextPage && !query.isFetchingNextPage) {
+      void query.fetchNextPage();
+    }
+  }}
+/>
+```
+
+## Xử Lý Sự Cố Thường Gặp (Troubleshooting)
+
+- **Giao diện bảng bị kéo giãn ngang**: Kiểm tra thẻ cha của bảng. Container bảng, nội dung card, grid item và flex item đều cần cho phép co lại với `min-w-0 overflow-hidden`.
+- **Thanh Header fixed/sticky bị mất tác dụng**: Tìm thẻ cha có `overflow-hidden`, `overflow-auto` hoặc `overflow-x-hidden`. Định vị sticky dùng container cuộn gần nhất.
+- **Select kích cỡ trang bị trắng**: Kích cỡ trang hiện tại phải nằm trong mảng tùy chọn `[10, 20, 30, 40, 50]`.
+- **Bộ lọc hoặc sắp xếp không gửi lên API**: Đảm bảo cột `id`, `filterParsers`, `useGetFilterParams`, `PaginateQueryBuilder` và trường phía backend hoàn toàn khớp nhau.

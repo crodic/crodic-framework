@@ -1,0 +1,292 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API quality
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: boilerplate_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d boilerplate_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint API
+        run: pnpm --filter api lint
+
+      - name: Type check API
+        run: pnpm --filter api check-types
+
+      - name: Unit tests API
+        run: pnpm --filter api test:ci
+
+      - name: E2E tests API
+        run: pnpm --filter api test:e2e
+
+  web:
+    name: Web quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint web
+        run: pnpm --filter web lint
+
+      - name: Type check web
+        run: pnpm --filter web check-types
+
+      - name: Test web with coverage
+        run: pnpm --filter web test:coverage
+
+      - name: Upload web coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-coverage
+          path: apps/web/coverage
+          if-no-files-found: ignore
+
+  client:
+    name: Client quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint client
+        run: pnpm --filter client lint
+
+      - name: Type check client
+        run: pnpm --filter client check-types
+
+      - name: Test client
+        run: pnpm --filter client test:ci
+
+  deploy:
+    name: Build and Deploy on Dokku Server
+    runs-on: [self-hosted, linux, dokku]
+    needs:
+      - api
+      - web
+      - client
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Configure Dokku SSH key
+        env:
+          DOKKU_SSH_PRIVATE_KEY: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DOKKU_SSH_PRIVATE_KEY" > ~/.ssh/dokku_deploy
+          chmod 600 ~/.ssh/dokku_deploy
+          ssh-keyscan -H 127.0.0.1 >> ~/.ssh/known_hosts
+
+      - name: Load client build environment from Dokku
+        run: |
+          get_dokku_config() {
+            ssh -i ~/.ssh/dokku_deploy dokku@127.0.0.1 \
+              config:get crodic-client "$1" 2>/dev/null || true
+          }
+
+          while IFS= read -r name; do
+            value=$(get_dokku_config "$name")
+            case "$name" in
+              NEXT_PUBLIC_APP_URL)
+                value=${value:-https://frieren.io.vn}
+                ;;
+              NEXT_PUBLIC_ADMIN_PORTAL_URL)
+                value=${value:-https://admin.frieren.io.vn}
+                ;;
+            esac
+            printf '%s=%s\n' "$name" "$value" >> "$GITHUB_ENV"
+            if [ -n "$value" ]; then
+              echo "$name is available for the client build."
+            else
+              echo "$name is empty in Dokku and has no build default."
+            fi
+          done <<'BUILD_VARS'
+          NEXT_PUBLIC_API_URL
+          NEXT_PUBLIC_APP_URL
+          NEXT_PUBLIC_ADMIN_PORTAL_URL
+          NEXT_PUBLIC_ALLOWED_LOCALE
+          NEXT_PUBLIC_APP_LOCALE
+          NEXT_PUBLIC_ENABLE_WHITE_LABEL
+          NEXT_PUBLIC_USE_CASE
+          NEXT_PUBLIC_SENTRY_DNS_NEXTJS
+          NEXT_PUBLIC_SENTRY_ENVIRONMENT
+          BUILD_VARS
+
+      - name: Validate production build environment
+        run: |
+          if [ -z "$NEXT_PUBLIC_API_URL" ]; then
+            echo "ERROR: NEXT_PUBLIC_API_URL is missing from Dokku crodic-client config."
+            exit 1
+          fi
+
+      - name: Build API image on server
+        run: |
+          docker build \
+            -f apps/api/Dockerfile \
+            --target production \
+            -t "crodic-api-local:${GITHUB_SHA}" \
+            .
+
+      - name: Build Admin image on server
+        run: |
+          docker build \
+            -f apps/web/Dockerfile \
+            --target production \
+            -t "crodic-admin-local:${GITHUB_SHA}" \
+            .
+
+      - name: Build Client image on server
+        run: |
+          docker build \
+            -f apps/client/Dockerfile \
+            --target production \
+            --build-arg "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" \
+            --build-arg "NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL" \
+            --build-arg "NEXT_PUBLIC_ADMIN_PORTAL_URL=$NEXT_PUBLIC_ADMIN_PORTAL_URL" \
+            --build-arg "NEXT_PUBLIC_ALLOWED_LOCALE=$NEXT_PUBLIC_ALLOWED_LOCALE" \
+            --build-arg "NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE" \
+            --build-arg "NEXT_PUBLIC_ENABLE_WHITE_LABEL=$NEXT_PUBLIC_ENABLE_WHITE_LABEL" \
+            --build-arg "NEXT_PUBLIC_USE_CASE=$NEXT_PUBLIC_USE_CASE" \
+            --build-arg "NEXT_PUBLIC_SENTRY_DNS_NEXTJS=$NEXT_PUBLIC_SENTRY_DNS_NEXTJS" \
+            --build-arg "NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT" \
+            -t "crodic-client-local:${GITHUB_SHA}" \
+            .
+
+      - name: Deploy images to Dokku
+        run: |
+          deploy_app() {
+            local app="$1"
+            local image="$2"
+            local output
+            local status
+
+            echo "Deploying $app from local image $image"
+
+            set +e
+            output=$(ssh -i ~/.ssh/dokku_deploy dokku@127.0.0.1 \
+              git:from-image "$app" "$image" 2>&1)
+            status=$?
+            set -e
+
+            echo "$output"
+
+            if [ "$status" -eq 0 ]; then
+              echo "$app deployed successfully."
+              return 0
+            fi
+
+            if echo "$output" | grep -Fq "No changes detected"; then
+              echo "$app already references this image; rebuilding the app."
+              ssh -i ~/.ssh/dokku_deploy dokku@127.0.0.1 ps:rebuild "$app"
+              return $?
+            fi
+
+            echo "git:from-image failed for $app."
+            return "$status"
+          }
+
+          deploy_app crodic-api "crodic-api-local:${GITHUB_SHA}"
+          deploy_app crodic-admin "crodic-admin-local:${GITHUB_SHA}"
+          deploy_app crodic-client "crodic-client-local:${GITHUB_SHA}"
+
+      - name: Cleanup dangling build images
+        if: always()
+        run: docker image prune -f
