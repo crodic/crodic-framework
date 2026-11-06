@@ -11,7 +11,7 @@ Welcome to the documentation hub for this enterprise monorepo. Documentation is 
 
 | Document / Tài liệu               | English                                       | Tiếng Việt                                           |
 | :-------------------------------- | :-------------------------------------------- | :--------------------------------------------------- |
-| **Deployment with Coolify (VPS)** | [English Guide](en/DEPLOYMENT.md)             | [Hướng dẫn Tiếng Việt](vi/DEPLOYMENT.md)             |
+| **Production Deployment (VPS)**   | [English Guide](en/DEPLOYMENT.md)             | [Hướng dẫn Tiếng Việt](vi/DEPLOYMENT.md)             |
 | **Authentication & RBAC**         | [English Guide](en/AUTH.md)                   | [Hướng dẫn Tiếng Việt](vi/AUTH.md)                   |
 | **Query Builder**                 | [English Guide](en/QUERY_BUILDER.md)          | [Hướng dẫn Tiếng Việt](vi/QUERY_BUILDER.md)          |
 | **Data Table Component**          | [English Guide](en/DATA_TABLE.md)             | [Hướng dẫn Tiếng Việt](vi/DATA_TABLE.md)             |

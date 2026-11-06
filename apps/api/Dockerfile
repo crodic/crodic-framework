@@ -3,8 +3,9 @@
 FROM node:26-alpine AS base
 WORKDIR /app
 
-ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
+ENV HUSKY=0
 
 RUN apk add --no-cache libc6-compat dumb-init \
   && npm install -g pnpm@11.25.0
@@ -12,8 +13,12 @@ RUN apk add --no-cache libc6-compat dumb-init \
 FROM base AS deps
 RUN apk add --no-cache python3 make g++
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY packages ./packages
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./
+COPY packages/commitlint-config/package.json ./packages/commitlint-config/package.json
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/prettier-config/package.json ./packages/prettier-config/package.json
+COPY packages/query-builder/package.json ./packages/query-builder/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/client/package.json ./apps/client/package.json
 COPY apps/web/package.json ./apps/web/package.json
@@ -24,6 +29,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 FROM deps AS development
 ENV NODE_ENV=development
 
+COPY packages ./packages
 COPY apps/api ./apps/api
 
 USER node
@@ -33,14 +39,13 @@ CMD ["pnpm", "--filter", "api", "start:dev"]
 FROM deps AS builder
 ENV NODE_ENV=production
 
-COPY . .
+COPY packages ./packages
+COPY apps/api ./apps/api
 
-RUN pnpm --filter api build
-
-RUN pnpm --filter api deploy --prod --legacy /prod/api
-
-RUN mkdir -p /prod/api/public
-RUN cp -r apps/api/dist /prod/api/dist
+RUN pnpm --filter api build \
+  && pnpm --filter api deploy --prod --legacy /prod/api \
+  && mkdir -p /prod/api/public \
+  && cp -r apps/api/dist /prod/api/dist
 
 FROM base AS production
 ENV NODE_ENV=production
@@ -58,7 +63,7 @@ COPY --chown=node:node --from=builder /prod/api/public ./public
 
 USER node
 
-EXPOSE 3000
+EXPOSE 8000
 
 ENTRYPOINT ["dumb-init", "--"]
 

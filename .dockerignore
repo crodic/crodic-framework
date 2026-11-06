@@ -1,22 +1,40 @@
-# Directories
+# Dependencies & Build Outputs
 node_modules
-.git
+**/node_modules
 .turbo
+**/.turbo
 .next
+**/.next
 dist
+**/dist
 build
 coverage
+**/coverage
 
-# Logs
+# Version Control & IDE
+.git
+.github
+.agents
+.husky
+.vscode
+
+# Documentation & Scripts
+docs
+scripts
+*.md
+
+# Docker Compose & Logs
+docker-compose*.yml
+.DS_Store
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-*.log
 
-# OS & Environment
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment files:
+# - Root .env and apps/api/.env are runtime-only (ignored in build context so changing API env doesn't rebuild image)
+# - apps/web/.env and apps/client/.env are kept so Vite and Next.js read them directly during build
+/.env
+apps/api/.env*
+**/*.env.example
