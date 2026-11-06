@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, SaveIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -31,6 +31,7 @@ import { userCreateSchema, type UserCreateSchema } from '../schema'
 export function PageUserCreate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
   const form = useForm<UserCreateSchema>({
     defaultValues: {},
@@ -40,6 +41,7 @@ export function PageUserCreate() {
   const createUserMutation = useMutation({
     mutationFn: apiCreateUser,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
       toast.success('User created successfully')
       navigate(-1)
     },

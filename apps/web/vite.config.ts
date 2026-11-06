@@ -51,8 +51,15 @@ export default defineConfig(({ mode }) => {
               ) {
                 return 'vendor-editor'
               }
-              if (id.includes('recharts') || id.includes('d3-')) {
-                return 'vendor-charts'
+              if (
+                /\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(
+                  id
+                )
+              ) {
+                return 'vendor-react'
+              }
+              if (id.includes('@tanstack/')) {
+                return 'vendor-tanstack'
               }
               if (id.includes('@radix-ui') || id.includes('radix-ui')) {
                 return 'vendor-radix'

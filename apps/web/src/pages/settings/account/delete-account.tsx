@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -31,6 +31,7 @@ export default function DeleteAccount() {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const logout = useAuthStore((s) => s.logout)
 
   const deleteAccountMutation = useMutation({
@@ -42,8 +43,9 @@ export default function DeleteAccount() {
         })
       )
       await apiSignOut()
+      queryClient.clear()
       logout()
-      navigate('/auth/sign-in', { replace: true })
+      navigate('/sign-in', { replace: true })
     },
     onError: () => {
       toast.error(

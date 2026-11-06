@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -39,6 +38,11 @@ export function AccountForm({ user }: { user: AdminSchema }) {
     mutationFn: apiUpdateCurrentAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['authenticated_user'] })
+      toast.success(
+        t('settings.account.updateSuccess', {
+          defaultValue: 'Account updated successfully',
+        })
+      )
     },
     onError: (error) => {
       if (isAxiosError(error)) {
@@ -48,7 +52,6 @@ export function AccountForm({ user }: { user: AdminSchema }) {
   })
 
   function onSubmit(data: AccountFormSchema) {
-    showSubmittedData(data)
     updateMeMutation.mutate(data)
   }
 

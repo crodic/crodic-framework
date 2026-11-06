@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -42,7 +41,6 @@ export default function PasswordForm() {
   })
 
   function onSubmit(data: PasswordFormSchema) {
-    showSubmittedData(data)
     changePasswordMutation.mutate(data)
   }
   return (

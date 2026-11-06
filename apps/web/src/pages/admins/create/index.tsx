@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, SaveIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -36,6 +36,7 @@ import { type AdminCreateSchema, adminCreateSchema } from '../schema'
 export function PageAdminCreate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
   const { data, isLoading } = useDataRoleFormOptions()
 
@@ -49,6 +50,7 @@ export function PageAdminCreate() {
   const createAdminMutation = useMutation({
     mutationFn: apiCreateAdmin,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admins'] })
       toast.success('Admin created successfully')
       navigate(-1)
     },

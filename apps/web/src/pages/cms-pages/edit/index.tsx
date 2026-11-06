@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
@@ -13,11 +13,14 @@ import type { CmsPageFormSchema } from '../schema'
 export function PageCmsPageEdit() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { id } = useParams()
   const { data, isFetching } = useDataCmsPageById(id ?? '')
   const mutation = useMutation({
     mutationFn: apiUpdateCmsPage,
     onSuccess: (page) => {
+      queryClient.invalidateQueries({ queryKey: ['cms-pages'] })
+      queryClient.invalidateQueries({ queryKey: ['cms-page', page.id] })
       toast.success(
         t('cmsPages.message.updateSuccess', 'Page updated successfully')
       )

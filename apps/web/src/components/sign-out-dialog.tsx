@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
@@ -15,6 +16,7 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(false)
   const { logout, meta } = useAuthStore(
     useShallow((s) => ({
@@ -30,6 +32,7 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
     } catch (_error) {
       // Ignore API sign-out error and clear local session regardless
     } finally {
+      queryClient.clear()
       logout()
       const currentPath = location.pathname
       navigate(`/sign-in${currentPath ? `?redirect=${currentPath}` : ''}`, {
