@@ -137,12 +137,12 @@ ufw status
 
 Trỏ các bản ghi **A Record** tại nhà cung cấp DNS về địa chỉ IP của VPS:
 
-| Loại (Type) | Tên (Host)           | Giá Trị (Target)   | Dịch Vụ Đích                              |
-| :---------- | :------------------- | :----------------- | :---------------------------------------- |
-| **A**       | `@` (yourdomain.com) | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000)  |
-| **A**       | `www`                | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000)  |
-| **A**       | `api`                | `<IP_VPS_CUA_BAN>` | REST API Backend (`apps/api` :8000)       |
-| **A**       | `admin`              | `<IP_VPS_CUA_BAN>` | Cổng quản trị Admin (`apps/web` :8080)    |
+| Loại (Type) | Tên (Host)           | Giá Trị (Target)   | Dịch Vụ Đích                             |
+| :---------- | :------------------- | :----------------- | :--------------------------------------- |
+| **A**       | `@` (yourdomain.com) | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000) |
+| **A**       | `www`                | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000) |
+| **A**       | `api`                | `<IP_VPS_CUA_BAN>` | REST API Backend (`apps/api` :8000)      |
+| **A**       | `admin`              | `<IP_VPS_CUA_BAN>` | Cổng quản trị Admin (`apps/web` :8080)   |
 
 ---
 
@@ -168,6 +168,7 @@ cp apps/client/.env.example apps/client/.env
 ### 3.3. Chỉnh sửa nội dung các file `.env`
 
 #### 1. File `.env` ở thư mục gốc (Hạ tầng & Cổng)
+
 ```env
 API_PORT=8000
 WEB_PORT=8080
@@ -193,7 +194,9 @@ AWS_PRIVATE_BUCKET=nest-uploads-private
 ```
 
 #### 2. File `apps/api/.env` (Backend NestJS)
+
 Chỉnh sửa các thông số quan trọng trong `apps/api/.env`:
+
 ```env
 NODE_ENV=production
 APP_PORT=8000
@@ -219,9 +222,11 @@ AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.yourdomain.com/reset-password
 USER_AUTH_CLIENT_URL=https://yourdomain.com
 USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://yourdomain.com/auth/reset-password
 ```
-*(Đừng quên thay thế các khóa `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`... bằng chuỗi ngẫu nhiên tối thiểu 32 ký tự).*
+
+_(Đừng quên thay thế các khóa `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`... bằng chuỗi ngẫu nhiên tối thiểu 32 ký tự)._
 
 #### 3. File `apps/web/.env` (Cổng Quản Trị Vite)
+
 ```env
 PORT=5173
 VITE_API_URL=https://api.yourdomain.com/api/v1
@@ -233,6 +238,7 @@ VITE_SENTRY_ENVIRONMENT=production
 ```
 
 #### 4. File `apps/client/.env` (Website Khách Hàng Next.js)
+
 ```env
 PORT=3000
 NEXT_PUBLIC_APP_URL=https://yourdomain.com
@@ -294,7 +300,13 @@ docker exec -it crodic_api npm run seed:run:prod
 
 ## Bước 6: Cấu Hình Nginx Reverse Proxy & Chứng Chỉ SSL (HTTPS)
 
-Tạo cấu hình Nginx tại `/etc/nginx/sites-available/crodic.conf`:
+Source code đã chuẩn bị sẵn file cấu hình hoàn chỉnh tại [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf). Bạn chỉ cần copy vào Nginx trên VPS:
+
+```bash
+sudo cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
+```
+
+Sau đó mở file `/etc/nginx/sites-available/crodic.conf` và thay thế domain `yourdomain.com`, `api.yourdomain.com`, `admin.yourdomain.com` bằng tên miền thật của bạn:
 
 ```nginx
 # 1. Backend API (api.yourdomain.com -> 127.0.0.1:8000)
@@ -362,25 +374,38 @@ certbot --nginx -d yourdomain.com -d www.yourdomain.com -d api.yourdomain.com -d
 
 ## Bước 7: Quy Trình Cập Nhật Phiên Bản Mới (Redeploy)
 
-Khi có bản cập nhật mới trên nhánh `main` (sau khi GitHub Actions CI đã chạy pass toàn bộ bài test):
+### Cách 1: Tự động qua GitHub Actions CD (Khuyến nghị)
+
+Source code đã thiết lập sẵn workflow [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml). Mỗi khi merge code vào nhánh `main` và các bài test CI hoàn tất thành công, workflow sẽ tự động SSH vào VPS và triển khai.
+
+Cấu hình các GitHub Repository Secrets sau tại **Settings > Secrets and variables > Actions**:
+
+- `VPS_HOST`: Địa chỉ IP hoặc domain của VPS.
+- `VPS_USERNAME`: Tên người dùng SSH (ví dụ: `root` hoặc deploy user).
+- `VPS_SSH_KEY`: Private Key SSH dùng để đăng nhập vào VPS.
+- `VPS_PORT`: Cổng SSH (mặc định: `22`).
+- `DEPLOY_PATH`: Đường dẫn thư mục dự án trên VPS (ví dụ: `/opt/crodic` hoặc `/var/www/crodic-framework`).
+
+### Cách 2: Triển khai thủ công bằng Deploy Script
+
+Trên máy chủ VPS, bạn chỉ cần chạy file script đã tạo sẵn [`scripts/deploy.sh`](../../scripts/deploy.sh):
 
 ```bash
 cd /opt/crodic
-git pull origin main
-
-# Build và cập nhật các container có thay đổi
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Chạy migration mới (nếu có) và đồng bộ quyền
-docker exec -it crodic_api npm run migration:run:prod
-docker exec -it crodic_api npm run permissions:sync:prod
-
-# Dọn dẹp các image cũ không còn sử dụng
-docker image prune -f
+./scripts/deploy.sh
 ```
+
+Script sẽ tự động:
+
+1. Kéo mã nguồn mới nhất (`git pull`).
+2. Build các image thay đổi với Docker Compose.
+3. Cập nhật và khởi động container (`docker compose up -d`).
+4. Chạy migration cơ sở dữ liệu (`migration:run:prod`) và đồng bộ quyền hạn RBAC (`permissions:sync:prod`).
+5. Kiểm tra Health Check và tự động dọn dẹp các Docker image cũ.
 
 > [!TIP]
 > Nhờ cơ chế tách lớp cache trong Dockerfile:
+>
 > - Nếu bản cập nhật chỉ sửa `apps/web`, chỉ `crodic_web` được build và khởi động lại; `crodic_api` và `crodic_client` được giữ nguyên 100%.
 > - Nếu bạn chỉ sửa biến trong `apps/api/.env`, lệnh `docker compose -f docker-compose.prod.yml up -d` sẽ nạp lại biến môi trường và khởi động lại `crodic_api` ngay lập tức mà không cần build lại image.
 
@@ -412,6 +437,7 @@ mkdir -p /opt/backups/postgres
 ## Xử Lý Sự Cố Thường Gặp (Troubleshooting)
 
 ### 1. Quá trình build bị dừng đột ngột với `Exit code 137 (OOM Killed)`
+
 - **Nguyên nhân**: Hạt nhân Linux tắt tiến trình biên dịch do thiếu RAM.
 - **Cách khắc phục**: Kiểm tra Swap bằng lệnh `free -h` và đảm bảo đã tạo tối thiểu 4GB Swap ở [Bước 1.2](#12-tạo-4gb-swapfile-chống-tràn-ram-khi-compile-nextjs--vite). Nếu VPS ít RAM, có thể build từng dịch vụ lần lượt:
   ```bash
@@ -422,7 +448,9 @@ mkdir -p /opt/backups/postgres
   ```
 
 ### 2. Lỗi CORS khi gọi API từ Admin hoặc Client
+
 - **Cách khắc phục**: Kiểm tra biến `APP_CORS_ORIGIN` trong `apps/api/.env` đã liệt kê đầy đủ các domain có `https://` và không có dấu `/` ở cuối, sau đó chạy `docker compose -f docker-compose.prod.yml up -d api`.
 
 ### 3. Thay đổi biến trong `apps/web/.env` hoặc `apps/client/.env`
+
 - **Lưu ý**: Các biến `VITE_*` và `NEXT_PUBLIC_*` được trình biên dịch đóng gói vào bundle lúc build. Khi thay đổi các file này trên server, hãy chạy `docker compose -f docker-compose.prod.yml up -d --build web client` để cập nhật bundle mới.

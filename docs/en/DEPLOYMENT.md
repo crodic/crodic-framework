@@ -137,12 +137,12 @@ ufw status
 
 Configure **A Records** with your DNS provider pointing to your VPS IP address:
 
-| Type  | Host                 | Value (Target)  | Target Service                        |
-| :---- | :------------------- | :-------------- | :------------------------------------ |
-| **A** | `@` (yourdomain.com) | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000)  |
-| **A** | `www`                | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000)  |
-| **A** | `api`                | `<YOUR_VPS_IP>` | REST API Backend (`apps/api` :8000)   |
-| **A** | `admin`              | `<YOUR_VPS_IP>` | Admin Portal (`apps/web` :8080)       |
+| Type  | Host                 | Value (Target)  | Target Service                       |
+| :---- | :------------------- | :-------------- | :----------------------------------- |
+| **A** | `@` (yourdomain.com) | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000) |
+| **A** | `www`                | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000) |
+| **A** | `api`                | `<YOUR_VPS_IP>` | REST API Backend (`apps/api` :8000)  |
+| **A** | `admin`              | `<YOUR_VPS_IP>` | Admin Portal (`apps/web` :8080)      |
 
 ---
 
@@ -168,6 +168,7 @@ cp apps/client/.env.example apps/client/.env
 ### 3.3. Configure each `.env` file
 
 #### 1. Root `.env` (Infrastructure & Port Mappings)
+
 ```env
 API_PORT=8000
 WEB_PORT=8080
@@ -193,7 +194,9 @@ AWS_PRIVATE_BUCKET=nest-uploads-private
 ```
 
 #### 2. `apps/api/.env` (NestJS Backend)
+
 Update the key production settings in `apps/api/.env`:
+
 ```env
 NODE_ENV=production
 APP_PORT=8000
@@ -219,9 +222,11 @@ AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.yourdomain.com/reset-password
 USER_AUTH_CLIENT_URL=https://yourdomain.com
 USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://yourdomain.com/auth/reset-password
 ```
-*(Ensure all `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`, etc. are replaced with cryptographically random strings at least 32 characters long).*
+
+_(Ensure all `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`, etc. are replaced with cryptographically random strings at least 32 characters long)._
 
 #### 3. `apps/web/.env` (Vite Admin Portal)
+
 ```env
 PORT=5173
 VITE_API_URL=https://api.yourdomain.com/api/v1
@@ -233,6 +238,7 @@ VITE_SENTRY_ENVIRONMENT=production
 ```
 
 #### 4. `apps/client/.env` (Next.js Client Website)
+
 ```env
 PORT=3000
 NEXT_PUBLIC_APP_URL=https://yourdomain.com
@@ -294,7 +300,13 @@ docker exec -it crodic_api npm run seed:run:prod
 
 ## Step 6: Configure Nginx Reverse Proxy & SSL (HTTPS)
 
-Create the Nginx virtual host configuration at `/etc/nginx/sites-available/crodic.conf`:
+A production-ready Nginx configuration template is provided at [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf). Copy it directly to your VPS:
+
+```bash
+sudo cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
+```
+
+Then edit `/etc/nginx/sites-available/crodic.conf` and replace `yourdomain.com`, `api.yourdomain.com`, `admin.yourdomain.com` with your actual domains:
 
 ```nginx
 # 1. Backend API (api.yourdomain.com -> 127.0.0.1:8000)
@@ -362,25 +374,38 @@ certbot --nginx -d yourdomain.com -d www.yourdomain.com -d api.yourdomain.com -d
 
 ## Step 7: Release & Redeployment Workflow
 
-When deploying new changes merged to `main` (after GitHub Actions CI passes):
+### Option 1: Automated CD via GitHub Actions (Recommended)
+
+An automated Continuous Deployment workflow is pre-configured at [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml). Whenever changes are merged into `main` and all CI tests pass, it automatically SSHs into your VPS and runs the deployment.
+
+Configure the following GitHub Repository Secrets under **Settings > Secrets and variables > Actions**:
+
+- `VPS_HOST`: VPS IP address or hostname.
+- `VPS_USERNAME`: SSH username (e.g., `root` or deploy user).
+- `VPS_SSH_KEY`: SSH private key for authentication.
+- `VPS_PORT`: SSH port (default: `22`).
+- `DEPLOY_PATH`: Target directory path on your VPS (e.g., `/opt/crodic` or `/var/www/crodic-framework`).
+
+### Option 2: Manual Deployment via Deploy Script
+
+On your VPS, run the self-contained deployment script [`scripts/deploy.sh`](../../scripts/deploy.sh):
 
 ```bash
 cd /opt/crodic
-git pull origin main
-
-# Rebuild and recreate only modified services
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Run pending migrations and sync permissions
-docker exec -it crodic_api npm run migration:run:prod
-docker exec -it crodic_api npm run permissions:sync:prod
-
-# Clean up dangling images
-docker image prune -f
+./scripts/deploy.sh
 ```
+
+This script automatically:
+
+1. Pulls the latest commits (`git pull`).
+2. Builds changed Docker images.
+3. Restarts containers with Docker Compose (`docker compose up -d`).
+4. Runs database migrations (`migration:run:prod`) and syncs RBAC permissions (`permissions:sync:prod`).
+5. Performs an automated health check and cleans up dangling Docker images.
 
 > [!TIP]
 > Thanks to workspace-scoped layer caching in the Dockerfiles:
+>
 > - If a commit only modifies `apps/web`, only `crodic_web` is rebuilt and restarted; `crodic_api` and `crodic_client` remain 100% cached.
 > - If you only change runtime variables in `apps/api/.env`, running `docker compose -f docker-compose.prod.yml up -d` restarts `crodic_api` with the new environment in 1 second without rebuilding the image.
 
@@ -412,6 +437,7 @@ mkdir -p /opt/backups/postgres
 ## Troubleshooting
 
 ### 1. Build terminates with `Exit code 137 (OOM Killed)`
+
 - **Cause**: The Linux kernel terminated the build due to insufficient RAM.
 - **Resolution**: Verify Swap is active via `free -h` ([Step 1.2](#12-create-a-4gb-swapfile-oom-protection-during-nextjs--vite-builds)). On lower-memory servers, build services sequentially:
   ```bash
@@ -422,7 +448,9 @@ mkdir -p /opt/backups/postgres
   ```
 
 ### 2. Browser CORS errors when calling API from Admin or Client
+
 - **Resolution**: Ensure `APP_CORS_ORIGIN` in `apps/api/.env` includes all frontend origins with `https://` and no trailing slash, then restart the API container: `docker compose -f docker-compose.prod.yml up -d api`.
 
 ### 3. Updating variables in `apps/web/.env` or `apps/client/.env`
+
 - **Note**: `VITE_*` and `NEXT_PUBLIC_*` variables are compiled into the static JS bundle during build. After modifying these files on the server, run `docker compose -f docker-compose.prod.yml up -d --build web client` to rebuild the frontend bundles.
