@@ -30,9 +30,12 @@ export function PageUserOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const handleRowClick = (row: UserSchema) => {
-    navigate(`/users/${row.id}/show`)
-  }
+  const handleRowClick = useCallback(
+    (row: UserSchema) => {
+      navigate(`/users/${row.id}/show`)
+    },
+    [navigate]
+  )
 
   const columns = useMemo(() => getUsersTableColumns(), [])
 

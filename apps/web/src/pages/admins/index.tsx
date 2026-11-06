@@ -54,9 +54,12 @@ export function PageAdminOverview() {
     getRowId: (row) => row.id,
   })
 
-  const handleRowClick = (admin: AdminSchema) => {
-    navigate(`/admins/${admin.id}/show`)
-  }
+  const handleRowClick = useCallback(
+    (admin: AdminSchema) => {
+      navigate(`/admins/${admin.id}/show`)
+    },
+    [navigate]
+  )
 
   return (
     <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>

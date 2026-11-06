@@ -43,33 +43,49 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              if (
-                id.includes('@tiptap') ||
-                id.includes('prosemirror') ||
-                id.includes('reactjs-tiptap-editor')
-              ) {
-                return 'vendor-editor'
-              }
-              if (
-                /\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(
-                  id
-                )
-              ) {
-                return 'vendor-react'
-              }
-              if (id.includes('@tanstack/')) {
-                return 'vendor-tanstack'
-              }
-              if (id.includes('@radix-ui') || id.includes('radix-ui')) {
-                return 'vendor-radix'
-              }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons'
-              }
-              if (id.includes('@sentry')) {
-                return 'vendor-sentry'
-              }
+            if (!id.includes('node_modules')) return
+
+            // Core React runtime first
+            if (
+              /\/node_modules\/(react|react-dom|react-router|scheduler|use-sync-external-store)\//.test(
+                id
+              )
+            ) {
+              return 'vendor-react'
+            }
+
+            // Editor dependencies
+            if (
+              /\/node_modules\/(@tiptap|prosemirror|reactjs-tiptap-editor)/.test(
+                id
+              )
+            ) {
+              return 'vendor-editor'
+            }
+
+            // TanStack libraries
+            if (/\/node_modules\/@tanstack\//.test(id)) {
+              return 'vendor-tanstack'
+            }
+
+            // Radix UI primitives
+            if (/\/node_modules\/(@radix-ui|radix-ui)\//.test(id)) {
+              return 'vendor-radix'
+            }
+
+            // Icons
+            if (/\/node_modules\/lucide-react\//.test(id)) {
+              return 'vendor-icons'
+            }
+
+            // Sentry error monitoring
+            if (/\/node_modules\/@sentry\//.test(id)) {
+              return 'vendor-sentry'
+            }
+
+            // Media players
+            if (/\/node_modules\/media-chrome\//.test(id)) {
+              return 'vendor-media'
             }
           },
         },

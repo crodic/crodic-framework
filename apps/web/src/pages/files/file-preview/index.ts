@@ -1,7 +1,5 @@
 export * from './preview-utils'
 export * from './image-preview-viewer'
-export * from './video-media-player'
-export * from './audio-media-player'
 export * from './docx-preview-viewer'
 export * from './text-preview-viewer'
 export * from './document-preview-viewer'

@@ -1,5 +1,6 @@
+import { lazy, Suspense } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { FileSchema } from '../schema'
-import { AudioMediaPlayer } from './audio-media-player'
 import { DocumentPreviewViewer } from './document-preview-viewer'
 import { ImagePreviewViewer } from './image-preview-viewer'
 import {
@@ -7,7 +8,13 @@ import {
   isPreviewableImage,
   isPreviewableVideo,
 } from './preview-utils'
-import { VideoMediaPlayer } from './video-media-player'
+
+const AudioMediaPlayer = lazy(() =>
+  import('./audio-media-player').then((m) => ({ default: m.AudioMediaPlayer }))
+)
+const VideoMediaPlayer = lazy(() =>
+  import('./video-media-player').then((m) => ({ default: m.VideoMediaPlayer }))
+)
 
 export function FilePreviewDetail({
   file,
@@ -21,16 +28,22 @@ export function FilePreviewDetail({
   const previewUrl = url ?? file.url
 
   if (isPreviewableVideo(file)) {
-    return <VideoMediaPlayer src={previewUrl} className={className} />
+    return (
+      <Suspense fallback={<Skeleton className='h-64 w-full rounded-xl' />}>
+        <VideoMediaPlayer src={previewUrl} className={className} />
+      </Suspense>
+    )
   }
 
   if (isPreviewableAudio(file)) {
     return (
-      <AudioMediaPlayer
-        src={previewUrl}
-        title={file.original_name}
-        className={className}
-      />
+      <Suspense fallback={<Skeleton className='h-48 w-full rounded-xl' />}>
+        <AudioMediaPlayer
+          src={previewUrl}
+          title={file.original_name}
+          className={className}
+        />
+      </Suspense>
     )
   }
 

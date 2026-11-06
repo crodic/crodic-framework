@@ -45,9 +45,12 @@ export function PageRoleOverview() {
     getRowId: (row) => row.id,
   })
 
-  const handleRowClick = (role: RoleSchema) => {
-    navigate(`/roles/${role.id}/show`)
-  }
+  const handleRowClick = useCallback(
+    (role: RoleSchema) => {
+      navigate(`/roles/${role.id}/show`)
+    },
+    [navigate]
+  )
 
   return (
     <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>

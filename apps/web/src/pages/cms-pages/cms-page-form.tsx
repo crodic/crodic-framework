@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeftIcon, SaveIcon } from 'lucide-react'
@@ -23,9 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import TiptapEditor from '@/components/editor/tiptap-editor'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
 import {
   cmsPageFormSchema,
@@ -33,6 +33,8 @@ import {
   type CmsPageFormSchema,
   type CmsPageSchema,
 } from './schema'
+
+const TiptapEditor = lazy(() => import('@/components/editor/tiptap-editor'))
 
 type CmsPageFormProps = {
   initialData?: CmsPageSchema
@@ -257,19 +259,25 @@ export function CmsPageForm({
                   <FormItem className='space-y-2'>
                     <RequiredLabel>{t('cmsPages.form.content')}</RequiredLabel>
                     <FormControl>
-                      <TiptapEditor
-                        output='html'
-                        content={field.value}
-                        onChangeContent={field.onChange}
-                        disabled={isSubmitting ?? false}
-                        className={cn(
-                          'min-h-[500px]',
-                          form.formState.errors.translations?.[
-                            currentTranslationIndex
-                          ]?.content &&
-                            'border-destructive ring-destructive rounded-lg ring-1'
-                        )}
-                      />
+                      <Suspense
+                        fallback={
+                          <Skeleton className='min-h-[500px] w-full rounded-lg' />
+                        }
+                      >
+                        <TiptapEditor
+                          output='html'
+                          content={field.value}
+                          onChangeContent={field.onChange}
+                          disabled={isSubmitting ?? false}
+                          className={cn(
+                            'min-h-[500px]',
+                            form.formState.errors.translations?.[
+                              currentTranslationIndex
+                            ]?.content &&
+                              'border-destructive ring-destructive rounded-lg ring-1'
+                          )}
+                        />
+                      </Suspense>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

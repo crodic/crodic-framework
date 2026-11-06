@@ -41,9 +41,12 @@ export function PagePermissionOverview() {
     getRowId: (row) => row.id,
   })
 
-  const handleRowClick = (permission: PermissionSchema) => {
-    navigate(`/permissions/${permission.id}/show`)
-  }
+  const handleRowClick = useCallback(
+    (permission: PermissionSchema) => {
+      navigate(`/permissions/${permission.id}/show`)
+    },
+    [navigate]
+  )
 
   return (
     <>

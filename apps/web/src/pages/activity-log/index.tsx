@@ -58,9 +58,12 @@ export function PageActivityLogOverview() {
     getRowId: (row) => row.id,
   })
 
-  const handleRowClick = (log: ActivityLogSchema) => {
-    navigate(`/logs/${log.id}/show`)
-  }
+  const handleRowClick = useCallback(
+    (log: ActivityLogSchema) => {
+      navigate(`/logs/${log.id}/show`)
+    },
+    [navigate]
+  )
 
   return (
     <>

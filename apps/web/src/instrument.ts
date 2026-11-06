@@ -7,8 +7,12 @@ import {
   useNavigationType,
 } from 'react-router'
 
+const sentryDsn = import.meta.env.VITE_SENTRY_DNS
+const isProd = import.meta.env.PROD
+
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DNS,
+  dsn: sentryDsn,
+  enabled: Boolean(sentryDsn) && isProd,
   // Adds request headers and IP for users, for more info visit:
   // https://docs.sentry.io/platforms/javascript/guides/react/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
@@ -27,10 +31,12 @@ Sentry.init({
     Sentry.zodErrorsIntegration(),
   ],
   // Enable logs to be sent to Sentry
-  enableLogs: true,
+  enableLogs: isProd,
 
-  tracesSampleRate: 1.0,
+  tracesSampleRate: isProd ? 0.2 : 0,
   // Set `tracePropagationTargets` to control for which URLs trace propagation should be enabled
   tracePropagationTargets: [/^\//],
-  environment: import.meta.env.VITE_SENTRY_ENVIRONMENT,
+  environment:
+    import.meta.env.VITE_SENTRY_ENVIRONMENT ||
+    (isProd ? 'production' : 'development'),
 })
