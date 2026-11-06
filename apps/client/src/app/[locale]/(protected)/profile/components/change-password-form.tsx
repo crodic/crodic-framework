@@ -30,16 +30,20 @@ export function ChangePasswordForm() {
   const t = useTranslations("Security.password");
   const changePasswordMutation = useChangePassword();
 
-  const changePasswordSchema = z
-    .object({
-      currentPassword: z.string().min(1, t("validation.currentRequired")),
-      newPassword: z.string().min(8, t("validation.min")),
-      confirmNewPassword: z.string().min(1, t("validation.min")),
-    })
-    .refine((data) => data.newPassword === data.confirmNewPassword, {
-      message: t("validation.match"),
-      path: ["confirmNewPassword"],
-    });
+  const changePasswordSchema = React.useMemo(
+    () =>
+      z
+        .object({
+          currentPassword: z.string().min(1, t("validation.currentRequired")),
+          newPassword: z.string().min(8, t("validation.min")),
+          confirmNewPassword: z.string().min(1, t("validation.min")),
+        })
+        .refine((data) => data.newPassword === data.confirmNewPassword, {
+          message: t("validation.match"),
+          path: ["confirmNewPassword"],
+        }),
+    [t]
+  );
 
   type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
 

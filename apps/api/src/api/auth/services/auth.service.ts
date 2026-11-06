@@ -129,7 +129,7 @@ export abstract class AuthService<
 
     const newHash = this.authTokenService.generateSessionHash();
 
-    await this.sessionRepository.update(
+    const updateResult = await this.sessionRepository.update(
       {
         id: session.id,
         hash,
@@ -137,6 +137,10 @@ export abstract class AuthService<
       } as any,
       { hash: newHash } as any,
     );
+
+    if (updateResult && updateResult.affected === 0) {
+      throw new UnauthorizedException();
+    }
 
     return await this.authTokenService.createTokenPair(
       {

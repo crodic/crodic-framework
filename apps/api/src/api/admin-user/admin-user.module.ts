@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailQueueModule } from '../../background/queues/email-queue/email-queue.module';
@@ -12,7 +12,7 @@ import { AdminUserEntity } from './entities/admin-user.entity';
 
 @Module({
   imports: [
-    forwardRef(() => AuthModule),
+    AuthModule,
     EmailQueueModule,
     TypeOrmModule.forFeature([
       AdminRoleEntity,

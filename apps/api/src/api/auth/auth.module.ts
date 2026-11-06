@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FilesystemModule } from '../../filesystem/filesystem.module';
 import { EmailQueueModule } from '../../background/queues/email-queue/email-queue.module';
@@ -39,14 +38,6 @@ import { UserJwtStrategy } from './strategy/user.strategy';
     FilesystemModule,
     EmailQueueModule,
     JwtModule.register({}),
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 60000,
-          limit: 10,
-        },
-      ],
-    }),
   ],
   controllers: [AdminAuthenticationController, UserAuthenticationController],
   providers: [

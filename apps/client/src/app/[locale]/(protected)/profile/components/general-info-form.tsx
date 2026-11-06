@@ -36,18 +36,22 @@ export function GeneralInfoForm({ profile }: GeneralInfoFormProps) {
   const t = useTranslations("GeneralInfo");
   const updateProfileMutation = useUpdateProfile();
 
-  const generalInfoSchema = z.object({
-    firstName: z
-      .string()
-      .trim()
-      .min(1, t("validation.firstNameRequired"))
-      .max(100, t("validation.firstNameMax")),
-    lastName: z
-      .string()
-      .trim()
-      .min(1, t("validation.lastNameRequired"))
-      .max(100, t("validation.lastNameMax")),
-  });
+  const generalInfoSchema = React.useMemo(
+    () =>
+      z.object({
+        firstName: z
+          .string()
+          .trim()
+          .min(1, t("validation.firstNameRequired"))
+          .max(100, t("validation.firstNameMax")),
+        lastName: z
+          .string()
+          .trim()
+          .min(1, t("validation.lastNameRequired"))
+          .max(100, t("validation.lastNameMax")),
+      }),
+    [t]
+  );
 
   type GeneralInfoValues = z.infer<typeof generalInfoSchema>;
 
@@ -60,11 +64,13 @@ export function GeneralInfoForm({ profile }: GeneralInfoFormProps) {
   });
 
   useEffect(() => {
-    form.reset({
-      firstName: profile.firstName || "",
-      lastName: profile.lastName || "",
-    });
-  }, [profile, form]);
+    if (!form.formState.isDirty) {
+      form.reset({
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+      });
+    }
+  }, [profile.firstName, profile.lastName, form]);
 
   const onSubmit = async (values: GeneralInfoValues) => {
     try {

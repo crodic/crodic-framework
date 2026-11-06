@@ -286,7 +286,7 @@ export class AdminAuthService extends AuthService<
   }
 
   async register(dto: AdminUserRegisterReqDto): Promise<RegisterResDto> {
-    const isExistUser = await AdminUserEntity.exists({
+    const isExistUser = await this.userRepository.exists({
       where: { email: dto.email },
     });
 

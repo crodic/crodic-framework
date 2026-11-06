@@ -2,6 +2,7 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import { EAccountProvider } from '../../../common/constants/entity.enum';
 import { AbstractEntity } from '../../../database/entities/abstract.entity';
 import { hashPassword as hashPass } from '../../../utils/password.util';
+import { Exclude } from 'class-transformer';
 import {
   AfterLoad,
   BeforeInsert,
@@ -61,6 +62,7 @@ export class AdminAccountEntity extends AbstractEntity implements IAuthAccount {
   @Column({ length: 255, name: 'provider_account_id' })
   providerAccountId!: string;
 
+  @Exclude()
   @Column({ nullable: true })
   password?: string;
 

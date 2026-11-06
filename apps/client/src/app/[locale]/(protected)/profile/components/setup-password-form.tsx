@@ -30,15 +30,19 @@ export function SetupPasswordForm() {
   const t = useTranslations("Security.password");
   const setupPasswordMutation = useSetupPassword();
 
-  const setupPasswordSchema = z
-    .object({
-      password: z.string().min(8, t("validation.min")),
-      confirmPassword: z.string().min(1, t("validation.min")),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t("validation.match"),
-      path: ["confirmPassword"],
-    });
+  const setupPasswordSchema = React.useMemo(
+    () =>
+      z
+        .object({
+          password: z.string().min(8, t("validation.min")),
+          confirmPassword: z.string().min(1, t("validation.min")),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t("validation.match"),
+          path: ["confirmPassword"],
+        }),
+    [t]
+  );
 
   type SetupPasswordValues = z.infer<typeof setupPasswordSchema>;
 

@@ -58,6 +58,7 @@ describe('UserAuthService', () => {
   beforeAll(async () => {
     userRepository = {
       create: jest.fn((data) => new UserEntity(data)),
+      exists: jest.fn(),
       findOne: jest.fn(),
       findOneBy: jest.fn(),
       findOneByOrFail: jest.fn(),
@@ -183,7 +184,7 @@ describe('UserAuthService', () => {
         lastName: dto.lastName,
       });
 
-      jest.spyOn(UserEntity, 'exists').mockResolvedValue(false);
+      userRepository.exists.mockResolvedValue(false);
       userRepository.save.mockResolvedValue(user);
       userAccountRepository.save?.mockResolvedValue(
         new UserAccountEntity({ id: '1' as any }),
@@ -204,7 +205,7 @@ describe('UserAuthService', () => {
     });
 
     it('throws when the email already exists', async () => {
-      jest.spyOn(UserEntity, 'exists').mockResolvedValue(true);
+      userRepository.exists.mockResolvedValue(true);
 
       await expect(service.signUp(dto)).rejects.toMatchObject({
         response: { errorCode: ErrorCode.E003 },

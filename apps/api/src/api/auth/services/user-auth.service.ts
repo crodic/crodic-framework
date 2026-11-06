@@ -165,7 +165,7 @@ export class UserAuthService extends AuthService<
   }
 
   async signUp(dto: UserRegisterReqDto): Promise<RegisterResDto> {
-    const isExistUser = await UserEntity.exists({
+    const isExistUser = await this.userRepository.exists({
       where: { email: dto.email },
     });
 
