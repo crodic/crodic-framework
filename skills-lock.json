@@ -31,6 +31,12 @@
       "skillPath": "skills/fixing-motion-performance/SKILL.md",
       "computedHash": "a6e4b84e1aed71bd5f71916a0d128f9632fba77ff754f642e7caf06ce1a30526"
     },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "c671292d4973a711bc857fc619f015f533ca9b49afc78c25c23d5b0811194bbf"
+    },
     "improve-codebase-architecture": {
       "source": "mattpocock/skills",
       "sourceType": "github",
