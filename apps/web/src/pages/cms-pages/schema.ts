@@ -106,3 +106,8 @@ export const ColumnKey = {
   status: 'status',
   updatedAt: 'updatedAt',
 }
+
+export const LOCALES = [
+  { value: 'en', label: 'English' },
+  { value: 'vi', label: 'Vietnamese' },
+] as const

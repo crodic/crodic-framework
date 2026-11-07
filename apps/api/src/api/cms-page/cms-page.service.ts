@@ -208,14 +208,59 @@ export class CmsPageService {
       await this.assertSlugsAvailable(Array.from(slugs), id);
 
       await this.cmsPageRepository.manager.transaction(async (manager) => {
-        await manager.delete(CmsPageTranslationEntity, { pageId: id });
-        const translationEntities = deduplicatedTranslations.map((t) =>
-          manager.create(CmsPageTranslationEntity, {
-            ...t,
-            pageId: id,
-          }),
+        // Map existing translations by locale to preserve ID, createdAt, and foreign keys
+        const existingTranslationsByLocale = new Map<
+          string,
+          CmsPageTranslationEntity
+        >();
+        for (const existing of page.translations || []) {
+          existingTranslationsByLocale.set(existing.locale, existing);
+        }
+
+        const translationsToSave: CmsPageTranslationEntity[] = [];
+
+        for (const t of deduplicatedTranslations) {
+          const existing = existingTranslationsByLocale.get(t.locale);
+          if (existing) {
+            // UPDATE: preserve existing ID and audit timestamps, update content fields
+            existing.title = t.title;
+            existing.content = t.content;
+            existing.slug = t.slug ?? normalizeSlug(t.title);
+            existing.seoTitle = t.seoTitle;
+            existing.seoDescription = t.seoDescription;
+            existing.seoKeywords = t.seoKeywords;
+            existing.ogTitle = t.ogTitle;
+            existing.ogDescription = t.ogDescription;
+            existing.ogImage = t.ogImage;
+            existing.canonicalUrl = t.canonicalUrl;
+            existing.robots = t.robots;
+            translationsToSave.push(existing);
+            existingTranslationsByLocale.delete(t.locale);
+          } else {
+            // INSERT: create new translation for newly added locale
+            const newEntity = manager.create(CmsPageTranslationEntity, {
+              ...t,
+              pageId: id,
+            });
+            translationsToSave.push(newEntity);
+          }
+        }
+
+        // DELETE only the translations that were explicitly removed
+        const translationsToDelete = Array.from(
+          existingTranslationsByLocale.values(),
         );
-        await manager.save(CmsPageTranslationEntity, translationEntities);
+        if (translationsToDelete.length > 0) {
+          const deleteIds = translationsToDelete.map((item) => item.id);
+          await manager.delete(CmsPageTranslationEntity, {
+            id: In(deleteIds),
+          });
+        }
+
+        if (translationsToSave.length > 0) {
+          await manager.save(CmsPageTranslationEntity, translationsToSave);
+        }
+
         await manager.update(
           CmsPageEntity,
           { id },

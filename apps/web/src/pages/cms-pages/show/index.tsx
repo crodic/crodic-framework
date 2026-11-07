@@ -38,6 +38,7 @@ import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { apiDeleteCmsPage, useDataCmsPageById } from '../queries'
+import { LOCALES } from '../schema'
 
 export function PageCmsPageShow() {
   const { t } = useTranslation()
@@ -116,45 +117,58 @@ export function PageCmsPageShow() {
             </p>
           </div>
 
-          <div className='flex flex-wrap items-center gap-2'>
-            <Select value={activeLocale} onValueChange={setCurrentLocale}>
-              <SelectTrigger className='bg-background w-35'>
-                <SelectValue
-                  placeholder={t('cmsPages.show.language', 'Language')}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {data.translations?.map((item) => (
-                  <SelectItem key={item.locale} value={item.locale}>
-                    {item.locale.toUpperCase()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className='flex flex-wrap items-center gap-4'>
+            <div className='border-border flex items-center gap-2 border-r pr-4'>
+              <span className='text-sm font-medium'>
+                {t('cmsPages.form.locale')}:
+              </span>
+              <Select value={activeLocale} onValueChange={setCurrentLocale}>
+                <SelectTrigger className='bg-background h-8 w-[140px]'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {data.translations?.map((item) => {
+                    const matchedLocale = LOCALES.find(
+                      (l) => l.value === item.locale
+                    )
+                    return (
+                      <SelectItem key={item.locale} value={item.locale}>
+                        {matchedLocale?.label || item.locale.toUpperCase()}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Button variant='outline' onClick={() => navigate(-1)}>
-              <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              {t('buttons.back', 'Back')}
-            </Button>
-
-            {translation?.slug && (
-              <Button variant='outline' asChild>
-                <a href={displayUrl} target='_blank' rel='noreferrer'>
-                  <ExternalLinkIcon className='size-4' aria-hidden='true' />
-                  {t('buttons.open', 'Open')}
-                </a>
+            <div className='flex flex-wrap items-center gap-2'>
+              <Button variant='outline' onClick={() => navigate(-1)}>
+                <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                {t('buttons.back', 'Back')}
               </Button>
-            )}
 
-            <Button onClick={() => navigate(`/cms-pages/${data.id}/edit`)}>
-              <EditIcon className='size-4' aria-hidden='true' />
-              {t('buttons.edit', 'Edit')}
-            </Button>
+              {translation?.slug && (
+                <Button variant='outline' asChild>
+                  <a href={displayUrl} target='_blank' rel='noreferrer'>
+                    <ExternalLinkIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.open', 'Open')}
+                  </a>
+                </Button>
+              )}
 
-            <Button variant='destructive' onClick={() => setIsDeleteOpen(true)}>
-              <TrashIcon className='size-4' aria-hidden='true' />
-              {t('buttons.delete', 'Delete')}
-            </Button>
+              <Button onClick={() => navigate(`/cms-pages/${data.id}/edit`)}>
+                <EditIcon className='size-4' aria-hidden='true' />
+                {t('buttons.edit', 'Edit')}
+              </Button>
+
+              <Button
+                variant='destructive'
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <TrashIcon className='size-4' aria-hidden='true' />
+                {t('buttons.delete', 'Delete')}
+              </Button>
+            </div>
           </div>
         </div>
 
