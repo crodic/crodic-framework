@@ -1,6 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -23,6 +25,9 @@ const emailLogFilterParsers = {
 
 export function PageEmailLogOverview() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('navigation.general.emailLogs', 'Email Logs') }])
   const columns = useMemo(() => getEmailTableColumns(), [])
 
   const buildQuery: ResourceQueryBuilderFn<typeof emailLogFilterParsers> =

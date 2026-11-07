@@ -14,6 +14,7 @@ import QRCode from 'qrcode'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -59,6 +60,11 @@ type SetupState = EnableTwoFactorResponse & {
 
 export function SettingsSecurity() {
   const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('settings.title', 'Settings'), href: '/settings' },
+    { title: t('navigation.other.security', 'Security') },
+  ])
   const queryClient = useQueryClient()
   const [setup, setSetup] = useState<SetupState | null>(null)
   const [backupCodes, setBackupCodes] = useState<string[]>([])

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { NotFoundError } from '@/pages/errors/not-found-error'
@@ -16,6 +17,17 @@ export function PageCmsPageEdit() {
   const queryClient = useQueryClient()
   const { id } = useParams()
   const { data, isFetching } = useDataCmsPageById(id ?? '')
+
+  const pageTitle = data?.translations?.[0]?.title || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.general.cmsPages', 'CMS Pages'),
+      href: '/cms-pages',
+    },
+    { title: pageTitle, href: id ? `/cms-pages/${id}/show` : undefined },
+    { title: t('buttons.edit', 'Edit') },
+  ])
   const mutation = useMutation({
     mutationFn: apiUpdateCmsPage,
     onSuccess: (page) => {

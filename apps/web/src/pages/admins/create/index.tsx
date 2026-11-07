@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -36,6 +37,11 @@ import { type AdminCreateSchema, adminCreateSchema } from '../schema'
 export function PageAdminCreate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('navigation.management.admins', 'Admins'), href: '/admins' },
+    { title: t('buttons.create', 'Create') },
+  ])
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useDataRoleFormOptions()

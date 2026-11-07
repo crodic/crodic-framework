@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,6 +48,21 @@ export function PageCmsPageShow() {
   const [currentLocale, setCurrentLocale] = useState<string | null>(null)
 
   const { data, isFetching } = useDataCmsPageById(id ?? '')
+
+  const activeLocale = currentLocale || data?.translations?.[0]?.locale
+  const translation =
+    data?.translations?.find((t) => t.locale === activeLocale) ||
+    data?.translations?.[0]
+  const pageTitle =
+    translation?.title || data?.translations?.[0]?.title || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.general.cmsPages', 'CMS Pages'),
+      href: '/cms-pages',
+    },
+    { title: pageTitle },
+  ])
   const deleteMutation = useMutation({
     mutationFn: apiDeleteCmsPage,
     onSuccess: () => {
@@ -61,11 +77,6 @@ export function PageCmsPageShow() {
 
   if (isFetching) return <DataLoader />
   if (!id || !data) return <NotFoundError />
-
-  const activeLocale = currentLocale || data.translations?.[0]?.locale
-  const translation =
-    data.translations?.find((t) => t.locale === activeLocale) ||
-    data.translations?.[0]
 
   const clientUrl = import.meta.env.VITE_CLIENT_URL || 'https://example.com'
   const displayUrl = `${clientUrl}/pages/${translation?.slug ?? ''}`

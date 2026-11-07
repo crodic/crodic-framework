@@ -624,6 +624,7 @@
   "buttons.delete": "Delete",
   "buttons.create": "Create",
   "buttons.edit": "Edit",
+  "buttons.show": "View",
   "buttons.back": "Back",
   "buttons.save": "Save",
   "buttons.cancel": "Cancel",

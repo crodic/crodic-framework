@@ -4,6 +4,7 @@ import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -28,6 +29,10 @@ const whiteLabelFilterParsers = {
 export function PageWhiteLabelOverview() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  useBreadcrumb([
+    { title: t('navigation.management.whiteLabels', 'White Labels') },
+  ])
   const ability = useAuthStore((state) => state.ability)
 
   const columns = useMemo(() => defaultColumns, [])

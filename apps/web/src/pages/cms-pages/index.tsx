@@ -3,6 +3,7 @@ import { PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -27,6 +28,8 @@ export function PageCmsPageOverview() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const columns = useMemo(() => getCmsPagesTableColumns(), [])
+
+  useBreadcrumb([{ title: t('navigation.general.cmsPages', 'CMS Pages') }])
 
   const buildQuery: ResourceQueryBuilderFn<typeof pageFilterParsers> =
     useCallback((builder, filter) => {

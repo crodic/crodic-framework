@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,17 @@ export default function PageEmailLogShow() {
   const params = useParams()
   const navigate = useNavigate()
   const { data, isFetching } = useDataEmailLogDetail(params.id as string)
+
+  const emailSubject =
+    data?.subject || (params.id ? `#${params.id.slice(0, 8)}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.general.emailLogs', 'Email Logs'),
+      href: '/email-logs',
+    },
+    { title: emailSubject },
+  ])
 
   if (isFetching) return <DataLoader />
   if (!data) return <NotFoundError />

@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,6 +45,13 @@ export default function PageRoleShow() {
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
 
   const { data, isFetching } = useDataRoleById(params.id as string)
+
+  const roleName = data?.name || (params.id ? `#${params.id}` : '')
+
+  useBreadcrumb([
+    { title: t('navigation.management.roles', 'Roles'), href: '/roles' },
+    { title: roleName },
+  ])
 
   const deleteRoleMutation = useMutation({
     mutationFn: apiDeleteRole,

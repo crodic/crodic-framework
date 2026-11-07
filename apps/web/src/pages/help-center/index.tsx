@@ -14,6 +14,7 @@ import {
   TerminalIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -111,6 +112,8 @@ const faqs = [
 
 export function PageHelpCenter() {
   const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('helpCenter.title', 'Help Center') }])
 
   return (
     <>

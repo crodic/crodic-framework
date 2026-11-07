@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -31,6 +32,11 @@ import { userCreateSchema, type UserCreateSchema } from '../schema'
 export function PageUserCreate() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('navigation.management.users', 'Users'), href: '/users' },
+    { title: t('buttons.create', 'Create') },
+  ])
   const queryClient = useQueryClient()
 
   const form = useForm<UserCreateSchema>({

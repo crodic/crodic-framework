@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DataTable } from '@/components/data-table/data-table'
@@ -32,6 +33,8 @@ import { useFileManagerCore } from './use-file-manager-core'
 export function PageFileOverview() {
   const { t } = useTranslation()
   const ability = useAuthStore((state) => state.ability)
+
+  useBreadcrumb([{ title: t('navigation.management.files', 'Files') }])
 
   const {
     // Navigation & View

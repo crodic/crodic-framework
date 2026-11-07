@@ -3,9 +3,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, SaveIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -31,10 +33,23 @@ import { apiEditPermission, useDataPermissionEdit } from '../queries'
 import { permissionFormSchema, type PermissionFormSchema } from '../schema'
 
 export function PagePermissionEdit() {
+  const { t } = useTranslation()
   const params = useParams()
+  const id = params.id as string
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data, isFetching } = useDataPermissionEdit(params.id as string)
+  const { data, isFetching } = useDataPermissionEdit(id)
+
+  const permName = data?.name || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.management.permissions', 'Permissions'),
+      href: '/permissions',
+    },
+    { title: permName, href: id ? `/permissions/${id}/show` : undefined },
+    { title: t('buttons.edit', 'Edit') },
+  ])
 
   const form = useForm<PermissionFormSchema>({
     resolver: zodResolver(permissionFormSchema),

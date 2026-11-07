@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { apiGetMe } from '@/pages/auth/queries'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { ContentSection } from '../components/content-section'
@@ -9,6 +10,11 @@ import DeleteAccount from './delete-account'
 
 export function SettingsAccount() {
   const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('settings.title', 'Settings'), href: '/settings' },
+    { title: t('navigation.other.account', 'Account') },
+  ])
   const { data: currentUser, isFetching } = useQuery({
     queryKey: ['authenticated_user'],
     queryFn: apiGetMe,

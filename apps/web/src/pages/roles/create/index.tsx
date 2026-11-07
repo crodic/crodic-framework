@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -27,6 +28,11 @@ import { roleFormSchema, type RoleFormSchema } from '../schema'
 export default function PageRoleCreate() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  useBreadcrumb([
+    { title: t('navigation.management.roles', 'Roles'), href: '/roles' },
+    { title: t('buttons.create', 'Create') },
+  ])
   const queryClient = useQueryClient()
 
   const form = useForm<RoleFormSchema>({

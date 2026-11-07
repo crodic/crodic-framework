@@ -3,6 +3,7 @@ import { PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -24,6 +25,8 @@ const rolesFilterParsers = {
 export function PageRoleOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('navigation.management.roles', 'Roles') }])
 
   const columns = useMemo(() => getRolesTableColumns(), [])
 

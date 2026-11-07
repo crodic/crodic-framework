@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Main } from '@/components/layout/main'
 import { WhiteLabelForm } from '../components/white-label-form'
@@ -13,6 +14,14 @@ import type { WhiteLabelFormSchema } from '../schema'
 export function PageWhiteLabelCreate() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  useBreadcrumb([
+    {
+      title: t('navigation.management.whiteLabels', 'White Labels'),
+      href: '/white-labels',
+    },
+    { title: t('buttons.create', 'Create') },
+  ])
   const queryClient = useQueryClient()
 
   const createMutation = useMutation({

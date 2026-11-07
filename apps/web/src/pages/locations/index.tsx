@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { Building2, Compass, Flag, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
@@ -12,6 +13,8 @@ import { StatesTab } from './tabs/states-tab'
 
 export function PageLocationOverview() {
   const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('navigation.management.locations', 'Locations') }])
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'countries'

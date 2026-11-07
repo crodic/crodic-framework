@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Main } from '@/components/layout/main'
 import { WhiteLabelForm } from '../components/white-label-form'
@@ -22,6 +23,17 @@ export function PageWhiteLabelEdit() {
   const queryClient = useQueryClient()
 
   const { data: whiteLabel, isLoading } = useDataWhiteLabelById(id!)
+
+  const profileName = whiteLabel?.name || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.management.whiteLabels', 'White Labels'),
+      href: '/white-labels',
+    },
+    { title: profileName, href: id ? `/white-labels/${id}/show` : undefined },
+    { title: t('buttons.edit', 'Edit') },
+  ])
 
   const updateMutation = useMutation({
     mutationFn: apiUpdateWhiteLabel,

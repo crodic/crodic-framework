@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,13 @@ export function PageUserShow() {
   const id = params.id as string
   const { data, isFetching } = useDataGetUserDetail(id)
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
+
+  const userName = data?.fullName || data?.email || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    { title: t('navigation.management.users', 'Users'), href: '/users' },
+    { title: userName },
+  ])
   const deleteUserMutation = useMutation({
     mutationFn: apiDeleteUser,
     onSuccess: () => {

@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,13 @@ export function PageAdminShow() {
   const userId = useAuthStore((s) => s.id)
 
   const { data, isFetching } = useDataGetAdminDetail(id)
+
+  const adminName = data?.fullName || data?.email || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    { title: t('navigation.management.admins', 'Admins'), href: '/admins' },
+    { title: adminName },
+  ])
 
   const deleteUserMutation = useMutation({
     mutationFn: deleteAdmin,

@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { Main } from '@/components/layout/main'
 import WebsiteForm from './website-form'
 
 export function SettingsWebsite() {
   const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('settings.website.title', 'Website Settings') }])
 
   return (
     <>

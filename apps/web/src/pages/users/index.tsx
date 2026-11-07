@@ -4,6 +4,7 @@ import { parseAsArrayOf, parseAsInteger, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { normalizeDate } from '@/lib/utils'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -29,6 +30,8 @@ const userFilterParsers = {
 export function PageUserOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useBreadcrumb([{ title: t('navigation.management.users', 'Users') }])
 
   const handleRowClick = useCallback(
     (row: UserSchema) => {

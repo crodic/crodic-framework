@@ -1,6 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { parseAsString } from 'nuqs'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -21,6 +23,11 @@ const permissionFilterParsers = {
 
 export function PagePermissionOverview() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('navigation.management.permissions', 'Permissions') },
+  ])
   const columns = useMemo(() => getPermissionsTableColumns(), [])
 
   const buildQuery: ResourceQueryBuilderFn<typeof permissionFilterParsers> =

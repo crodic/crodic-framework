@@ -39,6 +39,7 @@ import {
   generateThemeCss,
 } from '@/lib/theme-builder/theme-utils'
 import { applyWebsiteMetadata } from '@/lib/website-metadata'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -85,6 +86,16 @@ export default function PageWhiteLabelShow() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const { data: item, isLoading } = useDataWhiteLabelById(id!)
+
+  const profileName = item?.name || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.management.whiteLabels', 'White Labels'),
+      href: '/white-labels',
+    },
+    { title: profileName },
+  ])
 
   const canUpdate = ability.can('update', 'WHITE_LABEL')
   const canDelete = ability.can('delete', 'WHITE_LABEL')

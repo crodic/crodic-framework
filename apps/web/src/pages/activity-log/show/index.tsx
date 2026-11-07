@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
@@ -18,6 +19,20 @@ export default function PageActivityLogShow() {
   const navigate = useNavigate()
 
   const { data, isFetching } = useDataGetLogDetail(params.id as string)
+
+  const logTitle = data?.id
+    ? `#${data.id.slice(0, 8)}`
+    : params.id
+      ? `#${params.id.slice(0, 8)}`
+      : ''
+
+  useBreadcrumb([
+    {
+      title: t('navigation.general.activityLogs', 'Activity Logs'),
+      href: '/logs',
+    },
+    { title: logTitle },
+  ])
 
   if (isFetching) return <DataLoader />
 

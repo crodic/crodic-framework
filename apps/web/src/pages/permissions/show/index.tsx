@@ -6,7 +6,9 @@ import {
   LayersIcon,
   ShieldCheckIcon,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,9 +25,21 @@ import { useDataPermissionById } from '../queries'
 import { FORBIDDEN_ROLE_PERMISSION_KEYS } from '../schema'
 
 export default function PagePermissionShow() {
+  const { t } = useTranslation()
   const params = useParams()
+  const id = params.id as string
   const navigate = useNavigate()
-  const { data, isFetching } = useDataPermissionById(params.id as string)
+  const { data, isFetching } = useDataPermissionById(id)
+
+  const permName = data?.name || (id ? `#${id}` : '')
+
+  useBreadcrumb([
+    {
+      title: t('navigation.management.permissions', 'Permissions'),
+      href: '/permissions',
+    },
+    { title: permName },
+  ])
 
   if (isFetching) return <DataLoader />
 

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useResourceTable,
   type ResourceQueryBuilderFn,
@@ -26,6 +27,10 @@ const activitiesFilterParsers = {
 export function PageActivityLogOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useBreadcrumb([
+    { title: t('navigation.general.activityLogs', 'Activity Logs') },
+  ])
 
   const columns = useMemo(
     () =>
