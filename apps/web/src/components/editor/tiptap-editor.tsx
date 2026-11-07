@@ -2,28 +2,15 @@ import { useEffect } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import 'react-image-crop/dist/ReactCrop.css'
 import { RichTextProvider } from 'reactjs-tiptap-editor'
-import { RichTextBlockquote } from 'reactjs-tiptap-editor/blockquote'
 import { RichTextBold } from 'reactjs-tiptap-editor/bold'
-import {
-  RichTextBubbleMenuDragHandle,
-  RichTextBubbleText,
-} from 'reactjs-tiptap-editor/bubble'
 import { RichTextBulletList } from 'reactjs-tiptap-editor/bulletlist'
 import { RichTextClear } from 'reactjs-tiptap-editor/clear'
-import { RichTextColor } from 'reactjs-tiptap-editor/color'
-import { RichTextColumn } from 'reactjs-tiptap-editor/column'
-import { RichTextFontFamily } from 'reactjs-tiptap-editor/fontfamily'
-import { RichTextFontSize } from 'reactjs-tiptap-editor/fontsize'
 import { RichTextHeading } from 'reactjs-tiptap-editor/heading'
-import { RichTextHighlight } from 'reactjs-tiptap-editor/highlight'
 import { RichTextRedo, RichTextUndo } from 'reactjs-tiptap-editor/history'
-import { RichTextHorizontalRule } from 'reactjs-tiptap-editor/horizontalrule'
 import { RichTextImage } from 'reactjs-tiptap-editor/image'
 import { RichTextIndent } from 'reactjs-tiptap-editor/indent'
 import { RichTextItalic } from 'reactjs-tiptap-editor/italic'
-import { RichTextLineHeight } from 'reactjs-tiptap-editor/lineheight'
 import { RichTextLink } from 'reactjs-tiptap-editor/link'
-import { RichTextMoreMark } from 'reactjs-tiptap-editor/moremark'
 import { RichTextOrderedList } from 'reactjs-tiptap-editor/orderedlist'
 import { RichTextStrike } from 'reactjs-tiptap-editor/strike'
 import 'reactjs-tiptap-editor/style.css'
@@ -132,31 +119,20 @@ function TiptapEditor({ className, ...props }: Props) {
                 <RichTextUndo />
                 <RichTextRedo />
                 <RichTextClear />
-                <RichTextFontFamily />
                 <RichTextHeading />
-                <RichTextFontSize />
                 <RichTextBold />
                 <RichTextItalic />
                 <RichTextUnderline />
                 <RichTextStrike />
-                <RichTextMoreMark />
-                <RichTextColor />
-                <RichTextHighlight />
                 <RichTextBulletList />
                 <RichTextOrderedList />
                 <RichTextAlign />
                 <RichTextIndent />
-                <RichTextLineHeight />
                 <RichTextLink />
                 <RichTextImage />
-                <RichTextBlockquote />
-                <RichTextHorizontalRule />
-                <RichTextColumn />
               </div>
 
               <EditorContent className='min-h-[150px]' editor={editor} />
-              <RichTextBubbleText />
-              <RichTextBubbleMenuDragHandle />
             </div>
           </RichTextProvider>
         </div>

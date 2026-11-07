@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { MinusCircle, PlusCircle, Search, Split, X } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ export function BooleanTagSearchBar({
   locale?: string;
   expandHierarchy?: boolean;
 }) {
+  const t = useTranslations("Tags");
   const router = useRouter();
   const [tokens, setTokens] = useState<QueryToken[]>(() =>
     parseInitialQuery(initialQuery)
@@ -103,7 +105,7 @@ export function BooleanTagSearchBar({
             )}
           >
             <PlusCircle className="size-3.5" aria-hidden="true" />
-            AND (Must match)
+            {t("operatorAnd")}
           </button>
           <button
             type="button"
@@ -116,7 +118,7 @@ export function BooleanTagSearchBar({
             )}
           >
             <Split className="size-3.5" aria-hidden="true" />
-            OR (Any match)
+            {t("operatorOr")}
           </button>
           <button
             type="button"
@@ -129,7 +131,7 @@ export function BooleanTagSearchBar({
             )}
           >
             <MinusCircle className="size-3.5" aria-hidden="true" />
-            -NOT (Exclude)
+            {t("operatorNot")}
           </button>
         </div>
 
@@ -142,7 +144,7 @@ export function BooleanTagSearchBar({
             }}
             className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
           >
-            Clear expression
+            {t("clearExpression")}
           </button>
         )}
       </div>
@@ -205,8 +207,8 @@ export function BooleanTagSearchBar({
             }}
             placeholder={
               tokens.length === 0
-                ? "Type tag, alias, or -exclude (e.g. Cyberpunk OR SciFi -Horror)..."
-                : "Add another tag token..."
+                ? t("searchPlaceholder")
+                : t("addAnotherToken")
             }
             aria-label="Boolean tag search input"
             className="placeholder:text-muted-foreground min-w-44 flex-1 bg-transparent text-sm outline-none"
@@ -224,7 +226,7 @@ export function BooleanTagSearchBar({
             }}
             className="h-8 shrink-0 px-3 text-xs"
           >
-            Search
+            {t("searchBtn")}
           </Button>
         </div>
 
@@ -233,7 +235,7 @@ export function BooleanTagSearchBar({
           <div
             role="listbox"
             aria-label="Boolean search tag suggestions"
-            className="bg-popover text-popover-foreground absolute top-full right-0 left-0 z-40 mt-1.5 max-h-64 divide-y overflow-y-auto rounded-xl border shadow-lg"
+            className="bg-popover text-popover-foreground border-border/80 absolute top-full right-0 left-0 z-50 mt-2 max-h-72 divide-y overflow-y-auto rounded-xl border shadow-2xl"
           >
             {suggestions.map((item) => {
               const cat = getTagCategoryToken(item.category);

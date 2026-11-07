@@ -327,7 +327,6 @@ export function EncyclopediaEditorPanel({
                                 content={field.value}
                                 onChangeContent={field.onChange}
                                 disabled={upsertMutation.isPending}
-                                className='min-h-80'
                               />
                             </Suspense>
                           </div>

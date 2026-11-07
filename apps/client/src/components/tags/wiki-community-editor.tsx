@@ -84,15 +84,13 @@ export function WikiCommunityEditor({
         changeNote: changeNote.trim() || "Community encyclopedia contribution",
       }),
     onSuccess: () => {
-      toast.success("Encyclopedia revision published!");
+      toast.success(t("wikiPublishedSuccess"));
       setEditOpen(false);
       setChangeNote("");
       router.refresh();
     },
     onError: () => {
-      toast.error(
-        "Unable to publish revision. Please ensure you are signed in and the article is unlocked."
-      );
+      toast.error(t("wikiPublishedError"));
     },
   });
 
@@ -116,7 +114,10 @@ export function WikiCommunityEditor({
             <SheetHeader>
               <SheetTitle>{t("revisionHistoryTitle")}</SheetTitle>
               <SheetDescription>
-                Immutable snapshots for #{tagName} ({locale.toUpperCase()}).
+                {t("wikiSnapshotDesc", {
+                  tagName,
+                  locale: locale.toUpperCase(),
+                })}
               </SheetDescription>
             </SheetHeader>
             <div className="mt-4 max-h-[calc(100dvh-9rem)] divide-y overflow-y-auto px-4">
@@ -135,7 +136,7 @@ export function WikiCommunityEditor({
                         v{rev.revisionNumber}
                       </Badge>
                       <span className="font-medium">
-                        {rev.editorName || "Community Editor"}
+                        {rev.editorName || t("wikiCommunityEditorDefault")}
                       </span>
                     </div>
                     <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
@@ -186,11 +187,12 @@ export function WikiCommunityEditor({
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              Contribute to Pixiv Encyclopedia (dic) — #{tagName}
+              {t("wikiContributeDialogTitle", { tagName })}
             </DialogTitle>
             <DialogDescription>
-              Every edit is recorded as an immutable revision snapshot in{" "}
-              <strong className="uppercase">{locale}</strong>.
+              {t("wikiContributeDialogDesc", {
+                locale: locale.toUpperCase(),
+              })}
             </DialogDescription>
           </DialogHeader>
 
@@ -232,7 +234,7 @@ export function WikiCommunityEditor({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>
-              Cancel
+              {t("wikiCancel")}
             </Button>
             <Button
               disabled={
@@ -242,7 +244,9 @@ export function WikiCommunityEditor({
               className="gap-1.5"
             >
               <Send className="size-4" aria-hidden="true" />
-              {submitMutation.isPending ? "Publishing..." : "Publish Revision"}
+              {submitMutation.isPending
+                ? t("wikiPublishingBtn")
+                : t("wikiPublishBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>

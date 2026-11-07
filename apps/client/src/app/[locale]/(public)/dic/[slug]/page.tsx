@@ -181,28 +181,32 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     className="text-primary size-3.5"
                     aria-hidden="true"
                   />
-                  Pixiv Encyclopedia ({locale.toUpperCase()})
+                  {t("dicHubBadge")} ({locale.toUpperCase()})
                 </Badge>
-                <Badge variant="outline" className="gap-1.5 text-xs">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase ${categoryToken.badge}`}
+                >
                   <span
                     className={`size-2 rounded-full ${categoryToken.dot}`}
                     aria-hidden="true"
                   />
                   {categoryToken.label}
-                </Badge>
+                </span>
                 {tag.isOfficial && (
                   <Badge variant="secondary" className="gap-1 text-xs">
                     <BadgeCheck
                       className="text-primary size-3.5"
                       aria-hidden="true"
                     />
-                    Official
+                    {t("officialBadge")}
                   </Badge>
                 )}
                 {wiki && (
                   <span className="text-muted-foreground inline-flex items-center gap-1 font-mono text-xs tabular-nums">
                     <Eye className="size-3.5" aria-hidden="true" />
-                    {wiki.viewCount.toLocaleString()} views
+                    {t("viewsCount", {
+                      count: wiki.viewCount.toLocaleString(),
+                    })}
                   </span>
                 )}
               </div>
@@ -214,7 +218,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
               {tag.translatedName &&
                 tag.translatedName.trim() !== tag.name.trim() && (
                   <p className="text-muted-foreground font-mono text-sm">
-                    Canonical Tag: #{tag.name}
+                    {t("canonicalPrefix")} #{tag.name}
                   </p>
                 )}
 
@@ -249,12 +253,10 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                   aria-hidden="true"
                 />
                 <h2 className="text-base font-semibold">
-                  No Encyclopedia Article Written in {locale.toUpperCase()} Yet
+                  {t("wikiEmptyTitle", { locale: locale.toUpperCase() })}
                 </h2>
                 <p className="text-muted-foreground mx-auto max-w-md text-xs leading-relaxed text-pretty">
-                  Just like dic.pixiv.net, community members can author the
-                  first revision for <strong>#{displayTitle}</strong> to explain
-                  lore, origins, and tagging guidelines.
+                  {t("wikiEmptyDesc", { name: displayTitle })}
                 </p>
               </div>
             )}
@@ -306,7 +308,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     <div className="flex flex-wrap gap-1.5">
                       {parents.map((p) => (
                         <TagHoverCard
-                          key={p.id}
+                          key={`parent-${p.id}`}
                           locale={locale}
                           slug={p.slug}
                           name={p.name}
@@ -326,7 +328,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     <div className="flex flex-wrap gap-1.5">
                       {siblings.map((s) => (
                         <TagHoverCard
-                          key={s.id}
+                          key={`sibling-${s.id}`}
                           locale={locale}
                           slug={s.slug}
                           name={s.name}
@@ -347,7 +349,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     <div className="flex flex-wrap gap-1.5">
                       {children.map((c) => (
                         <TagHoverCard
-                          key={c.id}
+                          key={`child-${c.id}`}
                           locale={locale}
                           slug={c.slug}
                           name={c.name}
@@ -368,7 +370,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     <div className="flex flex-wrap gap-1.5">
                       {related.map((r) => (
                         <TagHoverCard
-                          key={r.id}
+                          key={`related-${r.id}`}
                           locale={locale}
                           slug={r.slug}
                           name={r.name}
