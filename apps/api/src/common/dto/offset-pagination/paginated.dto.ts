@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { OffsetPaginationDto } from './offset-pagination.dto';
 
 export class PaginatedLinks {
   @ApiProperty({ required: false, nullable: true })
@@ -60,7 +61,7 @@ export class PaginatedMeta<T = any> {
   @Expose()
   select?: string[];
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: Object })
   @Expose()
   filter?: Record<string, string | string[]>;
 }
@@ -107,9 +108,9 @@ export class Paginated<TData> {
     this.links = links;
   }
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: () => OffsetPaginationDto })
   @Expose()
-  get pagination() {
+  get pagination(): OffsetPaginationDto {
     return {
       limit: this.meta?.itemsPerPage ?? 10,
       currentPage: this.meta?.currentPage ?? 1,

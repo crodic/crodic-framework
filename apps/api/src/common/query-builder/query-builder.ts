@@ -419,14 +419,17 @@ export class QueryBuilder<T extends ObjectLiteral> {
   }
 
   private applyFilters(): void {
-    const filterParams = this.query[this.config.parameters.filter];
-    if (!filterParams || typeof filterParams !== 'object') return;
+    const rawFilterParams = this.query[this.config.parameters.filter];
+    const filterParams: Record<string, any> =
+      rawFilterParams && typeof rawFilterParams === 'object'
+        ? rawFilterParams
+        : {};
 
     const allowedMap = new Map(this._filters.map((f) => [f.name, f]));
     const allowedNames = Array.from(allowedMap.keys());
 
-    // Strict mode validation
-    if (this._strictMode) {
+    // Strict mode validation for explicitly requested filter keys
+    if (this._strictMode && Object.keys(filterParams).length > 0) {
       const invalid = Object.keys(filterParams).filter(
         (k) => !allowedMap.has(k),
       );
@@ -435,11 +438,27 @@ export class QueryBuilder<T extends ObjectLiteral> {
       }
     }
 
-    for (const [key, value] of Object.entries(filterParams)) {
-      const filter = allowedMap.get(key);
-      if (!filter) continue;
+    for (const filter of this._filters) {
+      const isProvided = Object.prototype.hasOwnProperty.call(
+        filterParams,
+        filter.name,
+      );
 
-      filter.apply(this.qb, this.alias, value, this._filterIndex++);
+      if (isProvided) {
+        filter.apply(
+          this.qb,
+          this.alias,
+          filterParams[filter.name],
+          this._filterIndex++,
+        );
+      } else if (filter.hasDefault()) {
+        filter.apply(
+          this.qb,
+          this.alias,
+          filter.getDefault(),
+          this._filterIndex++,
+        );
+      }
     }
   }
 

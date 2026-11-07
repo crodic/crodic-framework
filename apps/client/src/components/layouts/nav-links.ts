@@ -1,11 +1,13 @@
 import {
   Boxes,
   Code2,
+  EyeOff,
   FileCode2,
   Layers,
   LockKeyhole,
   ShieldCheck,
   Sparkles,
+  Tags,
   User,
 } from "lucide-react";
 import type { LinkItemType } from "@/components/layouts/sheard";
@@ -38,6 +40,18 @@ export const featureLinks: LinkItemType[] = [
 ];
 
 export const platformLinks: LinkItemType[] = [
+  {
+    label: "Tags & Encyclopedia (dic)",
+    href: "/tags",
+    description: "Boolean search, semantic DAG hierarchy & community wiki",
+    icon: Tags,
+  },
+  {
+    label: "Muted Tags (NG Filter)",
+    href: "/settings/muted-tags",
+    description: "Hide unwanted tags and child sub-branches",
+    icon: EyeOff,
+  },
   {
     label: "Account Profile",
     href: "/profile",

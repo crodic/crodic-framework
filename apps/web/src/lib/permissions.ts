@@ -37,6 +37,14 @@ export const groupPermission = [
     permissions: ['create', 'read', 'update', 'delete'],
   },
   {
+    group: 'TAG',
+    permissions: ['create', 'read', 'update', 'delete'],
+  },
+  {
+    group: 'TAG_ENCYCLOPEDIA',
+    permissions: ['create', 'read', 'update', 'delete'],
+  },
+  {
     group: 'manage',
     permissions: ['all'],
   },
@@ -91,6 +99,18 @@ export const permissions = [
   { action: 'read', subject: 'LOCATION' },
   { action: 'update', subject: 'LOCATION' },
   { action: 'delete', subject: 'LOCATION' },
+
+  // TAG
+  { action: 'create', subject: 'TAG' },
+  { action: 'read', subject: 'TAG' },
+  { action: 'update', subject: 'TAG' },
+  { action: 'delete', subject: 'TAG' },
+
+  // TAG_ENCYCLOPEDIA
+  { action: 'create', subject: 'TAG_ENCYCLOPEDIA' },
+  { action: 'read', subject: 'TAG_ENCYCLOPEDIA' },
+  { action: 'update', subject: 'TAG_ENCYCLOPEDIA' },
+  { action: 'delete', subject: 'TAG_ENCYCLOPEDIA' },
 
   // SUPER
   { action: 'manage', subject: 'all' },

@@ -9,6 +9,8 @@ export enum AppSubjects {
   Page = 'PAGE',
   Location = 'LOCATION',
   Setting = 'SETTING',
+  Tag = 'TAG',
+  TagEncyclopedia = 'TAG_ENCYCLOPEDIA',
 
   All = 'all',
 }
@@ -287,6 +289,66 @@ export const ALL_PERMISSIONS = [
     'Settings Management',
     'Update settings',
     'Update website and system settings.',
+  ),
+
+  // Tag
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Tag,
+    'Tag Management',
+    'View tags',
+    'View tags, translations, aliases, hierarchy, and tag audit logs.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Tag,
+    'Tag Management',
+    'Create tags',
+    'Create canonical tags, translations, aliases, and hierarchy edges.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Tag,
+    'Tag Management',
+    'Update tags',
+    'Edit tags, manage hierarchy, merge tags, and moderate tag statuses.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Tag,
+    'Tag Management',
+    'Delete tags',
+    'Delete or ban tags and remove tag aliases or hierarchy links.',
+  ),
+
+  // Tag Encyclopedia
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.TagEncyclopedia,
+    'Tag Encyclopedia Management',
+    'View tag encyclopedias',
+    'View tag wiki encyclopedia articles and revision histories.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.TagEncyclopedia,
+    'Tag Encyclopedia Management',
+    'Create tag encyclopedias',
+    'Create new localized tag wiki encyclopedia articles.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.TagEncyclopedia,
+    'Tag Encyclopedia Management',
+    'Update tag encyclopedias',
+    'Edit tag wiki articles, toggle edit locks, and rollback revisions.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.TagEncyclopedia,
+    'Tag Encyclopedia Management',
+    'Delete tag encyclopedias',
+    'Delete tag wiki encyclopedia articles.',
   ),
 
   // SUPER

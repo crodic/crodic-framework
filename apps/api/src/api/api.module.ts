@@ -10,6 +10,7 @@ import { FileModule } from './file/file.module';
 import { HomeModule } from './home/home.module';
 import { LocationModule } from './location/location.module';
 import { SettingsModule } from './settings/settings.module';
+import { TagModule } from './tag/tag.module';
 import { UserModule } from './user/user.module';
 import { WhiteLabelModule } from './white-label/white-label.module';
 
@@ -28,6 +29,7 @@ import { WhiteLabelModule } from './white-label/white-label.module';
     CmsPageModule,
     LocationModule,
     HomeModule,
+    TagModule,
   ],
   exports: [
     UserModule,
@@ -43,6 +45,7 @@ import { WhiteLabelModule } from './white-label/white-label.module';
     CmsPageModule,
     LocationModule,
     HomeModule,
+    TagModule,
   ],
 })
 export class ApiModule {}

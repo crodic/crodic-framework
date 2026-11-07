@@ -18,6 +18,7 @@
     "lint": "eslint .",
     "db:create": "ts-node ./src/database/create-database.ts",
     "seed:run": "ts-node ./src/database/seeds/run-seed.ts",
+    "seed:tags": "ts-node ./src/database/seeds/run-tag-seed.ts",
     "permissions:sync": "ts-node ./src/database/sync-permissions.ts",
     "permissions:clean": "ts-node ./src/database/clean-permissions.ts",
     "typeorm": "typeorm-ts-node-commonjs",

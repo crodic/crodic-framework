@@ -246,7 +246,20 @@ AllowedFilter.custom("search", new FuzzySearchFilter());
 ```
 
 > [!TIP]
-> `AllowedFilter.scope("search", callback)` is also supported as an alias for named scope semantics.
+> `AllowedFilter.callback("search", callback)` (Spatie Laravel QueryBuilder style) and `AllowedFilter.scope("search", callback)` are both supported, along with fluent modifiers `.default()`, `.ignore()`, and `.nullable()`:
+>
+> ```typescript
+> AllowedFilter.callback("search", (qb, val, alias, property) => {
+>   const keyword = `%${String(val).trim()}%`;
+>   qb.andWhere(
+>     `(${alias}.name ILIKE :kw OR EXISTS (SELECT 1 FROM tag_aliases ta WHERE ta.tag_id = ${alias}.id AND ta.alias_name ILIKE :kw))`,
+>     { kw: keyword },
+>   );
+> }).ignore("all", ""),
+>
+> AllowedFilter.exact("status").default("active"),
+> AllowedFilter.exact("mergedIntoId").nullable(),
+> ```
 
 ---
 

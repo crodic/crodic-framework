@@ -184,6 +184,23 @@ const PageWhiteLabelEdit = lazy(() =>
   }))
 )
 const PageWhiteLabelShow = lazy(() => import('@/pages/white-labels/show'))
+const PageTagOverview = lazy(() =>
+  import('@/pages/tags').then((m) => ({ default: m.PageTagOverview }))
+)
+const PageTagCreate = lazy(() =>
+  import('@/pages/tags/create').then((m) => ({ default: m.PageTagCreate }))
+)
+const PageTagEdit = lazy(() =>
+  import('@/pages/tags/edit').then((m) => ({ default: m.PageTagEdit }))
+)
+const PageTagShow = lazy(() =>
+  import('@/pages/tags/show').then((m) => ({ default: m.PageTagShow }))
+)
+const PageTagEncyclopediaOverview = lazy(() =>
+  import('@/pages/tag-encyclopedias').then((m) => ({
+    default: m.PageTagEncyclopediaOverview,
+  }))
+)
 
 const appRoutes: RouteObject[] = [
   {
@@ -424,6 +441,51 @@ const appRoutes: RouteObject[] = [
             ),
           },
         ],
+      },
+      {
+        path: '/tags',
+        children: [
+          {
+            index: true,
+            element: (
+              <RouteAuthorize action='read' subject='TAG'>
+                <PageTagOverview />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: 'create',
+            element: (
+              <RouteAuthorize action='create' subject='TAG'>
+                <PageTagCreate />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: ':id/edit',
+            element: (
+              <RouteAuthorize action='update' subject='TAG'>
+                <PageTagEdit />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: ':id/show',
+            element: (
+              <RouteAuthorize action='read' subject='TAG'>
+                <PageTagShow />
+              </RouteAuthorize>
+            ),
+          },
+        ],
+      },
+      {
+        path: '/tag-encyclopedias',
+        element: (
+          <RouteAuthorize action='read' subject='TAG_ENCYCLOPEDIA'>
+            <PageTagEncyclopediaOverview />
+          </RouteAuthorize>
+        ),
       },
       {
         path: '/white-labels',

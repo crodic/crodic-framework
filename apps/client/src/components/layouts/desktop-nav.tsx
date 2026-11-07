@@ -48,6 +48,17 @@ export function DesktopNav() {
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link
+              href="/tags"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            >
+              {t("tags")}
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
+            <Link
               href="/#tech-stack"
               className="text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors"
             >

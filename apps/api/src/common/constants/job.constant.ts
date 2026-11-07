@@ -1,11 +1,13 @@
 export enum QueueName {
   EMAIL = 'email',
   FILE = 'file',
+  TAG = 'tag',
 }
 
 export enum QueuePrefix {
   AUTH = 'auth',
   FILE = 'file',
+  TAG = 'tag',
 }
 
 export enum JobName {
@@ -19,4 +21,7 @@ export enum JobName {
   ADMIN_ACCOUNT_HARD_DELETED = 'admin-account-hard-deleted',
   ADMIN_ACCOUNT_HARD_DELETED_REPORT = 'admin-account-hard-deleted-report',
   FILE_UPLOAD = 'file-upload',
+  TAG_MERGE = 'tag-merge',
+  TAG_COUNTER_RECONCILE = 'tag-counter-reconcile',
+  TAG_TRENDING_REFRESH = 'tag-trending-refresh',
 }

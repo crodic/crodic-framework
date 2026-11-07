@@ -26,6 +26,17 @@ export type FilterApplyFn<T extends ObjectLiteral = any> = (
 ) => void;
 
 /**
+ * Callback for Spatie-style `AllowedFilter.callback(name, fn, internalName?)`.
+ * Receives `(qb, value, property, alias)` matching Laravel QueryBuilder semantics.
+ */
+export type FilterCallbackFn<T extends ObjectLiteral = any> = (
+  qb: SelectQueryBuilder<T>,
+  value: any,
+  property: string,
+  alias: string,
+) => void;
+
+/**
  * Interface for class-based custom filters, matching Spatie's Filter interface.
  */
 export interface FilterInterface<T extends ObjectLiteral = any> {

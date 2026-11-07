@@ -245,7 +245,20 @@ AllowedFilter.custom("search", new FuzzySearchFilter());
 ```
 
 > [!TIP]
-> Bạn cũng có thể dùng `AllowedFilter.scope("search", callback)` như một alias quen thuộc theo phong cách named scope.
+> Bạn cũng có thể dùng `AllowedFilter.callback("search", callback)` (chuẩn Spatie Laravel QueryBuilder) hoặc `AllowedFilter.scope("search", callback)` kèm các hàm nối chuỗi `.default()`, `.ignore()`, `.nullable()`:
+>
+> ```typescript
+> AllowedFilter.callback("search", (qb, val, alias, property) => {
+>   const keyword = `%${String(val).trim()}%`;
+>   qb.andWhere(
+>     `(${alias}.name ILIKE :kw OR EXISTS (SELECT 1 FROM tag_aliases ta WHERE ta.tag_id = ${alias}.id AND ta.alias_name ILIKE :kw))`,
+>     { kw: keyword },
+>   );
+> }).ignore("all", ""),
+>
+> AllowedFilter.exact("status").default("active"),
+> AllowedFilter.exact("mergedIntoId").nullable(),
+> ```
 
 ---
 

@@ -1,5 +1,5 @@
 import { UserEntity } from '../api/user/entities/user.entity';
-import { IS_PUBLIC } from '../common/constants/app.constant';
+import { IS_AUTH_OPTIONAL, IS_PUBLIC } from '../common/constants/app.constant';
 import {
   ExecutionContext,
   Injectable,
@@ -30,6 +30,15 @@ export class UserAuthGuard extends AuthGuard('user-jwt') {
   }
 
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_AUTH_OPTIONAL,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (isAuthOptional && (err || !user)) {
+      return null;
+    }
+
     if (err || !user) {
       const message = info?.message || 'Unauthorized';
       throw new UnauthorizedException(message);

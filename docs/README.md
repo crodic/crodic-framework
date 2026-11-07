@@ -9,20 +9,21 @@ Welcome to the documentation hub for this enterprise monorepo. Documentation is 
 
 ## Quick Navigation / Danh Mục Nhanh
 
-| Document / Tài liệu               | English                                       | Tiếng Việt                                           |
-| :-------------------------------- | :-------------------------------------------- | :--------------------------------------------------- |
-| **Production Deployment (VPS)**   | [English Guide](en/DEPLOYMENT.md)             | [Hướng dẫn Tiếng Việt](vi/DEPLOYMENT.md)             |
-| **Authentication & RBAC**         | [English Guide](en/AUTH.md)                   | [Hướng dẫn Tiếng Việt](vi/AUTH.md)                   |
-| **Query Builder**                 | [English Guide](en/QUERY_BUILDER.md)          | [Hướng dẫn Tiếng Việt](vi/QUERY_BUILDER.md)          |
-| **Data Table Component**          | [English Guide](en/DATA_TABLE.md)             | [Hướng dẫn Tiếng Việt](vi/DATA_TABLE.md)             |
-| **Filesystem & Storage**          | [English Guide](en/FILESYSTEM.md)             | [Hướng dẫn Tiếng Việt](vi/FILESYSTEM.md)             |
-| **Background File Uploads**       | [English Guide](en/BACKGROUND_FILE_UPLOAD.md) | [Hướng dẫn Tiếng Việt](vi/BACKGROUND_FILE_UPLOAD.md) |
-| **Sortable & Drag-and-Drop**      | [English Guide](en/SORTABLE.md)               | [Hướng dẫn Tiếng Việt](vi/SORTABLE.md)               |
-| **Activity Log & Audit Trail**    | [English Guide](en/ACTIVITY_LOG.md)           | [Hướng dẫn Tiếng Việt](vi/ACTIVITY_LOG.md)           |
-| **Core Utilities**                | [English Guide](en/CORE_UTILITIES.md)         | [Hướng dẫn Tiếng Việt](vi/CORE_UTILITIES.md)         |
-| **Sentry Monitoring**             | [English Guide](en/SENTRY.md)                 | [Hướng dẫn Tiếng Việt](vi/SENTRY.md)                 |
-| **Testing Strategy**              | [English Guide](en/TESTING.md)                | [Hướng dẫn Tiếng Việt](vi/TESTING.md)                |
-| **Release & Versioning**          | [English Guide](en/RELEASE.md)                | [Hướng dẫn Tiếng Việt](vi/RELEASE.md)                |
+| Document / Tài liệu                   | English                                       | Tiếng Việt                                           |
+| :------------------------------------ | :-------------------------------------------- | :--------------------------------------------------- |
+| **Production Deployment (VPS)**       | [English Guide](en/DEPLOYMENT.md)             | [Hướng dẫn Tiếng Việt](vi/DEPLOYMENT.md)             |
+| **Authentication & RBAC**             | [English Guide](en/AUTH.md)                   | [Hướng dẫn Tiếng Việt](vi/AUTH.md)                   |
+| **Tags & Pixiv Encyclopedia (`dic`)** | [English Guide](en/TAGS.md)                   | [Hướng dẫn Tiếng Việt](vi/TAGS.md)                   |
+| **Query Builder**                     | [English Guide](en/QUERY_BUILDER.md)          | [Hướng dẫn Tiếng Việt](vi/QUERY_BUILDER.md)          |
+| **Data Table Component**              | [English Guide](en/DATA_TABLE.md)             | [Hướng dẫn Tiếng Việt](vi/DATA_TABLE.md)             |
+| **Filesystem & Storage**              | [English Guide](en/FILESYSTEM.md)             | [Hướng dẫn Tiếng Việt](vi/FILESYSTEM.md)             |
+| **Background File Uploads**           | [English Guide](en/BACKGROUND_FILE_UPLOAD.md) | [Hướng dẫn Tiếng Việt](vi/BACKGROUND_FILE_UPLOAD.md) |
+| **Sortable & Drag-and-Drop**          | [English Guide](en/SORTABLE.md)               | [Hướng dẫn Tiếng Việt](vi/SORTABLE.md)               |
+| **Activity Log & Audit Trail**        | [English Guide](en/ACTIVITY_LOG.md)           | [Hướng dẫn Tiếng Việt](vi/ACTIVITY_LOG.md)           |
+| **Core Utilities**                    | [English Guide](en/CORE_UTILITIES.md)         | [Hướng dẫn Tiếng Việt](vi/CORE_UTILITIES.md)         |
+| **Sentry Monitoring**                 | [English Guide](en/SENTRY.md)                 | [Hướng dẫn Tiếng Việt](vi/SENTRY.md)                 |
+| **Testing Strategy**                  | [English Guide](en/TESTING.md)                | [Hướng dẫn Tiếng Việt](vi/TESTING.md)                |
+| **Release & Versioning**              | [English Guide](en/RELEASE.md)                | [Hướng dẫn Tiếng Việt](vi/RELEASE.md)                |
 
 ---
 

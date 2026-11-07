@@ -12,7 +12,9 @@ import {
   Files,
   FlaskConicalIcon,
   BookOpenText,
+  BookMarked,
   MapPin,
+  Tags,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -49,6 +51,18 @@ export const sidebarLink: SidebarData = {
           url: '/cms-pages',
           icon: BookOpenText,
           permission: 'PAGE',
+        },
+        {
+          title: 'navigation.management.tags',
+          url: '/tags',
+          icon: Tags,
+          permission: 'TAG',
+        },
+        {
+          title: 'navigation.management.tagEncyclopedias',
+          url: '/tag-encyclopedias',
+          icon: BookMarked,
+          permission: 'TAG_ENCYCLOPEDIA',
         },
       ],
     },

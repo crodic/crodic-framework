@@ -254,6 +254,57 @@ describe('Spatie-style QueryBuilder', () => {
       });
     });
 
+    it('should apply AllowedFilter.callback with Spatie signature (qb, value, property, alias)', () => {
+      const qb = createMockQb();
+      const cb = jest.fn((builder, value, property, alias) => {
+        builder.andWhere(`${alias}.${property} ILIKE :v`, { v: `%${value}%` });
+      });
+
+      QueryBuilder.for(qb, { filter: { q: 'frieren' } })
+        .allowedFilters([AllowedFilter.callback('q', cb, 'displayName')])
+        .getQueryBuilder();
+
+      expect(cb).toHaveBeenCalledWith(qb, 'frieren', 'displayName', 'user');
+      expect(qb.andWhere).toHaveBeenCalledWith('user.displayName ILIKE :v', {
+        v: '%frieren%',
+      });
+    });
+
+    it('should support .default(), .ignore(), and .nullable() modifiers on AllowedFilter', () => {
+      // 1. Default when filter param is absent
+      const qbDefault = createMockQb();
+      QueryBuilder.for(qbDefault, {})
+        .allowedFilters([
+          AllowedFilter.callback('status', (b, val, prop, alias) => {
+            b.andWhere(`${alias}.${prop} = :st`, { st: val });
+          }).default('active'),
+        ])
+        .getQueryBuilder();
+
+      expect(qbDefault.andWhere).toHaveBeenCalledWith('user.status = :st', {
+        st: 'active',
+      });
+
+      // 2. Ignore skips execution when value matches ignored values
+      const qbIgnore = createMockQb();
+      const ignoredCb = jest.fn();
+      QueryBuilder.for(qbIgnore, { filter: { role: 'all' } })
+        .allowedFilters([
+          AllowedFilter.callback('role', ignoredCb).ignore('all', null, ''),
+        ])
+        .getQueryBuilder();
+
+      expect(ignoredCb).not.toHaveBeenCalled();
+
+      // 3. Nullable generates IS NULL on exact filter
+      const qbNull = createMockQb();
+      QueryBuilder.for(qbNull, { filter: { verifiedAt: 'null' } })
+        .allowedFilters([AllowedFilter.exact('verifiedAt').nullable()])
+        .getQueryBuilder();
+
+      expect(qbNull.andWhere).toHaveBeenCalledWith('user.verifiedAt IS NULL');
+    });
+
     it('should ignore filters not present in allowedFilters when strict mode is false', () => {
       const qb = createMockQb();
       QueryBuilder.for(qb, { filter: { unallowed: 'malicious', name: 'safe' } })

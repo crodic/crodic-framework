@@ -29,6 +29,7 @@ export {
 export type {
   QueryParams,
   FilterApplyFn,
+  FilterCallbackFn,
   FilterInterface,
   SortApplyFn,
   SortInterface,

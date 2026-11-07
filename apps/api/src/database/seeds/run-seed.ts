@@ -4,6 +4,7 @@ import { CmsPageSeedService } from './cms-page/cms-page-seed.service';
 import { LocationSeedService } from './location/location-seed.service';
 import { SeedModule } from './seed.module';
 import { SettingSeedService } from './setting/setting-seed.service';
+import { TagSeedService } from './tag/tag-seed.service';
 import { UserSeedService } from './user/user-seed.service';
 import { WhiteLabelSeedService } from './white-label/white-label-seed.service';
 
@@ -16,6 +17,7 @@ const runSeed = async () => {
   await app.get(WhiteLabelSeedService).run();
   await app.get(AdminSeedService).run();
   await app.get(CmsPageSeedService).run();
+  await app.get(TagSeedService).run();
 
   await app.close();
 };

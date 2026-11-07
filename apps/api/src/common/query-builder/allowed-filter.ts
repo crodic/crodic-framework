@@ -1,5 +1,5 @@
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
-import { FilterApplyFn, FilterInterface } from './types';
+import { FilterApplyFn, FilterCallbackFn, FilterInterface } from './types';
 
 export enum FilterOperator {
   EXACT = 'exact',
@@ -9,23 +9,32 @@ export enum FilterOperator {
   OPERATOR = 'operator',
   SCOPE = 'scope',
   CUSTOM = 'custom',
+  CALLBACK = 'callback',
   TRASHED = 'trashed',
 }
 
 export type ComparisonOperator = '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=';
 
 export class AllowedFilter<T extends ObjectLiteral = any> {
+  private _hasDefault = false;
+  private _defaultValue: any = undefined;
+  private _ignoredValues: Set<any> = new Set();
+  private _nullable = false;
+  private _arrayValueDelimiter?: string;
+
   private constructor(
     /** Name used in the query string: ?filter[name]=... */
     public readonly name: string,
-    /** Actual database column name (can be 'column' or 'relation.column') */
+    /** Actual database column/internal property name (can be 'column' or 'relation.column') */
     public readonly column: string,
     /** Filter operator type */
     public readonly operator: FilterOperator,
-    /** Custom scope function (only for SCOPE type) */
+    /** Custom scope function (for CUSTOM / SCOPE) */
     public readonly scopeFn?: FilterApplyFn<T>,
     /** Comparison operator for OPERATOR type (e.g. '>=') */
     public readonly comparisonOp?: ComparisonOperator,
+    /** Callback closure (for CALLBACK matching Spatie Laravel QueryBuilder) */
+    public readonly callbackFn?: FilterCallbackFn<T>,
   ) {}
 
   /**
@@ -123,6 +132,44 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   }
 
   /**
+   * Create an inline callback filter matching Spatie Laravel QueryBuilder's `AllowedFilter::callback()`.
+   * Supports fluent `.default()`, `.ignore()`, and `.nullable()` modifiers.
+   *
+   * @param name - Filter name in query string (`?filter[name]=value`)
+   * @param callback - Closure invoked as `(qb, value, property, alias)`
+   * @param internalName - Optional internal column/property name passed as `property` (defaults to `name`)
+   * @param arrayValueDelimiter - Optional delimiter to split string values into arrays (e.g. `,`)
+   *
+   * @example
+   * AllowedFilter.callback('search', (qb, value) => {
+   *   qb.andWhere('(user.name ILIKE :q OR user.email ILIKE :q)', { q: `%${value}%` });
+   * })
+   *
+   * AllowedFilter.callback('status', (qb, value, property, alias) => {
+   *   qb.andWhere(`${alias}.${property} = :status`, { status: value });
+   * }, 'accountStatus').default('active').ignore('all', null, '')
+   */
+  static callback<T extends ObjectLiteral = any>(
+    name: string,
+    callback: FilterCallbackFn<T>,
+    internalName?: string,
+    arrayValueDelimiter?: string,
+  ): AllowedFilter<T> {
+    const filter = new AllowedFilter<T>(
+      name,
+      internalName ?? name,
+      FilterOperator.CALLBACK,
+      undefined,
+      undefined,
+      callback,
+    );
+    if (arrayValueDelimiter !== undefined) {
+      filter._arrayValueDelimiter = arrayValueDelimiter;
+    }
+    return filter;
+  }
+
+  /**
    * Create a custom filter using a callback function or a class implementing FilterInterface.
    * Matches Spatie's `AllowedFilter::custom(...)`.
    *
@@ -191,6 +238,61 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     return new AllowedFilter(name, column, FilterOperator.TRASHED);
   }
 
+  // ─── FLUENT MODIFIERS (Spatie Laravel QueryBuilder parity) ──────────
+
+  /**
+   * Specify a fallback value applied when the filter is absent from the request URL.
+   * Matches Spatie's `->default($value)`.
+   */
+  default(value: any): this {
+    this._hasDefault = true;
+    this._defaultValue = value;
+    return this;
+  }
+
+  /**
+   * Specify one or more values (or arrays of values) that should be ignored
+   * so the filter is skipped when the incoming value matches.
+   * Matches Spatie's `->ignore(...$values)`.
+   */
+  ignore(...values: any[]): this {
+    for (const val of values) {
+      if (Array.isArray(val)) {
+        for (const nested of val) {
+          this._ignoredValues.add(nested);
+        }
+      } else {
+        this._ignoredValues.add(val);
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Allow `null` (or empty string / `"null"` marker) to pass through or match `IS NULL`.
+   * Matches Spatie's `->nullable()`.
+   */
+  nullable(isNullable = true): this {
+    this._nullable = isNullable;
+    return this;
+  }
+
+  /** @internal */
+  hasDefault(): boolean {
+    return this._hasDefault;
+  }
+
+  /** @internal */
+  getDefault(): any {
+    return this._defaultValue;
+  }
+
+  private isIgnoredScalar(val: any): boolean {
+    if (this._ignoredValues.has(val)) return true;
+    if (val === 'null' && this._ignoredValues.has(null)) return true;
+    return false;
+  }
+
   /**
    * Apply this filter to the query builder.
    * @internal Called by QueryBuilder — not intended for direct use.
@@ -198,10 +300,46 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   apply(
     qb: SelectQueryBuilder<T>,
     alias: string,
-    value: any,
+    rawValue: any,
     paramIndex: number,
   ): void {
-    if (value === undefined || value === null || value === '') return;
+    let value = rawValue;
+
+    // Optional delimiter splitting (e.g. "a,b" -> ["a", "b"])
+    if (
+      this._arrayValueDelimiter &&
+      typeof value === 'string' &&
+      value.includes(this._arrayValueDelimiter)
+    ) {
+      value = value.split(this._arrayValueDelimiter);
+    }
+
+    // Apply Spatie ignore(...) filtering before executing
+    if (this._ignoredValues.size > 0) {
+      if (Array.isArray(value)) {
+        value = value.filter((item) => !this.isIgnoredScalar(item));
+        if (value.length === 0) return;
+      } else if (this.isIgnoredScalar(value)) {
+        return;
+      }
+    }
+
+    const isNullishOrEmpty =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (this._nullable && value === 'null');
+
+    if (isNullishOrEmpty && !this._nullable) {
+      return;
+    }
+
+    if (value === undefined) {
+      return;
+    }
+
+    const normalizedNull =
+      this._nullable && (value === null || value === '' || value === 'null');
 
     const target = this.column.includes('.')
       ? this.column
@@ -211,7 +349,9 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
 
     switch (this.operator) {
       case FilterOperator.EXACT: {
-        if (Array.isArray(value)) {
+        if (normalizedNull) {
+          qb.andWhere(`${target} IS NULL`);
+        } else if (Array.isArray(value)) {
           qb.andWhere(`${target} IN (:...${paramName})`, {
             [paramName]: value,
           });
@@ -224,7 +364,9 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       }
 
       case FilterOperator.PARTIAL: {
-        if (Array.isArray(value)) {
+        if (normalizedNull) {
+          qb.andWhere(`${target} IS NULL`);
+        } else if (Array.isArray(value)) {
           const conditions = value.map(
             (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
           );
@@ -242,30 +384,56 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       }
 
       case FilterOperator.STARTS_WITH: {
-        qb.andWhere(`${target} ILIKE :${paramName}`, {
-          [paramName]: `${value}%`,
-        });
+        if (normalizedNull) {
+          qb.andWhere(`${target} IS NULL`);
+        } else {
+          qb.andWhere(`${target} ILIKE :${paramName}`, {
+            [paramName]: `${value}%`,
+          });
+        }
         break;
       }
 
       case FilterOperator.ENDS_WITH: {
-        qb.andWhere(`${target} ILIKE :${paramName}`, {
-          [paramName]: `%${value}`,
-        });
+        if (normalizedNull) {
+          qb.andWhere(`${target} IS NULL`);
+        } else {
+          qb.andWhere(`${target} ILIKE :${paramName}`, {
+            [paramName]: `%${value}`,
+          });
+        }
         break;
       }
 
       case FilterOperator.OPERATOR: {
         const op = this.comparisonOp ?? '=';
-        qb.andWhere(`${target} ${op} :${paramName}`, {
-          [paramName]: value,
-        });
+        if (normalizedNull) {
+          qb.andWhere(
+            op === '!=' || op === '<>'
+              ? `${target} IS NOT NULL`
+              : `${target} IS NULL`,
+          );
+        } else {
+          qb.andWhere(`${target} ${op} :${paramName}`, {
+            [paramName]: value,
+          });
+        }
+        break;
+      }
+
+      case FilterOperator.CALLBACK: {
+        this.callbackFn?.(
+          qb,
+          normalizedNull ? null : value,
+          this.column,
+          alias,
+        );
         break;
       }
 
       case FilterOperator.CUSTOM:
       case FilterOperator.SCOPE: {
-        this.scopeFn?.(qb, value, alias);
+        this.scopeFn?.(qb, normalizedNull ? null : value, alias);
         break;
       }
 

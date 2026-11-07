@@ -5,8 +5,8 @@ import {
   ApiQuery,
   getSchemaPath,
 } from '@nestjs/swagger';
+import { OffsetPaginationDto } from '../dto/offset-pagination/offset-pagination.dto';
 import {
-  OffsetPaginatedDto,
   Paginated,
   PaginatedLinks,
   PaginatedMeta,
@@ -123,7 +123,7 @@ export function ApiQueryBuilderDocs<T extends Type<any>>(
       Paginated,
       PaginatedMeta,
       PaginatedLinks,
-      OffsetPaginatedDto,
+      OffsetPaginationDto,
       options.entity,
     ),
     ApiOkResponse({
