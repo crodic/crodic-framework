@@ -52,6 +52,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormFieldHelp } from '../components/form-field-help'
 import { TagFeaturedImageInput } from '../components/tag-featured-image-input'
 import {
   apiRollbackEncyclopediaRevision,
@@ -193,7 +194,9 @@ export function EncyclopediaEditorPanel({
                 })
               }}
             >
-              {rollbackMutation.isPending ? 'Restoring...' : 'Restore Revision'}
+              {rollbackMutation.isPending
+                ? t('tags.encyclopedia.restoringBtn', 'Restoring...')
+                : t('tags.encyclopedia.restoreAction', 'Restore Revision')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -209,12 +212,16 @@ export function EncyclopediaEditorPanel({
                   className='text-primary size-4'
                   aria-hidden='true'
                 />
-                Pixiv Encyclopedia Studio (dic) — #{tag.name}
+                {t(
+                  'tags.encyclopedia.title',
+                  'Pixiv Encyclopedia Studio (dic)'
+                )}{' '}
+                — #{tag.name}
               </CardTitle>
               <CardDescription className='text-xs'>
                 {wiki ? (
                   <>
-                    Current Revision{' '}
+                    {t('tags.encyclopedia.currentRevision', 'Current Revision')}{' '}
                     <span className='font-mono font-medium tabular-nums'>
                       v{wiki.currentRevision}
                     </span>{' '}
@@ -222,17 +229,20 @@ export function EncyclopediaEditorPanel({
                     <span className='font-mono tabular-nums'>
                       {wiki.viewCount.toLocaleString()}
                     </span>{' '}
-                    views
+                    {t('tags.encyclopedia.views', 'views')}
                   </>
                 ) : (
-                  'No wiki article exists for this locale yet. Save below to publish revision v1.'
+                  t(
+                    'tags.encyclopedia.noArticle',
+                    'No wiki article exists for this locale yet. Save below to publish revision v1.'
+                  )
                 )}
               </CardDescription>
             </div>
 
             <div className='flex items-center gap-2'>
               <span className='text-muted-foreground text-xs font-medium'>
-                Edition:
+                {t('tags.encyclopedia.edition', 'Edition:')}
               </span>
               <Select
                 value={selectedLocale}
@@ -271,14 +281,20 @@ export function EncyclopediaEditorPanel({
                     name='summary'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t('tags.encyclopedia.summary', 'Lead Summary')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t('tags.encyclopedia.summary', 'Lead Summary')}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.wikiSummary')} />
+                        </div>
                         <FormControl>
                           <Textarea
                             {...field}
                             rows={2}
-                            placeholder='Concise encyclopedia definition displayed in search cards and hover previews...'
+                            placeholder={t(
+                              'tags.encyclopedia.summaryPlaceholder',
+                              'Concise encyclopedia definition displayed in search cards and hover previews...'
+                            )}
                           />
                         </FormControl>
                         <FormMessage />
@@ -291,9 +307,15 @@ export function EncyclopediaEditorPanel({
                     name='body'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t('tags.encyclopedia.body', 'Wiki Article Content')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t(
+                              'tags.encyclopedia.body',
+                              'Wiki Article Content'
+                            )}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.wikiBody')} />
+                        </div>
                         <FormControl>
                           <div className='overflow-hidden rounded-lg border'>
                             <Suspense
@@ -329,6 +351,7 @@ export function EncyclopediaEditorPanel({
                             urlValue={field.value || ''}
                             disabled={upsertMutation.isPending}
                             error={fieldState.error?.message}
+                            tooltip={t('tags.help.wikiFeaturedImage')}
                             onSelect={({ url, fileId }) => {
                               field.onChange(url)
                               form.setValue('featuredFileId', fileId, {
@@ -346,16 +369,24 @@ export function EncyclopediaEditorPanel({
                     name='changeNote'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t(
-                            'tags.encyclopedia.changeNote',
-                            'Revision Change Note'
-                          )}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t(
+                              'tags.encyclopedia.changeNote',
+                              'Revision Change Note'
+                            )}
+                          </FormLabel>
+                          <FormFieldHelp
+                            tooltip={t('tags.help.wikiChangeNote')}
+                          />
+                        </div>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder='e.g. Added lore background and character aliases'
+                            placeholder={t(
+                              'tags.encyclopedia.changeNotePlaceholder',
+                              'e.g. Added lore background and character aliases'
+                            )}
                           />
                         </FormControl>
                         <FormMessage />
@@ -376,19 +407,26 @@ export function EncyclopediaEditorPanel({
                             />
                           </FormControl>
                           <div className='space-y-0.5'>
-                            <FormLabel className='flex items-center gap-1.5 text-sm leading-snug'>
-                              <LockIcon
-                                className='text-muted-foreground size-3.5'
-                                aria-hidden='true'
+                            <div className='flex items-center gap-1.5'>
+                              <FormLabel className='flex items-center gap-1.5 text-sm leading-snug'>
+                                <LockIcon
+                                  className='text-muted-foreground size-3.5'
+                                  aria-hidden='true'
+                                />
+                                {t(
+                                  'tags.encyclopedia.isEditLocked',
+                                  'Lock Community Editing'
+                                )}
+                              </FormLabel>
+                              <FormFieldHelp
+                                tooltip={t('tags.help.wikiLock')}
                               />
-                              {t(
-                                'tags.encyclopedia.isEditLocked',
-                                'Lock Community Editing'
-                              )}
-                            </FormLabel>
+                            </div>
                             <FormDescription className='text-xs leading-relaxed'>
-                              When enabled, only administrators can edit this
-                              wiki article.
+                              {t(
+                                'tags.encyclopedia.isEditLockedDesc',
+                                'When enabled, only administrators can edit this wiki article.'
+                              )}
                             </FormDescription>
                           </div>
                         </FormItem>
@@ -402,8 +440,14 @@ export function EncyclopediaEditorPanel({
                     >
                       <SaveIcon className='size-4' aria-hidden='true' />
                       {upsertMutation.isPending
-                        ? 'Publishing Revision...'
-                        : 'Save & Publish Revision'}
+                        ? t(
+                            'tags.encyclopedia.savingRevision',
+                            'Publishing Revision...'
+                          )
+                        : t(
+                            'tags.encyclopedia.saveRevision',
+                            'Save & Publish Revision'
+                          )}
                     </Button>
                   </div>
                 </form>
@@ -420,14 +464,19 @@ export function EncyclopediaEditorPanel({
               {t('tags.encyclopedia.revisions', 'Revision History')}
             </CardTitle>
             <CardDescription className='text-xs'>
-              Immutable snapshots across community contributors and moderators.
+              {t(
+                'tags.encyclopedia.overviewDesc',
+                'Immutable snapshots across community contributors and moderators.'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className='p-0'>
             {!wiki || !wiki.revisions || wiki.revisions.length === 0 ? (
               <p className='text-muted-foreground p-6 text-center text-xs'>
-                No revision snapshots recorded for{' '}
-                <strong className='uppercase'>{selectedLocale}</strong> yet.
+                {t(
+                  'tags.encyclopedia.noRevisions',
+                  'No revision snapshots recorded for this locale yet.'
+                )}
               </p>
             ) : (
               <div className='max-h-140 divide-y overflow-y-auto'>
@@ -444,7 +493,8 @@ export function EncyclopediaEditorPanel({
                             v{rev.revisionNumber}
                           </Badge>
                           <span className='font-medium'>
-                            {rev.editorName || 'Contributor'}
+                            {rev.editorName ||
+                              t('tags.encyclopedia.contributor', 'Contributor')}
                           </span>
                         </div>
                         {!isCurrent && (
@@ -459,7 +509,7 @@ export function EncyclopediaEditorPanel({
                               className='size-3'
                               aria-hidden='true'
                             />
-                            Rollback
+                            {t('tags.encyclopedia.rollbackBtn', 'Rollback')}
                           </Button>
                         )}
                       </div>

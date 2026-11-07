@@ -26,7 +26,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   contributeEncyclopediaClient,
   type TagEncyclopediaRevision,
@@ -60,6 +62,7 @@ export function WikiCommunityEditor({
   lockedLabel,
   revisionsLabel,
 }: WikiCommunityEditorProps) {
+  const t = useTranslations("Tags");
   const router = useRouter();
   const isAuthenticated = Boolean(useAuthStore((s) => s.accessToken));
 
@@ -111,7 +114,7 @@ export function WikiCommunityEditor({
           </SheetTrigger>
           <SheetContent className="sm:max-w-md">
             <SheetHeader>
-              <SheetTitle>Encyclopedia Revision History</SheetTitle>
+              <SheetTitle>{t("revisionHistoryTitle")}</SheetTitle>
               <SheetDescription>
                 Immutable snapshots for #{tagName} ({locale.toUpperCase()}).
               </SheetDescription>
@@ -193,37 +196,36 @@ export function WikiCommunityEditor({
 
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
-              <Label htmlFor="wiki-lead-summary">Lead Summary</Label>
+              <Label htmlFor="wiki-lead-summary">{t("leadSummary")}</Label>
               <Textarea
                 id="wiki-lead-summary"
                 rows={2}
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
-                placeholder="Concise 1-2 sentence definition displayed in tag hover cards..."
+                placeholder={t("leadSummaryPlaceholder")}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="wiki-html-body">
-                Article Content (HTML / Formatted Paragraphs)
-              </Label>
-              <Textarea
-                id="wiki-html-body"
-                rows={9}
+              <Label htmlFor="wiki-html-body">{t("articleContent")}</Label>
+              <TiptapEditor
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
-                className="font-mono text-xs leading-relaxed"
-                placeholder="<p>Detailed lore, etymology, and tagging conventions...</p>"
+                onChange={setBody}
+                placeholder={t("articleContentPlaceholder")}
+                disabled={submitMutation.isPending}
+                minHeight="200px"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="wiki-change-note">Revision Summary Note</Label>
+              <Label htmlFor="wiki-change-note">
+                {t("revisionSummaryNote")}
+              </Label>
               <Input
                 id="wiki-change-note"
                 value={changeNote}
                 onChange={(e) => setChangeNote(e.target.value)}
-                placeholder="e.g. Clarified character relationships and Vietnamese translation"
+                placeholder={t("revisionNotePlaceholder")}
               />
             </div>
           </div>

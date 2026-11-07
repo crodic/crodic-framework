@@ -32,6 +32,7 @@ import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { NotFoundError } from '@/pages/errors/not-found-error'
+import { FormFieldHelp } from '../components/form-field-help'
 import { MergeTagDialog } from '../components/merge-tag-dialog'
 import {
   TagCategoryBadge,
@@ -129,7 +130,7 @@ export function PageTagShow() {
                 Slug: <code className='font-mono'>/{tag.slug}</code>
               </span>
               <span className='tabular-nums'>
-                Usage:{' '}
+                {t('tags.show.usage', 'Usage:')}{' '}
                 <strong className='text-foreground font-mono'>
                   {tag.usageCount.toLocaleString()}
                 </strong>
@@ -139,7 +140,7 @@ export function PageTagShow() {
                   className='size-3.5 text-amber-500'
                   aria-hidden='true'
                 />
-                Trending:{' '}
+                {t('tags.show.trending', 'Trending:')}{' '}
                 <strong className='text-foreground font-mono'>
                   {tag.trendingScore.toFixed(1)}
                 </strong>
@@ -160,14 +161,14 @@ export function PageTagShow() {
                 rel='noreferrer'
               >
                 <ExternalLinkIcon className='size-4' aria-hidden='true' />
-                Public Tag Page
+                {t('tags.show.publicPage', 'Public Tag Page')}
               </a>
             </Button>
 
             {!tag.isSystem && tag.status !== 'merged' && (
               <Button variant='outline' onClick={() => setIsMergeOpen(true)}>
                 <GitMergeIcon className='size-4' aria-hidden='true' />
-                Merge
+                {t('tags.show.merge', 'Merge')}
               </Button>
             )}
 
@@ -228,21 +229,27 @@ export function PageTagShow() {
             <div className='grid gap-6 md:grid-cols-2'>
               <Card className='shadow-xs'>
                 <CardHeader>
-                  <CardTitle className='text-base'>
+                  <CardTitle className='flex items-center gap-2 text-base'>
                     {t(
                       'tags.form.translationsSection',
                       'Multilingual Translations'
                     )}
+                    <FormFieldHelp tooltip={t('tags.help.translations')} />
                   </CardTitle>
                   <CardDescription>
-                    Localized names and short summaries served in autocomplete
-                    and hover previews.
+                    {t(
+                      'tags.show.translationsDesc',
+                      'Localized names and short summaries served in autocomplete and hover previews.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {!tag.translations || tag.translations.length === 0 ? (
                     <p className='text-muted-foreground text-xs italic'>
-                      No localized translations configured yet.
+                      {t(
+                        'tags.show.noTranslations',
+                        'No localized translations configured yet.'
+                      )}
                     </p>
                   ) : (
                     <div className='divide-y'>
@@ -273,21 +280,27 @@ export function PageTagShow() {
 
               <Card className='shadow-xs'>
                 <CardHeader>
-                  <CardTitle className='text-base'>
+                  <CardTitle className='flex items-center gap-2 text-base'>
                     {t(
                       'tags.form.aliasesSection',
                       'Orthographic Aliases (表記揺れ)'
                     )}
+                    <FormFieldHelp tooltip={t('tags.help.aliases')} />
                   </CardTitle>
                   <CardDescription>
-                    Keywords that automatically resolve and 301-redirect to this
-                    canonical tag.
+                    {t(
+                      'tags.show.aliasesDesc',
+                      'Keywords that automatically resolve and 301-redirect to this canonical tag.'
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {!tag.aliases || tag.aliases.length === 0 ? (
                     <p className='text-muted-foreground text-xs italic'>
-                      No orthographic aliases registered yet.
+                      {t(
+                        'tags.show.noAliases',
+                        'No orthographic aliases registered yet.'
+                      )}
                     </p>
                   ) : (
                     <div className='flex flex-wrap gap-2'>

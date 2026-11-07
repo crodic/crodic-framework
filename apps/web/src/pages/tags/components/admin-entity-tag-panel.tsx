@@ -263,7 +263,9 @@ export function AdminEntityTagPanel({
                   className='text-muted-foreground size-3.5 shrink-0'
                   aria-hidden='true'
                 />
-                <span>Freeze community tag edits</span>
+                <span>
+                  {t('tags.entity.freezeEdits', 'Freeze community tag edits')}
+                </span>
               </div>
               <Switch
                 checked={editLocked}
@@ -271,7 +273,10 @@ export function AdminEntityTagPanel({
                   setEditLocked(checked)
                   setIsDirty(true)
                 }}
-                aria-label='Freeze community tag edits'
+                aria-label={t(
+                  'tags.entity.freezeEdits',
+                  'Freeze community tag edits'
+                )}
               />
             </div>
 

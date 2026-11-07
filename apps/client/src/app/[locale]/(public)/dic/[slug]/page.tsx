@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import type { Article, WithContext } from "schema-dts";
 import {
   ArrowLeft,
+  ArrowUpRight,
   BadgeCheck,
   BookOpenText,
   Eye,
@@ -265,20 +266,34 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
               <CardHeader className="border-b pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                   <Tags className="text-primary size-4" aria-hidden="true" />
-                  Canonical Taxonomy Infobox
+                  {t("taxonomyInfobox")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-4 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Tagged Works</span>
+                  <span className="text-muted-foreground">
+                    {t("taggedWorks")}
+                  </span>
                   <span className="font-mono font-semibold tabular-nums">
                     {tag.usageCount.toLocaleString()}
                   </span>
                 </div>
 
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link href={`/tags/${tag.slug}`}>
-                    {t("viewTaggedWorks")} (#{tag.name})
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-auto w-full min-w-0 justify-center px-3 py-2 text-xs leading-normal"
+                >
+                  <Link
+                    href={`/tags/${tag.slug}`}
+                    className="flex min-w-0 items-center justify-center gap-1.5"
+                  >
+                    <span className="truncate">{t("viewTaggedWorks")}</span>
+                    <ArrowUpRight
+                      className="size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
                   </Link>
                 </Button>
 

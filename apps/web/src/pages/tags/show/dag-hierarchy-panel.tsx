@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { FormFieldHelp } from '../components/form-field-help'
 import { TagCategoryBadge, TagNodeChip } from '../components/tag-badges'
 import {
   apiAddTagRelation,
@@ -181,7 +182,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <CardContent>
               {parents.length === 0 ? (
                 <p className='text-muted-foreground text-xs italic'>
-                  Root node — no parent tags linked.
+                  {t(
+                    'tags.hierarchy.rootNode',
+                    'Root node — no parent tags linked.'
+                  )}
                 </p>
               ) : (
                 <div className='flex flex-wrap gap-2'>
@@ -227,7 +231,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <Card className='border-primary/40 bg-primary/5 shadow-xs'>
               <CardHeader className='pb-2'>
                 <CardDescription className='text-[11px] font-semibold tracking-wider uppercase'>
-                  Current Canonical Node
+                  {t('tags.hierarchy.currentNode', 'Current Canonical Node')}
                 </CardDescription>
                 <CardTitle className='flex items-center gap-2 text-lg'>
                   <span>#{tag.name}</span>
@@ -239,7 +243,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <span className='font-mono tabular-nums'>
                   {tag.usageCount.toLocaleString()}
                 </span>{' '}
-                tagged items
+                {t('tags.hierarchy.taggedItems', 'tagged items')}
               </CardContent>
             </Card>
 
@@ -258,7 +262,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardContent>
                 {siblings.length === 0 ? (
                   <p className='text-muted-foreground text-xs italic'>
-                    No sibling tags derived from shared parents.
+                    {t(
+                      'tags.hierarchy.noSiblings',
+                      'No sibling tags derived from shared parents.'
+                    )}
                   </p>
                 ) : (
                   <div className='flex flex-wrap gap-1.5'>
@@ -298,7 +305,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <CardContent>
               {children.length === 0 ? (
                 <p className='text-muted-foreground text-xs italic'>
-                  Leaf node — no child tags linked yet.
+                  {t(
+                    'tags.hierarchy.leafNode',
+                    'Leaf node — no child sub-tags linked.'
+                  )}
                 </p>
               ) : (
                 <div className='flex flex-wrap gap-2'>
@@ -350,7 +360,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardContent>
                 {related.length === 0 ? (
                   <p className='text-muted-foreground text-xs italic'>
-                    No associative related tags linked.
+                    {t(
+                      'tags.hierarchy.noRelated',
+                      'No associative related tags linked.'
+                    )}
                   </p>
                 ) : (
                   <div className='flex flex-wrap gap-2'>
@@ -402,7 +415,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardContent>
                 {disambiguations.length === 0 ? (
                   <p className='text-muted-foreground text-xs italic'>
-                    No homonym disambiguation links needed.
+                    {t(
+                      'tags.hierarchy.noDisambiguations',
+                      'No disambiguation tags registered.'
+                    )}
                   </p>
                 ) : (
                   <div className='flex flex-wrap gap-2'>
@@ -452,13 +468,20 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 {t('tags.hierarchy.addRelation', 'Link Tag Relation')}
               </CardTitle>
               <CardDescription className='text-xs'>
-                Cycle detection automatically validates the Directed Acyclic
-                Graph (DAG) and updates the transitive closure table.
+                {t(
+                  'tags.hierarchy.roleDesc',
+                  'Cycle detection automatically validates the Directed Acyclic Graph (DAG) and updates the transitive closure table.'
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div className='space-y-1.5'>
-                <label className='text-xs font-medium'>Relation Role</label>
+                <div className='flex items-center gap-1.5'>
+                  <label className='text-xs font-medium'>
+                    {t('tags.hierarchy.role', 'Relation Role')}
+                  </label>
+                  <FormFieldHelp tooltip={t('tags.help.dagRole')} />
+                </div>
                 <Select
                   value={direction}
                   onValueChange={(v) => setDirection(v as LinkDirection)}
@@ -468,28 +491,46 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='parent'>
-                      Add Parent Tag (親タグ → #{tag.name})
+                      {t('tags.hierarchy.addParentOption', {
+                        name: tag.name,
+                        defaultValue: `Add Parent Tag (親タグ → #${tag.name})`,
+                      })}
                     </SelectItem>
                     <SelectItem value='child'>
-                      Add Child Tag (#{tag.name} → 子タグ)
+                      {t('tags.hierarchy.addChildOption', {
+                        name: tag.name,
+                        defaultValue: `Add Child Tag (#${tag.name} → 子タグ)`,
+                      })}
                     </SelectItem>
                     <SelectItem value='related'>
-                      Add Related Tag (関連タグ)
+                      {t(
+                        'tags.hierarchy.addRelatedOption',
+                        'Add Related Tag (関連タグ)'
+                      )}
                     </SelectItem>
                     <SelectItem value='disambiguation'>
-                      Add Disambiguation (曖昧さ回避)
+                      {t(
+                        'tags.hierarchy.addDisambiguationOption',
+                        'Add Disambiguation (曖昧さ回避)'
+                      )}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className='space-y-2'>
-                <label
-                  htmlFor='dag-link-search'
-                  className='text-xs font-medium'
-                >
-                  Search Canonical Tag to Link
-                </label>
+                <div className='flex items-center gap-1.5'>
+                  <label
+                    htmlFor='dag-link-search'
+                    className='text-xs font-medium'
+                  >
+                    {t(
+                      'tags.hierarchy.searchTag',
+                      'Search Canonical Tag to Link'
+                    )}
+                  </label>
+                  <FormFieldHelp tooltip={t('tags.help.dagSearch')} />
+                </div>
                 <div className='relative'>
                   <SearchIcon
                     className='text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2'
@@ -499,7 +540,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     id='dag-link-search'
                     value={searchKeyword}
                     onChange={(e) => setSearchKeyword(e.target.value)}
-                    placeholder='Type tag name or alias...'
+                    placeholder={t(
+                      'tags.hierarchy.searchPlaceholder',
+                      'Type tag name or alias...'
+                    )}
                     className='pl-9'
                   />
                 </div>
@@ -507,11 +551,11 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <div className='max-h-72 overflow-y-auto rounded-md border'>
                   {isSearching ? (
                     <p className='text-muted-foreground p-4 text-center text-xs'>
-                      Searching tags...
+                      {t('tags.hierarchy.searching', 'Searching tags...')}
                     </p>
                   ) : filteredSuggestions.length === 0 ? (
                     <p className='text-muted-foreground p-4 text-center text-xs'>
-                      No matching tags found.
+                      {t('tags.hierarchy.noResults', 'No matching tags found.')}
                     </p>
                   ) : (
                     <div className='divide-y'>
@@ -537,7 +581,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                             className='h-7 shrink-0 px-2.5 text-xs'
                           >
                             <PlusIcon className='size-3.5' aria-hidden='true' />
-                            Link
+                            {t('tags.hierarchy.linkBtn', 'Link')}
                           </Button>
                         </div>
                       ))}

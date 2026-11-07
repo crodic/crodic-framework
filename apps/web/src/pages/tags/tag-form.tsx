@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormFieldHelp } from './components/form-field-help'
 import {
   TAG_LOCALES,
   tagFormSchema,
@@ -185,9 +186,12 @@ export function TagForm({
                   name='name'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        {t('tags.form.name', 'Canonical Name')}
-                      </FormLabel>
+                      <div className='flex items-center gap-1.5'>
+                        <FormLabel>
+                          {t('tags.form.name', 'Canonical Name')}
+                        </FormLabel>
+                        <FormFieldHelp tooltip={t('tags.help.name')} />
+                      </div>
                       <FormControl>
                         <Input
                           {...field}
@@ -207,9 +211,12 @@ export function TagForm({
                   name='slug'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        {t('tags.form.slug', 'Custom Slug (Optional)')}
-                      </FormLabel>
+                      <div className='flex items-center gap-1.5'>
+                        <FormLabel>
+                          {t('tags.form.slug', 'Custom Slug (Optional)')}
+                        </FormLabel>
+                        <FormFieldHelp tooltip={t('tags.help.slug')} />
+                      </div>
                       <FormControl>
                         <Input
                           {...field}
@@ -231,9 +238,12 @@ export function TagForm({
                     name='category'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t('tags.form.category', 'Semantic Category')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t('tags.form.category', 'Semantic Category')}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.category')} />
+                        </div>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
@@ -301,9 +311,14 @@ export function TagForm({
                     name='safetyRating'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t('tags.form.safetyRating', 'Safety Rating')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t('tags.form.safetyRating', 'Safety Rating')}
+                          </FormLabel>
+                          <FormFieldHelp
+                            tooltip={t('tags.help.safetyRating')}
+                          />
+                        </div>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
@@ -354,9 +369,12 @@ export function TagForm({
                     name='status'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {t('tags.form.status', 'Lifecycle Status')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel>
+                            {t('tags.form.status', 'Lifecycle Status')}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.status')} />
+                        </div>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
@@ -409,9 +427,12 @@ export function TagForm({
                   render={({ field }) => (
                     <FormItem className='flex items-center justify-between gap-3 rounded-lg border p-3'>
                       <div className='space-y-0.5'>
-                        <FormLabel className='text-sm'>
-                          {t('tags.form.isOfficial', 'Official Verified Tag')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel className='text-sm'>
+                            {t('tags.form.isOfficial', 'Official Verified Tag')}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.isOfficial')} />
+                        </div>
                         <FormDescription className='text-xs'>
                           {t(
                             'tags.form.isOfficialDesc',
@@ -435,9 +456,12 @@ export function TagForm({
                   render={({ field }) => (
                     <FormItem className='flex items-center justify-between gap-3 rounded-lg border p-3'>
                       <div className='space-y-0.5'>
-                        <FormLabel className='text-sm'>
-                          {t('tags.form.isSystem', 'System Tag')}
-                        </FormLabel>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel className='text-sm'>
+                            {t('tags.form.isSystem', 'System Tag')}
+                          </FormLabel>
+                          <FormFieldHelp tooltip={t('tags.help.isSystem')} />
+                        </div>
                         <FormDescription className='text-xs'>
                           {t(
                             'tags.form.isSystemDesc',
@@ -471,6 +495,7 @@ export function TagForm({
                     'tags.form.translationsSection',
                     'Multilingual Translations'
                   )}
+                  <FormFieldHelp tooltip={t('tags.help.translations')} />
                 </CardTitle>
                 <CardDescription>
                   {t(
@@ -526,12 +551,17 @@ export function TagForm({
                           name={`translations.${idx}.translatedName`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className='text-xs'>
-                                {t(
-                                  'tags.form.displayName',
-                                  'Translated Display Name'
-                                )}
-                              </FormLabel>
+                              <div className='flex items-center gap-1.5'>
+                                <FormLabel className='text-xs'>
+                                  {t(
+                                    'tags.form.displayName',
+                                    'Translated Display Name'
+                                  )}
+                                </FormLabel>
+                                <FormFieldHelp
+                                  tooltip={t('tags.help.displayName')}
+                                />
+                              </div>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -550,12 +580,17 @@ export function TagForm({
                           render={({ field }) => (
                             <FormItem>
                               <div className='flex items-center justify-between gap-2'>
-                                <FormLabel className='text-xs'>
-                                  {t(
-                                    'tags.form.shortSummary',
-                                    'Hover Tooltip Summary'
-                                  )}
-                                </FormLabel>
+                                <div className='flex items-center gap-1.5'>
+                                  <FormLabel className='text-xs'>
+                                    {t(
+                                      'tags.form.shortSummary',
+                                      'Hover Tooltip Summary'
+                                    )}
+                                  </FormLabel>
+                                  <FormFieldHelp
+                                    tooltip={t('tags.help.shortSummary')}
+                                  />
+                                </div>
                                 <span
                                   role='status'
                                   aria-atomic='true'
@@ -595,6 +630,7 @@ export function TagForm({
                       'tags.form.aliasesSection',
                       'Orthographic Aliases (表記揺れ)'
                     )}
+                    <FormFieldHelp tooltip={t('tags.help.aliases')} />
                   </CardTitle>
                   <CardDescription>
                     {t(
@@ -622,9 +658,10 @@ export function TagForm({
               <CardContent>
                 {aliasFields.length === 0 ? (
                   <div className='text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs'>
-                    No orthographic aliases configured yet. Add abbreviations
-                    (e.g. &ldquo;FGO&rdquo;), romanizations, or common typos so
-                    search and autocomplete resolve directly to this tag.
+                    {t(
+                      'tags.form.noAliases',
+                      'No orthographic aliases configured yet. Add abbreviations (e.g. "FGO"), romanizations, or common typos so search and autocomplete resolve directly to this tag.'
+                    )}
                   </div>
                 ) : (
                   <div className='space-y-3'>
@@ -644,7 +681,10 @@ export function TagForm({
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder='Alias keyword (e.g. FGO, フリーレン)...'
+                                  placeholder={t(
+                                    'tags.form.aliasKeywordPlaceholder',
+                                    'Alias keyword (e.g. FGO, フリーレン)...'
+                                  )}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -671,16 +711,22 @@ export function TagForm({
                                 </FormControl>
                                 <SelectContent>
                                   <SelectItem value='synonym'>
-                                    Synonym
+                                    {t('tags.aliasType.synonym', 'Synonym')}
                                   </SelectItem>
                                   <SelectItem value='abbreviation'>
-                                    Abbreviation
+                                    {t(
+                                      'tags.aliasType.abbreviation',
+                                      'Abbreviation'
+                                    )}
                                   </SelectItem>
                                   <SelectItem value='typo'>
-                                    Typo / Variant
+                                    {t('tags.aliasType.typo', 'Typo / Variant')}
                                   </SelectItem>
                                   <SelectItem value='legacy_merge'>
-                                    Legacy Merge
+                                    {t(
+                                      'tags.aliasType.legacyMerge',
+                                      'Legacy Merge'
+                                    )}
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -700,7 +746,10 @@ export function TagForm({
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder='Locale (all)'
+                                  placeholder={t(
+                                    'tags.form.aliasLocalePlaceholder',
+                                    'Locale (all)'
+                                  )}
                                   className='font-mono text-xs'
                                 />
                               </FormControl>
@@ -714,7 +763,7 @@ export function TagForm({
                           variant='ghost'
                           size='icon'
                           className='text-destructive hover:text-destructive size-9'
-                          aria-label={`Remove alias ${idx + 1}`}
+                          aria-label={`${t('tags.form.removeAlias', 'Remove alias')} ${idx + 1}`}
                           onClick={() => removeAlias(idx)}
                         >
                           <TrashIcon className='size-4' aria-hidden='true' />

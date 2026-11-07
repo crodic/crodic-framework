@@ -18,7 +18,9 @@
     "signUp": "Get Started",
     "logout": "Log out",
     "docs": "Documentation",
-    "github": "GitHub"
+    "github": "GitHub",
+    "platform": "Platform",
+    "language": "Language"
   },
   "Landing": {
     "metaTitle": "Next.js 15 & Turborepo Monorepo Boilerplate",
@@ -222,7 +224,8 @@
     "legal": "Legal",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "allRightsReserved": "All rights reserved."
+    "allRightsReserved": "All rights reserved.",
+    "allSystemsOperational": "All systems operational"
   },
   "Auth": {
     "layout": {
@@ -357,6 +360,33 @@
     "mutedSettingsDesc": "Content tagged with any muted tag (or its child sub-tags when enabled) is automatically excluded from tag discovery and search results.",
     "contributeWiki": "Edit Encyclopedia",
     "lockedWiki": "Admin Locked",
-    "revisionHistory": "Revisions"
+    "revisionHistory": "Revisions",
+    "queryLabel": "Query:",
+    "dagExpansion": "DAG Sub-Tag Expansion",
+    "taxonomyInfobox": "Canonical Taxonomy Infobox",
+    "taggedWorks": "Tagged Works",
+    "muteSubTags": "Mute sub-tags",
+    "parentLabel": "Parent:",
+    "tagsTitle": "Tags",
+    "freezeEdits": "Freeze edits",
+    "communityEditsLocked": "Community Edits Locked",
+    "editHistory": "Edit History",
+    "auditLogTitle": "Tag Governance Audit Log",
+    "auditLogDesc": "Complete folksonomy history of additions, removals, and locks.",
+    "revisionHistoryTitle": "Encyclopedia Revision History",
+    "leadSummary": "Lead Summary",
+    "leadSummaryPlaceholder": "Concise 1-2 sentence definition displayed in tag hover cards...",
+    "articleContent": "Article Content (HTML / Formatted Paragraphs)",
+    "articleContentPlaceholder": "Detailed lore, etymology, and tagging conventions in HTML/paragraphs...",
+    "revisionSummaryNote": "Revision Summary Note",
+    "revisionNotePlaceholder": "e.g. Clarified character relationships and aliases",
+    "mutedTagSaved": "Muted tag preference saved",
+    "hoverCardDefaultSummary": "Explore works, semantic parent-child hierarchy, and community wiki notes for this canonical tag."
+  },
+  "Theme": {
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useProfile, useSignOut } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LanguageSwitcher from "../language-switcher";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -96,7 +97,7 @@ export function MobileNav() {
 
                 <div>
                   <span className="text-muted-foreground px-2 text-xs font-semibold tracking-wider uppercase">
-                    Platform
+                    {t("platform")}
                   </span>
                   <div className="mt-2 flex flex-col gap-1">
                     {platformLinks.map((link) => (
@@ -183,6 +184,15 @@ export function MobileNav() {
                     </Button>
                   </>
                 )}
+              </div>
+
+              <div className="mt-4 border-t pt-4">
+                <span className="text-muted-foreground px-2 text-xs font-semibold tracking-wider uppercase">
+                  {t("language")}
+                </span>
+                <div className="mt-2 px-1">
+                  <LanguageSwitcher />
+                </div>
               </div>
             </div>
           </div>,

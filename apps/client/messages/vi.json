@@ -18,7 +18,9 @@
     "signUp": "Bắt đầu ngay",
     "logout": "Đăng xuất",
     "docs": "Tài liệu",
-    "github": "GitHub"
+    "github": "GitHub",
+    "platform": "Nền tảng",
+    "language": "Ngôn ngữ"
   },
   "Landing": {
     "metaTitle": "Khởi đầu dự án Full-Stack Monorepo với Next.js 15 & Turborepo",
@@ -222,7 +224,8 @@
     "legal": "Pháp lý",
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản sử dụng",
-    "allRightsReserved": "Đã đăng ký bản quyền."
+    "allRightsReserved": "Đã đăng ký bản quyền.",
+    "allSystemsOperational": "Tất cả hệ thống hoạt động bình thường"
   },
   "Auth": {
     "layout": {
@@ -357,6 +360,33 @@
     "mutedSettingsDesc": "Nội dung gắn các tag bị ẩn (và toàn bộ nhánh tag con nếu bật) sẽ tự động được loại trừ khỏi danh sách tìm kiếm và khám phá.",
     "contributeWiki": "Đóng góp Bách khoa",
     "lockedWiki": "Đã khoá bởi Admin",
-    "revisionHistory": "Lịch sử sửa đổi"
+    "revisionHistory": "Lịch sử sửa đổi",
+    "queryLabel": "Truy vấn:",
+    "dagExpansion": "Mở rộng thẻ con theo DAG",
+    "taxonomyInfobox": "Hộp thông tin phân loại thẻ",
+    "taggedWorks": "Tác phẩm gắn thẻ",
+    "muteSubTags": "Ẩn cả thẻ con",
+    "parentLabel": "Thẻ cha:",
+    "tagsTitle": "Thẻ",
+    "freezeEdits": "Khóa gắn thẻ",
+    "communityEditsLocked": "Đã khóa gắn thẻ từ cộng đồng",
+    "editHistory": "Lịch sử chỉnh sửa",
+    "auditLogTitle": "Nhật ký quản trị gắn thẻ",
+    "auditLogDesc": "Toàn bộ lịch sử thêm, gỡ và khóa thẻ từ cộng đồng.",
+    "revisionHistoryTitle": "Lịch sử phiên bản bách khoa",
+    "leadSummary": "Tóm tắt mở đầu",
+    "leadSummaryPlaceholder": "Định nghĩa ngắn 1-2 câu hiển thị khi xem nhanh thẻ...",
+    "articleContent": "Nội dung bài viết (HTML / Đoạn văn định dạng)",
+    "articleContentPlaceholder": "Chi tiết bối cảnh, nguồn gốc và quy ước gắn thẻ (HTML/đoạn văn)...",
+    "revisionSummaryNote": "Ghi chú thay đổi phiên bản",
+    "revisionNotePlaceholder": "vd: Bổ sung quan hệ nhân vật và biến thể tên gọi",
+    "mutedTagSaved": "Đã lưu cài đặt ẩn thẻ",
+    "hoverCardDefaultSummary": "Khám phá các tác phẩm, quan hệ phân cấp cha-con và ghi chú bách khoa cộng đồng cho thẻ chuẩn này."
+  },
+  "Theme": {
+    "toggleTheme": "Chuyển đổi giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống"
   }
 }

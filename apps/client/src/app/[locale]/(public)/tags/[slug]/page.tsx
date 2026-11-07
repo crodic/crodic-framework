@@ -106,6 +106,9 @@ export default async function TagDetailLandingPage({
   };
 
   const { parents, children, siblings, related, disambiguations } = tag.graph;
+  const associativeTags = Array.from(
+    new Map([...siblings, ...related].map((node) => [node.id, node])).values()
+  );
 
   return (
     <Layout>
@@ -305,15 +308,13 @@ export default async function TagDetailLandingPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {siblings.length === 0 &&
-              related.length === 0 &&
-              disambiguations.length === 0 ? (
+              {associativeTags.length === 0 && disambiguations.length === 0 ? (
                 <p className="text-muted-foreground text-xs italic">
                   No sibling or associative links yet.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
-                  {[...siblings, ...related].map((node) => (
+                  {associativeTags.map((node) => (
                     <TagHoverCard
                       key={node.id}
                       locale={locale}

@@ -3,6 +3,7 @@
 import React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EyeOff, GitBranch, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { TagHoverCard } from "@/components/tags/tag-hover-card";
 import { TagInputAutocomplete } from "@/components/tags/tag-input-autocomplete";
@@ -32,6 +33,7 @@ export function MutedTagsManager({
   title: string;
   description: string;
 }) {
+  const t = useTranslations("Tags");
   const queryClient = useQueryClient();
   const { data: mutedList = [], isLoading } = useMutedTags(locale);
 
@@ -42,7 +44,7 @@ export function MutedTagsManager({
   const upsertMutation = useMutation({
     mutationFn: muteTagClient,
     onSuccess: () => {
-      toast.success("Muted tag preference saved");
+      toast.success(t("mutedTagSaved"));
       invalidate();
     },
     onError: () => toast.error("Failed to save muted tag"),
@@ -118,7 +120,9 @@ export function MutedTagsManager({
                       className="text-muted-foreground size-3.5"
                       aria-hidden="true"
                     />
-                    <span className="text-muted-foreground">Mute sub-tags</span>
+                    <span className="text-muted-foreground">
+                      {t("muteSubTags")}
+                    </span>
                     <Switch
                       checked={entry.includeChildren}
                       disabled={upsertMutation.isPending}

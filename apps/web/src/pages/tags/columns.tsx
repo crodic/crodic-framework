@@ -96,7 +96,10 @@ export function getTagsTableColumns({
       enableColumnFilter: true,
       meta: {
         label: t('tags.table.name', 'Canonical Tag'),
-        placeholder: 'Search canonical name, alias, translation...',
+        placeholder: t(
+          'tags.table.searchPlaceholder',
+          'Search canonical name, alias, translation...'
+        ),
         variant: 'text',
       },
     },
@@ -285,7 +288,7 @@ export function getTagsTableColumns({
               <DropdownMenuContent align='end' className='w-48'>
                 <DropdownMenuItem onClick={() => onViewStudio(tag)}>
                   <EyeIcon className='size-4' aria-hidden='true' />
-                  Open Governance Studio
+                  {t('tags.actions.openStudio', 'Open Governance Studio')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit(tag)}>
                   <EditIcon className='size-4' aria-hidden='true' />
@@ -294,7 +297,7 @@ export function getTagsTableColumns({
                 {!tag.isSystem && tag.status !== 'merged' && (
                   <DropdownMenuItem onClick={() => onMerge(tag)}>
                     <GitMergeIcon className='size-4' aria-hidden='true' />
-                    Merge Into Tag...
+                    {t('tags.actions.mergeTag', 'Merge Into Tag...')}
                   </DropdownMenuItem>
                 )}
                 {!tag.isSystem && (

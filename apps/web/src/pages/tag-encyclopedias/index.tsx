@@ -44,7 +44,10 @@ export function PageTagEncyclopediaOverview() {
         id: 'search',
         accessorFn: (row) => row.tag.name,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label='Tag & Summary' />
+          <DataTableColumnHeader
+            column={column}
+            label={t('tags.encyclopedia.colTagSummary', 'Tag & Summary')}
+          />
         ),
         cell: ({ row }) => {
           const item = row.original
@@ -63,15 +66,22 @@ export function PageTagEncyclopediaOverview() {
         enableColumnFilter: true,
         enableSorting: false,
         meta: {
-          label: 'Keyword',
-          placeholder: 'Search wiki summary or tag...',
+          label: t('tags.table.name', 'Canonical Tag'),
+          placeholder: t(
+            'tags.encyclopedia.searchPlaceholder',
+            'Search wiki summary or tag...'
+          ),
           variant: 'text',
         },
       },
       {
         id: 'locale',
         accessorFn: (row) => row.locale,
-        header: () => <span className='text-xs font-medium'>Edition</span>,
+        header: () => (
+          <span className='text-xs font-medium'>
+            {t('tags.encyclopedia.colEdition', 'Edition')}
+          </span>
+        ),
         cell: ({ row }) => (
           <Badge variant='outline' className='font-mono text-xs uppercase'>
             {row.original.locale}
@@ -80,7 +90,7 @@ export function PageTagEncyclopediaOverview() {
         enableColumnFilter: true,
         enableSorting: false,
         meta: {
-          label: 'Edition',
+          label: t('tags.encyclopedia.colEdition', 'Edition'),
           variant: 'select',
           options: [
             { label: 'English (EN)', value: 'en' },
@@ -93,7 +103,10 @@ export function PageTagEncyclopediaOverview() {
         id: 'currentRevision',
         accessorFn: (row) => row.currentRevision,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label='Revision' />
+          <DataTableColumnHeader
+            column={column}
+            label={t('tags.encyclopedia.colRevision', 'Revision')}
+          />
         ),
         cell: ({ row }) => (
           <Badge variant='secondary' className='font-mono text-xs tabular-nums'>
@@ -104,26 +117,36 @@ export function PageTagEncyclopediaOverview() {
       {
         id: 'isEditLocked',
         accessorFn: (row) => String(row.isEditLocked),
-        header: () => <span className='text-xs font-medium'>Edit Access</span>,
+        header: () => (
+          <span className='text-xs font-medium'>
+            {t('tags.encyclopedia.colEditAccess', 'Edit Access')}
+          </span>
+        ),
         cell: ({ row }) =>
           row.original.isEditLocked ? (
             <Badge variant='outline' className='gap-1 text-xs'>
               <LockIcon className='size-3' aria-hidden='true' />
-              Admin Locked
+              {t('tags.encyclopedia.accessLocked', 'Admin Locked')}
             </Badge>
           ) : (
             <Badge variant='secondary' className='text-xs'>
-              Community Open
+              {t('tags.encyclopedia.accessOpen', 'Community Open')}
             </Badge>
           ),
         enableColumnFilter: true,
         enableSorting: false,
         meta: {
-          label: 'Edit Access',
+          label: t('tags.encyclopedia.colEditAccess', 'Edit Access'),
           variant: 'select',
           options: [
-            { label: 'Community Open', value: 'false' },
-            { label: 'Admin Locked', value: 'true' },
+            {
+              label: t('tags.encyclopedia.accessOpen', 'Community Open'),
+              value: 'false',
+            },
+            {
+              label: t('tags.encyclopedia.accessLocked', 'Admin Locked'),
+              value: 'true',
+            },
           ],
         },
       },
@@ -131,7 +154,10 @@ export function PageTagEncyclopediaOverview() {
         id: 'viewCount',
         accessorFn: (row) => row.viewCount,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label='Views' />
+          <DataTableColumnHeader
+            column={column}
+            label={t('tags.encyclopedia.colViews', 'Views')}
+          />
         ),
         cell: ({ row }) => (
           <span className='font-mono text-xs tabular-nums'>
@@ -143,7 +169,10 @@ export function PageTagEncyclopediaOverview() {
         id: 'updatedAt',
         accessorFn: (row) => row.updatedAt,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label='Updated At' />
+          <DataTableColumnHeader
+            column={column}
+            label={t('tags.encyclopedia.colUpdatedAt', 'Updated At')}
+          />
         ),
         cell: ({ row }) => (
           <span className='text-muted-foreground text-xs whitespace-nowrap tabular-nums'>
@@ -152,7 +181,7 @@ export function PageTagEncyclopediaOverview() {
         ),
       },
     ],
-    []
+    [t]
   )
 
   const buildQuery: RestResourceQueryBuilderFn<typeof wikiFilterParsers> =

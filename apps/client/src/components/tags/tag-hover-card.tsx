@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/hover-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useTagTooltip } from "@/services/tags";
 import { TagChip, type TagChipProps } from "./tag-chip";
 import { getTagCategoryToken } from "./tag-tokens";
@@ -23,6 +24,7 @@ export function TagHoverCard({
   featuredImageUrl,
   ...chipProps
 }: TagHoverCardProps) {
+  const t = useTranslations("Tags");
   const [hasOpened, setHasOpened] = useState(false);
 
   const { data: tooltip, isLoading } = useTagTooltip(
@@ -114,7 +116,9 @@ export function TagHoverCard({
                   className="text-muted-foreground size-3.5 shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-muted-foreground">Parent:</span>
+                <span className="text-muted-foreground">
+                  {t("parentLabel")}
+                </span>
                 <Link
                   href={`/tags/${tooltip.parentTag.slug}`}
                   className="truncate font-medium hover:underline"
@@ -125,8 +129,7 @@ export function TagHoverCard({
             )}
 
             <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed text-pretty">
-              {tooltip?.summary ||
-                "Explore works, semantic parent-child hierarchy, and community wiki notes for this canonical tag."}
+              {tooltip?.summary || t("hoverCardDefaultSummary")}
             </p>
 
             <div className="flex items-center justify-between gap-2 border-t pt-2.5 text-xs font-medium">
@@ -135,13 +138,13 @@ export function TagHoverCard({
                 className="text-primary inline-flex items-center gap-1 hover:underline"
               >
                 <BookOpenText className="size-3.5" aria-hidden="true" />
-                Encyclopedia (dic)
+                {t("readEncyclopedia")}
               </Link>
               <Link
                 href={`/tags/${chipProps.slug}`}
                 className="text-foreground/80 hover:text-foreground inline-flex items-center gap-1 hover:underline"
               >
-                Browse Tag
+                {t("viewTaggedWorks")}
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>

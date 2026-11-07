@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FilePickerDialog } from '@/pages/files/file-picker-dialog'
 import { fileQueryKeys } from '@/pages/files/queries'
+import { FormFieldHelp } from './form-field-help'
 
 interface TagFeaturedImageInputProps {
   label: string
@@ -18,6 +19,7 @@ interface TagFeaturedImageInputProps {
   error?: string
   disabled?: boolean
   className?: string
+  tooltip?: string
 }
 
 export function TagFeaturedImageInput({
@@ -27,6 +29,7 @@ export function TagFeaturedImageInput({
   error,
   disabled = false,
   className,
+  tooltip,
 }: TagFeaturedImageInputProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -86,7 +89,10 @@ export function TagFeaturedImageInput({
 
   return (
     <div className={cn('space-y-2', className)}>
-      <Label className='text-sm font-medium'>{label}</Label>
+      <div className='flex items-center gap-1.5'>
+        <Label className='text-sm font-medium'>{label}</Label>
+        {tooltip && <FormFieldHelp tooltip={tooltip} />}
+      </div>
 
       <div className='bg-muted/15 space-y-3 rounded-xl border p-3.5'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>

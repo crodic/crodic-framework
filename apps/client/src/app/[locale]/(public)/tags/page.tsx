@@ -203,14 +203,14 @@ export default async function TagsDiscoveryHubPage({
                   {t("searchResultsTitle")}
                 </h2>
                 <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-                  <span>Query:</span>
+                  <span>{t("queryLabel")}</span>
                   <code className="bg-background rounded border px-1.5 py-0.5 font-mono">
                     {activeQuery}
                   </code>
                   <span>·</span>
                   <span className="inline-flex items-center gap-1">
                     <GitBranch className="size-3.5" aria-hidden="true" />
-                    DAG Sub-Tag Expansion: {expandHierarchy ? "ON" : "OFF"}
+                    {t("expandHierarchy")}: {expandHierarchy ? "ON" : "OFF"}
                   </span>
                 </div>
               </div>

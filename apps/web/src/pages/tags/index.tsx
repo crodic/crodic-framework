@@ -206,7 +206,10 @@ export function PageTagOverview() {
                     className='text-primary size-4'
                     aria-hidden='true'
                   />
-                  Recent Folksonomy & Governance Audit Trail
+                  {t(
+                    'tags.audit.title',
+                    'Recent Folksonomy & Governance Audit Trail'
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className='p-0'>
@@ -218,17 +221,28 @@ export function PageTagOverview() {
                   </div>
                 ) : auditLogs.length === 0 ? (
                   <div className='text-muted-foreground p-10 text-center text-sm'>
-                    No tag governance or community tagging actions recorded yet.
+                    {t(
+                      'tags.audit.empty',
+                      'No tag governance or community tagging actions recorded yet.'
+                    )}
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Tag Snapshot</TableHead>
-                        <TableHead>Target Entity</TableHead>
-                        <TableHead>Actor</TableHead>
-                        <TableHead className='text-right'>Timestamp</TableHead>
+                        <TableHead>
+                          {t('tags.audit.action', 'Action')}
+                        </TableHead>
+                        <TableHead>
+                          {t('tags.audit.tagSnapshot', 'Tag Snapshot')}
+                        </TableHead>
+                        <TableHead>
+                          {t('tags.audit.targetEntity', 'Target Entity')}
+                        </TableHead>
+                        <TableHead>{t('tags.audit.actor', 'Actor')}</TableHead>
+                        <TableHead className='text-right'>
+                          {t('tags.audit.timestamp', 'Timestamp')}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

@@ -27,6 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   addEntityTagClient,
   removeEntityTagClient,
@@ -52,6 +53,7 @@ export function CollaborativeTagBar({
   entityId,
   locale = "en",
 }: CollaborativeTagBarProps) {
+  const t = useTranslations("Tags");
   const queryClient = useQueryClient();
   const isAuthenticated = Boolean(useAuthStore((s) => s.accessToken));
   const [logsOpen, setLogsOpen] = useState(false);
@@ -156,7 +158,7 @@ export function CollaborativeTagBar({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Tags className="text-primary size-4" aria-hidden="true" />
-          <h3 className="text-sm font-semibold">Tags</h3>
+          <h3 className="text-sm font-semibold">{t("tagsTitle")}</h3>
           <Badge
             variant="outline"
             className="font-mono text-[11px] tabular-nums"
@@ -168,7 +170,7 @@ export function CollaborativeTagBar({
           {data?.tagEditLocked && (
             <Badge variant="secondary" className="gap-1 text-[11px]">
               <Lock className="size-3" aria-hidden="true" />
-              Community Edits Locked
+              {t("communityEditsLocked")}
             </Badge>
           )}
         </div>
@@ -176,12 +178,12 @@ export function CollaborativeTagBar({
         <div className="flex items-center gap-3">
           {isOwner && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-muted-foreground">Freeze edits</span>
+              <span className="text-muted-foreground">{t("freezeEdits")}</span>
               <Switch
                 checked={Boolean(data?.tagEditLocked)}
                 disabled={editLockMutation.isPending}
                 onCheckedChange={(checked) => editLockMutation.mutate(checked)}
-                aria-label="Freeze community tag edits"
+                aria-label={t("freezeEdits")}
               />
             </div>
           )}
@@ -194,15 +196,13 @@ export function CollaborativeTagBar({
                 className="h-7 gap-1.5 px-2 text-xs"
               >
                 <History className="size-3.5" aria-hidden="true" />
-                Edit History
+                {t("editHistory")}
               </Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Tag Governance Audit Log</SheetTitle>
-                <SheetDescription>
-                  Complete folksonomy history of additions, removals, and locks.
-                </SheetDescription>
+                <SheetTitle>{t("auditLogTitle")}</SheetTitle>
+                <SheetDescription>{t("auditLogDesc")}</SheetDescription>
               </SheetHeader>
               <div className="mt-4 max-h-[calc(100dvh-9rem)] divide-y overflow-y-auto px-4">
                 {isLoadingLogs ? (

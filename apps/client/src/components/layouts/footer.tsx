@@ -208,7 +208,7 @@ export function Footer() {
           <div className="flex items-center gap-4">
             <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
               <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
-              All systems operational
+              {t("allSystemsOperational")}
             </span>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 import { DesktopNav } from "@/components/layouts/desktop-nav";
 import { MobileNav } from "@/components/layouts/mobile-nav";
+import { ModeToggle } from "../mode-toggle";
 import UserAccount from "../user-account";
 import LanguageSwitcher from "../language-switcher";
 
@@ -35,11 +36,15 @@ export function Header() {
         </div>
         <div className="hidden items-center gap-2 md:flex">
           <LanguageSwitcher />
+          <ModeToggle />
           {/* <Button variant="outline">Sign In</Button>
           <Button>Get Started</Button> */}
           <UserAccount />
         </div>
-        <MobileNav />
+        <div className="flex items-center gap-2 md:hidden">
+          <ModeToggle />
+          <MobileNav />
+        </div>
       </nav>
     </header>
   );

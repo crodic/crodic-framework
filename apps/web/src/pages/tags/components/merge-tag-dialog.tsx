@@ -36,6 +36,7 @@ import {
   useDataTagAutocomplete,
 } from '../queries'
 import type { TagAutocompleteItem, TagSummary } from '../schema'
+import { FormFieldHelp } from './form-field-help'
 import { TagCategoryBadge, TagNodeChip } from './tag-badges'
 
 interface MergeTagDialogProps {
@@ -115,6 +116,7 @@ export function MergeTagDialog({
                 aria-hidden='true'
               />
               {t('tags.merge.title', 'Merge Into Target Tag')}
+              <FormFieldHelp tooltip={t('tags.help.merge')} />
             </DialogTitle>
             <DialogDescription className='text-pretty'>
               {t(
@@ -127,8 +129,12 @@ export function MergeTagDialog({
           <div className='space-y-4 py-1'>
             <div className='bg-muted/30 flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3'>
               <div className='space-y-1'>
-                <span className='text-muted-foreground block text-[11px] font-medium tracking-wider uppercase'>
-                  Source Tag (Will become 301 Alias)
+                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-medium tracking-wider uppercase'>
+                  {t(
+                    'tags.merge.sourceLabel',
+                    'Source Tag (Will become 301 Alias)'
+                  )}
+                  <FormFieldHelp tooltip={t('tags.help.mergeSource')} />
                 </span>
                 <TagNodeChip
                   name={sourceTag.name}
@@ -142,8 +148,9 @@ export function MergeTagDialog({
                 aria-hidden='true'
               />
               <div className='space-y-1'>
-                <span className='text-muted-foreground block text-[11px] font-medium tracking-wider uppercase'>
-                  Target Canonical Tag
+                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-medium tracking-wider uppercase'>
+                  {t('tags.merge.targetLabel', 'Target Canonical Tag')}
+                  <FormFieldHelp tooltip={t('tags.help.mergeTarget')} />
                 </span>
                 {selectedTarget ? (
                   <TagNodeChip
@@ -154,7 +161,10 @@ export function MergeTagDialog({
                   />
                 ) : (
                   <span className='text-muted-foreground text-xs italic'>
-                    Select a target below...
+                    {t(
+                      'tags.merge.selectTargetPrompt',
+                      'Select a target below...'
+                    )}
                   </span>
                 )}
               </div>
@@ -176,7 +186,10 @@ export function MergeTagDialog({
                   id='merge-target-search'
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  placeholder='Search by canonical name, translation, or alias...'
+                  placeholder={t(
+                    'tags.merge.searchPlaceholder',
+                    'Search by canonical name, translation, or alias...'
+                  )}
                   className='pl-9'
                 />
               </div>
@@ -189,7 +202,10 @@ export function MergeTagDialog({
                   </div>
                 ) : filteredSuggestions.length === 0 ? (
                   <p className='text-muted-foreground p-4 text-center text-xs'>
-                    No matching canonical tags found.
+                    {t(
+                      'tags.merge.noMatches',
+                      'No matching canonical tags found.'
+                    )}
                   </p>
                 ) : (
                   <div className='divide-y'>
@@ -216,7 +232,10 @@ export function MergeTagDialog({
                               )}
                             {item.matchedAlias && (
                               <span className='text-muted-foreground truncate text-[11px]'>
-                                via {item.matchedAlias}
+                                {t('tags.merge.viaAlias', {
+                                  alias: item.matchedAlias,
+                                  defaultValue: `via ${item.matchedAlias}`,
+                                })}
                               </span>
                             )}
                           </div>
@@ -241,7 +260,12 @@ export function MergeTagDialog({
                     className='size-3.5 text-amber-500'
                     aria-hidden='true'
                   />
-                  <span>Atomic Merge Impact Preview</span>
+                  <span>
+                    {t(
+                      'tags.merge.impactPreview',
+                      'Impact Preview (Atomic DB Transaction)'
+                    )}
+                  </span>
                 </div>
                 {isLoadingPreview || !preview ? (
                   <div className='grid grid-cols-3 gap-2'>
@@ -256,7 +280,10 @@ export function MergeTagDialog({
                         {preview.affectedEntityTagsCount.toLocaleString()}
                       </p>
                       <p className='text-muted-foreground text-[11px]'>
-                        Content Links Migrated
+                        {t(
+                          'tags.merge.affectedEntities',
+                          'Content Links Migrated'
+                        )}
                       </p>
                     </div>
                     <div className='bg-muted/30 rounded-md border p-2.5'>
@@ -264,7 +291,10 @@ export function MergeTagDialog({
                         {preview.aliasesToTransferCount.toLocaleString()}
                       </p>
                       <p className='text-muted-foreground text-[11px]'>
-                        Aliases + Redirects
+                        {t(
+                          'tags.merge.aliasesTransferred',
+                          'Aliases + Redirects'
+                        )}
                       </p>
                     </div>
                     <div className='bg-muted/30 rounded-md border p-2.5'>
@@ -272,7 +302,7 @@ export function MergeTagDialog({
                         {preview.relationsToRewireCount.toLocaleString()}
                       </p>
                       <p className='text-muted-foreground text-[11px]'>
-                        DAG Edges Rewired
+                        {t('tags.merge.relationsRewired', 'DAG Edges Rewired')}
                       </p>
                     </div>
                   </div>
@@ -290,7 +320,7 @@ export function MergeTagDialog({
               onClick={() => setConfirmOpen(true)}
             >
               <GitMergeIcon className='size-4' aria-hidden='true' />
-              Review & Merge
+              {t('tags.merge.btnMerge', 'Review & Merge')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -326,7 +356,9 @@ export function MergeTagDialog({
                 })
               }}
             >
-              {mergeMutation.isPending ? 'Merging...' : 'Confirm Merge'}
+              {mergeMutation.isPending
+                ? t('tags.merge.merging', 'Merging...')
+                : t('tags.merge.btnConfirm', 'Confirm Merge')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
