@@ -135,6 +135,48 @@ export function TagStatusBadge({
   )
 }
 
+const AUDIT_ACTION_STYLES: Record<string, string> = {
+  attach:
+    'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/70 dark:bg-emerald-950/60 dark:text-emerald-300',
+  detach:
+    'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/70 dark:bg-rose-950/60 dark:text-rose-300',
+  lock: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/60 dark:text-amber-300',
+  unlock:
+    'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/70 dark:bg-sky-950/60 dark:text-sky-300',
+  merge:
+    'border-purple-200 bg-purple-50 text-purple-800 dark:border-purple-900/70 dark:bg-purple-950/60 dark:text-purple-300',
+  create:
+    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/70 dark:bg-blue-950/60 dark:text-blue-300',
+  update:
+    'border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300',
+}
+
+export function AuditActionBadge({
+  action,
+  className,
+}: {
+  action: string
+  className?: string
+}) {
+  const normalized = action.toLowerCase()
+  const style =
+    AUDIT_ACTION_STYLES[normalized] ??
+    'border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300'
+
+  return (
+    <Badge
+      variant='outline'
+      className={cn(
+        'font-mono text-[11px] font-semibold tracking-wider whitespace-nowrap uppercase',
+        style,
+        className
+      )}
+    >
+      {action}
+    </Badge>
+  )
+}
+
 export function TagNodeChip({
   name,
   translatedName,

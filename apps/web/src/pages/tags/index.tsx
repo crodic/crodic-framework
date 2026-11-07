@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ActivityIcon,
+  BadgeCheckIcon,
   BookMarkedIcon,
+  FlameIcon,
+  LockIcon,
   PlusIcon,
   ShieldCheckIcon,
   TagsIcon,
@@ -39,6 +42,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getTagsTableColumns } from './columns'
 import { MergeTagDialog } from './components/merge-tag-dialog'
+import { AuditActionBadge } from './components/tag-badges'
 import {
   apiDeleteTag,
   useDataTagAuditLogs,
@@ -102,10 +106,12 @@ export function PageTagOverview() {
       }
     }, [])
 
-  const { table, isFetching } = useRestResourceTable<
-    TagSummary,
-    typeof tagFilterParsers
-  >({
+  const {
+    table,
+    data = [],
+    meta,
+    isFetching,
+  } = useRestResourceTable<TagSummary, typeof tagFilterParsers>({
     columns,
     allowedSorts: [
       TagColumnKey.name,
@@ -118,6 +124,14 @@ export function PageTagOverview() {
     buildQuery,
     getRowId: (row) => row.id,
   })
+
+  const stats = useMemo(() => {
+    const totalTags = meta?.totalItems ?? data.length
+    const officialCount = data.filter((t) => t.isOfficial).length
+    const systemCount = data.filter((t) => t.isSystem).length
+    const totalUsage = data.reduce((acc, t) => acc + (t.usageCount || 0), 0)
+    return { totalTags, officialCount, systemCount, totalUsage }
+  }, [meta?.totalItems, data])
 
   const { data: auditLogs = [], isFetching: isLoadingLogs } =
     useDataTagAuditLogs(60, activeTab === 'audit')
@@ -170,6 +184,101 @@ export function PageTagOverview() {
           }
         />
 
+        {/* KPI Executive Summary Strip */}
+        <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
+          <Card className='border-border/70 hover:border-border shadow-xs transition-colors'>
+            <CardContent className='flex items-center gap-3.5 p-4 sm:p-5'>
+              <div className='bg-primary/10 text-primary shrink-0 rounded-lg p-2.5'>
+                <TagsIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div className='min-w-0 flex-1 space-y-0.5'>
+                <p className='text-muted-foreground truncate text-xs font-medium'>
+                  {t('tags.kpi.totalTags', 'Total Canonical Tags')}
+                </p>
+                {isFetching && !data.length ? (
+                  <Skeleton className='h-7 w-20' />
+                ) : (
+                  <p className='text-foreground font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl'>
+                    {stats.totalTags.toLocaleString()}
+                  </p>
+                )}
+                <p className='text-muted-foreground truncate text-[11px]'>
+                  {t('tags.kpi.totalTagsDesc', 'Taxonomy root & leaf nodes')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className='border-border/70 hover:border-border shadow-xs transition-colors'>
+            <CardContent className='flex items-center gap-3.5 p-4 sm:p-5'>
+              <div className='shrink-0 rounded-lg bg-emerald-500/10 p-2.5 text-emerald-600 dark:text-emerald-400'>
+                <BadgeCheckIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div className='min-w-0 flex-1 space-y-0.5'>
+                <p className='text-muted-foreground truncate text-xs font-medium'>
+                  {t('tags.kpi.officialTags', 'Official Curated')}
+                </p>
+                {isFetching && !data.length ? (
+                  <Skeleton className='h-7 w-16' />
+                ) : (
+                  <p className='text-foreground font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl'>
+                    {stats.officialCount.toLocaleString()}
+                  </p>
+                )}
+                <p className='text-muted-foreground truncate text-[11px]'>
+                  {t('tags.kpi.officialDesc', 'Moderator verified tags')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className='border-border/70 hover:border-border shadow-xs transition-colors'>
+            <CardContent className='flex items-center gap-3.5 p-4 sm:p-5'>
+              <div className='shrink-0 rounded-lg bg-amber-500/10 p-2.5 text-amber-600 dark:text-amber-400'>
+                <LockIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div className='min-w-0 flex-1 space-y-0.5'>
+                <p className='text-muted-foreground truncate text-xs font-medium'>
+                  {t('tags.kpi.systemProtected', 'System Protected')}
+                </p>
+                {isFetching && !data.length ? (
+                  <Skeleton className='h-7 w-16' />
+                ) : (
+                  <p className='text-foreground font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl'>
+                    {stats.systemCount.toLocaleString()}
+                  </p>
+                )}
+                <p className='text-muted-foreground truncate text-[11px]'>
+                  {t('tags.kpi.systemDesc', 'Core platform tags')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className='border-border/70 hover:border-border shadow-xs transition-colors'>
+            <CardContent className='flex items-center gap-3.5 p-4 sm:p-5'>
+              <div className='shrink-0 rounded-lg bg-orange-500/10 p-2.5 text-orange-600 dark:text-orange-400'>
+                <FlameIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div className='min-w-0 flex-1 space-y-0.5'>
+                <p className='text-muted-foreground truncate text-xs font-medium'>
+                  {t('tags.kpi.totalUsage', 'Taxonomy Usage')}
+                </p>
+                {isFetching && !data.length ? (
+                  <Skeleton className='h-7 w-20' />
+                ) : (
+                  <p className='text-foreground font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl'>
+                    {stats.totalUsage.toLocaleString()}
+                  </p>
+                )}
+                <p className='text-muted-foreground truncate text-[11px]'>
+                  {t('tags.kpi.usageDesc', 'Total entity assignments')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as 'directory' | 'audit')}
@@ -220,11 +329,19 @@ export function PageTagOverview() {
                     <Skeleton className='h-9 w-full' />
                   </div>
                 ) : auditLogs.length === 0 ? (
-                  <div className='text-muted-foreground p-10 text-center text-sm'>
-                    {t(
-                      'tags.audit.empty',
-                      'No tag governance or community tagging actions recorded yet.'
-                    )}
+                  <div className='flex flex-col items-center justify-center p-12 text-center'>
+                    <div className='bg-muted text-muted-foreground mb-3 rounded-full p-3'>
+                      <ActivityIcon className='size-6' aria-hidden='true' />
+                    </div>
+                    <p className='text-foreground mb-1 text-sm font-semibold'>
+                      {t('tags.audit.emptyTitle', 'No Audit Logs Recorded')}
+                    </p>
+                    <p className='text-muted-foreground max-w-sm text-xs'>
+                      {t(
+                        'tags.audit.empty',
+                        'No tag governance or community tagging actions recorded yet.'
+                      )}
+                    </p>
                   </div>
                 ) : (
                   <Table>
@@ -246,63 +363,73 @@ export function PageTagOverview() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {auditLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell>
-                            <Badge
-                              variant='outline'
-                              className='font-mono text-[11px] uppercase'
-                            >
-                              {log.action}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className='font-medium'>
-                            {log.tagNameSnapshot ? (
-                              <button
-                                type='button'
-                                disabled={!log.tagId}
-                                onClick={() => {
-                                  if (log.tagId) {
-                                    navigate(`/tags/${log.tagId}/show`)
-                                  }
-                                }}
-                                className='hover:underline disabled:no-underline'
-                              >
-                                #{log.tagNameSnapshot}
-                              </button>
-                            ) : (
-                              <span className='text-muted-foreground text-xs'>
-                                Entity Config
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className='font-mono text-xs'>
-                            {log.entityType} #{log.entityId}
-                          </TableCell>
-                          <TableCell>
-                            <div className='inline-flex items-center gap-1.5 text-xs'>
-                              {log.isAdminAction && (
-                                <ShieldCheckIcon
-                                  className='text-primary size-3.5'
-                                  aria-hidden='true'
-                                />
+                      {auditLogs.map((log) => {
+                        const logDate = new Date(log.createdAt)
+                        return (
+                          <TableRow
+                            key={log.id}
+                            className='hover:bg-muted/40 transition-colors'
+                          >
+                            <TableCell>
+                              <AuditActionBadge action={log.action} />
+                            </TableCell>
+                            <TableCell className='font-medium'>
+                              {log.tagNameSnapshot ? (
+                                <button
+                                  type='button'
+                                  disabled={!log.tagId}
+                                  onClick={() => {
+                                    if (log.tagId) {
+                                      navigate(`/tags/${log.tagId}/show`)
+                                    }
+                                  }}
+                                  className='hover:text-primary font-mono text-xs font-medium hover:underline disabled:no-underline'
+                                >
+                                  #{log.tagNameSnapshot}
+                                </button>
+                              ) : (
+                                <span className='text-muted-foreground text-xs italic'>
+                                  Entity Config
+                                </span>
                               )}
-                              <span>
-                                {log.actorName ||
-                                  (log.isAdminAction
-                                    ? 'Administrator'
-                                    : 'Community User')}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className='text-muted-foreground text-right text-xs tabular-nums'>
-                            {format(
-                              new Date(log.createdAt),
-                              'dd/MM/yyyy HH:mm:ss'
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className='text-muted-foreground font-mono text-xs'>
+                              <span className='text-foreground font-medium'>
+                                {log.entityType}
+                              </span>{' '}
+                              #{log.entityId}
+                            </TableCell>
+                            <TableCell>
+                              <div className='inline-flex items-center gap-1.5 text-xs'>
+                                {log.isAdminAction && (
+                                  <ShieldCheckIcon
+                                    className='text-primary size-3.5 shrink-0'
+                                    aria-hidden='true'
+                                  />
+                                )}
+                                <span className='text-foreground/90 font-medium'>
+                                  {log.actorName ||
+                                    (log.isAdminAction
+                                      ? 'Administrator'
+                                      : 'Community User')}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className='text-right text-xs'>
+                              <div className='flex flex-col items-end gap-0.5 tabular-nums'>
+                                <span className='text-foreground/90 font-medium'>
+                                  {formatDistanceToNow(logDate, {
+                                    addSuffix: true,
+                                  })}
+                                </span>
+                                <span className='text-muted-foreground text-[11px]'>
+                                  {format(logDate, 'dd/MM/yyyy HH:mm:ss')}
+                                </span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </Table>
                 )}

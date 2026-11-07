@@ -4,6 +4,8 @@ import {
   ArrowLeftIcon,
   BadgeCheckIcon,
   BookMarkedIcon,
+  CheckIcon,
+  CopyIcon,
   EditIcon,
   ExternalLinkIcon,
   FlameIcon,
@@ -55,6 +57,7 @@ export function PageTagShow() {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isMergeOpen, setIsMergeOpen] = useState(false)
+  const [copiedItem, setCopiedItem] = useState<string | null>(null)
 
   const { data: tag, isFetching } = useDataTagById(id ?? '')
 
@@ -65,6 +68,13 @@ export function PageTagShow() {
     },
     { title: tag ? `#${tag.name}` : `#${id}` },
   ])
+
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedItem(type)
+    toast.success(t('tags.actions.copied', 'Copied to clipboard'))
+    setTimeout(() => setCopiedItem(null), 2000)
+  }
 
   const deleteMutation = useMutation({
     mutationFn: apiDeleteTag,
@@ -99,12 +109,30 @@ export function PageTagShow() {
 
       <Main className='flex flex-1 flex-col gap-5 sm:gap-6'>
         {/* Governance Studio Header */}
-        <div className='flex flex-wrap items-start justify-between gap-4 border-b pb-5'>
-          <div className='space-y-2'>
+        <div className='bg-card/60 flex flex-wrap items-start justify-between gap-4 rounded-xl border p-4 shadow-2xs backdrop-blur-xs sm:p-5'>
+          <div className='space-y-2.5'>
             <div className='flex flex-wrap items-center gap-2'>
-              <h1 className='text-2xl font-bold tracking-tight text-balance'>
-                #{tag.name}
-              </h1>
+              <div className='group/header-name flex items-center gap-1.5'>
+                <h1 className='text-foreground text-2xl font-bold tracking-tight text-balance'>
+                  #{tag.name}
+                </h1>
+                <button
+                  type='button'
+                  onClick={() => copyToClipboard(tag.name, 'name')}
+                  aria-label={t('tags.actions.copyName', 'Copy tag name')}
+                  className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-sm p-1 opacity-60 transition-opacity hover:opacity-100'
+                >
+                  {copiedItem === 'name' ? (
+                    <CheckIcon
+                      className='size-3.5 text-emerald-500'
+                      aria-hidden='true'
+                    />
+                  ) : (
+                    <CopyIcon className='size-3.5' aria-hidden='true' />
+                  )}
+                </button>
+              </div>
+
               <TagCategoryBadge category={tag.category} />
               <TagSafetyBadge safetyRating={tag.safetyRating} />
               <TagStatusBadge status={tag.status} />
@@ -118,7 +146,10 @@ export function PageTagShow() {
                 </Badge>
               )}
               {tag.isSystem && (
-                <Badge variant='outline' className='gap-1'>
+                <Badge
+                  variant='outline'
+                  className='border-muted-foreground/30 gap-1'
+                >
                   <LockIcon className='size-3' aria-hidden='true' />
                   {t('tags.flags.system', 'System Protected')}
                 </Badge>
@@ -126,22 +157,42 @@ export function PageTagShow() {
             </div>
 
             <div className='text-muted-foreground flex flex-wrap items-center gap-4 text-xs'>
-              <span>
-                Slug: <code className='font-mono'>/{tag.slug}</code>
-              </span>
-              <span className='tabular-nums'>
+              <div className='inline-flex items-center gap-1.5'>
+                <span>Slug:</span>
+                <code className='bg-muted text-foreground/90 rounded px-1.5 py-0.5 font-mono text-[11px]'>
+                  /{tag.slug}
+                </code>
+                <button
+                  type='button'
+                  onClick={() => copyToClipboard(tag.slug, 'slug')}
+                  aria-label={t('tags.actions.copySlug', 'Copy slug')}
+                  className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-sm p-0.5 opacity-60 transition-opacity hover:opacity-100'
+                >
+                  {copiedItem === 'slug' ? (
+                    <CheckIcon
+                      className='size-3 text-emerald-500'
+                      aria-hidden='true'
+                    />
+                  ) : (
+                    <CopyIcon className='size-3' aria-hidden='true' />
+                  )}
+                </button>
+              </div>
+
+              <span className='inline-flex items-center gap-1 tabular-nums'>
                 {t('tags.show.usage', 'Usage:')}{' '}
-                <strong className='text-foreground font-mono'>
+                <strong className='text-foreground font-mono font-semibold'>
                   {tag.usageCount.toLocaleString()}
                 </strong>
               </span>
+
               <span className='inline-flex items-center gap-1 tabular-nums'>
                 <FlameIcon
                   className='size-3.5 text-amber-500'
                   aria-hidden='true'
                 />
                 {t('tags.show.trending', 'Trending:')}{' '}
-                <strong className='text-foreground font-mono'>
+                <strong className='text-foreground font-mono font-semibold'>
                   {tag.trendingScore.toFixed(1)}
                 </strong>
               </span>

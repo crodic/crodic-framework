@@ -222,17 +222,30 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </CardContent>
           </Card>
 
-          <div className='flex justify-center' aria-hidden='true'>
-            <ArrowDownIcon className='text-muted-foreground size-4' />
+          {/* Connector: Parent -> Current */}
+          <div
+            className='my-1 flex items-center justify-center gap-2'
+            aria-hidden='true'
+          >
+            <div className='bg-border h-px w-12' />
+            <span className='text-muted-foreground bg-muted/60 border-border/40 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-wider uppercase'>
+              <ArrowDownIcon className='text-primary size-3' />
+              Parent concept (親タグ)
+            </span>
+            <div className='bg-border h-px w-12' />
           </div>
 
           {/* Tier 2: Current Node + Siblings */}
           <div className='grid gap-4 md:grid-cols-2'>
-            <Card className='border-primary/40 bg-primary/5 shadow-xs'>
+            <Card className='border-primary/50 bg-primary/5 ring-primary/20 relative overflow-hidden shadow-xs ring-2'>
+              <div className='bg-primary/10 pointer-events-none absolute top-0 right-0 h-16 w-16 translate-x-4 -translate-y-4 rounded-full blur-xl' />
               <CardHeader className='pb-2'>
-                <CardDescription className='text-[11px] font-semibold tracking-wider uppercase'>
-                  {t('tags.hierarchy.currentNode', 'Current Canonical Node')}
-                </CardDescription>
+                <div className='flex items-center justify-between'>
+                  <CardDescription className='text-primary text-[11px] font-semibold tracking-wider uppercase'>
+                    {t('tags.hierarchy.currentNode', 'Current Canonical Node')}
+                  </CardDescription>
+                  <span className='bg-primary flex h-2 w-2 animate-pulse rounded-full' />
+                </div>
                 <CardTitle className='flex items-center gap-2 text-lg'>
                   <span>#{tag.name}</span>
                   <TagCategoryBadge category={tag.category} />
@@ -240,7 +253,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               </CardHeader>
               <CardContent className='text-muted-foreground text-xs'>
                 Slug: <code className='font-mono'>/{tag.slug}</code> ·{' '}
-                <span className='font-mono tabular-nums'>
+                <span className='text-foreground font-mono font-semibold tabular-nums'>
                   {tag.usageCount.toLocaleString()}
                 </span>{' '}
                 {t('tags.hierarchy.taggedItems', 'tagged items')}
@@ -285,8 +298,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </Card>
           </div>
 
-          <div className='flex justify-center' aria-hidden='true'>
-            <ArrowDownIcon className='text-muted-foreground size-4' />
+          {/* Connector: Current -> Children */}
+          <div
+            className='my-1 flex items-center justify-center gap-2'
+            aria-hidden='true'
+          >
+            <div className='bg-border h-px w-12' />
+            <span className='text-muted-foreground bg-muted/60 border-border/40 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-wider uppercase'>
+              <ArrowDownIcon className='text-primary size-3' />
+              Sub-concept hierarchy (子タグ)
+            </span>
+            <div className='bg-border h-px w-12' />
           </div>
 
           {/* Tier 3: Children */}
@@ -562,15 +584,24 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                       {filteredSuggestions.map((candidate) => (
                         <div
                           key={candidate.id}
-                          className='flex items-center justify-between gap-2 px-3 py-2 text-xs'
+                          className='hover:bg-muted/40 flex items-center justify-between gap-2 px-3 py-2 text-xs transition-colors'
                         >
-                          <div className='min-w-0'>
-                            <p className='truncate font-medium'>
-                              #{candidate.name}
-                            </p>
-                            <p className='text-muted-foreground truncate text-[11px]'>
-                              {candidate.translatedName || candidate.category}
-                            </p>
+                          <div className='min-w-0 flex-1 space-y-0.5'>
+                            <div className='flex items-center gap-1.5'>
+                              <p className='text-foreground truncate font-medium'>
+                                #{candidate.name}
+                              </p>
+                              <TagCategoryBadge
+                                category={candidate.category}
+                                className='origin-left scale-90 py-0 text-[10px]'
+                              />
+                            </div>
+                            {candidate.translatedName &&
+                              candidate.translatedName !== candidate.name && (
+                                <p className='text-muted-foreground truncate text-[11px]'>
+                                  {candidate.translatedName}
+                                </p>
+                              )}
                           </div>
                           <Button
                             type='button'

@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { format } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import {
   BadgeCheckIcon,
+  CheckIcon,
+  CopyIcon,
   EditIcon,
   EyeIcon,
   FlameIcon,
@@ -11,6 +14,7 @@ import {
   MoreHorizontalIcon,
   TrashIcon,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -36,6 +40,67 @@ interface TagColumnsOptions {
   onDelete: (row: TagSummary) => void
 }
 
+function TagNameCell({ tag, t }: { tag: TagSummary; t: TFunction }) {
+  const [copied, setCopied] = useState(false)
+  const aliasCount = tag.aliases?.length ?? 0
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(tag.name)
+    setCopied(true)
+    toast.success(t('tags.actions.copied', 'Copied to clipboard'))
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className='group/tag flex min-w-0 flex-col gap-0.5 py-0.5'>
+      <div className='flex min-w-0 items-center gap-1.5'>
+        <span className='text-foreground group-hover/tag:text-primary truncate font-semibold transition-colors'>
+          #{tag.name}
+        </span>
+        <button
+          type='button'
+          onClick={handleCopy}
+          aria-label={t('tags.actions.copyName', 'Copy tag name')}
+          className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-sm p-0.5 opacity-0 transition-opacity group-hover/tag:opacity-100 focus-visible:opacity-100'
+        >
+          {copied ? (
+            <CheckIcon className='size-3 text-emerald-500' aria-hidden='true' />
+          ) : (
+            <CopyIcon className='size-3' aria-hidden='true' />
+          )}
+        </button>
+        {tag.isOfficial && (
+          <BadgeCheckIcon
+            className='text-primary size-3.5 shrink-0'
+            aria-hidden='true'
+          />
+        )}
+        {tag.isSystem && (
+          <LockIcon
+            className='text-muted-foreground size-3.5 shrink-0'
+            aria-hidden='true'
+          />
+        )}
+        {aliasCount > 0 && (
+          <Badge
+            variant='secondary'
+            className='px-1.5 py-0 text-[10px] font-normal tabular-nums'
+          >
+            +{aliasCount} alias
+          </Badge>
+        )}
+      </div>
+      <div className='text-muted-foreground flex min-w-0 items-center gap-2 text-xs'>
+        <span className='truncate font-mono text-[11px]'>/{tag.slug}</span>
+        {tag.translatedName && tag.translatedName !== tag.name && (
+          <span className='truncate'>· {tag.translatedName}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function getTagsTableColumns({
   t,
   onViewStudio,
@@ -53,46 +118,7 @@ export function getTagsTableColumns({
           label={t('tags.table.name', 'Canonical Tag')}
         />
       ),
-      cell: ({ row }) => {
-        const tag = row.original
-        const aliasCount = tag.aliases?.length ?? 0
-
-        return (
-          <div className='flex min-w-0 flex-col gap-0.5 py-0.5'>
-            <div className='flex min-w-0 items-center gap-1.5'>
-              <span className='truncate font-semibold'>#{tag.name}</span>
-              {tag.isOfficial && (
-                <BadgeCheckIcon
-                  className='text-primary size-3.5 shrink-0'
-                  aria-hidden='true'
-                />
-              )}
-              {tag.isSystem && (
-                <LockIcon
-                  className='text-muted-foreground size-3.5 shrink-0'
-                  aria-hidden='true'
-                />
-              )}
-              {aliasCount > 0 && (
-                <Badge
-                  variant='secondary'
-                  className='px-1.5 py-0 text-[10px] font-normal tabular-nums'
-                >
-                  +{aliasCount} alias
-                </Badge>
-              )}
-            </div>
-            <div className='text-muted-foreground flex min-w-0 items-center gap-2 text-xs'>
-              <span className='truncate font-mono text-[11px]'>
-                /{tag.slug}
-              </span>
-              {tag.translatedName && tag.translatedName !== tag.name && (
-                <span className='truncate'>· {tag.translatedName}</span>
-              )}
-            </div>
-          </div>
-        )
-      },
+      cell: ({ row }) => <TagNameCell tag={row.original} t={t} />,
       enableColumnFilter: true,
       meta: {
         label: t('tags.table.name', 'Canonical Tag'),
@@ -192,7 +218,7 @@ export function getTagsTableColumns({
         />
       ),
       cell: ({ row }) => (
-        <span className='font-mono text-xs font-medium tabular-nums'>
+        <span className='text-foreground/90 font-mono text-xs font-semibold tabular-nums'>
           {row.original.usageCount.toLocaleString()}
         </span>
       ),
@@ -208,10 +234,14 @@ export function getTagsTableColumns({
       ),
       cell: ({ row }) => (
         <div className='inline-flex items-center gap-1 font-mono text-xs tabular-nums'>
-          {row.original.trendingScore > 0 && (
-            <FlameIcon className='size-3.5 text-amber-500' aria-hidden='true' />
+          {row.original.trendingScore > 0 ? (
+            <span className='inline-flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400'>
+              <FlameIcon className='size-3.5 shrink-0' aria-hidden='true' />
+              {row.original.trendingScore.toFixed(1)}
+            </span>
+          ) : (
+            <span className='text-muted-foreground'>0.0</span>
           )}
-          <span>{row.original.trendingScore.toFixed(1)}</span>
         </div>
       ),
     },
@@ -237,7 +267,7 @@ export function getTagsTableColumns({
               <Badge
                 key={loc}
                 variant='outline'
-                className='px-1.5 py-0 text-[10px] uppercase'
+                className='bg-muted/40 px-1.5 py-0 font-mono text-[10px] uppercase'
               >
                 {loc}
               </Badge>
