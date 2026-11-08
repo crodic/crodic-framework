@@ -16,9 +16,9 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { useDebounce } from '@/hooks/use-debounce'
-import { cn } from '@/lib/utils'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { cn } from '@/lib/utils'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,7 +96,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
     },
     onError: (err) => {
       setLinkingId(null)
-      restApiErrorHandler(err)
+      restApiErrorHandler(err as any)
     },
   })
 
@@ -142,8 +142,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
   const isAlreadyLinked = (candidateId: string): boolean => {
     if (direction === 'parent') return parents.some((p) => p.id === candidateId)
     if (direction === 'child') return children.some((c) => c.id === candidateId)
-    if (direction === 'related') return related.some((r) => r.id === candidateId)
-    if (direction === 'disambiguation') return disambiguations.some((d) => d.id === candidateId)
+    if (direction === 'related')
+      return related.some((r) => r.id === candidateId)
+    if (direction === 'disambiguation')
+      return disambiguations.some((d) => d.id === candidateId)
     return false
   }
 
@@ -195,32 +197,33 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
       {/* Modern Spotlight-Style Tag Linking Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='sm:max-w-xl md:max-w-2xl p-0 gap-0 overflow-hidden rounded-2xl border border-border/80 shadow-2xl'>
+        <DialogContent className='border-border/80 gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl md:max-w-2xl'>
           {/* Header Bar */}
-          <DialogHeader className='px-6 pt-5 pb-4 border-b border-border/60 bg-card'>
+          <DialogHeader className='border-border/60 bg-card border-b px-6 pt-5 pb-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
-                <div className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'>
+                <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
                   <GitBranchIcon className='size-5' aria-hidden='true' />
                 </div>
                 <div>
-                  <DialogTitle className='text-base font-bold text-foreground'>
+                  <DialogTitle className='text-foreground text-base font-bold'>
                     Liên kết Quan hệ Ngữ nghĩa Thẻ
                   </DialogTitle>
-                  <p className='text-xs text-muted-foreground'>
-                    Thiết lập phân cấp và liên kết cho <strong>#{tag.name}</strong>
+                  <p className='text-muted-foreground text-xs'>
+                    Thiết lập phân cấp và liên kết cho{' '}
+                    <strong>#{tag.name}</strong>
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Segmented Pill Direction Selector */}
-            <div className='mt-4 flex items-center gap-1.5 rounded-xl bg-muted/60 p-1 border border-border/40'>
+            <div className='bg-muted/60 border-border/40 mt-4 flex items-center gap-1.5 rounded-xl border p-1'>
               <button
                 type='button'
                 onClick={() => setDirection('parent')}
                 className={cn(
-                  'flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center',
+                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
                   direction === 'parent'
                     ? 'bg-background text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -232,9 +235,9 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('child')}
                 className={cn(
-                  'flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center',
+                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
                   direction === 'child'
-                    ? 'bg-background text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    ? 'bg-background text-emerald-600 shadow-xs dark:text-emerald-400'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -244,9 +247,9 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('related')}
                 className={cn(
-                  'flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center',
+                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
                   direction === 'related'
-                    ? 'bg-background text-sky-600 dark:text-sky-400 shadow-xs'
+                    ? 'bg-background text-sky-600 shadow-xs dark:text-sky-400'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -256,9 +259,9 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('disambiguation')}
                 className={cn(
-                  'flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center',
+                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
                   direction === 'disambiguation'
-                    ? 'bg-background text-amber-600 dark:text-amber-400 shadow-xs'
+                    ? 'bg-background text-amber-600 shadow-xs dark:text-amber-400'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -267,28 +270,35 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </div>
 
             {/* Helper explanation line */}
-            <div className='mt-2.5 px-1 text-xs text-muted-foreground flex items-center gap-1.5'>
-              <span className='font-medium text-foreground'>
-                {direction === 'parent' && `Thẻ được chọn sẽ là cha bao quát #${tag.name}`}
-                {direction === 'child' && `#{tag.name} sẽ là cha bao quát thẻ được chọn`}
-                {direction === 'related' && `Mối quan hệ ngang hàng cùng chủ đề với #${tag.name}`}
-                {direction === 'disambiguation' && `Phân biệt nghĩa / đồng âm khác ngữ cảnh với #${tag.name}`}
+            <div className='text-muted-foreground mt-2.5 flex items-center gap-1.5 px-1 text-xs'>
+              <span className='text-foreground font-medium'>
+                {direction === 'parent' &&
+                  `Thẻ được chọn sẽ là cha bao quát #${tag.name}`}
+                {direction === 'child' &&
+                  `#{tag.name} sẽ là cha bao quát thẻ được chọn`}
+                {direction === 'related' &&
+                  `Mối quan hệ ngang hàng cùng chủ đề với #${tag.name}`}
+                {direction === 'disambiguation' &&
+                  `Phân biệt nghĩa / đồng âm khác ngữ cảnh với #${tag.name}`}
               </span>
             </div>
           </DialogHeader>
 
           {/* Spotlight Search Bar */}
-          <div className='flex items-center gap-3 px-6 h-13 border-b border-border/60 bg-muted/20'>
-            <SearchIcon className='size-4 text-primary shrink-0' aria-hidden='true' />
+          <div className='border-border/60 bg-muted/20 flex h-13 items-center gap-3 border-b px-6'>
+            <SearchIcon
+              className='text-primary size-4 shrink-0'
+              aria-hidden='true'
+            />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Gõ tên thẻ, bản dịch hoặc alias (VD: Frieren, Fantasy, Original)...'
-              className='flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground'
+              className='placeholder:text-muted-foreground flex-1 bg-transparent text-sm font-medium outline-none'
               autoFocus
             />
             {isSearching ? (
-              <Loader2Icon className='size-4 animate-spin text-primary shrink-0' />
+              <Loader2Icon className='text-primary size-4 shrink-0 animate-spin' />
             ) : searchQuery ? (
               <button
                 type='button'
@@ -301,14 +311,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </div>
 
           {/* Results List (Clean, borderless, spacious, spotlight style) */}
-          <div className='max-h-[380px] overflow-y-auto p-3 space-y-1'>
+          <div className='max-h-[380px] space-y-1 overflow-y-auto p-3'>
             {candidates.length === 0 && !isSearching ? (
-              <div className='p-10 text-center space-y-2'>
-                <p className='text-sm font-medium text-foreground'>
-                  {searchQuery ? 'Không tìm thấy thẻ phù hợp' : 'Gõ tên thẻ hoặc alias để tìm kiếm'}
+              <div className='space-y-2 p-10 text-center'>
+                <p className='text-foreground text-sm font-medium'>
+                  {searchQuery
+                    ? 'Không tìm thấy thẻ phù hợp'
+                    : 'Gõ tên thẻ hoặc alias để tìm kiếm'}
                 </p>
-                <p className='text-xs text-muted-foreground'>
-                  Hệ thống tự động tìm kiếm qua tên chuẩn, bản dịch đa ngôn ngữ và từ đồng nghĩa alias.
+                <p className='text-muted-foreground text-xs'>
+                  Hệ thống tự động tìm kiếm qua tên chuẩn, bản dịch đa ngôn ngữ
+                  và từ đồng nghĩa alias.
                 </p>
               </div>
             ) : (
@@ -325,21 +338,21 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                       }
                     }}
                     className={cn(
-                      'group flex items-center justify-between gap-4 px-4 py-3 rounded-xl transition-all cursor-pointer',
+                      'group flex cursor-pointer items-center justify-between gap-4 rounded-xl px-4 py-3 transition-all',
                       alreadyLinked
-                        ? 'opacity-60 bg-muted/30 cursor-default'
+                        ? 'bg-muted/30 cursor-default opacity-60'
                         : 'hover:bg-primary/5 hover:border-primary/20 border border-transparent'
                     )}
                   >
                     {/* Left: Tag Information */}
                     <div className='min-w-0 flex-1 space-y-1'>
                       <div className='flex flex-wrap items-center gap-2'>
-                        <span className='font-mono text-sm font-bold text-foreground group-hover:text-primary transition-colors'>
+                        <span className='text-foreground group-hover:text-primary font-mono text-sm font-bold transition-colors'>
                           #{item.name}
                         </span>
                         {item.isOfficial && (
                           <BadgeCheckIcon
-                            className='size-3.5 text-primary shrink-0'
+                            className='text-primary size-3.5 shrink-0'
                             aria-hidden='true'
                           />
                         )}
@@ -347,16 +360,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                           category={item.category}
                           className='py-0 text-[10px]'
                         />
-                        {item.translatedName && item.translatedName !== item.name && (
-                          <span className='text-xs text-muted-foreground truncate'>
-                            ({item.translatedName})
-                          </span>
-                        )}
+                        {item.translatedName &&
+                          item.translatedName !== item.name && (
+                            <span className='text-muted-foreground truncate text-xs'>
+                              ({item.translatedName})
+                            </span>
+                          )}
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-mono'>
+                      <div className='text-muted-foreground flex flex-wrap items-center gap-3 font-mono text-xs'>
                         {item.matchedAlias ? (
-                          <span className='text-primary/90 bg-primary/10 px-1.5 py-0.5 rounded text-[11px] font-sans font-medium'>
+                          <span className='text-primary/90 bg-primary/10 rounded px-1.5 py-0.5 font-sans text-[11px] font-medium'>
                             Khớp alias: {item.matchedAlias}
                           </span>
                         ) : null}
@@ -369,19 +383,19 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     </div>
 
                     {/* Right: State / Action */}
-                    <div className='shrink-0 flex items-center gap-2'>
+                    <div className='flex shrink-0 items-center gap-2'>
                       {alreadyLinked ? (
-                        <span className='inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-lg'>
+                        <span className='text-muted-foreground bg-muted inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium'>
                           <CheckIcon className='size-3 text-emerald-500' />
                           Đã liên kết
                         </span>
                       ) : isCurrentlyLinking ? (
-                        <div className='flex items-center gap-1.5 text-xs text-primary font-medium px-2 py-1'>
+                        <div className='text-primary flex items-center gap-1.5 px-2 py-1 text-xs font-medium'>
                           <Loader2Icon className='size-3.5 animate-spin' />
                           <span>Đang liên kết...</span>
                         </div>
                       ) : (
-                        <span className='text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-primary/10'>
+                        <span className='text-primary bg-primary/10 inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100'>
                           <span>Liên kết</span>
                           <ArrowRightIcon className='size-3' />
                         </span>
@@ -394,14 +408,14 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </div>
 
           {/* Footer Bar */}
-          <div className='flex items-center justify-between px-6 py-3 border-t border-border/60 bg-muted/10 text-xs text-muted-foreground'>
+          <div className='border-border/60 bg-muted/10 text-muted-foreground flex items-center justify-between border-t px-6 py-3 text-xs'>
             <span>Bấm trực tiếp vào hàng thẻ bất kỳ để liên kết nhanh</span>
             <Button
               type='button'
               variant='outline'
               size='sm'
               onClick={() => setIsDialogOpen(false)}
-              className='cursor-pointer text-xs h-8'
+              className='h-8 cursor-pointer text-xs'
             >
               Đóng
             </Button>
@@ -412,17 +426,18 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
       {/* 100% Full-Width Semantic DAG Workspace */}
       <div className='space-y-6'>
         {/* Header Action Bar */}
-        <div className='flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-2xs'>
+        <div className='border-border/80 bg-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 shadow-2xs'>
           <div className='flex items-center gap-3'>
-            <div className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'>
+            <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
               <GitBranchIcon className='size-5' aria-hidden='true' />
             </div>
             <div>
-              <h2 className='text-base font-semibold text-foreground'>
+              <h2 className='text-foreground text-base font-semibold'>
                 Cây Phân Cấp Ngữ Nghĩa (DAG Hierarchy)
               </h2>
-              <p className='text-xs text-muted-foreground'>
-                Mô hình hóa quan hệ cha - con, đồng cấp, liên quan và phân biệt đồng âm.
+              <p className='text-muted-foreground text-xs'>
+                Mô hình hóa quan hệ cha - con, đồng cấp, liên quan và phân biệt
+                đồng âm.
               </p>
             </div>
           </div>
@@ -431,7 +446,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <Button
               type='button'
               onClick={() => openDialog('child')}
-              className='h-9 gap-2 shadow-2xs cursor-pointer font-semibold text-xs'
+              className='h-9 cursor-pointer gap-2 text-xs font-semibold shadow-2xs'
             >
               <PlusIcon className='size-4' aria-hidden='true' />
               <span>Thiết lập Quan hệ Thẻ</span>
@@ -440,14 +455,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         </div>
 
         {/* Tier 1: Parents (Thẻ Cha) */}
-        <Card className='shadow-xs border-border/80'>
+        <Card className='border-border/80 shadow-xs'>
           <CardHeader className='flex flex-row items-center justify-between pb-3'>
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
                   {t('tags.hierarchy.parents', 'Thẻ Cha')}
                 </CardTitle>
-                <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+                <Badge
+                  variant='outline'
+                  className='font-mono text-xs tabular-nums'
+                >
                   {parents.length}
                 </Badge>
               </div>
@@ -463,7 +481,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               variant='outline'
               size='sm'
               onClick={() => openDialog('parent')}
-              className='h-8 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 cursor-pointer shadow-2xs'
+              className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
               <span>Thêm Thẻ Cha</span>
@@ -471,7 +489,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </CardHeader>
           <CardContent>
             {parents.length === 0 ? (
-              <p className='text-muted-foreground text-xs italic py-2'>
+              <p className='text-muted-foreground py-2 text-xs italic'>
                 {t(
                   'tags.hierarchy.rootNode',
                   'Thẻ gốc (Root taxonomy node) — chưa liên kết thẻ cha nào.'
@@ -500,7 +518,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                             label: `#${parent.name} → #${tag.name}`,
                           })
                         }
-                        className='text-muted-foreground hover:text-destructive ml-1 rounded-xs p-0.5 transition-colors cursor-pointer'
+                        className='text-muted-foreground hover:text-destructive ml-1 cursor-pointer rounded-xs p-0.5 transition-colors'
                       >
                         <XIcon className='size-3' aria-hidden='true' />
                       </button>
@@ -513,13 +531,16 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         </Card>
 
         {/* Visual Connector: Parents -> Current Node */}
-        <div className='flex items-center justify-center gap-3' aria-hidden='true'>
-          <div className='bg-border h-px flex-1 max-w-xs' />
+        <div
+          className='flex items-center justify-center gap-3'
+          aria-hidden='true'
+        >
+          <div className='bg-border h-px max-w-xs flex-1' />
           <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-medium'>
             <ArrowDownIcon className='text-primary size-3.5' />
             Kế thừa phân cấp (Is-A / Inheritance)
           </span>
-          <div className='bg-border h-px flex-1 max-w-xs' />
+          <div className='bg-border h-px max-w-xs flex-1' />
         </div>
 
         {/* Tier 2: Current Node & Siblings */}
@@ -529,26 +550,32 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <div className='bg-primary/10 pointer-events-none absolute top-0 right-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-full blur-2xl' />
             <CardHeader className='pb-3'>
               <div className='flex items-center justify-between'>
-                <span className='text-primary text-[11px] font-bold tracking-wider uppercase inline-flex items-center gap-1.5'>
+                <span className='text-primary inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase'>
                   <span className='bg-primary size-2 animate-pulse rounded-full' />
                   {t('tags.hierarchy.currentNode', 'Thẻ Hiện Tại')}
                 </span>
-                <Badge variant='outline' className='bg-background/80 font-mono text-[11px]'>
+                <Badge
+                  variant='outline'
+                  className='bg-background/80 font-mono text-[11px]'
+                >
                   Taxonomy Focus
                 </Badge>
               </div>
               <CardTitle className='flex flex-wrap items-center gap-2.5 text-xl font-bold'>
                 <span>#{tag.name}</span>
                 {tag.isOfficial && (
-                  <BadgeCheckIcon className='size-4.5 text-primary shrink-0' aria-hidden='true' />
+                  <BadgeCheckIcon
+                    className='text-primary size-4.5 shrink-0'
+                    aria-hidden='true'
+                  />
                 )}
                 <TagCategoryBadge category={tag.category} />
               </CardTitle>
             </CardHeader>
-            <CardContent className='text-muted-foreground text-xs space-y-1.5'>
+            <CardContent className='text-muted-foreground space-y-1.5 text-xs'>
               <div className='flex items-center gap-2'>
                 <span>Slug:</span>
-                <code className='font-mono font-semibold text-foreground bg-background/60 px-1.5 py-0.5 rounded border'>
+                <code className='text-foreground bg-background/60 rounded border px-1.5 py-0.5 font-mono font-semibold'>
                   /{tag.slug}
                 </code>
               </div>
@@ -563,14 +590,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </Card>
 
           {/* Siblings (Thẻ Cùng Cấp) */}
-          <Card className='shadow-xs border-border/80'>
+          <Card className='border-border/80 shadow-xs'>
             <CardHeader className='pb-3'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <CardTitle className='text-sm font-semibold'>
                     {t('tags.hierarchy.siblings', 'Thẻ Cùng Cấp')}
                   </CardTitle>
-                  <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+                  <Badge
+                    variant='outline'
+                    className='font-mono text-xs tabular-nums'
+                  >
                     {siblings.length}
                   </Badge>
                 </div>
@@ -584,7 +614,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </CardHeader>
             <CardContent>
               {siblings.length === 0 ? (
-                <p className='text-muted-foreground text-xs italic py-2'>
+                <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noSiblings',
                     'Chưa có thẻ cùng cấp từ thẻ cha chung.'
@@ -609,24 +639,30 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         </div>
 
         {/* Visual Connector: Current Node -> Children */}
-        <div className='flex items-center justify-center gap-3' aria-hidden='true'>
-          <div className='bg-border h-px flex-1 max-w-xs' />
+        <div
+          className='flex items-center justify-center gap-3'
+          aria-hidden='true'
+        >
+          <div className='bg-border h-px max-w-xs flex-1' />
           <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-medium'>
-            <ArrowDownIcon className='text-emerald-500 size-3.5' />
+            <ArrowDownIcon className='size-3.5 text-emerald-500' />
             Phân nhánh thẻ con (Sub-types / Specialization)
           </span>
-          <div className='bg-border h-px flex-1 max-w-xs' />
+          <div className='bg-border h-px max-w-xs flex-1' />
         </div>
 
         {/* Tier 3: Children (Thẻ Con) */}
-        <Card className='shadow-xs border-border/80'>
+        <Card className='border-border/80 shadow-xs'>
           <CardHeader className='flex flex-row items-center justify-between pb-3'>
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
                   {t('tags.hierarchy.children', 'Thẻ Con')}
                 </CardTitle>
-                <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+                <Badge
+                  variant='outline'
+                  className='font-mono text-xs tabular-nums'
+                >
                   {children.length}
                 </Badge>
               </div>
@@ -642,7 +678,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               variant='outline'
               size='sm'
               onClick={() => openDialog('child')}
-              className='h-8 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 cursor-pointer shadow-2xs'
+              className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
               <span>Thêm Thẻ Con</span>
@@ -650,7 +686,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </CardHeader>
           <CardContent>
             {children.length === 0 ? (
-              <p className='text-muted-foreground text-xs italic py-2'>
+              <p className='text-muted-foreground py-2 text-xs italic'>
                 {t(
                   'tags.hierarchy.leafNode',
                   'Thẻ lá (Leaf tag) — chưa có thẻ con trực thuộc.'
@@ -679,7 +715,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                             label: `#${tag.name} → #${child.name}`,
                           })
                         }
-                        className='text-muted-foreground hover:text-destructive ml-1 rounded-xs p-0.5 transition-colors cursor-pointer'
+                        className='text-muted-foreground hover:text-destructive ml-1 cursor-pointer rounded-xs p-0.5 transition-colors'
                       >
                         <XIcon className='size-3' aria-hidden='true' />
                       </button>
@@ -694,15 +730,21 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         {/* Tier 4: Associative & Disambiguation Relations */}
         <div className='grid gap-6 md:grid-cols-2'>
           {/* Related Tags */}
-          <Card className='shadow-xs border-border/80'>
+          <Card className='border-border/80 shadow-xs'>
             <CardHeader className='flex flex-row items-center justify-between pb-3'>
               <div className='space-y-0.5'>
                 <div className='flex items-center gap-2'>
-                  <Link2Icon className='text-primary size-4' aria-hidden='true' />
+                  <Link2Icon
+                    className='text-primary size-4'
+                    aria-hidden='true'
+                  />
                   <CardTitle className='text-sm font-semibold'>
                     {t('tags.hierarchy.related', 'Thẻ Liên Quan')}
                   </CardTitle>
-                  <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+                  <Badge
+                    variant='outline'
+                    className='font-mono text-xs tabular-nums'
+                  >
                     {related.length}
                   </Badge>
                 </div>
@@ -715,7 +757,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 variant='outline'
                 size='sm'
                 onClick={() => openDialog('related')}
-                className='h-8 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 cursor-pointer shadow-2xs'
+                className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>Thêm Liên Kết</span>
@@ -723,7 +765,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </CardHeader>
             <CardContent>
               {related.length === 0 ? (
-                <p className='text-muted-foreground text-xs italic py-2'>
+                <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noRelated',
                     'Chưa có liên kết ngang hàng.'
@@ -751,7 +793,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                               label: `#${tag.name} ↔ #${rel.name}`,
                             })
                           }
-                          className='text-muted-foreground hover:text-destructive ml-1 rounded-xs p-0.5 transition-colors cursor-pointer'
+                          className='text-muted-foreground hover:text-destructive ml-1 cursor-pointer rounded-xs p-0.5 transition-colors'
                         >
                           <XIcon className='size-3' aria-hidden='true' />
                         </button>
@@ -764,18 +806,21 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </Card>
 
           {/* Disambiguation Tags */}
-          <Card className='shadow-xs border-border/80'>
+          <Card className='border-border/80 shadow-xs'>
             <CardHeader className='flex flex-row items-center justify-between pb-3'>
               <div className='space-y-0.5'>
                 <div className='flex items-center gap-2'>
-                  <SplitIcon className='size-4 text-amber-500' aria-hidden='true' />
+                  <SplitIcon
+                    className='size-4 text-amber-500'
+                    aria-hidden='true'
+                  />
                   <CardTitle className='text-sm font-semibold'>
-                    {t(
-                      'tags.hierarchy.disambiguations',
-                      'Phân Biệt Đồng Âm'
-                    )}
+                    {t('tags.hierarchy.disambiguations', 'Phân Biệt Đồng Âm')}
                   </CardTitle>
-                  <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+                  <Badge
+                    variant='outline'
+                    className='font-mono text-xs tabular-nums'
+                  >
                     {disambiguations.length}
                   </Badge>
                 </div>
@@ -788,7 +833,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 variant='outline'
                 size='sm'
                 onClick={() => openDialog('disambiguation')}
-                className='h-8 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 cursor-pointer shadow-2xs'
+                className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>Thêm Đồng Âm</span>
@@ -796,7 +841,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </CardHeader>
             <CardContent>
               {disambiguations.length === 0 ? (
-                <p className='text-muted-foreground text-xs italic py-2'>
+                <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noDisambiguations',
                     'Không có phân định đồng âm.'
@@ -824,7 +869,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                               label: `#${tag.name} ≠ #${dis.name}`,
                             })
                           }
-                          className='text-muted-foreground hover:text-destructive ml-1 rounded-xs p-0.5 transition-colors cursor-pointer'
+                          className='text-muted-foreground hover:text-destructive ml-1 cursor-pointer rounded-xs p-0.5 transition-colors'
                         >
                           <XIcon className='size-3' aria-hidden='true' />
                         </button>
