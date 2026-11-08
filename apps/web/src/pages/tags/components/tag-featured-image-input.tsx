@@ -97,7 +97,10 @@ export function TagFeaturedImageInput({
       <div className='bg-muted/15 space-y-3 rounded-xl border p-3.5'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
           <Input
-            placeholder='https://... or choose from library / upload'
+            placeholder={t(
+              'imagePicker.urlOrLibraryPlaceholder',
+              'https://... hoặc chọn từ thư viện / tải lên'
+            )}
             value={urlValue}
             disabled={disabled}
             onChange={(e) =>
@@ -160,11 +163,11 @@ export function TagFeaturedImageInput({
         </div>
 
         {urlValue && (
-          <div className='bg-background relative overflow-hidden rounded-lg border'>
+          <div className='bg-muted/30 border-border/80 relative flex items-center justify-center overflow-hidden rounded-xl border p-3 shadow-2xs'>
             <img
               src={urlValue}
-              alt='Featured header preview'
-              className='aspect-[21/9] max-h-44 w-full object-cover'
+              alt={t('imagePicker.previewAlt', 'Ảnh bìa xem trước')}
+              className='max-h-72 w-auto max-w-full rounded-lg object-contain shadow-2xs transition-all'
               onError={(e) => {
                 ;(e.target as HTMLImageElement).style.display = 'none'
               }}
@@ -176,13 +179,13 @@ export function TagFeaturedImageInput({
               type='button'
               variant='secondary'
               size='sm'
-              aria-label='Remove featured image'
+              aria-label={t('buttons.remove', 'Loại bỏ')}
               disabled={disabled}
-              className='bg-background/90 hover:bg-destructive hover:text-destructive-foreground absolute top-2.5 right-2.5 h-7 gap-1 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors'
+              className='bg-background/90 hover:bg-destructive hover:text-destructive-foreground absolute top-2.5 right-2.5 h-7.5 cursor-pointer gap-1 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors'
               onClick={() => onSelect({ url: '', fileId: null })}
             >
               <XIcon className='size-3.5' aria-hidden='true' />
-              {t('buttons.remove', 'Remove')}
+              {t('buttons.remove', 'Loại bỏ')}
             </Button>
           </div>
         )}

@@ -261,7 +261,7 @@ export function CmsPageForm({
                     <FormControl>
                       <Suspense
                         fallback={
-                          <Skeleton className='min-h-[500px] w-full rounded-lg' />
+                          <Skeleton className='min-h-125 w-full rounded-lg' />
                         }
                       >
                         <TiptapEditor
@@ -270,7 +270,7 @@ export function CmsPageForm({
                           onChangeContent={field.onChange}
                           disabled={isSubmitting ?? false}
                           className={cn(
-                            'min-h-[500px]',
+                            'min-h-125',
                             form.formState.errors.translations?.[
                               currentTranslationIndex
                             ]?.content &&

@@ -35,36 +35,69 @@ export const TAG_CATEGORY_ACCENTS: Record<TagCategory, string> = {
   system: 'text-rose-600 dark:text-rose-400',
 }
 
-const CATEGORY_STYLES: Record<TagCategory, { dot: string; badge: string }> = {
+const CATEGORY_STYLES: Record<
+  TagCategory,
+  {
+    dot: string
+    badge: string
+    chip: string
+    counter: string
+    text: string
+  }
+> = {
   general: {
-    dot: 'bg-zinc-500 dark:bg-zinc-400',
+    dot: 'bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]',
     badge:
-      'border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200',
+      'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300',
+    chip: 'border-sky-200/80 bg-sky-50/70 text-sky-950 hover:bg-sky-100/60 hover:border-sky-300 dark:border-sky-800/60 dark:bg-sky-950/40 dark:text-sky-100 dark:hover:bg-sky-950/60',
+    counter:
+      'bg-sky-100/90 text-sky-800 border-sky-200/80 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-800/60',
+    text: 'text-sky-800 dark:text-sky-200',
   },
   copyright: {
-    dot: 'bg-violet-600 dark:bg-violet-400',
+    dot: 'bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]',
     badge:
       'border-violet-200 bg-violet-50 text-violet-900 dark:border-violet-900/70 dark:bg-violet-950/60 dark:text-violet-200',
+    chip: 'border-violet-200/80 bg-violet-50/70 text-violet-950 hover:bg-violet-100/60 hover:border-violet-300 dark:border-violet-800/60 dark:bg-violet-950/40 dark:text-violet-100 dark:hover:bg-violet-950/60',
+    counter:
+      'bg-violet-100/90 text-violet-800 border-violet-200/80 dark:bg-violet-900/60 dark:text-violet-200 dark:border-violet-800/60',
+    text: 'text-violet-800 dark:text-violet-200',
   },
   character: {
-    dot: 'bg-emerald-600 dark:bg-emerald-400',
+    dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]',
     badge:
       'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/70 dark:bg-emerald-950/60 dark:text-emerald-200',
+    chip: 'border-emerald-200/80 bg-emerald-50/70 text-emerald-950 hover:bg-emerald-100/60 hover:border-emerald-300 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-100 dark:hover:bg-emerald-950/60',
+    counter:
+      'bg-emerald-100/90 text-emerald-800 border-emerald-200/80 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-800/60',
+    text: 'text-emerald-800 dark:text-emerald-200',
   },
   artist: {
-    dot: 'bg-amber-600 dark:bg-amber-400',
+    dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]',
     badge:
       'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/60 dark:text-amber-200',
+    chip: 'border-amber-200/80 bg-amber-50/70 text-amber-950 hover:bg-amber-100/60 hover:border-amber-300 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-950/60',
+    counter:
+      'bg-amber-100/90 text-amber-800 border-amber-200/80 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-800/60',
+    text: 'text-amber-800 dark:text-amber-200',
   },
   meta: {
-    dot: 'bg-sky-600 dark:bg-sky-400',
+    dot: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]',
     badge:
-      'border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-900/70 dark:bg-sky-950/60 dark:text-sky-200',
+      'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900/70 dark:bg-blue-950/60 dark:text-blue-200',
+    chip: 'border-blue-200/80 bg-blue-50/70 text-blue-950 hover:bg-blue-100/60 hover:border-blue-300 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-100 dark:hover:bg-blue-950/60',
+    counter:
+      'bg-blue-100/90 text-blue-800 border-blue-200/80 dark:bg-blue-900/60 dark:text-blue-200 dark:border-blue-800/60',
+    text: 'text-blue-800 dark:text-blue-200',
   },
   system: {
-    dot: 'bg-rose-600 dark:bg-rose-400',
+    dot: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]',
     badge:
       'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/70 dark:bg-rose-950/60 dark:text-rose-200',
+    chip: 'border-rose-200/80 bg-rose-50/70 text-rose-950 hover:bg-rose-100/60 hover:border-rose-300 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-100 dark:hover:bg-rose-950/60',
+    counter:
+      'bg-rose-100/90 text-rose-800 border-rose-200/80 dark:bg-rose-900/60 dark:text-rose-200 dark:border-rose-800/60',
+    text: 'text-rose-800 dark:text-rose-200',
   },
 }
 
@@ -231,6 +264,7 @@ export function TagNodeChip({
   isSystem,
   usageCount,
   onClick,
+  onUnlink,
   trailingAction,
   className,
 }: {
@@ -241,9 +275,11 @@ export function TagNodeChip({
   isSystem?: boolean
   usageCount?: number
   onClick?: () => void
+  onUnlink?: () => void
   trailingAction?: React.ReactNode
   className?: string
 }) {
+  const { t } = useTranslation()
   const style = CATEGORY_STYLES[category] ?? CATEGORY_STYLES.general
   const showSecondary =
     Boolean(translatedName) && translatedName?.trim() !== name.trim()
@@ -251,7 +287,8 @@ export function TagNodeChip({
   return (
     <div
       className={cn(
-        'bg-card hover:border-foreground/30 inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs whitespace-nowrap transition-colors',
+        'group/chip inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs whitespace-nowrap shadow-2xs transition-all hover:shadow-xs',
+        style.chip,
         onClick && 'cursor-pointer',
         className
       )}
@@ -261,41 +298,68 @@ export function TagNodeChip({
         onClick={onClick}
         disabled={!onClick}
         className={cn(
-          'inline-flex min-w-0 items-center gap-1.5 text-left focus-visible:outline-none',
-          onClick && 'hover:underline'
+          'inline-flex min-w-0 cursor-pointer items-center gap-1.5 text-left focus-visible:outline-none',
+          onClick && 'hover:opacity-85'
         )}
       >
         <span
-          className={cn('size-2 shrink-0 rounded-full', style.dot)}
+          className={cn(
+            'size-1.5 shrink-0 rounded-full ring-2 ring-current/25',
+            style.dot
+          )}
           aria-hidden='true'
         />
-        <span className='text-foreground max-w-44 truncate font-medium'>
-          #{name}
+        <span className='max-w-44 truncate font-semibold tracking-tight'>
+          <span className='mr-0.5 text-[11px] font-bold opacity-60'>#</span>
+          {name}
         </span>
         {showSecondary && (
-          <span className='text-muted-foreground max-w-36 truncate'>
-            ({translatedName})
+          <span className='max-w-36 truncate text-[11px] font-normal opacity-70'>
+            • {translatedName}
           </span>
         )}
         {isOfficial && (
           <BadgeCheckIcon
-            className='text-primary size-3.5 shrink-0'
+            className='text-primary drop-shadow-2xs size-3.5 shrink-0'
             aria-hidden='true'
           />
         )}
         {isSystem && (
-          <LockIcon
-            className='text-muted-foreground size-3 shrink-0'
-            aria-hidden='true'
-          />
+          <LockIcon className='size-3 shrink-0 opacity-70' aria-hidden='true' />
         )}
         {typeof usageCount === 'number' && (
-          <span className='text-muted-foreground ml-0.5 font-mono text-[11px] tabular-nums'>
+          <span
+            className={cn(
+              'py-0.2 ml-1 inline-flex items-center rounded-full border px-1.5 font-mono text-[10px] font-semibold tabular-nums shadow-2xs',
+              style.counter
+            )}
+            title={t('tags.show.usesTooltip', {
+              count: usageCount.toLocaleString(),
+              defaultValue: `${usageCount.toLocaleString()} lượt dùng`,
+            })}
+          >
             {usageCount.toLocaleString()}
           </span>
         )}
       </button>
-      {trailingAction}
+
+      {onUnlink ? (
+        <button
+          type='button'
+          onClick={(e) => {
+            e.stopPropagation()
+            onUnlink()
+          }}
+          aria-label={`Unlink tag ${name}`}
+          className='hover:bg-destructive/15 hover:text-destructive -mr-1 ml-0.5 inline-flex size-4.5 cursor-pointer items-center justify-center rounded-full opacity-50 transition-all hover:opacity-100'
+        >
+          <XIcon className='size-3' aria-hidden='true' />
+        </button>
+      ) : trailingAction ? (
+        <div className='-mr-1 ml-0.5 flex shrink-0 items-center'>
+          {trailingAction}
+        </div>
+      ) : null}
     </div>
   )
 }

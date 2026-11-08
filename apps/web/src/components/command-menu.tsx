@@ -1,4 +1,5 @@
 import React from 'react'
+import { US, VN } from 'country-flag-icons/react/3x2'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -17,7 +18,7 @@ import { sidebarLink } from './layout/data/sidebar-link'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
@@ -85,6 +86,23 @@ export function CommandMenu() {
             <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
               <Laptop />
               <span>System</span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup
+            heading={t('config.language.title', 'Ngôn ngữ / Language')}
+          >
+            <CommandItem
+              onSelect={() => runCommand(() => i18n.changeLanguage('vi'))}
+            >
+              <VN className='mr-1 size-4 rounded-xs shadow-2xs' />
+              <span>Tiếng Việt</span>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => i18n.changeLanguage('en'))}
+            >
+              <US className='mr-1 size-4 rounded-xs shadow-2xs' />
+              <span>English</span>
             </CommandItem>
           </CommandGroup>
         </ScrollArea>

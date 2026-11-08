@@ -130,11 +130,14 @@ export function EncyclopediaEditorPanel({
         body: `<p>Write the encyclopedia overview for <strong>#${tag.name}</strong>...</p>`,
         featuredImageUrl: '',
         featuredFileId: null,
-        changeNote: 'Initial encyclopedia article',
+        changeNote: t(
+          'tags.encyclopedia.initialChangeNote',
+          'Khởi tạo bài viết wiki'
+        ),
         isEditLocked: false,
       })
     }
-  }, [form, selectedLocale, tag.name, wiki])
+  }, [form, selectedLocale, t, tag.name, wiki])
 
   const upsertMutation = useMutation({
     mutationFn: apiUpsertTagEncyclopedia,
@@ -190,7 +193,10 @@ export function EncyclopediaEditorPanel({
                 'Khôi phục phiên bản này sẽ tạo một bản ghi mới bất biến nhằm bảo toàn toàn bộ lịch sử kiểm toán.'
               )}{' '}
               {rollbackTarget
-                ? `(Phiên bản v${rollbackTarget.revisionNumber})`
+                ? t('tags.encyclopedia.revisionLabel', {
+                    revision: rollbackTarget.revisionNumber,
+                    defaultValue: `(Phiên bản v${rollbackTarget.revisionNumber})`,
+                  })
                 : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -233,8 +239,12 @@ export function EncyclopediaEditorPanel({
                   {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
                 </SheetTitle>
                 <SheetDescription className='text-xs'>
-                  #{tag.name} • Ấn bản {currentLocaleLabel} ({revisionsCount}{' '}
-                  bản ghi)
+                  {t('tags.encyclopedia.revisionsDesc', {
+                    name: tag.name,
+                    locale: currentLocaleLabel,
+                    count: revisionsCount,
+                    defaultValue: `#${tag.name} • Ấn bản ${currentLocaleLabel} (${revisionsCount} bản ghi)`,
+                  })}
                 </SheetDescription>
               </div>
             </div>
@@ -251,8 +261,10 @@ export function EncyclopediaEditorPanel({
                   )}
                 </p>
                 <p className='text-[11px]'>
-                  Mỗi lần bạn lưu bài viết, một snapshot bất biến sẽ được ghi
-                  nhận tại đây.
+                  {t(
+                    'tags.encyclopedia.revisionSnapshotTip',
+                    'Mỗi lần bạn lưu bài viết, một snapshot bất biến sẽ được ghi nhận tại đây.'
+                  )}
                 </p>
               </div>
             ) : (
@@ -307,7 +319,10 @@ export function EncyclopediaEditorPanel({
                               </span>
                               {isCurrent ? (
                                 <Badge className='h-4 px-1.5 text-[9px] font-bold uppercase'>
-                                  Hiện tại
+                                  {t(
+                                    'tags.encyclopedia.currentBadge',
+                                    'Hiện tại'
+                                  )}
                                 </Badge>
                               ) : (
                                 <Badge
@@ -514,19 +529,20 @@ export function EncyclopediaEditorPanel({
                         <FormFieldHelp tooltip={t('tags.help.wikiBody')} />
                       </div>
                       <FormControl>
-                        <div className='border-border/80 min-h-[320px] overflow-hidden rounded-xl border shadow-2xs'>
-                          <Suspense
-                            fallback={<Skeleton className='h-96 w-full' />}
-                          >
-                            <TiptapEditor
-                              key={`${tag.id}-${selectedLocale}-${wiki?.currentRevision ?? 0}`}
-                              output='html'
-                              content={field.value}
-                              onChangeContent={field.onChange}
-                              disabled={upsertMutation.isPending}
-                            />
-                          </Suspense>
-                        </div>
+                        <Suspense
+                          fallback={
+                            <Skeleton className='h-72 w-full rounded-xl' />
+                          }
+                        >
+                          <TiptapEditor
+                            key={`${tag.id}-${selectedLocale}-${wiki?.currentRevision ?? 0}`}
+                            output='html'
+                            content={field.value}
+                            onChangeContent={field.onChange}
+                            disabled={upsertMutation.isPending}
+                            className='w-full'
+                          />
+                        </Suspense>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

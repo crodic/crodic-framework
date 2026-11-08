@@ -132,7 +132,7 @@ function TiptapEditor({ className, ...props }: Props) {
                 <RichTextImage />
               </div>
 
-              <EditorContent className='min-h-[150px]' editor={editor} />
+              <EditorContent className='min-h-[220px] p-2' editor={editor} />
             </div>
           </RichTextProvider>
         </div>

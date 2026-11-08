@@ -6,6 +6,7 @@ import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { ConfigDrawer } from '@/components/config-drawer'
+import { LanguageSwitch } from '@/components/language-switch'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Header } from '@/components/layout/header'
 import Loader from '@/components/loader'
@@ -44,6 +45,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             <Header fixed>
               <div className='ms-auto flex items-center space-x-3 sm:space-x-4'>
                 <Search />
+                <LanguageSwitch />
                 <ThemeSwitch />
                 <ConfigDrawer />
                 <ProfileDropdown />

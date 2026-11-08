@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { ConfigDrawer } from '../config-drawer'
+import { LanguageSwitch } from '../language-switch'
 import { ProfileDropdown } from '../profile-dropdown'
 import { Search } from '../search'
 import { ThemeSwitch } from '../theme-switch'
@@ -12,6 +13,7 @@ export default function DataLoader() {
       <Header fixed>
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
+          <LanguageSwitch />
           <ThemeSwitch />
           <ConfigDrawer />
           <ProfileDropdown />

@@ -215,8 +215,8 @@ export function TagForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className='flex flex-1 flex-col gap-6'
       >
-        {/* Clean, Unified Sticky Header */}
-        <div className='bg-background/90 sticky top-0 z-30 -mx-4 -mt-6 border-b px-4 py-3.5 backdrop-blur-md sm:-mx-6 sm:px-6'>
+        {/* Clean, Unified Sticky Header Card */}
+        <div className='bg-card/95 border-border/80 sticky top-0 z-30 rounded-2xl border p-4 shadow-2xs backdrop-blur-md sm:p-5'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div className='flex items-center gap-3'>
               <Button
