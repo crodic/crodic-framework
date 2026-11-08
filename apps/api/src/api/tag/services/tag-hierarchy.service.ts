@@ -216,7 +216,7 @@ export class TagHierarchyService {
   }
 
   /**
-   * Fetches the immediate semantic neighborhood of a tag (Pixiv Encyclopedia style):
+   * Fetches the immediate semantic neighborhood of a tag (Taxonomy Encyclopedia style):
    * Parent tags, Child tags, Sibling tags (sharing at least one parent), Related tags, and Disambiguations.
    */
   async getTagGraph(

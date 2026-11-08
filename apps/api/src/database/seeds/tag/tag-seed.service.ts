@@ -632,7 +632,7 @@ export class TagSeedService {
     await linkSafe('cyberpunk', 'concept-art', ETagRelationType.RELATED);
     await linkSafe('landscape', 'fantasy', ETagRelationType.RELATED);
 
-    // Classic Pixiv Disambiguation between series tag and eponymous character tag
+    // Classic Taxonomy Disambiguation between series tag and eponymous character tag
     await linkSafe(
       'frieren-beyond-journeys-end',
       'frieren-character',
@@ -644,7 +644,7 @@ export class TagSeedService {
       ETagRelationType.DISAMBIGUATION,
     );
 
-    // Seed Pixiv Encyclopedia (dic) Wiki Articles in EN, VI, JP
+    // Seed Tag Encyclopedia (dic) Wiki Articles in EN, VI, JP
     const wikiSeeds: {
       slug: string;
       locale: string;
@@ -660,7 +660,7 @@ export class TagSeedService {
         body: `
           <h2>Overview</h2>
           <p><strong>Frieren: Beyond Journey's End</strong> follows the elven mage <em>Frieren</em> decades after her ten-year adventure with Hero Himmel, Priest Heiter, and Warrior Eisen.</p>
-          <h2>Tagging Conventions (Pixiv Standard)</h2>
+          <h2>Tagging Conventions</h2>
           <ul>
             <li>Use <code>#葬送のフリーレン</code> as the parent copyright series tag.</li>
             <li>Pair with character child tags such as <code>#フリーレン</code> or <code>#フェルン</code> for character-focused works.</li>
@@ -676,11 +676,11 @@ export class TagSeedService {
         body: `
           <h2>Giới thiệu chung</h2>
           <p><strong>Pháp sư tiễn táng Frieren</strong> mở đầu tại thời điểm Tổ đội Dũng giả chiến thắng trở về, nơi tuổi thọ ngàn năm của Frieren đối lập sâu sắc với đời người hữu hạn.</p>
-          <h2>Quy tắc gắn Tag chuẩn Pixiv</h2>
+          <h2>Quy tắc gắn Thẻ Chuẩn</h2>
           <ul>
             <li>Sử dụng <code>#葬送のフリーレン</code> làm thẻ tác phẩm gốc (Copyright).</li>
             <li>Kết hợp cùng các thẻ nhân vật con như <code>#フリーレン</code> hoặc <code>#フェルン</code>.</li>
-            <li>Nhờ bảng bao đóng DAG (Closure Table), khi tìm kiếm <code>#Fantasy</code> hoặc <code>#葬送のフリーレン</code>, hệ thống tự động bao hàm toàn bộ các nhánh thẻ con.</li>
+            <li>Nhờ bảng quan hệ phân loại, khi tìm kiếm <code>#Fantasy</code> hoặc <code>#葬送のフリーレン</code>, hệ thống tự động bao hàm toàn bộ các nhánh thẻ con.</li>
           </ul>
         `,
       },
@@ -756,7 +756,7 @@ export class TagSeedService {
             summary: item.summary,
             body: item.body,
             isEditLocked: item.isEditLocked ?? false,
-            changeNote: 'Initial Pixiv Encyclopedia seed revision',
+            changeNote: 'Initial Tag Encyclopedia seed revision',
           },
           seedActor,
         );
@@ -842,7 +842,7 @@ export class TagSeedService {
     }
 
     this.logger.log(
-      `Pixiv Tag System seeded successfully (${bySlug.size} canonical tags, DAG closures, encyclopedias, and sample artwork tag bars).`,
+      `Tag System seeded successfully (${bySlug.size} canonical tags, taxonomy closures, encyclopedias, and sample artwork tag bars).`,
     );
   }
 }

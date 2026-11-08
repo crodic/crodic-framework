@@ -2,7 +2,13 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { MinusCircle, PlusCircle, Search, Split, X } from "lucide-react";
+import {
+  CornerDownLeft,
+  Search,
+  Sparkles,
+  Tag as TagIcon,
+  X,
+} from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +43,6 @@ export function BooleanTagSearchBar({
   const [tokens, setTokens] = useState<QueryToken[]>(() =>
     parseInitialQuery(initialQuery)
   );
-  const [mode, setMode] = useState<TokenMode>("and");
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -60,8 +65,9 @@ export function BooleanTagSearchBar({
     const trimmed = rawVal.replace(/^#+/, "").trim();
     if (!trimmed) return;
 
+    // Power syntax: -tag excludes
     const detectedNot = trimmed.startsWith("-") && trimmed.length > 1;
-    const effectiveMode: TokenMode = detectedNot ? "not" : mode;
+    const effectiveMode: TokenMode = detectedNot ? "not" : "and";
     const cleanWord = detectedNot
       ? trimmed.slice(1).replace(/\s+/g, "_")
       : trimmed.replace(/\s+/g, "_");
@@ -69,7 +75,7 @@ export function BooleanTagSearchBar({
     if (!cleanWord) return;
     const updated: QueryToken[] = [
       ...tokens.filter(
-        (t) => t.value.toLowerCase() !== cleanWord.toLowerCase()
+        (tok) => tok.value.toLowerCase() !== cleanWord.toLowerCase()
       ),
       { mode: effectiveMode, value: cleanWord },
     ];
@@ -86,104 +92,55 @@ export function BooleanTagSearchBar({
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-2.5">
-      {/* Operator Selector Pills */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div
-          role="group"
-          aria-label="Boolean search operator"
-          className="bg-muted/60 inline-flex items-center gap-1 rounded-lg border p-1"
-        >
-          <button
-            type="button"
-            onClick={() => setMode("and")}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition-colors",
-              mode === "and"
-                ? "bg-background text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <PlusCircle className="size-3.5" aria-hidden="true" />
-            {t("operatorAnd")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("or")}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition-colors",
-              mode === "or"
-                ? "bg-background text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Split className="size-3.5" aria-hidden="true" />
-            {t("operatorOr")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("not")}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition-colors",
-              mode === "not"
-                ? "bg-background text-rose-600 shadow-2xs dark:text-rose-400"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <MinusCircle className="size-3.5" aria-hidden="true" />
-            {t("operatorNot")}
-          </button>
-        </div>
-
-        {tokens.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              setTokens([]);
-              router.push("/tags");
-            }}
-            className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
-          >
-            {t("clearExpression")}
-          </button>
-        )}
-      </div>
-
-      {/* Tokenized Search Input Box */}
+    <div className="mx-auto w-full max-w-2xl">
+      {/* Clean, Frictionless Search Bar */}
       <div className="relative">
-        <div className="bg-background focus-within:ring-ring/40 flex min-h-12 flex-wrap items-center gap-1.5 rounded-xl border px-3 py-2 shadow-xs focus-within:ring-2">
+        <div
+          className={cn(
+            "bg-background border-border/80 relative flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-2xl border px-3 py-1.5 shadow-xs transition-all",
+            "focus-within:border-primary/60 focus-within:ring-primary/10 focus-within:ring-3"
+          )}
+        >
           <Search
-            className="text-muted-foreground mr-1 size-4 shrink-0"
+            className="text-muted-foreground mr-0.5 ml-1 size-4 shrink-0"
             aria-hidden="true"
           />
 
-          {tokens.map((tok, idx) => (
-            <Badge
-              key={`${tok.mode}-${tok.value}-${idx}`}
-              variant={tok.mode === "not" ? "destructive" : "secondary"}
-              className="gap-1 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap"
-            >
-              <span className="font-mono text-[10px] uppercase opacity-75">
-                {tok.mode === "not" ? "NOT" : tok.mode.toUpperCase()}
-              </span>
-              <span>#{tok.value}</span>
-              <button
-                type="button"
-                aria-label={`Remove ${tok.value} from search`}
-                onClick={() => removeTokenAt(idx)}
-                className="ml-0.5 rounded-xs opacity-75 hover:opacity-100"
-              >
-                <X className="size-3" aria-hidden="true" />
-              </button>
-            </Badge>
-          ))}
+          {/* Active Tag Filter Badges */}
+          {tokens.map((tok, idx) => {
+            const isNot = tok.mode === "not";
 
+            return (
+              <Badge
+                key={`${tok.mode}-${tok.value}-${idx}`}
+                variant="outline"
+                className={cn(
+                  "gap-1 rounded-lg px-2 py-0.5 text-xs font-medium whitespace-nowrap shadow-2xs transition-all",
+                  isNot
+                    ? "border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+                    : "border-border/80 bg-muted/60 text-foreground"
+                )}
+              >
+                <span>{isNot ? `-${tok.value}` : `#${tok.value}`}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${tok.value}`}
+                  onClick={() => removeTokenAt(idx)}
+                  className="hover:bg-foreground/10 ml-0.5 cursor-pointer rounded-full p-0.5 transition-colors"
+                >
+                  <X className="size-3" aria-hidden="true" />
+                </button>
+              </Badge>
+            );
+          })}
+
+          {/* Search Input Field */}
           <input
             type="text"
             value={inputValue}
             onFocus={() => setIsOpen(true)}
             onBlur={() => {
-              window.setTimeout(() => setIsOpen(false), 160);
+              window.setTimeout(() => setIsOpen(false), 180);
             }}
             onChange={(e) => {
               setInputValue(e.target.value);
@@ -207,79 +164,136 @@ export function BooleanTagSearchBar({
             }}
             placeholder={
               tokens.length === 0
-                ? t("searchPlaceholder")
-                : t("addAnotherToken")
+                ? locale === "vi"
+                  ? "Tìm kiếm thẻ hoặc -loại_trừ..."
+                  : "Search tags or -exclude..."
+                : locale === "vi"
+                  ? "Thêm thẻ khác..."
+                  : "Add another tag..."
             }
-            aria-label="Boolean tag search input"
-            className="placeholder:text-muted-foreground min-w-44 flex-1 bg-transparent text-sm outline-none"
+            aria-label="Tag search input"
+            className="placeholder:text-muted-foreground/60 text-foreground min-w-36 flex-1 bg-transparent px-1 text-sm font-normal outline-none"
           />
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => {
-              if (inputValue.trim()) {
-                pushToken(inputValue);
-              } else {
-                runSearch(tokens);
-              }
-            }}
-            className="h-8 shrink-0 px-3 text-xs"
-          >
-            {t("searchBtn")}
-          </Button>
+          {/* Right Action Controls */}
+          <div className="flex shrink-0 items-center gap-1.5">
+            {tokens.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setTokens([]);
+                  router.push("/tags");
+                }}
+                className="text-muted-foreground cursor-pointer rounded-md px-1.5 py-1 text-[11px] transition-colors hover:text-rose-600"
+              >
+                {locale === "vi" ? "Xoá bộ lọc" : "Clear"}
+              </button>
+            )}
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                if (inputValue.trim()) {
+                  pushToken(inputValue);
+                } else {
+                  runSearch(tokens);
+                }
+              }}
+              className="h-8 gap-1 rounded-xl px-3 text-xs font-medium shadow-xs"
+            >
+              <span>{t("searchBtn")}</span>
+              <CornerDownLeft
+                className="size-3 opacity-70"
+                aria-hidden="true"
+              />
+            </Button>
+          </div>
         </div>
 
-        {/* Autocomplete Dropdown */}
+        {/* Command Palette Autocomplete Dropdown */}
         {isOpen && suggestions.length > 0 && (
           <div
             role="listbox"
-            aria-label="Boolean search tag suggestions"
-            className="bg-popover text-popover-foreground border-border/80 absolute top-full right-0 left-0 z-50 mt-2 max-h-72 divide-y overflow-y-auto rounded-xl border shadow-2xl"
+            aria-label="Tag suggestions"
+            className="bg-popover/98 border-border/80 animate-in fade-in-0 zoom-in-95 absolute top-full right-0 left-0 z-50 mt-1.5 max-h-80 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl duration-100"
           >
-            {suggestions.map((item) => {
-              const cat = getTagCategoryToken(item.category);
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="option"
-                  aria-selected={false}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    pushToken(item.slug);
-                  }}
-                  className="hover:bg-muted/60 flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-xs transition-colors"
-                >
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span
-                      className={cn("size-2 shrink-0 rounded-full", cat.dot)}
-                      aria-hidden="true"
-                    />
-                    <span className="truncate font-semibold">
-                      #{item.translatedName || item.name}
-                    </span>
-                    {item.translatedName &&
-                      item.translatedName !== item.name && (
-                        <span className="text-muted-foreground truncate">
-                          ({item.name})
+            {/* Header info */}
+            <div className="text-muted-foreground bg-muted/30 flex items-center justify-between border-b px-3.5 py-1.5 text-[11px]">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Sparkles
+                  className="text-primary size-3.5"
+                  aria-hidden="true"
+                />
+                {locale === "vi" ? "Gợi ý thẻ phù hợp" : "Matching tags"}
+              </span>
+              <span className="font-mono text-[10px]">
+                {suggestions.length} {locale === "vi" ? "kết quả" : "results"}
+              </span>
+            </div>
+
+            {/* Suggestions list */}
+            <div className="divide-border/40 max-h-68 divide-y overflow-y-auto">
+              {suggestions.map((item) => {
+                const cat = getTagCategoryToken(item.category);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pushToken(item.slug);
+                    }}
+                    className="hover:bg-muted/70 group flex w-full cursor-pointer items-center justify-between gap-3 px-3.5 py-2 text-left text-xs transition-colors"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className={cn(
+                          "ring-background size-2 shrink-0 rounded-full ring-2",
+                          cat.dot
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="flex min-w-0 items-baseline gap-1.5">
+                        <span className="text-foreground group-hover:text-primary truncate font-semibold transition-colors">
+                          #{item.translatedName || item.name}
                         </span>
+                        {item.translatedName &&
+                          item.translatedName !== item.name && (
+                            <span className="text-muted-foreground truncate text-[11px]">
+                              ({item.name})
+                            </span>
+                          )}
+                      </div>
+                      {item.matchedAlias && (
+                        <Badge
+                          variant="outline"
+                          className="bg-muted/40 text-muted-foreground px-1.5 py-0 font-mono text-[10px]"
+                        >
+                          alias: {item.matchedAlias}
+                        </Badge>
                       )}
-                    {item.matchedAlias && (
-                      <Badge
-                        variant="outline"
-                        className="px-1.5 py-0 text-[10px]"
-                      >
-                        alias: {item.matchedAlias}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
-                    {item.usageCount.toLocaleString()}
-                  </span>
-                </button>
-              );
-            })}
+                    </div>
+
+                    <div className="text-muted-foreground flex shrink-0 items-center gap-2">
+                      <span className="bg-muted/50 inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] tabular-nums">
+                        <TagIcon
+                          className="size-3 opacity-60"
+                          aria-hidden="true"
+                        />
+                        {item.usageCount.toLocaleString()}
+                      </span>
+                      <CornerDownLeft
+                        className="text-primary size-3 opacity-0 transition-opacity group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

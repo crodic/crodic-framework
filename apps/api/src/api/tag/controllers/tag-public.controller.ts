@@ -83,7 +83,7 @@ export class TagPublicController {
   @AuthOptional()
   @ApiPublic({
     summary:
-      'Evaluate Pixiv boolean tag expression (AND, OR, -NOT, DAG hierarchy expansion, and user NG-tag mutes)',
+      'Evaluate boolean tag expression (AND, OR, -NOT, taxonomy hierarchy expansion, and user NG-tag mutes)',
   })
   async searchTaggedContent(
     @Query('tagQuery') tagQuery?: string,
@@ -178,7 +178,7 @@ export class TagPublicController {
   @Get('encyclopedia/:slug')
   @ApiPublic({
     type: TagEncyclopediaResDto,
-    summary: 'Read localized Pixiv-style tag encyclopedia article',
+    summary: 'Read localized tag encyclopedia article',
   })
   @ApiParam({ name: 'slug', type: 'String' })
   getEncyclopedia(

@@ -48,8 +48,7 @@ export class TagUserController {
   @AuthOptional()
   @ApiPublic({
     type: EntityTagListResDto,
-    summary:
-      'List Pixiv-style entity tags with per-viewer deletable/locked/author flags',
+    summary: 'List entity tags with per-viewer deletable/locked/author flags',
   })
   @ApiParam({ name: 'entityType', enum: ETaggableEntityType })
   @ApiParam({ name: 'entityId', type: 'String' })

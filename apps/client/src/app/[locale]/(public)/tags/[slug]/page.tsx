@@ -23,7 +23,10 @@ import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
 import { MuteTagButton } from "@/components/tags/mute-tag-button";
 import { TagHoverCard } from "@/components/tags/tag-hover-card";
-import { getTagCategoryToken } from "@/components/tags/tag-tokens";
+import {
+  getTagCategoryI18nKey,
+  getTagCategoryToken,
+} from "@/components/tags/tag-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -141,7 +144,7 @@ export default async function TagDetailLandingPage({
     notFound();
   }
 
-  // Pixiv SEO Canonicalization: 308 Permanent Redirect when accessed via alias or merged slug
+  // SEO Canonicalization: 308 Permanent Redirect when accessed via alias or merged slug
   if (tag.redirectSlug && tag.redirectSlug !== decodedSlug) {
     permanentRedirect(
       `/${locale}/tags/${encodeURIComponent(tag.redirectSlug)}`
@@ -225,7 +228,7 @@ export default async function TagDetailLandingPage({
                     className={`size-2 rounded-full ${categoryToken.dot}`}
                     aria-hidden="true"
                   />
-                  {categoryToken.label}
+                  {t(getTagCategoryI18nKey(tag.category))}
                 </span>
 
                 {tag.isOfficial && (
@@ -321,7 +324,7 @@ export default async function TagDetailLandingPage({
                   </span>
                   {tag.aliases.map((al) => (
                     <Badge
-                      key={al.id}
+                      key={`alias-${al.id}`}
                       variant="secondary"
                       className="text-xs font-normal whitespace-nowrap"
                     >
@@ -394,7 +397,7 @@ export default async function TagDetailLandingPage({
                     <div className="flex flex-wrap gap-2">
                       {parents.map((p) => (
                         <TagHoverCard
-                          key={p.id}
+                          key={`parent-${p.id}`}
                           locale={locale}
                           slug={p.slug}
                           name={p.name}
@@ -436,7 +439,7 @@ export default async function TagDetailLandingPage({
                     <span
                       className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${categoryToken.badge}`}
                     >
-                      {categoryToken.label}
+                      {t(getTagCategoryI18nKey(tag.category))}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -483,7 +486,7 @@ export default async function TagDetailLandingPage({
                     <div className="flex flex-wrap gap-2">
                       {children.map((c) => (
                         <TagHoverCard
-                          key={c.id}
+                          key={`child-${c.id}`}
                           locale={locale}
                           slug={c.slug}
                           name={c.name}
@@ -520,7 +523,7 @@ export default async function TagDetailLandingPage({
                     <div className="flex flex-wrap gap-1.5">
                       {associativeTags.map((node) => (
                         <TagHoverCard
-                          key={node.id}
+                          key={`assoc-${node.id}`}
                           locale={locale}
                           slug={node.slug}
                           name={node.name}
@@ -530,7 +533,7 @@ export default async function TagDetailLandingPage({
                       ))}
                       {disambiguations.map((dis) => (
                         <Badge
-                          key={dis.id}
+                          key={`dis-${dis.id}`}
                           variant="outline"
                           className="gap-1 text-xs"
                         >

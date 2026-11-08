@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { format, formatDistanceToNow } from 'date-fns'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ActivityIcon,
@@ -8,7 +7,6 @@ import {
   FlameIcon,
   LockIcon,
   PlusIcon,
-  ShieldCheckIcon,
   TagsIcon,
 } from 'lucide-react'
 import { parseAsString } from 'nuqs'
@@ -22,16 +20,8 @@ import {
   type RestResourceQueryBuilderFn,
 } from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DataTable } from '@/components/data-table/data-table'
@@ -39,15 +29,14 @@ import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
-import { getTagsTableColumns } from './columns'
+import { getAuditLogsTableColumns, getTagsTableColumns } from './columns'
 import { MergeTagDialog } from './components/merge-tag-dialog'
-import { AuditActionBadge } from './components/tag-badges'
 import {
   apiDeleteTag,
   useDataTagAuditLogs,
   useDataTagsOverview,
 } from './queries'
-import { TagColumnKey, type TagSummary } from './schema'
+import { TagColumnKey, type EntityTagLog, type TagSummary } from './schema'
 
 const tagFilterParsers = {
   name: parseAsString,
@@ -56,8 +45,15 @@ const tagFilterParsers = {
   status: parseAsString,
 } as const
 
+const auditFilterParsers = {
+  action: parseAsString,
+  entityType: parseAsString,
+  entityId: parseAsString,
+  tagNameSnapshot: parseAsString,
+} as const
+
 export function PageTagOverview() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -132,8 +128,41 @@ export function PageTagOverview() {
     return { totalTags, officialCount, systemCount, totalUsage }
   }, [meta?.totalItems, data])
 
-  const { data: auditLogs = [], isFetching: isLoadingLogs } =
-    useDataTagAuditLogs(60, activeTab === 'audit')
+  const auditColumns = useMemo(
+    () =>
+      getAuditLogsTableColumns({
+        t,
+        locale: i18n.language,
+        onNavigateToTag: (tagId) => navigate(`/tags/${tagId}/show`),
+      }),
+    [navigate, t, i18n.language]
+  )
+
+  const buildAuditQuery: RestResourceQueryBuilderFn<typeof auditFilterParsers> =
+    useCallback((builder, filter) => {
+      if (filter.action) builder.filter('action', filter.action)
+      if (filter.entityType) builder.filter('entityType', filter.entityType)
+      if (filter.entityId) builder.filter('entityId', filter.entityId)
+      if (filter.tagNameSnapshot)
+        builder.filter('tagNameSnapshot', filter.tagNameSnapshot)
+    }, [])
+
+  const { table: auditTable, isFetching: isLoadingLogs } = useRestResourceTable<
+    EntityTagLog,
+    typeof auditFilterParsers
+  >({
+    columns: auditColumns,
+    allowedSorts: ['createdAt', 'action', 'entityType'],
+    filterParsers: auditFilterParsers,
+    queryHook: useDataTagAuditLogs,
+    buildQuery: buildAuditQuery,
+    getRowId: (row) => row.id,
+    queryKeys: {
+      page: 'auditPage',
+      perPage: 'auditPerPage',
+      sort: 'auditSort',
+    },
+  })
 
   return (
     <>
@@ -307,133 +336,19 @@ export function PageTagOverview() {
           </TabsContent>
 
           <TabsContent value='audit' className='m-0 flex-1'>
-            <Card className='shadow-xs'>
-              <CardHeader className='border-b px-5 py-4'>
-                <CardTitle className='flex items-center gap-2 text-base font-semibold'>
-                  <ActivityIcon
-                    className='text-primary size-4'
-                    aria-hidden='true'
-                  />
-                  {t(
-                    'tags.audit.title',
-                    'Recent Folksonomy & Governance Audit Trail'
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='p-0'>
-                {isLoadingLogs ? (
-                  <div className='space-y-2 p-5'>
-                    <Skeleton className='h-9 w-full' />
-                    <Skeleton className='h-9 w-full' />
-                    <Skeleton className='h-9 w-full' />
-                  </div>
-                ) : auditLogs.length === 0 ? (
-                  <div className='flex flex-col items-center justify-center p-12 text-center'>
-                    <div className='bg-muted text-muted-foreground mb-3 rounded-full p-3'>
-                      <ActivityIcon className='size-6' aria-hidden='true' />
-                    </div>
-                    <p className='text-foreground mb-1 text-sm font-semibold'>
-                      {t('tags.audit.emptyTitle', 'No Audit Logs Recorded')}
-                    </p>
-                    <p className='text-muted-foreground max-w-sm text-xs'>
-                      {t(
-                        'tags.audit.empty',
-                        'No tag governance or community tagging actions recorded yet.'
-                      )}
-                    </p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>
-                          {t('tags.audit.action', 'Action')}
-                        </TableHead>
-                        <TableHead>
-                          {t('tags.audit.tagSnapshot', 'Tag Snapshot')}
-                        </TableHead>
-                        <TableHead>
-                          {t('tags.audit.targetEntity', 'Target Entity')}
-                        </TableHead>
-                        <TableHead>{t('tags.audit.actor', 'Actor')}</TableHead>
-                        <TableHead className='text-right'>
-                          {t('tags.audit.timestamp', 'Timestamp')}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {auditLogs.map((log) => {
-                        const logDate = new Date(log.createdAt)
-                        return (
-                          <TableRow
-                            key={log.id}
-                            className='hover:bg-muted/40 transition-colors'
-                          >
-                            <TableCell>
-                              <AuditActionBadge action={log.action} />
-                            </TableCell>
-                            <TableCell className='font-medium'>
-                              {log.tagNameSnapshot ? (
-                                <button
-                                  type='button'
-                                  disabled={!log.tagId}
-                                  onClick={() => {
-                                    if (log.tagId) {
-                                      navigate(`/tags/${log.tagId}/show`)
-                                    }
-                                  }}
-                                  className='hover:text-primary font-mono text-xs font-medium hover:underline disabled:no-underline'
-                                >
-                                  #{log.tagNameSnapshot}
-                                </button>
-                              ) : (
-                                <span className='text-muted-foreground text-xs italic'>
-                                  Entity Config
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell className='text-muted-foreground font-mono text-xs'>
-                              <span className='text-foreground font-medium'>
-                                {log.entityType}
-                              </span>{' '}
-                              #{log.entityId}
-                            </TableCell>
-                            <TableCell>
-                              <div className='inline-flex items-center gap-1.5 text-xs'>
-                                {log.isAdminAction && (
-                                  <ShieldCheckIcon
-                                    className='text-primary size-3.5 shrink-0'
-                                    aria-hidden='true'
-                                  />
-                                )}
-                                <span className='text-foreground/90 font-medium'>
-                                  {log.actorName ||
-                                    (log.isAdminAction
-                                      ? 'Administrator'
-                                      : 'Community User')}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className='text-right text-xs'>
-                              <div className='flex flex-col items-end gap-0.5 tabular-nums'>
-                                <span className='text-foreground/90 font-medium'>
-                                  {formatDistanceToNow(logDate, {
-                                    addSuffix: true,
-                                  })}
-                                </span>
-                                <span className='text-muted-foreground text-[11px]'>
-                                  {format(logDate, 'dd/MM/yyyy HH:mm:ss')}
-                                </span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+            <DataTable
+              table={auditTable}
+              isFetching={isLoadingLogs}
+              onClickRowAction={(row) => {
+                if (row.tagId) {
+                  navigate(`/tags/${row.tagId}/show`)
+                }
+              }}
+            >
+              <DataTableToolbar table={auditTable}>
+                <DataTableSortList table={auditTable} />
+              </DataTableToolbar>
+            </DataTable>
           </TabsContent>
         </Tabs>
       </Main>

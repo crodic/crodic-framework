@@ -117,7 +117,7 @@ export function AdminEntityTagPanel({
             <TagsIcon className='text-primary size-4' aria-hidden='true' />
             {t(
               'tags.entitySync.title',
-              'Tagged Taxonomy (Pixiv 10-Tag Governance)'
+              'Tagged Taxonomy (10-Tag Folksonomy Governance)'
             )}
           </CardTitle>
           <CardDescription className='text-[11px]'>

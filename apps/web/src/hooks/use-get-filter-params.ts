@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import type { QueryKeys } from '@/types/data-table'
 import {
   parseAsInteger,
   parseAsString,
@@ -21,6 +22,7 @@ interface UseGetFilterParamsProps<
   allowedSorts?: string[]
   filterParsers: TParsers
   filterableColumns?: ColumnDef<TData>[]
+  queryKeys?: Partial<QueryKeys>
 }
 
 export default function useGetFilterParams<
@@ -29,16 +31,21 @@ export default function useGetFilterParams<
 >({
   allowedSorts = [],
   filterParsers,
+  queryKeys,
 }: UseGetFilterParamsProps<TData, TParsers>) {
+  const pageKey = queryKeys?.page ?? 'page'
+  const perPageKey = queryKeys?.perPage ?? 'perPage'
+  const sortKey = queryKeys?.sort ?? 'sort'
+
   // pagination
-  const [page] = useQueryState('page', parseAsInteger.withDefault(1))
-  const [perPage] = useQueryState('perPage', parseAsInteger.withDefault(10))
+  const [page] = useQueryState(pageKey, parseAsInteger.withDefault(1))
+  const [perPage] = useQueryState(perPageKey, parseAsInteger.withDefault(10))
   const [searchBy] = useQueryState('searchBy', parseAsString.withDefault(''))
   const [search] = useQueryState('search', parseAsString.withDefault(''))
 
   // sorting
   const [sorting] = useQueryState(
-    'sort',
+    sortKey,
     getSortingStateParser<TData>(allowedSorts).withDefault([])
   )
 

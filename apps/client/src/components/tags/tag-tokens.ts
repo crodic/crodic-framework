@@ -72,6 +72,32 @@ export const TAG_CATEGORY_TOKENS: Record<TagCategory, TagCategoryToken> = {
   },
 };
 
+export type TagCategoryI18nKey =
+  | "categoryGeneral"
+  | "categoryCopyright"
+  | "categoryCharacter"
+  | "categoryArtist"
+  | "categoryMeta"
+  | "categorySystem";
+
+export const TAG_CATEGORY_I18N_KEYS: Record<TagCategory, TagCategoryI18nKey> = {
+  general: "categoryGeneral",
+  copyright: "categoryCopyright",
+  character: "categoryCharacter",
+  artist: "categoryArtist",
+  meta: "categoryMeta",
+  system: "categorySystem",
+};
+
+export function getTagCategoryI18nKey(
+  category?: string | null
+): TagCategoryI18nKey {
+  if (category && category in TAG_CATEGORY_I18N_KEYS) {
+    return TAG_CATEGORY_I18N_KEYS[category as TagCategory];
+  }
+  return TAG_CATEGORY_I18N_KEYS.general;
+}
+
 export function getTagCategoryToken(
   category?: string | null
 ): TagCategoryToken {

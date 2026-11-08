@@ -77,12 +77,45 @@ export class QueryBuilder<T extends ObjectLiteral> {
   private constructor(qb: SelectQueryBuilder<T>, query: QueryParams) {
     this.qb = qb;
     this.alias = qb.alias;
-    this.query = query;
+    this.query = this.normalizeQuery(query);
     this.config = getGlobalConfig();
 
     this._defaultLimit = this.config.defaultLimit;
     this._maxLimit = this.config.maxLimit;
     this._strictMode = this.config.strictMode;
+  }
+
+  /**
+   * Normalizes incoming query params by deserializing bracket notation (e.g. filter[name]=foo -> filter.name = foo)
+   * while preserving raw primitive types (numbers, booleans, objects) from programmatic calls,
+   * matching standard Laravel / Spatie QueryBuilder specification.
+   */
+  private normalizeQuery(raw: QueryParams | Record<string, any>): QueryParams {
+    if (!raw || typeof raw !== 'object') return {} as QueryParams;
+
+    const result: Record<string, any> = { ...raw };
+
+    for (const [key, val] of Object.entries(raw)) {
+      const match = key.match(/^([^\[]+)\[([^\]]+)\]$/);
+      if (match) {
+        const [, rootKey, nestedKey] = match;
+        if (
+          !result[rootKey] ||
+          typeof result[rootKey] !== 'object' ||
+          Array.isArray(result[rootKey])
+        ) {
+          result[rootKey] = {
+            ...(typeof result[rootKey] === 'object' &&
+            !Array.isArray(result[rootKey])
+              ? result[rootKey]
+              : {}),
+          };
+        }
+        result[rootKey][nestedKey] = val;
+      }
+    }
+
+    return result as QueryParams;
   }
 
   /**

@@ -256,7 +256,7 @@ export class TagEncyclopediaResDto {
   updatedAt!: Date;
 }
 
-export class PixivEntityTagItemDto {
+export class EntityTagItemDto {
   @ApiProperty({ type: String })
   id!: AutoIncrementID;
 
@@ -289,7 +289,7 @@ export class PixivEntityTagItemDto {
 
   @ApiProperty({
     type: Boolean,
-    description: 'Pixiv per-tag lock status',
+    description: 'Per-tag lock status',
   })
   locked!: boolean;
 
@@ -325,8 +325,8 @@ export class EntityTagListResDto {
   @ApiProperty({ type: Boolean })
   isOwner!: boolean;
 
-  @ApiProperty({ type: () => [PixivEntityTagItemDto] })
-  tags!: PixivEntityTagItemDto[];
+  @ApiProperty({ type: () => [EntityTagItemDto] })
+  tags!: EntityTagItemDto[];
 }
 
 export class EntityTagLogResDto {

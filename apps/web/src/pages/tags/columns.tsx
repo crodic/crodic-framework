@@ -1,17 +1,22 @@
 import { useState } from 'react'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
+import { vi } from 'date-fns/locale'
 import type { TFunction } from 'i18next'
 import {
+  ArrowRightIcon,
   BadgeCheckIcon,
   CheckIcon,
+  ClockIcon,
   CopyIcon,
   EditIcon,
   EyeIcon,
   FlameIcon,
   GitMergeIcon,
+  LayersIcon,
   LockIcon,
   MoreHorizontalIcon,
+  ShieldCheckIcon,
   TrashIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -26,11 +31,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
 import {
+  AuditActionBadge,
   TagCategoryBadge,
   TagSafetyBadge,
   TagStatusBadge,
 } from './components/tag-badges'
-import { TagColumnKey, type TagSummary } from './schema'
+import { TagColumnKey, type EntityTagLog, type TagSummary } from './schema'
 
 interface TagColumnsOptions {
   t: TFunction
@@ -344,6 +350,199 @@ export function getTagsTableColumns({
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
+        )
+      },
+    },
+  ]
+}
+
+interface AuditColumnsOptions {
+  t: TFunction
+  locale?: string
+  onNavigateToTag?: (tagId: string) => void
+}
+
+export function getAuditLogsTableColumns({
+  t,
+  locale = 'vi',
+  onNavigateToTag,
+}: AuditColumnsOptions): ColumnDef<EntityTagLog>[] {
+  return [
+    {
+      id: 'action',
+      accessorKey: 'action',
+      enableSorting: true,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t('tags.audit.action', 'Hành động')}
+        />
+      ),
+      cell: ({ row }) => <AuditActionBadge action={row.original.action} />,
+    },
+    {
+      id: 'tagNameSnapshot',
+      accessorKey: 'tagNameSnapshot',
+      enableSorting: true,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t('tags.audit.tagSnapshot', 'Ảnh chụp thẻ')}
+        />
+      ),
+      cell: ({ row }) => {
+        const log = row.original
+        const hasDiff =
+          log.tagNameSnapshot && log.tagNameSnapshot.includes('->')
+        const [oldTag, newTag] = hasDiff
+          ? log.tagNameSnapshot!.split('->').map((s) => s.trim())
+          : [log.tagNameSnapshot, null]
+
+        if (hasDiff && oldTag && newTag) {
+          return (
+            <div className='inline-flex items-center gap-1.5 text-xs font-medium'>
+              <span className='bg-muted text-muted-foreground rounded px-2 py-0.5 font-mono text-[11px] line-through'>
+                {oldTag.startsWith('#') ? oldTag : `#${oldTag}`}
+              </span>
+              <ArrowRightIcon
+                className='text-primary size-3 shrink-0'
+                aria-hidden='true'
+              />
+              <button
+                type='button'
+                disabled={!log.tagId}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (log.tagId && onNavigateToTag) {
+                    onNavigateToTag(log.tagId)
+                  }
+                }}
+                className='bg-primary/10 text-primary cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] font-semibold hover:underline disabled:no-underline'
+              >
+                {newTag.startsWith('#') ? newTag : `#${newTag}`}
+              </button>
+            </div>
+          )
+        }
+
+        if (log.tagNameSnapshot) {
+          return (
+            <button
+              type='button'
+              disabled={!log.tagId}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (log.tagId && onNavigateToTag) {
+                  onNavigateToTag(log.tagId)
+                }
+              }}
+              className='border-border/70 bg-card text-foreground hover:border-primary hover:text-primary disabled:hover:border-border/70 disabled:hover:text-foreground inline-flex cursor-pointer items-center rounded-lg border px-2.5 py-1 font-mono text-xs font-semibold transition-colors disabled:no-underline'
+            >
+              {log.tagNameSnapshot.startsWith('#')
+                ? log.tagNameSnapshot
+                : `#${log.tagNameSnapshot}`}
+            </button>
+          )
+        }
+
+        return (
+          <span className='text-muted-foreground text-xs italic'>
+            {t('tags.audit.entityConfig', 'Cấu hình thực thể')}
+          </span>
+        )
+      },
+    },
+    {
+      id: 'entityType',
+      accessorKey: 'entityType',
+      enableSorting: true,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t('tags.audit.targetEntity', 'Thực thể đích')}
+        />
+      ),
+      cell: ({ row }) => (
+        <div className='bg-muted/50 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-xs'>
+          <LayersIcon
+            className='text-muted-foreground size-3'
+            aria-hidden='true'
+          />
+          <span className='text-foreground font-semibold'>
+            {row.original.entityType}
+          </span>
+          <span className='text-muted-foreground'>
+            #{row.original.entityId}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: 'actorName',
+      accessorKey: 'actorName',
+      enableSorting: true,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t('tags.audit.actor', 'Người thực hiện')}
+        />
+      ),
+      cell: ({ row }) => {
+        const log = row.original
+        const initials = (log.actorName || (log.isAdminAction ? 'AD' : 'US'))
+          .slice(0, 2)
+          .toUpperCase()
+
+        return (
+          <div className='inline-flex items-center gap-2 text-xs'>
+            <div className='bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold'>
+              {initials}
+            </div>
+            <div className='flex items-center gap-1.5'>
+              {log.isAdminAction && (
+                <ShieldCheckIcon
+                  className='text-primary size-3.5 shrink-0'
+                  aria-hidden='true'
+                />
+              )}
+              <span className='text-foreground font-medium'>
+                {log.actorName ||
+                  (log.isAdminAction
+                    ? t('tags.audit.adminUser', 'Quản trị viên')
+                    : t('tags.audit.communityUser', 'Thành viên cộng đồng'))}
+              </span>
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      id: 'createdAt',
+      accessorKey: 'createdAt',
+      enableSorting: true,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t('tags.audit.timestamp', 'Thời gian')}
+          className='justify-end'
+        />
+      ),
+      cell: ({ row }) => {
+        const logDate = new Date(row.original.createdAt)
+        const isVi = locale === 'vi'
+        return (
+          <div className='flex flex-col items-end gap-0.5 text-xs tabular-nums'>
+            <span className='text-foreground font-semibold'>
+              {formatDistanceToNow(logDate, {
+                addSuffix: true,
+                locale: isVi ? vi : undefined,
+              })}
+            </span>
+            <span className='text-muted-foreground inline-flex items-center gap-1 text-[10px]'>
+              <ClockIcon className='size-2.5 opacity-60' aria-hidden='true' />
+              {format(logDate, 'dd/MM/yyyy • HH:mm:ss')}
+            </span>
           </div>
         )
       },

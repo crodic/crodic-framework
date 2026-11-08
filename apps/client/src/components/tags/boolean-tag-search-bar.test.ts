@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseInitialQuery, serializeQueryTokens } from "./tag-tokens";
 
-describe("Pixiv Boolean Tag Search Tokenizer", () => {
+describe("Boolean Tag Search Tokenizer", () => {
   it("parses AND, OR, and NOT (-exclude) tokens accurately", () => {
     const parsed = parseInitialQuery(
       "Landscape 葬送のフリーレン OR Cyberpunk -AI-Generated"
@@ -15,7 +15,7 @@ describe("Pixiv Boolean Tag Search Tokenizer", () => {
     ]);
   });
 
-  it("serializes structured tokens back into Pixiv boolean query syntax", () => {
+  it("serializes structured tokens back into boolean query syntax", () => {
     const serialized = serializeQueryTokens([
       { mode: "and", value: "Original" },
       { mode: "or", value: "Fantasy" },

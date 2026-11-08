@@ -1,16 +1,27 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   ArrowLeftIcon,
+  BadgeCheckIcon,
+  CheckIcon,
+  CopyIcon,
+  GlobeIcon,
+  HashIcon,
   LanguagesIcon,
+  Loader2Icon,
+  LockIcon,
   PlusIcon,
+  RefreshCwIcon,
   SaveIcon,
+  ShieldCheckIcon,
   SparklesIcon,
-  TrashIcon,
+  XIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -40,9 +51,11 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { FormFieldHelp } from './components/form-field-help'
+import { TagStatusBadge } from './components/tag-badges'
 import {
   TAG_LOCALES,
   tagFormSchema,
+  type TagAliasType,
   type TagDetail,
   type TagFormValues,
 } from './schema'
@@ -73,6 +86,11 @@ export function TagForm({
 }: TagFormProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  const [activeLocale, setActiveLocale] = useState<string>('en')
+  const [quickAliasName, setQuickAliasName] = useState('')
+  const [quickAliasType, setQuickAliasType] = useState<TagAliasType>('synonym')
+  const [copiedSlug, setCopiedSlug] = useState(false)
 
   const form = useForm<TagFormValues>({
     resolver: zodResolver(tagFormSchema),
@@ -124,123 +142,279 @@ export function TagForm({
     name: 'aliases',
   })
 
+  const watchedName = useWatch({ control: form.control, name: 'name' })
+  const watchedStatus = useWatch({ control: form.control, name: 'status' })
   const watchedTranslations = useWatch({
     control: form.control,
     name: 'translations',
   })
 
+  const handleGenerateSlug = () => {
+    const currentName = form.getValues('name')
+    if (!currentName?.trim()) {
+      toast.error(t('tags.form.nameRequiredForSlug'))
+      return
+    }
+    const generated = currentName
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+
+    if (generated) {
+      form.setValue('slug', generated, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+      toast.success(t('tags.form.slugGenerated'))
+    }
+  }
+
+  const handleCopySlug = () => {
+    const currentSlug = form.getValues('slug')
+    if (!currentSlug) return
+    navigator.clipboard.writeText(currentSlug)
+    setCopiedSlug(true)
+    setTimeout(() => setCopiedSlug(false), 1500)
+    toast.success(t('tags.actions.copied'))
+  }
+
+  const handleQuickAddAlias = () => {
+    const trimmed = quickAliasName.trim()
+    if (!trimmed) return
+
+    const existing = form.getValues('aliases') || []
+    if (
+      existing.some(
+        (al) => al.aliasName.toLowerCase() === trimmed.toLowerCase()
+      )
+    ) {
+      toast.error(t('tags.form.aliasExists'))
+      return
+    }
+
+    appendAlias({
+      aliasName: trimmed,
+      aliasType: quickAliasType,
+      locale: '',
+    })
+    setQuickAliasName('')
+  }
+
+  const activeLocaleIndex = TAG_LOCALES.findIndex(
+    (loc) => loc.value === activeLocale
+  )
+  const activeLocaleItem =
+    activeLocaleIndex >= 0 ? TAG_LOCALES[activeLocaleIndex] : TAG_LOCALES[0]
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className='flex flex-col gap-6'
+        className='flex flex-1 flex-col gap-6'
       >
-        <div className='flex flex-wrap items-center justify-between gap-3 border-b pb-4'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight text-balance'>
-              {initialData
-                ? t('tags.form.editTitle', 'Edit Canonical Tag')
-                : t('tags.form.createTitle', 'Create Canonical Tag')}
-            </h1>
-            <p className='text-muted-foreground text-sm text-pretty'>
-              {t(
-                'tags.form.canonicalDesc',
-                'Define the primary canonical tag name, category, safety rating, and governance flags.'
-              )}
-            </p>
-          </div>
-          <div className='flex items-center gap-2'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              {t('buttons.back', 'Back')}
-            </Button>
-            <Button type='submit' disabled={isSubmitting}>
-              <SaveIcon className='size-4' aria-hidden='true' />
-              {isSubmitting
-                ? 'Saving...'
-                : t('buttons.save', 'Save Canonical Tag')}
-            </Button>
+        {/* Clean, Unified Sticky Header */}
+        <div className='bg-background/90 sticky top-0 z-30 -mx-4 -mt-6 border-b px-4 py-3.5 backdrop-blur-md sm:-mx-6 sm:px-6'>
+          <div className='flex flex-wrap items-center justify-between gap-4'>
+            <div className='flex items-center gap-3'>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                onClick={() => navigate(-1)}
+                className='size-9 shrink-0 cursor-pointer shadow-2xs'
+                aria-label={t('buttons.back')}
+              >
+                <ArrowLeftIcon className='size-4' aria-hidden='true' />
+              </Button>
+
+              <div className='space-y-0.5'>
+                <div className='flex items-center gap-2.5'>
+                  <h1 className='text-foreground text-xl font-bold tracking-tight sm:text-2xl'>
+                    {initialData
+                      ? `#${watchedName || initialData.name}`
+                      : t('tags.form.createTitle')}
+                  </h1>
+                  <TagStatusBadge status={watchedStatus} />
+                </div>
+                <p className='text-muted-foreground text-xs'>
+                  {initialData
+                    ? t('tags.form.editSubtitle')
+                    : t('tags.form.createSubtitle')}
+                </p>
+              </div>
+            </div>
+
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                variant='ghost'
+                onClick={() => navigate(-1)}
+                disabled={isSubmitting}
+                className='cursor-pointer text-xs'
+              >
+                {t('buttons.cancel', 'Hủy')}
+              </Button>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+                className='cursor-pointer gap-1.5 shadow-xs'
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2Icon
+                      className='size-4 animate-spin'
+                      aria-hidden='true'
+                    />
+                    <span>{t('buttons.saving', 'Đang lưu...')}</span>
+                  </>
+                ) : (
+                  <>
+                    <SaveIcon className='size-4' aria-hidden='true' />
+                    <span>
+                      {initialData
+                        ? t('buttons.saveChanges', 'Lưu thay đổi')
+                        : t('buttons.createTag', 'Tạo thẻ')}
+                    </span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className='grid gap-6 xl:grid-cols-[400px_minmax(0,1fr)]'>
-          {/* Left Column: Canonical Identity */}
-          <div className='flex flex-col gap-6'>
-            <Card className='shadow-xs'>
-              <CardHeader>
-                <CardTitle className='text-base'>
-                  {t('tags.form.canonicalSection', 'Canonical Identity')}
-                </CardTitle>
-                <CardDescription>
-                  Unicode NFKC normalization and slug generation are applied
-                  automatically.
-                </CardDescription>
+        {/* 2-Column Responsive Workspace Grid */}
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
+          {/* Main Column (8 Cols): Canonical Identity + Multilingual Studio */}
+          <div className='space-y-6 lg:col-span-8'>
+            {/* Card 1: Core Canonical Identity */}
+            <Card className='border-border/80 shadow-2xs'>
+              <CardHeader className='border-b px-5 py-4 sm:px-6'>
+                <div className='flex items-center gap-2.5'>
+                  <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
+                    <HashIcon className='size-4.5' aria-hidden='true' />
+                  </div>
+                  <div>
+                    <CardTitle className='text-base font-semibold'>
+                      {t('tags.form.canonicalSection')}
+                    </CardTitle>
+                    <CardDescription className='text-xs'>
+                      {t('tags.form.canonicalDesc')}
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className='flex items-center gap-1.5'>
-                        <FormLabel>
-                          {t('tags.form.name', 'Canonical Name')}
-                        </FormLabel>
-                        <FormFieldHelp tooltip={t('tags.help.name')} />
-                      </div>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder={t(
-                            'tags.form.namePlaceholder',
-                            'e.g. Cyberpunk, 葬送のフリーレン, Phong cảnh'
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name='slug'
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className='flex items-center gap-1.5'>
-                        <FormLabel>
-                          {t('tags.form.slug', 'Custom Slug (Optional)')}
-                        </FormLabel>
-                        <FormFieldHelp tooltip={t('tags.help.slug')} />
-                      </div>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder={t(
-                            'tags.form.slugPlaceholder',
-                            'Auto-generated from canonical name if empty'
-                          )}
-                          className='font-mono text-xs'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <CardContent className='space-y-5 p-5 sm:p-6'>
+                {/* Row 1: Canonical Name & Permastyle Slug */}
+                <div className='grid gap-4 sm:grid-cols-2'>
+                  <FormField
+                    control={form.control}
+                    name='name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-1.5'>
+                            <FormLabel className='text-xs font-semibold'>
+                              {t('tags.form.name')}
+                            </FormLabel>
+                            <FormFieldHelp tooltip={t('tags.help.name')} />
+                          </div>
+                          <span className='text-muted-foreground font-mono text-[10px]'>
+                            {t('tags.form.required')}
+                          </span>
+                        </div>
+                        <FormControl>
+                          <div className='relative flex items-center'>
+                            <span className='text-primary pointer-events-none absolute left-3 font-mono text-sm font-semibold'>
+                              #
+                            </span>
+                            <Input
+                              {...field}
+                              placeholder={t('tags.form.namePlaceholder')}
+                              className='text-foreground pl-8 font-semibold tracking-tight'
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <div className='grid grid-cols-1 items-start gap-4 sm:grid-cols-3 xl:grid-cols-1'>
+                  <FormField
+                    control={form.control}
+                    name='slug'
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-1.5'>
+                            <FormLabel className='text-xs font-semibold'>
+                              {t('tags.form.slug')}
+                            </FormLabel>
+                            <FormFieldHelp tooltip={t('tags.help.slug')} />
+                          </div>
+                          <button
+                            type='button'
+                            onClick={handleGenerateSlug}
+                            className='text-primary inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium hover:underline'
+                          >
+                            <RefreshCwIcon
+                              className='size-3'
+                              aria-hidden='true'
+                            />
+                            {t('tags.form.syncSlug')}
+                          </button>
+                        </div>
+                        <FormControl>
+                          <div className='relative flex items-center'>
+                            <span className='text-muted-foreground pointer-events-none absolute left-3 font-mono text-xs'>
+                              /
+                            </span>
+                            <Input
+                              {...field}
+                              placeholder={t('tags.form.slugPlaceholder')}
+                              className='pr-8 pl-6 font-mono text-xs'
+                            />
+                            {field.value && (
+                              <button
+                                type='button'
+                                onClick={handleCopySlug}
+                                aria-label={t('tags.actions.copySlug')}
+                                className='text-muted-foreground hover:text-foreground absolute right-2.5 cursor-pointer'
+                              >
+                                {copiedSlug ? (
+                                  <CheckIcon
+                                    className='size-3.5 text-emerald-500'
+                                    aria-hidden='true'
+                                  />
+                                ) : (
+                                  <CopyIcon
+                                    className='size-3.5'
+                                    aria-hidden='true'
+                                  />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Row 2: Category, Safety Rating, Lifecycle Status */}
+                <div className='grid gap-4 sm:grid-cols-3'>
                   <FormField
                     control={form.control}
                     name='category'
                     render={({ field }) => (
                       <FormItem>
                         <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t('tags.form.category', 'Semantic Category')}
+                          <FormLabel className='text-xs font-semibold'>
+                            {t('tags.form.category')}
                           </FormLabel>
                           <FormFieldHelp tooltip={t('tags.help.category')} />
                         </div>
@@ -249,55 +423,64 @@ export function TagForm({
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger className='w-full'>
+                            <SelectTrigger className='w-full text-xs font-medium'>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value='general'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-sky-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.category.general', 'General')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-sky-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.general')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='copyright'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-fuchsia-500'
-                                aria-hidden='true'
-                              />
-                              {t(
-                                'tags.category.copyright',
-                                'Copyright / Series'
-                              )}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-violet-600'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.copyright')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='character'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-emerald-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.category.character', 'Character')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-emerald-600'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.character')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='artist'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-amber-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.category.artist', 'Artist / Creator')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-amber-600'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.artist')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='meta'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-slate-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.category.meta', 'Meta / Technique')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-blue-600'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.meta')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='system'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-indigo-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.category.system', 'System')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-rose-600'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.category.system')}</span>
+                              </div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -312,8 +495,8 @@ export function TagForm({
                     render={({ field }) => (
                       <FormItem>
                         <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t('tags.form.safetyRating', 'Safety Rating')}
+                          <FormLabel className='text-xs font-semibold'>
+                            {t('tags.form.safetyRating')}
                           </FormLabel>
                           <FormFieldHelp
                             tooltip={t('tags.help.safetyRating')}
@@ -324,38 +507,46 @@ export function TagForm({
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger className='w-full'>
+                            <SelectTrigger className='w-full text-xs font-medium'>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value='safe'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-emerald-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.safety.safe', 'Safe')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-emerald-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.safety.safe')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='sensitive'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-amber-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.safety.sensitive', 'Sensitive')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-amber-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.safety.sensitive')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='r18'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-rose-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.safety.r18', 'R-18')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-rose-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.safety.r18')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='r18g'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-red-700'
-                                aria-hidden='true'
-                              />
-                              {t('tags.safety.r18g', 'R-18G')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-red-700'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.safety.r18g')}</span>
+                              </div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -370,8 +561,8 @@ export function TagForm({
                     render={({ field }) => (
                       <FormItem>
                         <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t('tags.form.status', 'Lifecycle Status')}
+                          <FormLabel className='text-xs font-semibold'>
+                            {t('tags.form.status')}
                           </FormLabel>
                           <FormFieldHelp tooltip={t('tags.help.status')} />
                         </div>
@@ -380,38 +571,46 @@ export function TagForm({
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger className='w-full'>
+                            <SelectTrigger className='w-full text-xs font-medium'>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value='active'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-emerald-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.status.active', 'Active')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-emerald-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.status.active')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='pending'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-amber-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.status.pending', 'Pending')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-amber-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.status.pending')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='banned'>
-                              <span
-                                className='bg-destructive size-2 shrink-0 rounded-full'
-                                aria-hidden='true'
-                              />
-                              {t('tags.status.banned', 'Banned')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-rose-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.status.banned')}</span>
+                              </div>
                             </SelectItem>
                             <SelectItem value='merged'>
-                              <span
-                                className='size-2 shrink-0 rounded-full bg-purple-500'
-                                aria-hidden='true'
-                              />
-                              {t('tags.status.merged', 'Merged')}
+                              <div className='flex items-center gap-2'>
+                                <span
+                                  className='size-2 rounded-full bg-purple-500'
+                                  aria-hidden='true'
+                                />
+                                <span>{t('tags.status.merged')}</span>
+                              </div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -420,24 +619,217 @@ export function TagForm({
                     )}
                   />
                 </div>
+              </CardContent>
+            </Card>
 
+            {/* Card 2: Multilingual Translations Studio */}
+            <Card className='border-border/80 shadow-2xs'>
+              <CardHeader className='border-b px-5 py-4 sm:px-6'>
+                <div className='flex items-center gap-2.5'>
+                  <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
+                    <LanguagesIcon className='size-4.5' aria-hidden='true' />
+                  </div>
+                  <div>
+                    <CardTitle className='text-base font-semibold'>
+                      {t('tags.form.translationsSection')}
+                    </CardTitle>
+                    <CardDescription className='text-xs'>
+                      {t('tags.form.translationsDesc')}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className='space-y-5 p-5 sm:p-6'>
+                {/* Language Selection Tabs Bar */}
+                <div className='border-border/70 bg-muted/30 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-2'>
+                  <div className='flex items-center gap-2 pl-1'>
+                    <GlobeIcon
+                      className='text-primary size-4 shrink-0'
+                      aria-hidden='true'
+                    />
+                    <span className='text-foreground text-xs font-semibold'>
+                      {t('tags.form.selectLocale', 'Ngôn ngữ:')}
+                    </span>
+                  </div>
+
+                  <div className='flex items-center gap-1.5 overflow-x-auto py-0.5'>
+                    {TAG_LOCALES.map((localeItem, idx) => {
+                      const currentName =
+                        watchedTranslations?.[idx]?.translatedName?.trim() ?? ''
+                      const currentSummary =
+                        watchedTranslations?.[idx]?.shortSummary?.trim() ?? ''
+                      const isConfigured = Boolean(
+                        currentName || currentSummary
+                      )
+                      const isActive = activeLocale === localeItem.value
+
+                      return (
+                        <button
+                          key={localeItem.value}
+                          type='button'
+                          onClick={() => setActiveLocale(localeItem.value)}
+                          className={cn(
+                            'inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all select-none',
+                            isActive
+                              ? 'bg-background text-foreground ring-border font-semibold shadow-xs ring-1'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'size-1.5 shrink-0 rounded-full',
+                              isConfigured
+                                ? 'bg-emerald-500'
+                                : 'bg-muted-foreground/40'
+                            )}
+                            aria-hidden='true'
+                          />
+                          <span className='font-medium whitespace-nowrap'>
+                            {localeItem.label}
+                          </span>
+                          {isConfigured && (
+                            <span className='font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400'>
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {activeLocaleIndex >= 0 && (
+                  <div className='space-y-5'>
+                    {/* Field 1: Translated Name */}
+                    <FormField
+                      control={form.control}
+                      name={`translations.${activeLocaleIndex}.translatedName`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className='flex items-center gap-1.5'>
+                            <FormLabel className='text-xs font-semibold'>
+                              {t('tags.form.displayName')}
+                            </FormLabel>
+                            <FormFieldHelp
+                              tooltip={t('tags.help.displayName')}
+                            />
+                          </div>
+                          <FormControl>
+                            <div className='relative flex items-center'>
+                              <GlobeIcon
+                                className='text-muted-foreground pointer-events-none absolute left-3 size-3.5'
+                                aria-hidden='true'
+                              />
+                              <Input
+                                {...field}
+                                placeholder={t(
+                                  'tags.form.translatedPlaceholder',
+                                  {
+                                    locale: activeLocaleItem.label,
+                                  }
+                                )}
+                                className='pl-8 text-xs font-medium'
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription className='text-muted-foreground text-[11px]'>
+                            {t('tags.form.translatedTip')}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Field 2: Short Summary */}
+                    <FormField
+                      control={form.control}
+                      name={`translations.${activeLocaleIndex}.shortSummary`}
+                      render={({ field }) => {
+                        const currentLen = (field.value ?? '').length
+                        return (
+                          <FormItem>
+                            <div className='flex items-center justify-between'>
+                              <div className='flex items-center gap-1.5'>
+                                <FormLabel className='text-xs font-semibold'>
+                                  {t('tags.form.shortSummary')}
+                                </FormLabel>
+                                <FormFieldHelp
+                                  tooltip={t('tags.help.shortSummary')}
+                                />
+                              </div>
+                              <span
+                                className={cn(
+                                  'font-mono text-[11px] tabular-nums',
+                                  currentLen > 250
+                                    ? 'font-semibold text-amber-500'
+                                    : 'text-muted-foreground'
+                                )}
+                              >
+                                {currentLen} / 280
+                              </span>
+                            </div>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                rows={3}
+                                placeholder={t('tags.form.summaryPlaceholder')}
+                                className='resize-none text-xs leading-relaxed'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Side Column (4 Cols): Governance Flags & Orthographic Aliases */}
+          <div className='space-y-6 lg:col-span-4'>
+            {/* Card 3: Governance & Security Flags */}
+            <Card className='border-border/80 shadow-2xs'>
+              <CardHeader className='border-b px-5 py-4'>
+                <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
+                  <ShieldCheckIcon
+                    className='text-primary size-4'
+                    aria-hidden='true'
+                  />
+                  <span>{t('tags.form.governanceSection')}</span>
+                </CardTitle>
+                <CardDescription className='text-xs'>
+                  {t('tags.form.governanceDesc')}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className='space-y-3 p-5'>
                 <FormField
                   control={form.control}
                   name='isOfficial'
                   render={({ field }) => (
-                    <FormItem className='flex items-center justify-between gap-3 rounded-lg border p-3'>
-                      <div className='space-y-0.5'>
+                    <FormItem
+                      className={cn(
+                        'flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs transition-all',
+                        field.value
+                          ? 'border-primary/50 bg-primary/5 ring-primary/20 ring-1'
+                          : 'border-border/70 bg-card hover:border-border'
+                      )}
+                    >
+                      <div className='space-y-0.5 pr-2'>
                         <div className='flex items-center gap-1.5'>
-                          <FormLabel className='text-sm'>
-                            {t('tags.form.isOfficial', 'Official Verified Tag')}
+                          <BadgeCheckIcon
+                            className='text-primary size-4'
+                            aria-hidden='true'
+                          />
+                          <FormLabel className='cursor-pointer text-xs font-semibold'>
+                            {t('tags.form.isOfficial')}
                           </FormLabel>
-                          <FormFieldHelp tooltip={t('tags.help.isOfficial')} />
                         </div>
-                        <FormDescription className='text-xs'>
-                          {t(
-                            'tags.form.isOfficialDesc',
-                            'Marks this tag as curated by platform moderators.'
-                          )}
+                        <FormDescription className='text-[11px] leading-relaxed'>
+                          {t('tags.form.isOfficialDesc')}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -454,19 +846,26 @@ export function TagForm({
                   control={form.control}
                   name='isSystem'
                   render={({ field }) => (
-                    <FormItem className='flex items-center justify-between gap-3 rounded-lg border p-3'>
-                      <div className='space-y-0.5'>
+                    <FormItem
+                      className={cn(
+                        'flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs transition-all',
+                        field.value
+                          ? 'border-amber-500/50 bg-amber-500/5 ring-1 ring-amber-500/20'
+                          : 'border-border/70 bg-card hover:border-border'
+                      )}
+                    >
+                      <div className='space-y-0.5 pr-2'>
                         <div className='flex items-center gap-1.5'>
-                          <FormLabel className='text-sm'>
-                            {t('tags.form.isSystem', 'System Tag')}
+                          <LockIcon
+                            className='size-4 text-amber-500'
+                            aria-hidden='true'
+                          />
+                          <FormLabel className='cursor-pointer text-xs font-semibold'>
+                            {t('tags.form.isSystem')}
                           </FormLabel>
-                          <FormFieldHelp tooltip={t('tags.help.isSystem')} />
                         </div>
-                        <FormDescription className='text-xs'>
-                          {t(
-                            'tags.form.isSystemDesc',
-                            'Prevents community deletion and merges.'
-                          )}
+                        <FormDescription className='text-[11px] leading-relaxed'>
+                          {t('tags.form.isSystemDesc')}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -480,296 +879,116 @@ export function TagForm({
                 />
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right Column: Translations + Orthographic Aliases */}
-          <div className='flex flex-col gap-6'>
-            <Card className='shadow-xs'>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2 text-base'>
-                  <LanguagesIcon
-                    className='text-primary size-4'
-                    aria-hidden='true'
-                  />
-                  {t(
-                    'tags.form.translationsSection',
-                    'Multilingual Translations'
-                  )}
-                  <FormFieldHelp tooltip={t('tags.help.translations')} />
-                </CardTitle>
-                <CardDescription>
-                  {t(
-                    'tags.form.translationsDesc',
-                    'Provide localized display names and concise hover summaries across supported languages.'
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='space-y-4'>
-                {TAG_LOCALES.map((localeItem, idx) => {
-                  const currentName =
-                    watchedTranslations?.[idx]?.translatedName?.trim() ?? ''
-                  const currentSummary =
-                    watchedTranslations?.[idx]?.shortSummary ?? ''
-                  const isConfigured = Boolean(
-                    currentName || currentSummary.trim()
-                  )
-                  return (
-                    <div
-                      key={localeItem.value}
-                      className='bg-muted/20 space-y-3.5 rounded-xl border p-4'
-                    >
-                      <div className='flex items-center justify-between border-b pb-2.5'>
-                        <div className='flex items-center gap-2'>
-                          <Badge
-                            variant='outline'
-                            className='bg-background font-mono text-xs uppercase'
-                          >
-                            {localeItem.value}
-                          </Badge>
-                          <span className='text-sm font-medium'>
-                            {localeItem.label}
-                          </span>
-                        </div>
-                        <span className='text-muted-foreground inline-flex items-center gap-1.5 text-xs'>
-                          <span
-                            className={`size-1.5 rounded-full ${
-                              isConfigured
-                                ? 'bg-emerald-500'
-                                : 'bg-muted-foreground/40'
-                            }`}
-                            aria-hidden='true'
-                          />
-                          {isConfigured
-                            ? t('tags.form.configured', 'Configured')
-                            : t('tags.form.notSet', 'Optional')}
-                        </span>
-                      </div>
-
-                      <div className='space-y-3'>
-                        <FormField
-                          control={form.control}
-                          name={`translations.${idx}.translatedName`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className='flex items-center gap-1.5'>
-                                <FormLabel className='text-xs'>
-                                  {t(
-                                    'tags.form.displayName',
-                                    'Translated Display Name'
-                                  )}
-                                </FormLabel>
-                                <FormFieldHelp
-                                  tooltip={t('tags.help.displayName')}
-                                />
-                              </div>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder={`Display name in ${localeItem.label}...`}
-                                  className='bg-background'
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`translations.${idx}.shortSummary`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className='flex items-center justify-between gap-2'>
-                                <div className='flex items-center gap-1.5'>
-                                  <FormLabel className='text-xs'>
-                                    {t(
-                                      'tags.form.shortSummary',
-                                      'Hover Tooltip Summary'
-                                    )}
-                                  </FormLabel>
-                                  <FormFieldHelp
-                                    tooltip={t('tags.help.shortSummary')}
-                                  />
-                                </div>
-                                <span
-                                  role='status'
-                                  aria-atomic='true'
-                                  className='text-muted-foreground font-mono text-[11px] tabular-nums'
-                                >
-                                  {currentSummary.length} / 280
-                                </span>
-                              </div>
-                              <FormControl>
-                                <Textarea
-                                  {...field}
-                                  rows={2}
-                                  placeholder='Concise encyclopedia preview shown on hover...'
-                                  className='bg-background min-h-16 resize-none'
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-
-            <Card className='shadow-xs'>
-              <CardHeader className='flex flex-row items-start justify-between gap-3'>
-                <div className='space-y-1'>
-                  <CardTitle className='flex items-center gap-2 text-base'>
+            {/* Card 4: Orthographic Aliases (表記揺れ) */}
+            <Card className='border-border/80 shadow-2xs'>
+              <CardHeader className='border-b px-5 py-4'>
+                <div className='flex items-center justify-between'>
+                  <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
                     <SparklesIcon
                       className='text-primary size-4'
                       aria-hidden='true'
                     />
-                    {t(
-                      'tags.form.aliasesSection',
-                      'Orthographic Aliases (表記揺れ)'
-                    )}
-                    <FormFieldHelp tooltip={t('tags.help.aliases')} />
+                    <span>{t('tags.form.aliasesSection')}</span>
                   </CardTitle>
-                  <CardDescription>
-                    {t(
-                      'tags.form.aliasesDesc',
-                      'Map synonyms, abbreviations, and common typos to automatically resolve and 301-redirect to this canonical tag.'
-                    )}
-                  </CardDescription>
+                  <Badge
+                    variant='outline'
+                    className='font-mono text-[10px] tabular-nums'
+                  >
+                    {aliasFields.length}
+                  </Badge>
                 </div>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  onClick={() =>
-                    appendAlias({
-                      aliasName: '',
-                      aliasType: 'synonym',
-                      locale: '',
-                    })
-                  }
-                >
-                  <PlusIcon className='size-4' aria-hidden='true' />
-                  {t('tags.form.addAlias', 'Add Alias')}
-                </Button>
+                <CardDescription className='text-xs'>
+                  {t('tags.form.aliasesDesc')}
+                </CardDescription>
               </CardHeader>
-              <CardContent>
+
+              <CardContent className='space-y-4 p-5'>
+                {/* Quick-Add Toolbar */}
+                <div className='border-border/70 bg-muted/20 space-y-2 rounded-xl border p-2.5'>
+                  <Input
+                    value={quickAliasName}
+                    onChange={(e) => setQuickAliasName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleQuickAddAlias()
+                      }
+                    }}
+                    placeholder={t('tags.form.aliasQuickPlaceholder')}
+                    className='bg-background h-8 text-xs'
+                  />
+                  <div className='flex items-center gap-2'>
+                    <Select
+                      value={quickAliasType}
+                      onValueChange={(val) =>
+                        setQuickAliasType(val as TagAliasType)
+                      }
+                    >
+                      <SelectTrigger className='bg-background h-8 flex-1 text-xs'>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='synonym'>
+                          {t('tags.aliasType.synonym')}
+                        </SelectItem>
+                        <SelectItem value='abbreviation'>
+                          {t('tags.aliasType.abbreviation')}
+                        </SelectItem>
+                        <SelectItem value='typo'>
+                          {t('tags.aliasType.typo')}
+                        </SelectItem>
+                        <SelectItem value='legacy_merge'>
+                          {t('tags.aliasType.legacyMerge')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type='button'
+                      size='sm'
+                      onClick={handleQuickAddAlias}
+                      disabled={!quickAliasName.trim()}
+                      className='h-8 shrink-0 cursor-pointer gap-1 px-3 text-xs font-semibold'
+                    >
+                      <PlusIcon className='size-3.5' aria-hidden='true' />
+                      {t('buttons.add')}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Active Aliases Chip Area */}
                 {aliasFields.length === 0 ? (
-                  <div className='text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs'>
-                    {t(
-                      'tags.form.noAliases',
-                      'No orthographic aliases configured yet. Add abbreviations (e.g. "FGO"), romanizations, or common typos so search and autocomplete resolve directly to this tag.'
-                    )}
+                  <div className='border-border/70 text-muted-foreground rounded-xl border border-dashed p-5 text-center text-xs'>
+                    {t('tags.form.noAliases')}
                   </div>
                 ) : (
-                  <div className='space-y-3'>
-                    {aliasFields.map((aliasField, idx) => (
-                      <div
-                        key={aliasField.id}
-                        className='grid items-start gap-3 rounded-lg border p-3 sm:grid-cols-[minmax(0,1fr)_160px_110px_40px]'
-                      >
-                        <FormField
-                          control={form.control}
-                          name={`aliases.${idx}.aliasName`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className='sr-only'>
-                                {t('tags.form.aliasName', 'Alias Keyword')}
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder={t(
-                                    'tags.form.aliasKeywordPlaceholder',
-                                    'Alias keyword (e.g. FGO, フリーレン)...'
-                                  )}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`aliases.${idx}.aliasType`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className='sr-only'>
-                                {t('tags.form.aliasType', 'Alias Type')}
-                              </FormLabel>
-                              <Select
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className='w-full'>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value='synonym'>
-                                    {t('tags.aliasType.synonym', 'Synonym')}
-                                  </SelectItem>
-                                  <SelectItem value='abbreviation'>
-                                    {t(
-                                      'tags.aliasType.abbreviation',
-                                      'Abbreviation'
-                                    )}
-                                  </SelectItem>
-                                  <SelectItem value='typo'>
-                                    {t('tags.aliasType.typo', 'Typo / Variant')}
-                                  </SelectItem>
-                                  <SelectItem value='legacy_merge'>
-                                    {t(
-                                      'tags.aliasType.legacyMerge',
-                                      'Legacy Merge'
-                                    )}
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`aliases.${idx}.locale`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className='sr-only'>
-                                {t('tags.form.aliasLocale', 'Locale')}
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder={t(
-                                    'tags.form.aliasLocalePlaceholder',
-                                    'Locale (all)'
-                                  )}
-                                  className='font-mono text-xs'
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <Button
-                          type='button'
-                          variant='ghost'
-                          size='icon'
-                          className='text-destructive hover:text-destructive size-9'
-                          aria-label={`${t('tags.form.removeAlias', 'Remove alias')} ${idx + 1}`}
-                          onClick={() => removeAlias(idx)}
+                  <div className='flex flex-wrap gap-1.5'>
+                    {aliasFields.map((aliasField, idx) => {
+                      const val = form.watch(`aliases.${idx}`)
+                      return (
+                        <Badge
+                          key={aliasField.id}
+                          variant='secondary'
+                          className='group border-border/70 bg-card hover:border-foreground/30 flex items-center gap-1.5 rounded-lg border py-1 pr-1.5 pl-2 text-xs font-normal shadow-2xs transition-colors'
                         >
-                          <TrashIcon className='size-4' aria-hidden='true' />
-                        </Button>
-                      </div>
-                    ))}
+                          <span className='text-foreground text-[11px] font-semibold'>
+                            {val?.aliasName || `Alias #${idx + 1}`}
+                          </span>
+                          <span className='bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[9px] uppercase'>
+                            {val?.aliasType}
+                          </span>
+                          <button
+                            type='button'
+                            onClick={() => removeAlias(idx)}
+                            className='text-muted-foreground hover:bg-destructive/15 hover:text-destructive cursor-pointer rounded p-0.5 transition-colors'
+                            title={t('tags.form.removeAlias')}
+                            aria-label={`Remove alias ${val?.aliasName}`}
+                          >
+                            <XIcon className='size-3' aria-hidden='true' />
+                          </button>
+                        </Badge>
+                      )
+                    })}
                   </div>
                 )}
               </CardContent>

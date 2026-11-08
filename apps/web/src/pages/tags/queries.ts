@@ -31,6 +31,18 @@ const paginatedMetaWrapper = z.object({
 
 export async function apiGetTagsListing(params: RestQueryParams) {
   const response = await http.get('/tags', { params })
+  if (Array.isArray(response.data)) {
+    const data = z.array(tagSummarySchema).parse(response.data)
+    return {
+      data,
+      meta: {
+        page: params.page ?? 1,
+        perPage: params.limit ?? data.length,
+        totalItems: data.length,
+        totalPages: 1,
+      },
+    }
+  }
   return paginatedMetaWrapper
     .extend({
       data: z.array(tagSummarySchema),
@@ -164,9 +176,25 @@ export async function apiMergeTag({
   return response.data
 }
 
-export async function apiGetTagAuditLogs(limit = 50): Promise<EntityTagLog[]> {
-  const response = await http.get('/tags/audit-logs', { params: { limit } })
-  return z.array(entityTagLogSchema).parse(response.data)
+export async function apiGetTagAuditLogs(params?: RestQueryParams) {
+  const response = await http.get('/tags/audit-logs', { params })
+  if (Array.isArray(response.data)) {
+    const data = z.array(entityTagLogSchema).parse(response.data)
+    return {
+      data,
+      meta: {
+        page: params?.page ?? 1,
+        perPage: params?.limit ?? data.length,
+        totalItems: data.length,
+        totalPages: 1,
+      },
+    }
+  }
+  return paginatedMetaWrapper
+    .extend({
+      data: z.array(entityTagLogSchema),
+    })
+    .parse(response.data)
 }
 
 export async function apiSearchTagsAutocomplete(
@@ -277,11 +305,42 @@ export const useDataTagById = (id: string, locale = 'en') =>
     enabled: Boolean(id),
   })
 
-export const useDataTagAuditLogs = (limit = 50, enabled = true) =>
+export const useDataSearchTagsPaginated = ({
+  search,
+  page = 1,
+  limit = 8,
+  locale = 'en',
+  enabled = true,
+}: {
+  search: string
+  page: number
+  limit?: number
+  locale?: string
+  enabled?: boolean
+}) =>
   useQuery({
-    queryKey: ['tag-audit-logs', limit],
-    queryFn: () => apiGetTagAuditLogs(limit),
+    queryKey: ['tags-paginated-search', search, page, limit, locale],
+    queryFn: async () => {
+      const trimmed = search?.trim()
+      const params: Record<string, any> = {
+        page,
+        limit,
+        sort: '-usageCount',
+        locale,
+      }
+      if (trimmed) {
+        params['filter[search]'] = trimmed
+      }
+      return apiGetTagsListing(params as RestQueryParams)
+    },
     enabled,
+    placeholderData: (previousData) => previousData,
+  })
+
+export const useDataTagAuditLogs = (params: RestQueryParams) =>
+  useQuery({
+    queryKey: ['tag-audit-logs', params],
+    queryFn: () => apiGetTagAuditLogs(params),
   })
 
 export const useDataMergeTagPreview = (
@@ -329,5 +388,10 @@ export const useDataEntityTags = (
 
 export type PaginatedTagSummary = {
   data: TagSummary[]
+  meta: z.infer<typeof apiMetaSchema>
+}
+
+export type PaginatedEntityTagLog = {
+  data: EntityTagLog[]
   meta: z.infer<typeof apiMetaSchema>
 }

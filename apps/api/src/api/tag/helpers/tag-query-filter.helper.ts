@@ -18,7 +18,7 @@ import { TagMuteService } from '../services/tag-mute.service';
 import { TagNormalizationService } from '../services/tag-normalization.service';
 
 export interface BooleanTagFilterOptions {
-  /** Space-separated Pixiv query string, e.g. "genshin_impact furina -r18" */
+  /** Space-separated tag query string, e.g. "genshin_impact furina -r18" */
   tagQuery?: string;
   /** Explicit canonical slugs/names that MUST all match (AND) */
   tagsAll?: string[];
@@ -49,7 +49,7 @@ export class TagQueryFilterHelper {
   ) {}
 
   /**
-   * Parses a Pixiv-style boolean tag query string (e.g. "frieren OR fern -ai_generated")
+   * Parses a boolean tag query string (e.g. "frieren OR fern -ai_generated")
    * into structured AND, OR, and NOT token lists.
    */
   parseBooleanQuery(rawQuery?: string): {
@@ -147,7 +147,7 @@ export class TagQueryFilterHelper {
   }
 
   /**
-   * Applies Pixiv-grade Boolean Tag Filtering + Synonym/Hierarchy Expansion + User NG-Tag Muting
+   * Applies Boolean Tag Filtering + Synonym/Hierarchy Expansion + User NG-Tag Muting
    * onto any TypeORM SelectQueryBuilder whose root entity has an `id` column.
    */
   async applyTagFilters<T extends ObjectLiteral>(
@@ -250,7 +250,7 @@ export class TagQueryFilterHelper {
   }
 
   /**
-   * Evaluates a standalone Pixiv boolean tag expression (AND, OR, -NOT, DAG closure expansion,
+   * Evaluates a standalone boolean tag expression (AND, OR, -NOT, taxonomy closure expansion,
    * and user NG-tag mutes) against both Canonical Tags and Polymorphic EntityTag attachments.
    */
   async evaluateStandaloneBooleanSearch(options: {

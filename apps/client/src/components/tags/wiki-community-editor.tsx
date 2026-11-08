@@ -70,7 +70,7 @@ export function WikiCommunityEditor({
   const [summary, setSummary] = useState(initialSummary);
   const [body, setBody] = useState(
     initialBody ||
-      `<p><strong>#${tagName}</strong> is a canonical tag in the Pixiv-style taxonomy.</p>`
+      `<p><strong>#${tagName}</strong> is a canonical folksonomy tag in the community taxonomy graph.</p>`
   );
   const [changeNote, setChangeNote] = useState("");
 

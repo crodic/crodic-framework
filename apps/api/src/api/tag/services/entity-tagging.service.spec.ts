@@ -10,7 +10,7 @@ import { EntityTaggingService } from './entity-tagging.service';
 import { TagCacheService } from './tag-cache.service';
 import { TagService } from './tag.service';
 
-describe('EntityTaggingService (Pixiv Collaborative Folksonomy Governance)', () => {
+describe('EntityTaggingService (Collaborative Folksonomy Governance)', () => {
   const id = (v: string) => v as AutoIncrementID;
 
   function createSetup(opts: {
@@ -116,7 +116,6 @@ describe('EntityTaggingService (Pixiv Collaborative Folksonomy Governance)', () 
       entityId: id('1'),
       tagEditLocked: Boolean(config.tagEditLocked),
       maxTags: config.maxTags ?? 10,
-      totalCount: existing.length,
       canEdit: true,
       isOwner: false,
       tags: [],
@@ -125,7 +124,7 @@ describe('EntityTaggingService (Pixiv Collaborative Folksonomy Governance)', () 
     return { service, existing };
   }
 
-  it('enforces Pixiv 10-tag maximum limit per entity', async () => {
+  it('enforces 10-tag maximum limit per entity', async () => {
     const tenTags = Array.from({ length: 10 }, (_, idx) => ({
       tagId: id(String(idx + 1)),
     }));

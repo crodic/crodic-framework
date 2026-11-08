@@ -46,9 +46,9 @@ export type TagRelationType = z.infer<typeof tagRelationTypeSchema>
 export type TaggableEntityType = z.infer<typeof taggableEntityTypeSchema>
 
 export const TAG_LOCALES = [
-  { value: 'en', label: 'English (EN)' },
-  { value: 'vi', label: 'Tiếng Việt (VI)' },
-  { value: 'jp', label: '日本語 (JP)' },
+  { value: 'en', label: 'English' },
+  { value: 'vi', label: 'Tiếng Việt' },
+  { value: 'jp', label: '日本語' },
 ] as const
 
 export const tagTranslationSchema = z.object({
@@ -166,7 +166,7 @@ export const entityTagLogSchema = z.object({
   createdAt: z.string(),
 })
 
-export const pixivEntityTagItemSchema = z.object({
+export const entityTagItemSchema = z.object({
   id: z.string(),
   tagId: z.string(),
   slug: z.string(),
@@ -190,7 +190,7 @@ export const entityTagListSchema = z.object({
   totalCount: z.number().optional(),
   canEdit: z.boolean(),
   isOwner: z.boolean(),
-  tags: z.array(pixivEntityTagItemSchema),
+  tags: z.array(entityTagItemSchema),
 })
 
 export const tagTranslationFormSchema = z.object({
@@ -236,6 +236,8 @@ export const tagEncyclopediaFormSchema = z.object({
 
 export type TagSummary = z.infer<typeof tagSummarySchema>
 export type TagDetail = z.infer<typeof tagDetailSchema>
+export type TagTranslation = NonNullable<TagDetail['translations']>[number]
+export type TagAlias = NonNullable<TagDetail['aliases']>[number]
 export type TagAutocompleteItem = z.infer<typeof tagAutocompleteItemSchema>
 export type MergeTagPreview = z.infer<typeof mergeTagPreviewSchema>
 export type TagEncyclopedia = z.infer<typeof tagEncyclopediaSchema>
@@ -243,7 +245,7 @@ export type TagEncyclopediaRevision = z.infer<
   typeof tagEncyclopediaRevisionSchema
 >
 export type EntityTagLog = z.infer<typeof entityTagLogSchema>
-export type PixivEntityTagItem = z.infer<typeof pixivEntityTagItemSchema>
+export type EntityTagItem = z.infer<typeof entityTagItemSchema>
 export type EntityTagList = z.infer<typeof entityTagListSchema>
 export type TagFormValues = z.infer<typeof tagFormSchema>
 export type TagEncyclopediaFormValues = z.infer<

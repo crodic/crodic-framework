@@ -109,7 +109,7 @@ export interface TagEncyclopedia {
   updatedAt: string;
 }
 
-export interface PixivEntityTagItem {
+export interface EntityTagItem {
   id: string;
   tagId: string;
   slug: string;
@@ -132,7 +132,7 @@ export interface EntityTagListResponse {
   maxTags: number;
   canEdit: boolean;
   isOwner: boolean;
-  tags: PixivEntityTagItem[];
+  tags: EntityTagItem[];
 }
 
 export interface EntityTagLogItem {
@@ -164,7 +164,7 @@ export interface BooleanSearchResponse {
   data: {
     entityType: TaggableEntityType;
     entityId: string;
-    tags: PixivEntityTagItem[];
+    tags: EntityTagItem[];
   }[];
   meta: {
     total: number;

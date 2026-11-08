@@ -12,6 +12,7 @@ import {
   GitBranch,
   Layers,
   Paintbrush,
+  ShieldCheck,
   Sparkles,
   Tag as TagIcon,
   User,
@@ -21,8 +22,12 @@ import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
 import { BooleanTagSearchBar } from "@/components/tags/boolean-tag-search-bar";
 import { CollaborativeTagBar } from "@/components/tags/collaborative-tag-bar";
+import { TagCategoryEmblem } from "@/components/tags/tag-category-emblem";
 import { TagHoverCard } from "@/components/tags/tag-hover-card";
-import { getTagCategoryToken } from "@/components/tags/tag-tokens";
+import {
+  getTagCategoryI18nKey,
+  getTagCategoryToken,
+} from "@/components/tags/tag-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -508,7 +513,7 @@ export default async function TagsDiscoveryHubPage({
                             <span
                               className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase backdrop-blur-md ${token.badge}`}
                             >
-                              {token.label}
+                              {t(getTagCategoryI18nKey(tag.category))}
                             </span>
                           </div>
                           <span className="bg-background/90 text-foreground absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium shadow-2xs backdrop-blur-xs">
@@ -539,7 +544,7 @@ export default async function TagsDiscoveryHubPage({
                             <span
                               className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs backdrop-blur-md ${token.badge}`}
                             >
-                              {token.label}
+                              {t(getTagCategoryI18nKey(tag.category))}
                             </span>
                           </div>
 
@@ -551,9 +556,12 @@ export default async function TagsDiscoveryHubPage({
                             </span>
                           </div>
 
-                          {/* Center Stylized Preview Title */}
-                          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                            <span className="text-foreground/90 line-clamp-1 text-lg font-extrabold tracking-tight drop-shadow-xs transition-transform duration-200 group-hover:scale-105 sm:text-xl">
+                          {/* Center Category Visual Emblem & Micro Identity */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+                            <div className="bg-background/80 border-border/60 flex size-12 items-center justify-center rounded-2xl border shadow-xs backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                              <TagCategoryEmblem category={tag.category} />
+                            </div>
+                            <span className="text-foreground/90 line-clamp-1 max-w-[85%] text-xs font-semibold tracking-tight">
                               #{display}
                             </span>
                           </div>

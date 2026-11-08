@@ -12,7 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useTagTooltip } from "@/services/tags";
 import { TagChip, type TagChipProps } from "./tag-chip";
-import { getTagCategoryToken } from "./tag-tokens";
+import { getTagCategoryI18nKey, getTagCategoryToken } from "./tag-tokens";
 
 export interface TagHoverCardProps extends TagChipProps {
   locale?: string;
@@ -83,15 +83,20 @@ export function TagHoverCard({
                     className={`size-2 rounded-full ${categoryToken.dot}`}
                     aria-hidden="true"
                   />
-                  {categoryToken.label}
+                  {t(
+                    getTagCategoryI18nKey(
+                      tooltip?.category ?? chipProps.category
+                    )
+                  )}
                 </span>
                 <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
-                  {(
-                    tooltip?.usageCount ??
-                    chipProps.usageCount ??
-                    0
-                  ).toLocaleString()}{" "}
-                  tagged
+                  {t("worksCount", {
+                    count: (
+                      tooltip?.usageCount ??
+                      chipProps.usageCount ??
+                      0
+                    ).toLocaleString(),
+                  })}
                 </span>
               </div>
 
@@ -105,7 +110,7 @@ export function TagHoverCard({
                 (tooltip?.name || chipProps.name) !==
                   (tooltip?.translatedName || chipProps.translatedName) && (
                   <p className="text-muted-foreground font-mono text-xs">
-                    Canonical: #{tooltip?.name ?? chipProps.name}
+                    {t("canonicalPrefix")} #{tooltip?.name ?? chipProps.name}
                   </p>
                 )}
             </div>

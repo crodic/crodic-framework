@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ColumnDef, Row, Table, TableState } from '@tanstack/react-table'
-import type { ExtendedColumnSort } from '@/types/data-table'
+import type { ExtendedColumnSort, QueryKeys } from '@/types/data-table'
 import type { SingleParser } from 'nuqs'
 import { RestQueryBuilder, type RestQueryParams } from '@/lib/query-builder'
 import { useDataTable } from '@/hooks/use-data-table'
@@ -47,6 +47,7 @@ export interface UseRestResourceTableOptions<
   getRowId?: (row: TData) => string
   enableRowSelection?: boolean | ((row: Row<TData>) => boolean)
   clearOnDefault?: boolean
+  queryKeys?: Partial<QueryKeys>
 }
 
 export interface UseRestResourceTableReturn<
@@ -85,6 +86,7 @@ export function useRestResourceTable<
   getRowId = (row: any) => row.id,
   enableRowSelection,
   clearOnDefault,
+  queryKeys,
 }: UseRestResourceTableOptions<TData, TParsers>): UseRestResourceTableReturn<
   TData,
   TParsers
@@ -98,6 +100,7 @@ export function useRestResourceTable<
   } = useGetFilterParams<TData, TParsers>({
     allowedSorts,
     filterParsers: filterParsers ?? ({} as TParsers),
+    queryKeys,
   })
 
   const queryParams = useMemo(() => {
@@ -127,6 +130,7 @@ export function useRestResourceTable<
     data: data?.data ?? [],
     columns,
     pageCount: totalPages,
+    queryKeys,
     initialState: {
       columnPinning: initialColumnPinning,
       ...initialState,

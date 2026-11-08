@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   BookMarkedIcon,
+  CheckIcon,
+  ClockIcon,
   HistoryIcon,
   LockIcon,
   RotateCcwIcon,
@@ -13,6 +15,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +52,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -80,6 +90,7 @@ export function EncyclopediaEditorPanel({
   const queryClient = useQueryClient()
 
   const [selectedLocale, setSelectedLocale] = useState(initialLocale)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [rollbackTarget, setRollbackTarget] =
     useState<TagEncyclopediaRevision | null>(null)
 
@@ -128,7 +139,9 @@ export function EncyclopediaEditorPanel({
   const upsertMutation = useMutation({
     mutationFn: apiUpsertTagEncyclopedia,
     onSuccess: () => {
-      toast.success(t('tags.messages.wikiSaved', 'Encyclopedia article saved'))
+      toast.success(
+        t('tags.messages.wikiSaved', 'Đã lưu bài viết bách khoa toàn thư')
+      )
       queryClient.invalidateQueries({
         queryKey: ['tag-encyclopedia', tag.id, selectedLocale],
       })
@@ -142,7 +155,7 @@ export function EncyclopediaEditorPanel({
     mutationFn: apiRollbackEncyclopediaRevision,
     onSuccess: () => {
       toast.success(
-        t('tags.messages.wikiRolledBack', 'Revision restored successfully')
+        t('tags.messages.wikiRolledBack', 'Khôi phục phiên bản thành công')
       )
       setRollbackTarget(null)
       queryClient.invalidateQueries({
@@ -153,8 +166,13 @@ export function EncyclopediaEditorPanel({
     onError: restApiErrorHandler,
   })
 
+  const currentLocaleObj = TAG_LOCALES.find((l) => l.value === selectedLocale)
+  const currentLocaleLabel = currentLocaleObj?.label ?? selectedLocale
+  const revisionsCount = wiki?.revisions?.length ?? 0
+
   return (
     <>
+      {/* Rollback Confirmation Alert Dialog */}
       <AlertDialog
         open={Boolean(rollbackTarget)}
         onOpenChange={(open) => {
@@ -164,24 +182,21 @@ export function EncyclopediaEditorPanel({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t(
-                'tags.encyclopedia.rollbackTitle',
-                'Rollback Encyclopedia Revision'
-              )}
+              {t('tags.encyclopedia.rollbackTitle', 'Khôi phục Phiên bản Wiki')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 'tags.encyclopedia.rollbackDesc',
-                'Restoring this revision creates a new immutable snapshot preserving full audit history.'
+                'Khôi phục phiên bản này sẽ tạo một bản ghi mới bất biến nhằm bảo toàn toàn bộ lịch sử kiểm toán.'
               )}{' '}
               {rollbackTarget
-                ? `(Revision v${rollbackTarget.revisionNumber})`
+                ? `(Phiên bản v${rollbackTarget.revisionNumber})`
                 : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={rollbackMutation.isPending}>
-              {t('buttons.cancel', 'Cancel')}
+              {t('buttons.cancel', 'Hủy')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={rollbackMutation.isPending || !rollbackTarget || !wiki}
@@ -195,60 +210,216 @@ export function EncyclopediaEditorPanel({
               }}
             >
               {rollbackMutation.isPending
-                ? t('tags.encyclopedia.restoringBtn', 'Restoring...')
-                : t('tags.encyclopedia.restoreAction', 'Restore Revision')}
+                ? t('tags.encyclopedia.restoringBtn', 'Đang khôi phục...')
+                : t('tags.encyclopedia.restoreAction', 'Khôi phục Phiên bản')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]'>
-        {/* Left: Rich Wiki Editor */}
-        <Card className='shadow-xs'>
-          <CardHeader className='flex flex-row flex-wrap items-center justify-between gap-3 border-b pb-4'>
-            <div>
-              <CardTitle className='flex items-center gap-2 text-base'>
-                <BookMarkedIcon
-                  className='text-primary size-4'
-                  aria-hidden='true'
-                />
+      {/* Slide-out Revision History Drawer (Sheet) */}
+      <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <SheetContent
+          side='right'
+          className='flex w-full flex-col p-0 sm:max-w-md'
+        >
+          <SheetHeader className='border-b px-6 py-4'>
+            <div className='flex items-center gap-3'>
+              <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
+                <HistoryIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div className='min-w-0 flex-1'>
+                <SheetTitle className='text-base font-semibold'>
+                  {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+                </SheetTitle>
+                <SheetDescription className='text-xs'>
+                  #{tag.name} • Ấn bản {currentLocaleLabel} ({revisionsCount}{' '}
+                  bản ghi)
+                </SheetDescription>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <div className='flex-1 overflow-y-auto p-5'>
+            {!wiki || !wiki.revisions || wiki.revisions.length === 0 ? (
+              <div className='border-border/70 text-muted-foreground space-y-1.5 rounded-xl border border-dashed p-8 text-center text-xs'>
+                <HistoryIcon className='text-muted-foreground/50 mx-auto size-8' />
+                <p className='text-foreground font-medium'>
+                  {t(
+                    'tags.encyclopedia.noRevisions',
+                    'Chưa có bản ghi lịch sử phiên bản nào cho ngôn ngữ này.'
+                  )}
+                </p>
+                <p className='text-[11px]'>
+                  Mỗi lần bạn lưu bài viết, một snapshot bất biến sẽ được ghi
+                  nhận tại đây.
+                </p>
+              </div>
+            ) : (
+              <div className='before:bg-border/70 relative space-y-4 pl-6 before:absolute before:top-2 before:bottom-2 before:left-2.5 before:w-0.5'>
+                {wiki.revisions.map((rev) => {
+                  const isCurrent = rev.revisionNumber === wiki.currentRevision
+                  const editorDisplayName =
+                    rev.editorName ||
+                    t('tags.encyclopedia.contributor', 'Người đóng góp')
+                  const initials = editorDisplayName.slice(0, 2).toUpperCase()
+
+                  return (
+                    <div key={rev.id} className='group relative'>
+                      {/* Timeline Node Dot */}
+                      <div
+                        className={cn(
+                          'ring-background absolute top-1.5 -left-6 flex size-5 items-center justify-center rounded-full ring-4 transition-all',
+                          isCurrent
+                            ? 'bg-primary text-primary-foreground shadow-2xs'
+                            : 'bg-muted border-border text-muted-foreground group-hover:border-primary/50 border'
+                        )}
+                      >
+                        {isCurrent ? (
+                          <CheckIcon
+                            className='size-2.5 stroke-3'
+                            aria-hidden='true'
+                          />
+                        ) : (
+                          <span className='font-mono text-[9px] font-bold'>
+                            {rev.revisionNumber}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Revision Card */}
+                      <div
+                        className={cn(
+                          'rounded-xl border p-3.5 text-xs shadow-2xs transition-all',
+                          isCurrent
+                            ? 'border-primary/50 bg-primary/5 ring-primary/20 ring-1'
+                            : 'border-border/70 bg-card hover:border-border'
+                        )}
+                      >
+                        <div className='flex items-center justify-between gap-2'>
+                          <div className='flex min-w-0 items-center gap-2'>
+                            <div className='bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold'>
+                              {initials}
+                            </div>
+                            <div className='flex min-w-0 flex-wrap items-center gap-1.5'>
+                              <span className='text-foreground truncate text-xs font-semibold'>
+                                {editorDisplayName}
+                              </span>
+                              {isCurrent ? (
+                                <Badge className='h-4 px-1.5 text-[9px] font-bold uppercase'>
+                                  Hiện tại
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant='outline'
+                                  className='h-4 px-1 py-0 font-mono text-[10px]'
+                                >
+                                  v{rev.revisionNumber}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          {!isCurrent && (
+                            <Button
+                              type='button'
+                              size='sm'
+                              variant='ghost'
+                              className='text-muted-foreground hover:text-foreground h-7 shrink-0 cursor-pointer gap-1 px-2 text-[11px]'
+                              onClick={() => setRollbackTarget(rev)}
+                            >
+                              <RotateCcwIcon
+                                className='size-3'
+                                aria-hidden='true'
+                              />
+                              <span>
+                                {t(
+                                  'tags.encyclopedia.rollbackBtn',
+                                  'Khôi phục'
+                                )}
+                              </span>
+                            </Button>
+                          )}
+                        </div>
+
+                        {rev.changeNote && (
+                          <p className='border-primary/60 bg-muted/40 text-foreground/90 mt-2 rounded-lg border-l-2 px-2.5 py-1.5 text-[11px] leading-relaxed italic'>
+                            &ldquo;{rev.changeNote}&rdquo;
+                          </p>
+                        )}
+
+                        <div className='text-muted-foreground mt-2 flex items-center gap-1.5 text-[10px] tabular-nums'>
+                          <ClockIcon
+                            className='size-3 opacity-70'
+                            aria-hidden='true'
+                          />
+                          <span>
+                            {format(
+                              new Date(rev.createdAt),
+                              'dd/MM/yyyy • HH:mm:ss'
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* 100% Full-Width Wiki Studio Editor */}
+      <Card className='border-border/80 shadow-xs'>
+        <CardHeader className='flex flex-row flex-wrap items-center justify-between gap-4 border-b pb-4'>
+          <div className='space-y-1'>
+            <CardTitle className='flex flex-wrap items-center gap-2 text-base font-semibold'>
+              <BookMarkedIcon
+                className='text-primary size-4.5'
+                aria-hidden='true'
+              />
+              <span>
                 {t(
                   'tags.encyclopedia.title',
-                  'Pixiv Encyclopedia Studio (dic)'
+                  'Studio Bách khoa toàn thư Thẻ (dic)'
                 )}{' '}
                 — #{tag.name}
-              </CardTitle>
-              <CardDescription className='text-xs'>
-                {wiki ? (
-                  <>
-                    {t('tags.encyclopedia.currentRevision', 'Current Revision')}{' '}
-                    <span className='font-mono font-medium tabular-nums'>
-                      v{wiki.currentRevision}
-                    </span>{' '}
-                    ·{' '}
-                    <span className='font-mono tabular-nums'>
-                      {wiki.viewCount.toLocaleString()}
-                    </span>{' '}
-                    {t('tags.encyclopedia.views', 'views')}
-                  </>
-                ) : (
-                  t(
-                    'tags.encyclopedia.noArticle',
-                    'No wiki article exists for this locale yet. Save below to publish revision v1.'
-                  )
-                )}
-              </CardDescription>
-            </div>
+              </span>
+            </CardTitle>
+            <CardDescription className='text-xs'>
+              {wiki ? (
+                <>
+                  {t('tags.encyclopedia.currentRevision', 'Phiên bản hiện tại')}{' '}
+                  <span className='text-foreground font-mono font-bold tabular-nums'>
+                    v{wiki.currentRevision}
+                  </span>{' '}
+                  ·{' '}
+                  <span className='text-foreground font-mono font-bold tabular-nums'>
+                    {wiki.viewCount.toLocaleString()}
+                  </span>{' '}
+                  {t('tags.encyclopedia.views', 'lượt xem')}
+                </>
+              ) : (
+                t(
+                  'tags.encyclopedia.noArticle',
+                  'Chưa có bài viết bách khoa cho ngôn ngữ này. Lưu bên dưới để xuất bản phiên bản v1.'
+                )
+              )}
+            </CardDescription>
+          </div>
 
-            <div className='flex items-center gap-2'>
+          <div className='flex flex-wrap items-center gap-2.5'>
+            {/* Edition Selector */}
+            <div className='flex items-center gap-1.5'>
               <span className='text-muted-foreground text-xs font-medium'>
-                {t('tags.encyclopedia.edition', 'Edition:')}
+                {t('tags.encyclopedia.edition', 'Ấn bản:')}
               </span>
               <Select
                 value={selectedLocale}
                 onValueChange={(loc) => setSelectedLocale(loc)}
               >
-                <SelectTrigger className='h-8 w-40 text-xs'>
+                <SelectTrigger className='h-8 w-36 text-xs font-medium'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -260,274 +431,250 @@ export function EncyclopediaEditorPanel({
                 </SelectContent>
               </Select>
             </div>
-          </CardHeader>
 
-          <CardContent className='pt-5'>
-            {isFetching ? (
-              <div className='space-y-4'>
-                <Skeleton className='h-16 w-full' />
-                <Skeleton className='h-72 w-full' />
-              </div>
-            ) : (
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit((values) =>
-                    upsertMutation.mutate({ tagId: tag.id, data: values })
+            {/* Slide-out Revision History Trigger Button */}
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setIsHistoryOpen(true)}
+              className='h-8 cursor-pointer gap-1.5 text-xs font-medium shadow-2xs'
+            >
+              <HistoryIcon
+                className='text-primary size-3.5'
+                aria-hidden='true'
+              />
+              <span>
+                {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+              </span>
+              <Badge
+                variant='secondary'
+                className='ml-0.5 h-4 px-1.5 font-mono text-[10px] tabular-nums'
+              >
+                {revisionsCount}
+              </Badge>
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className='pt-6'>
+          {isFetching ? (
+            <div className='space-y-5'>
+              <Skeleton className='h-20 w-full' />
+              <Skeleton className='h-96 w-full' />
+              <Skeleton className='h-12 w-full' />
+            </div>
+          ) : (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit((values) =>
+                  upsertMutation.mutate({ tagId: tag.id, data: values })
+                )}
+                className='space-y-6'
+              >
+                <FormField
+                  control={form.control}
+                  name='summary'
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className='flex items-center gap-1.5'>
+                        <FormLabel className='text-xs font-semibold'>
+                          {t('tags.encyclopedia.summary', 'Tóm tắt mở đầu')}
+                        </FormLabel>
+                        <FormFieldHelp tooltip={t('tags.help.wikiSummary')} />
+                      </div>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          rows={2}
+                          placeholder={t(
+                            'tags.encyclopedia.summaryPlaceholder',
+                            'Định nghĩa bách khoa cô đọng hiển thị trên thẻ tìm kiếm và bản xem trước...'
+                          )}
+                          className='text-xs font-medium'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                  className='space-y-5'
-                >
-                  <FormField
-                    control={form.control}
-                    name='summary'
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t('tags.encyclopedia.summary', 'Lead Summary')}
-                          </FormLabel>
-                          <FormFieldHelp tooltip={t('tags.help.wikiSummary')} />
-                        </div>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            rows={2}
-                            placeholder={t(
-                              'tags.encyclopedia.summaryPlaceholder',
-                              'Concise encyclopedia definition displayed in search cards and hover previews...'
-                            )}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                />
 
-                  <FormField
-                    control={form.control}
-                    name='body'
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t(
-                              'tags.encyclopedia.body',
-                              'Wiki Article Content'
-                            )}
-                          </FormLabel>
-                          <FormFieldHelp tooltip={t('tags.help.wikiBody')} />
-                        </div>
-                        <FormControl>
-                          <div className='overflow-hidden rounded-lg border'>
-                            <Suspense
-                              fallback={<Skeleton className='h-80 w-full' />}
-                            >
-                              <TiptapEditor
-                                key={`${tag.id}-${selectedLocale}-${wiki?.currentRevision ?? 0}`}
-                                output='html'
-                                content={field.value}
-                                onChangeContent={field.onChange}
-                                disabled={upsertMutation.isPending}
-                              />
-                            </Suspense>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name='featuredImageUrl'
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormControl>
-                          <TagFeaturedImageInput
-                            label={t(
-                              'tags.encyclopedia.featuredImage',
-                              'Featured Header Image'
-                            )}
-                            urlValue={field.value || ''}
-                            disabled={upsertMutation.isPending}
-                            error={fieldState.error?.message}
-                            tooltip={t('tags.help.wikiFeaturedImage')}
-                            onSelect={({ url, fileId }) => {
-                              field.onChange(url)
-                              form.setValue('featuredFileId', fileId, {
-                                shouldDirty: true,
-                              })
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name='changeNote'
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className='flex items-center gap-1.5'>
-                          <FormLabel>
-                            {t(
-                              'tags.encyclopedia.changeNote',
-                              'Revision Change Note'
-                            )}
-                          </FormLabel>
-                          <FormFieldHelp
-                            tooltip={t('tags.help.wikiChangeNote')}
-                          />
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder={t(
-                              'tags.encyclopedia.changeNotePlaceholder',
-                              'e.g. Added lore background and character aliases'
-                            )}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className='bg-muted/20 flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between'>
-                    <FormField
-                      control={form.control}
-                      name='isEditLocked'
-                      render={({ field }) => (
-                        <FormItem className='flex flex-row items-center gap-3 space-y-0'>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                <FormField
+                  control={form.control}
+                  name='body'
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className='flex items-center gap-1.5'>
+                        <FormLabel className='text-xs font-semibold'>
+                          {t(
+                            'tags.encyclopedia.body',
+                            'Nội dung bài viết Wiki'
+                          )}
+                        </FormLabel>
+                        <FormFieldHelp tooltip={t('tags.help.wikiBody')} />
+                      </div>
+                      <FormControl>
+                        <div className='border-border/80 min-h-[320px] overflow-hidden rounded-xl border shadow-2xs'>
+                          <Suspense
+                            fallback={<Skeleton className='h-96 w-full' />}
+                          >
+                            <TiptapEditor
+                              key={`${tag.id}-${selectedLocale}-${wiki?.currentRevision ?? 0}`}
+                              output='html'
+                              content={field.value}
+                              onChangeContent={field.onChange}
+                              disabled={upsertMutation.isPending}
                             />
-                          </FormControl>
-                          <div className='space-y-0.5'>
-                            <div className='flex items-center gap-1.5'>
-                              <FormLabel className='flex items-center gap-1.5 text-sm leading-snug'>
-                                <LockIcon
-                                  className='text-muted-foreground size-3.5'
-                                  aria-hidden='true'
-                                />
-                                {t(
-                                  'tags.encyclopedia.isEditLocked',
-                                  'Lock Community Editing'
-                                )}
-                              </FormLabel>
-                              <FormFieldHelp
-                                tooltip={t('tags.help.wikiLock')}
+                          </Suspense>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='featuredImageUrl'
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TagFeaturedImageInput
+                          label={t(
+                            'tags.encyclopedia.featuredImage',
+                            'Ảnh bìa bài viết (Header Image)'
+                          )}
+                          urlValue={field.value || ''}
+                          disabled={upsertMutation.isPending}
+                          error={fieldState.error?.message}
+                          tooltip={t('tags.help.wikiFeaturedImage')}
+                          onSelect={({ url, fileId }) => {
+                            field.onChange(url)
+                            form.setValue('featuredFileId', fileId, {
+                              shouldDirty: true,
+                            })
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='changeNote'
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className='flex items-center gap-1.5'>
+                        <FormLabel className='text-xs font-semibold'>
+                          {t(
+                            'tags.encyclopedia.changeNote',
+                            'Ghi chú thay đổi phiên bản'
+                          )}
+                        </FormLabel>
+                        <FormFieldHelp
+                          tooltip={t('tags.help.wikiChangeNote')}
+                        />
+                      </div>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t(
+                            'tags.encyclopedia.changeNotePlaceholder',
+                            'VD: Bổ sung nguồn gốc nhân vật và tác phẩm ra mắt'
+                          )}
+                          className='text-xs font-medium'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Bottom Action Cluster */}
+                <div className='bg-muted/30 border-border/70 flex flex-col gap-4 rounded-xl border p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between'>
+                  <FormField
+                    control={form.control}
+                    name='isEditLocked'
+                    render={({ field }) => (
+                      <FormItem className='flex flex-row items-center gap-3 space-y-0'>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className='space-y-0.5'>
+                          <div className='flex items-center gap-1.5'>
+                            <FormLabel className='flex cursor-pointer items-center gap-1.5 text-xs leading-snug font-semibold'>
+                              <LockIcon
+                                className='text-muted-foreground size-3.5'
+                                aria-hidden='true'
                               />
-                            </div>
-                            <FormDescription className='text-xs leading-relaxed'>
                               {t(
-                                'tags.encyclopedia.isEditLockedDesc',
-                                'When enabled, only administrators can edit this wiki article.'
+                                'tags.encyclopedia.isEditLocked',
+                                'Khoá chỉnh sửa từ cộng đồng'
                               )}
-                            </FormDescription>
+                            </FormLabel>
+                            <FormFieldHelp tooltip={t('tags.help.wikiLock')} />
                           </div>
-                        </FormItem>
-                      )}
-                    />
+                          <FormDescription className='text-muted-foreground text-[11px] leading-relaxed'>
+                            {t(
+                              'tags.encyclopedia.isEditLockedDesc',
+                              'Khi bật, chỉ có Quản trị viên mới được phép chỉnh sửa bài viết này.'
+                            )}
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className='flex items-center gap-2 self-end sm:self-auto'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setIsHistoryOpen(true)}
+                      className='h-9 cursor-pointer gap-1.5 text-xs'
+                    >
+                      <HistoryIcon
+                        className='text-primary size-3.5'
+                        aria-hidden='true'
+                      />
+                      <span>
+                        {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+                      </span>
+                      <Badge
+                        variant='secondary'
+                        className='h-4 px-1.5 font-mono text-[10px]'
+                      >
+                        {revisionsCount}
+                      </Badge>
+                    </Button>
 
                     <Button
                       type='submit'
                       disabled={upsertMutation.isPending}
-                      className='shrink-0'
+                      className='h-9 shrink-0 cursor-pointer gap-2 text-xs font-semibold shadow-2xs'
                     >
                       <SaveIcon className='size-4' aria-hidden='true' />
                       {upsertMutation.isPending
                         ? t(
                             'tags.encyclopedia.savingRevision',
-                            'Publishing Revision...'
+                            'Đang xuất bản phiên bản...'
                           )
                         : t(
                             'tags.encyclopedia.saveRevision',
-                            'Save & Publish Revision'
+                            'Lưu & Xuất bản Phiên bản'
                           )}
                     </Button>
                   </div>
-                </form>
-              </Form>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Right: Immutable Revision History & Rollback */}
-        <Card className='h-fit shadow-xs'>
-          <CardHeader className='border-b pb-3'>
-            <CardTitle className='flex items-center gap-2 text-base'>
-              <HistoryIcon className='text-primary size-4' aria-hidden='true' />
-              {t('tags.encyclopedia.revisions', 'Revision History')}
-            </CardTitle>
-            <CardDescription className='text-xs'>
-              {t(
-                'tags.encyclopedia.overviewDesc',
-                'Immutable snapshots across community contributors and moderators.'
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='p-0'>
-            {!wiki || !wiki.revisions || wiki.revisions.length === 0 ? (
-              <p className='text-muted-foreground p-6 text-center text-xs'>
-                {t(
-                  'tags.encyclopedia.noRevisions',
-                  'No revision snapshots recorded for this locale yet.'
-                )}
-              </p>
-            ) : (
-              <div className='max-h-140 divide-y overflow-y-auto'>
-                {wiki.revisions.map((rev) => {
-                  const isCurrent = rev.revisionNumber === wiki.currentRevision
-                  return (
-                    <div key={rev.id} className='space-y-1.5 p-3.5 text-xs'>
-                      <div className='flex items-center justify-between gap-2'>
-                        <div className='flex items-center gap-1.5'>
-                          <Badge
-                            variant={isCurrent ? 'default' : 'outline'}
-                            className='font-mono text-[11px] tabular-nums'
-                          >
-                            v{rev.revisionNumber}
-                          </Badge>
-                          <span className='font-medium'>
-                            {rev.editorName ||
-                              t('tags.encyclopedia.contributor', 'Contributor')}
-                          </span>
-                        </div>
-                        {!isCurrent && (
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='ghost'
-                            className='h-7 px-2 text-xs'
-                            onClick={() => setRollbackTarget(rev)}
-                          >
-                            <RotateCcwIcon
-                              className='size-3'
-                              aria-hidden='true'
-                            />
-                            {t('tags.encyclopedia.rollbackBtn', 'Rollback')}
-                          </Button>
-                        )}
-                      </div>
-                      {rev.changeNote && (
-                        <p className='text-foreground/90 text-pretty'>
-                          {rev.changeNote}
-                        </p>
-                      )}
-                      <p className='text-muted-foreground text-[11px] tabular-nums'>
-                        {format(new Date(rev.createdAt), 'dd/MM/yyyy HH:mm')}
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              </form>
+            </Form>
+          )}
+        </CardContent>
+      </Card>
     </>
   )
 }

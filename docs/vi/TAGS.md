@@ -1,8 +1,8 @@
-# Hệ Thống Quản Lý Tags & Bách Khoa Toàn Thư Kiểu Pixiv (`dic`)
+# Hệ Thống Quản Lý Tags & Bách Khoa Toàn Thư Cộng Đồng (`dic`)
 
 > [English](../en/TAGS.md) | **Tiếng Việt**
 
-Hệ thống quản lý **Semantic Taxonomy, Folksonomy Cộng Tác & Bách Khoa Toàn Thư (`dic`)** lấy cảm hứng từ kiến trúc **Pixiv + `dic.pixiv.net`**, được thiết kế độc lập (standalone), đa hình (polymorphic) và hỗ trợ đầy đủ đa ngôn ngữ (`vi`, `en`, `jp`) xuyên suốt `apps/api`, `apps/web` và `apps/client`.
+Hệ thống quản lý **Semantic Taxonomy, Folksonomy Cộng Tác & Bách Khoa Toàn Thư (`dic`)** lấy cảm hứng từ các nền tảng nghệ thuật cộng đồng, được thiết kế độc lập (standalone), đa hình (polymorphic) và hỗ trợ đầy đủ đa ngôn ngữ (`vi`, `en`, `jp`) xuyên suốt `apps/api`, `apps/web` và `apps/client`.
 
 ---
 
@@ -35,9 +35,9 @@ Hệ thống quản lý **Semantic Taxonomy, Folksonomy Cộng Tác & Bách Khoa
 - **4 Mức Độ An Toàn (Safety Ratings)**: `safe`, `sensitive`, `r18`, `r18g`.
 - **Giải quyết từ đồng nghĩa & Chuyển hướng SEO (`表記揺れ`)**: Mọi biến thể viết tắt, gõ sai hoặc tên cũ sau khi gộp (`synonym`, `abbreviation`, `typo`, `legacy_merge`) đều tự động giải quyết về thẻ chuẩn (Canonical Tag) và trả chuyển hướng vĩnh viễn `308 Permanent Redirect`.
 - **Phân cấp DAG & Closure Table**: Hỗ trợ đa cha - đa con (`Parent 親タグ` / `Child 子タグ`), thẻ liên quan (`Related 関連タグ`) và phân biệt nhập nhằng (`Disambiguation 曖昧さ回避`). Tự động phát hiện vòng lặp (cycle detection) và mở rộng tìm kiếm thẻ con chỉ với **1 phép JOIN**.
-- **Tìm kiếm Boolean nâng cao kiểu Pixiv**: Hỗ trợ toán tử `AND` (khoảng trắng), `OR`, `-exclude` (loại trừ), `"cụm từ có dấu cách"`, kết hợp tự động lọc thẻ ẩn cá nhân (**NG Tag Mute Filter**).
+- **Tìm kiếm Boolean nâng cao nâng cao**: Hỗ trợ toán tử `AND` (khoảng trắng), `OR`, `-exclude` (loại trừ), `"cụm từ có dấu cách"`, kết hợp tự động lọc thẻ ẩn cá nhân (**NG Tag Mute Filter**).
 - **Folksonomy Cộng tác**: Giới hạn tối đa **10 thẻ / đối tượng**, phân biệt thẻ của Tác giả (`*`) và thẻ Cộng đồng, hỗ trợ khóa từng thẻ hoặc khóa toàn bộ thanh thẻ, lưu vết kiểm toán bất biến (`entity_tag_logs`).
-- **Pixiv Encyclopedia (`dic`)**: Bài viết wiki đa ngôn ngữ (`vi`, `en`, `jp`) dùng trình soạn thảo Tiptap, hỗ trợ chọn ảnh bìa từ **Media Library Picker** hoặc **Upload trực tiếp**, tự động kế thừa ảnh bìa xuyên ngôn ngữ, lưu lịch sử phiên bản bất biến và khôi phục (`Rollback`) 1 chạm.
+- **Bách khoa toàn thư thẻ (`dic`)**: Bài viết wiki đa ngôn ngữ (`vi`, `en`, `jp`) dùng trình soạn thảo Tiptap, hỗ trợ chọn ảnh bìa từ **Media Library Picker** hoặc **Upload trực tiếp**, tự động kế thừa ảnh bìa xuyên ngôn ngữ, lưu lịch sử phiên bản bất biến và khôi phục (`Rollback`) 1 chạm.
 
 ---
 
@@ -150,7 +150,7 @@ Thay vì đệ quy `WITH RECURSIVE` tốn chi phí trên mỗi lượt tìm ki�
 
 ### Quản trị Folksonomy cộng tác (Giới hạn 10 thẻ & Khóa thẻ)
 
-Mô phỏng cơ chế gắn thẻ cộng tác đặc trưng của Pixiv qua `EntityTaggingService`:
+Mô phỏng cơ chế gắn thẻ cộng tác đặc trưng của hệ thống qua `EntityTaggingService`:
 
 - **Giới hạn 10 thẻ** mặc định trên mỗi đối tượng (`maxTags = 10`, có thể cấu hình riêng trong `entity_tag_settings`).
 - **Thẻ Tác giả (`*`) vs Thẻ Cộng đồng**: Thẻ do chủ sở hữu đối tượng gắn được đánh dấu `isAuthorTag = true` và tự động khóa bảo vệ (`isLocked = true`), người dùng cộng đồng không thể xóa.
@@ -197,7 +197,7 @@ Yêu cầu tài khoản Admin có quyền RBAC thuộc nhóm `TAG` và `TAG_ENCY
 ### 2. Ứng dụng Khách hàng (`apps/client`)
 
 1. **Trung tâm Khám phá & Tìm kiếm Boolean (`/[locale]/tags`)**:
-   - Hỗ trợ cú pháp tìm kiếm kết hợp giống Pixiv:
+   - Hỗ trợ cú pháp tìm kiếm kết hợp thông minh:
      - `frieren illustration` → **AND**: Phải chứa cả hai thẻ (hoặc thẻ con nếu bật mở rộng DAG).
      - `genshin-impact OR honkai-star-rail` → **OR**: Chứa ít nhất một trong các thẻ.
      - `-ai-generated` → **NOT**: Loại trừ mọi nội dung gắn thẻ `AI-Generated`.
@@ -206,7 +206,7 @@ Yêu cầu tài khoản Admin có quyền RBAC thuộc nhóm `TAG` và `TAG_ENCY
 2. **Trang Chi tiết Tag (`/[locale]/tags/[slug]`)**:
    - Hiển thị thẻ chuẩn, ảnh bìa `dic`, số lượng tác phẩm, danh sách alias, sơ đồ quan hệ `Parents / Children / Siblings & Related` và danh sách nội dung được gắn thẻ.
    - Hỗ trợ nút **Mute Tag (NG)** ngay trên đầu trang cho người dùng đã đăng nhập.
-3. **Bách khoa toàn thư Pixiv (`/[locale]/dic` & `/[locale]/dic/[slug]`)**:
+3. **Bách khoa toàn thư Thẻ (`/[locale]/dic` & `/[locale]/dic/[slug]`)**:
    - Trang danh mục `/[locale]/dic` hiển thị lưới bài viết bách khoa kèm ảnh bìa trực quan và bộ lọc theo nhóm ngữ nghĩa.
    - Trang bài viết `/[locale]/dic/[slug]` hiển thị bài viết chi tiết, ảnh bìa, cảnh báo phân biệt nhập nhằng (`曖昧さ回避`), hộp thông tin **Canonical Taxonomy Infobox**, và cho phép thành viên đăng nhập đóng góp bản sửa đổi mới (nếu bài viết chưa bị Admin khóa).
 4. **Cài đặt Ẩn thẻ cá nhân — NG Filter (`/[locale]/settings/muted-tags`)**:
@@ -261,7 +261,7 @@ pnpm --filter api migration:run
 # 2. Đồng bộ quyền CASL RBAC mới (TAG, TAG_ENCYCLOPEDIA) vào database
 pnpm --filter api permissions:sync
 
-# 3. Seed dữ liệu mẫu chuẩn Pixiv (14 thẻ chuẩn đa ngôn ngữ, DAG, Wiki, Artwork mẫu)
+# 3. Seed dữ liệu mẫu chuẩn cộng đồng (14 thẻ chuẩn đa ngôn ngữ, DAG, Wiki, Artwork mẫu)
 pnpm --filter api seed:tags
 ```
 

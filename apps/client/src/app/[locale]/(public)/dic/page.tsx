@@ -18,10 +18,13 @@ import {
 import { Footer } from "@/components/layouts/footer";
 import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
-import { getTagCategoryToken } from "@/components/tags/tag-tokens";
+import { TagCategoryEmblem } from "@/components/tags/tag-category-emblem";
+import {
+  getTagCategoryI18nKey,
+  getTagCategoryToken,
+} from "@/components/tags/tag-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -63,9 +66,9 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   return {
-    title: `Pixiv Encyclopedia (dic) — ${locale.toUpperCase()}`,
+    title: `Tag Encyclopedia (dic) — ${locale.toUpperCase()}`,
     description:
-      "Browse community-curated Pixiv Encyclopedia (dic) wiki articles, visual headers, and semantic DAG tag definitions.",
+      "Browse community-curated encyclopedia (dic) wiki articles, visual headers, and semantic tag definitions.",
   };
 }
 
@@ -300,7 +303,7 @@ export default async function EncyclopediaDirectoryPage({
                         <span
                           className={`absolute top-2.5 left-2.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase backdrop-blur-md ${token.badge}`}
                         >
-                          {token.label}
+                          {t(getTagCategoryI18nKey(tag.category))}
                         </span>
                         <span className="bg-background/90 text-foreground absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium shadow-2xs backdrop-blur-xs">
                           <BookOpenText
@@ -330,7 +333,7 @@ export default async function EncyclopediaDirectoryPage({
                           <span
                             className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs backdrop-blur-md ${token.badge}`}
                           >
-                            {token.label}
+                            {t(getTagCategoryI18nKey(tag.category))}
                           </span>
                         </div>
 
@@ -342,9 +345,12 @@ export default async function EncyclopediaDirectoryPage({
                           </span>
                         </div>
 
-                        {/* Center Stylized Preview Title */}
-                        <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                          <span className="text-foreground/90 line-clamp-1 text-lg font-extrabold tracking-tight drop-shadow-xs transition-transform duration-200 group-hover:scale-105 sm:text-xl">
+                        {/* Center Category Visual Emblem & Micro Identity */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+                          <div className="bg-background/80 border-border/60 flex size-12 items-center justify-center rounded-2xl border shadow-xs backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                            <TagCategoryEmblem category={tag.category} />
+                          </div>
+                          <span className="text-foreground/90 line-clamp-1 max-w-[85%] text-xs font-semibold tracking-tight">
                             #{display}
                           </span>
                         </div>

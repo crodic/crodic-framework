@@ -491,7 +491,7 @@ export class TagService {
 
   /**
    * Resolves a raw tag string from folksonomy user input to an active Canonical Tag,
-   * creating a lightweight tag organically if none exists yet (Pixiv zero-friction folksonomy).
+   * creating a lightweight tag organically if none exists yet (zero-friction folksonomy).
    */
   async resolveOrCreateCanonicalTag(
     rawInput: string,

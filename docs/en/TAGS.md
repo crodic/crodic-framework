@@ -1,8 +1,8 @@
-# Pixiv-Style Tags & Encyclopedia (`dic`) System
+# Tags & Community Encyclopedia (`dic`) System
 
 > **English** | [Tiếng Việt](../vi/TAGS.md)
 
-Enterprise **Semantic Taxonomy, Collaborative Folksonomy & Community Encyclopedia (`dic`)** subsystem modeled after **Pixiv + `dic.pixiv.net`**. Designed as a standalone, polymorphic, multilingual (`vi`, `en`, `jp`) architecture across `apps/api`, `apps/web`, and `apps/client`.
+Enterprise **Semantic Taxonomy, Collaborative Folksonomy & Community Encyclopedia (`dic`)** subsystem inspired by community art platforms. Designed as a standalone, polymorphic, multilingual (`vi`, `en`, `jp`) architecture across `apps/api`, `apps/web`, and `apps/client`.
 
 ---
 
@@ -15,7 +15,7 @@ Enterprise **Semantic Taxonomy, Collaborative Folksonomy & Community Encyclopedi
   - [Unicode NFKC Normalization & Orthographic Alias Resolution (`表記揺れ`)](#unicode-nfkc-normalization--orthographic-alias-resolution-表記揺れ)
   - [Directed Acyclic Graph (DAG) & Transitive Closure Table](#directed-acyclic-graph-dag--transitive-closure-table)
   - [Collaborative Folksonomy Governance (10-Tag Cap & Locks)](#collaborative-folksonomy-governance-10-tag-cap--locks)
-  - [Pixiv Encyclopedia (`dic`) & Immutable Revisions](#pixiv-encyclopedia-dic--immutable-revisions)
+  - [Tag Encyclopedia (`dic`) & Immutable Revisions](#tag-encyclopedia-dic--immutable-revisions)
   - [Redis Caching & BullMQ Workers](#redis-caching--bullmq-workers)
 - [User & Administrator Guide](#user--administrator-guide)
   - [1. Admin Management Portal (`apps/web`)](#1-admin-management-portal-appsweb)
@@ -35,9 +35,9 @@ Enterprise **Semantic Taxonomy, Collaborative Folksonomy & Community Encyclopedi
 - **4 Content Safety Ratings**: `safe`, `sensitive`, `r18`, and `r18g`.
 - **Orthographic Alias Resolution (`表記揺れ`) & SEO Canonicalization**: Synonyms, abbreviations, typos, and merged legacy tags (`synonym`, `abbreviation`, `typo`, `legacy_merge`) resolve automatically to their canonical tag with `308 Permanent Redirect` responses.
 - **DAG Hierarchy & Closure Table**: Multi-parent / multi-child taxonomy (`Parent 親タグ` / `Child 子タグ`), associative links (`Related 関連タグ`), and disambiguation notices (`Disambiguation 曖昧さ回避`) with cycle detection and single-join descendant search expansion.
-- **Boolean Tag Search Engine**: Supports Pixiv-style `AND` (whitespace), `OR`, `-exclude` (`NOT`), and `"quoted multi-word tags"`, combined seamlessly with per-user **NG Tag Mute Filters**.
+- **Boolean Tag Search Engine**: Supports standard `AND` (whitespace), `OR`, `-exclude` (`NOT`), and `"quoted multi-word tags"`, combined seamlessly with per-user **NG Tag Mute Filters**.
 - **Collaborative Folksonomy**: Enforces a **10-tag cap per entity**, distinguishes Creator tags (`*`) from Community tags, supports per-tag locks and entity-wide `tagEditLocked`, and records an immutable audit trail (`entity_tag_logs`).
-- **Pixiv Encyclopedia (`dic`)**: Localized rich-text wiki articles (`vi`, `en`, `jp`) powered by Tiptap, **Media Library File Picker** + **Direct File Upload** for Featured Header Images (with automatic cross-locale image fallback), immutable revision history, and 1-click rollback.
+- **Tag Encyclopedia (`dic`)**: Localized rich-text wiki articles (`vi`, `en`, `jp`) powered by Tiptap, **Media Library File Picker** + **Direct File Upload** for Featured Header Images (with automatic cross-locale image fallback), immutable revision history, and 1-click rollback.
 
 ---
 
@@ -150,14 +150,14 @@ Instead of running expensive `WITH RECURSIVE` queries on read paths, `TagHierarc
 
 ### Collaborative Folksonomy Governance (10-Tag Cap & Locks)
 
-`EntityTaggingService` enforces Pixiv's collaborative tagging rules:
+`EntityTaggingService` enforces collaborative folksonomy tagging rules:
 
 - **10-Tag Cap**: Maximum 10 tags per entity by default (`maxTags = 10` in `entity_tag_settings`).
 - **Creator (`*`) vs Community Tags**: Tags attached by the entity owner are marked `isAuthorTag = true` and `isLocked = true` so community editors cannot delete creator-defined tags.
 - **Entity Edit Lock (`tagEditLocked`)**: Owners or moderators can freeze community tag edits on an entity at any time.
 - **Immutable Audit Trail (`entity_tag_logs`)**: Every add, remove, lock, unlock, or merge rewire action is recorded with actor metadata and tag name snapshots.
 
-### Pixiv Encyclopedia (`dic`) & Immutable Revisions
+### Tag Encyclopedia (`dic`) & Immutable Revisions
 
 - Each canonical tag supports per-locale wiki articles (`vi`, `en`, `jp`) in `tag_encyclopedias`.
 - **Featured Header Image**: Supports selecting existing assets via **Media Library (`FilePickerDialog`)**, **uploading files directly (`POST /api/v1/files/upload`)**, or pasting an external URL. If a locale edition does not specify its own image, the API automatically falls back to any available featured image across other locales of the same tag.
@@ -193,14 +193,14 @@ Requires an administrator role granted `TAG` and `TAG_ENCYCLOPEDIA` permissions.
 ### 2. Customer Application (`apps/client`)
 
 1. **Boolean Tag Discovery Hub (`/[locale]/tags`)**:
-   - Supports Pixiv-style boolean queries:
+   - Supports standard boolean queries:
      - `frieren illustration` → **AND** (must match all terms, including child sub-tags when DAG expansion is enabled).
      - `genshin-impact OR honkai-star-rail` → **OR** (matches any term).
      - `-ai-generated` → **NOT** (excludes matching items).
      - `"fate/grand order"` → Quoted multi-word tag token.
 2. **Canonical Tag Landing Page (`/[locale]/tags/[slug]`)**:
    - Displays the tag hero, featured `dic` thumbnail, orthographic aliases, `Parents / Children / Siblings & Related` DAG cards, **Mute Tag (NG)** toggle, and tagged content feed.
-3. **Pixiv Encyclopedia (`/[locale]/dic` & `/[locale]/dic/[slug]`)**:
+3. **Tag Encyclopedia (`/[locale]/dic` & `/[locale]/dic/[slug]`)**:
    - `/[locale]/dic` provides a visual directory of encyclopedia articles with cover banners and category filters.
    - `/[locale]/dic/[slug]` renders the localized wiki article, disambiguation banner (`曖昧さ回避`), **Canonical Taxonomy Infobox**, and community revision editor (`WikiCommunityEditor`).
 4. **Personal NG Muted Tags (`/[locale]/settings/muted-tags`)**:
@@ -248,7 +248,7 @@ pnpm --filter api migration:run
 # 2. Sync CASL RBAC permissions (TAG, TAG_ENCYCLOPEDIA)
 pnpm --filter api permissions:sync
 
-# 3. Seed curated Pixiv-style sample tags, translations, DAG edges, wikis, and sample entities
+# 3. Seed curated standard sample tags, translations, DAG edges, wikis, and sample entities
 pnpm --filter api seed:tags
 ```
 
@@ -287,7 +287,7 @@ export class ArtworkService {
 
 #### 2. Frontend Component Integration (`apps/client`)
 
-Drop `<CollaborativeTagBar />` into any detail page to get Pixiv's 10-tag folksonomy bar, creator `*` badges, lock indicators, autocomplete add input, and hover encyclopedia cards:
+Drop `<CollaborativeTagBar />` into any detail page to get a 10-tag folksonomy bar, creator `*` badges, lock indicators, autocomplete add input, and hover encyclopedia cards:
 
 ```tsx
 import { CollaborativeTagBar } from "@/components/tags/collaborative-tag-bar";

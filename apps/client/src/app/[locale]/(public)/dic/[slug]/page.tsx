@@ -18,7 +18,10 @@ import { Footer } from "@/components/layouts/footer";
 import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
 import { TagHoverCard } from "@/components/tags/tag-hover-card";
-import { getTagCategoryToken } from "@/components/tags/tag-tokens";
+import {
+  getTagCategoryI18nKey,
+  getTagCategoryToken,
+} from "@/components/tags/tag-tokens";
 import { WikiCommunityEditor } from "@/components/tags/wiki-community-editor";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -51,11 +54,11 @@ export async function generateMetadata({
   const coverImage = wiki?.featuredImageUrl || tag.featuredImageUrl;
 
   return {
-    title: `${displayTitle} (${tag.name}) — Pixiv Encyclopedia (dic)`,
+    title: `${displayTitle} (${tag.name}) — Community Encyclopedia (dic)`,
     description:
       wiki?.summary ||
       tag.shortSummary ||
-      `Community-curated Pixiv Encyclopedia entry and semantic taxonomy graph for #${displayTitle}.`,
+      `Community-curated encyclopedia entry and semantic taxonomy graph for #${displayTitle}.`,
     openGraph: coverImage
       ? {
           images: [{ url: coverImage, alt: displayTitle }],
@@ -90,7 +93,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
   const jsonLd: WithContext<Article> = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: `${displayTitle} — Pixiv Encyclopedia (dic)`,
+    headline: `${displayTitle} — Community Encyclopedia (dic)`,
     description: wiki?.summary || tag.shortSummary || undefined,
     image: featuredImageUrl || undefined,
     dateModified: wiki?.updatedAt || tag.updatedAt,
@@ -170,7 +173,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
           </Alert>
         )}
 
-        {/* 2-Column Pixiv Encyclopedia Reader + Taxonomy Infobox */}
+        {/* 2-Column Encyclopedia Reader + Taxonomy Infobox */}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* Left: Encyclopedia Article */}
           <article className="bg-card space-y-6 rounded-2xl border p-6 shadow-xs sm:p-8">
@@ -190,7 +193,7 @@ export default async function TagEncyclopediaPage({ params }: PageProps) {
                     className={`size-2 rounded-full ${categoryToken.dot}`}
                     aria-hidden="true"
                   />
-                  {categoryToken.label}
+                  {t(getTagCategoryI18nKey(tag.category))}
                 </span>
                 {tag.isOfficial && (
                   <Badge variant="secondary" className="gap-1 text-xs">

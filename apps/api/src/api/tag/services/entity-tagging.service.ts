@@ -1,3 +1,8 @@
+import {
+  AllowedFilter,
+  QueryBuilder,
+  QueryParams,
+} from '../../../common/query-builder';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
   BadRequestException,
@@ -19,9 +24,9 @@ import {
   UpdateEntityTagGovernanceReqDto,
 } from '../dto/tag-req.dto';
 import {
+  EntityTagItemDto,
   EntityTagListResDto,
   EntityTagLogResDto,
-  PixivEntityTagItemDto,
 } from '../dto/tag-res.dto';
 import { EntityTagConfigEntity } from '../entities/entity-tag-config.entity';
 import { EntityTagLogEntity } from '../entities/entity-tag-log.entity';
@@ -51,7 +56,7 @@ export class EntityTaggingService {
   ) {}
 
   /**
-   * Lists tags attached to an entity with Pixiv-style per-actor permission flags:
+   * Lists tags attached to an entity with per-actor permission flags:
    * isAuthorTag (*), locked, deletable, canEdit, and maxTags.
    */
   async listEntityTags(
@@ -83,7 +88,7 @@ export class EntityTaggingService {
     const isAuthenticated = Boolean(actor.userId || actor.adminId);
     const canEdit = isOwner || (isAuthenticated && !tagEditLocked);
 
-    const tags: PixivEntityTagItemDto[] = items
+    const tags: EntityTagItemDto[] = items
       .filter((item) => item.tag && !item.tag.deletedAt)
       .map((item) => {
         const tr =
@@ -257,7 +262,7 @@ export class EntityTaggingService {
   }
 
   /**
-   * Detaches a tag from an entity, enforcing Pixiv's Author (*) & Lock rules.
+   * Detaches a tag from an entity, enforcing Author (*) & Lock rules.
    */
   async detachTag(
     entityType: ETaggableEntityType,
@@ -567,24 +572,41 @@ export class EntityTaggingService {
     }));
   }
 
-  async listRecentGlobalLogs(limit = 50): Promise<EntityTagLogResDto[]> {
-    const logs = await this.logRepository.find({
-      relations: ['actorUser', 'actorAdmin'],
-      order: { createdAt: 'DESC' },
-      take: Math.min(limit, 100),
-    });
+  async listRecentGlobalLogs(
+    query?: QueryParams,
+  ): Promise<{ data: EntityTagLogResDto[]; meta: any }> {
+    const baseQb = this.logRepository
+      .createQueryBuilder('log')
+      .leftJoinAndSelect('log.actorUser', 'actorUser')
+      .leftJoinAndSelect('log.actorAdmin', 'actorAdmin');
 
-    return logs.map((l) => ({
-      id: l.id,
-      entityType: l.entityType,
-      entityId: l.entityId,
-      tagId: l.tagId ?? null,
-      tagNameSnapshot: l.tagNameSnapshot ?? null,
-      action: l.action,
-      actorName:
-        l.actorAdmin?.email ?? l.actorUser?.fullName ?? 'Community Member',
-      isAdminAction: Boolean(l.actorAdminId),
-      createdAt: l.createdAt,
-    }));
+    const paginated = await QueryBuilder.for(baseQb, query ?? {})
+      .allowedFilters([
+        AllowedFilter.exact('action'),
+        AllowedFilter.exact('entityType'),
+        AllowedFilter.exact('entityId'),
+        AllowedFilter.exact('tagId'),
+        AllowedFilter.partial('tagNameSnapshot'),
+      ])
+      .allowedSorts(['createdAt', 'action', 'entityType'])
+      .defaultSort('-createdAt')
+      .setLimit(20, 100)
+      .paginate();
+
+    return {
+      data: paginated.data.map((l) => ({
+        id: l.id,
+        entityType: l.entityType,
+        entityId: l.entityId,
+        tagId: l.tagId ?? null,
+        tagNameSnapshot: l.tagNameSnapshot ?? null,
+        action: l.action,
+        actorName:
+          l.actorAdmin?.email ?? l.actorUser?.fullName ?? 'Community Member',
+        isAdminAction: Boolean(l.actorAdminId),
+        createdAt: l.createdAt,
+      })),
+      meta: paginated.meta,
+    };
   }
 }

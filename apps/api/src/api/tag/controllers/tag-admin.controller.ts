@@ -92,15 +92,26 @@ export class TagAdminController {
   @Get('audit-logs')
   @ApiAuth({
     type: EntityTagLogResDto,
-    summary: 'Get recent tag governance and folksonomy audit logs',
+    summary:
+      'Get recent tag governance and folksonomy audit logs with whitelist filtering and pagination',
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      filters: [
+        AllowedFilter.exact('action'),
+        AllowedFilter.exact('entityType'),
+        AllowedFilter.exact('entityId'),
+        AllowedFilter.exact('tagId'),
+        'tagNameSnapshot',
+      ],
+      sorts: ['createdAt', 'action', 'entityType'],
+      defaultSort: '-createdAt',
+    },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Tag),
   )
-  listAuditLogs(@Query('limit') limit?: string) {
-    return this.entityTaggingService.listRecentGlobalLogs(
-      limit ? Number(limit) : 50,
-    );
+  listAuditLogs(@Query() query: QueryParams) {
+    return this.entityTaggingService.listRecentGlobalLogs(query);
   }
 
   @Post()

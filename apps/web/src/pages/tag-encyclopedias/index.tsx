@@ -93,9 +93,9 @@ export function PageTagEncyclopediaOverview() {
           label: t('tags.encyclopedia.colEdition', 'Edition'),
           variant: 'select',
           options: [
-            { label: 'English (EN)', value: 'en' },
-            { label: 'Tiếng Việt (VI)', value: 'vi' },
-            { label: '日本語 (JP)', value: 'jp' },
+            { label: 'English', value: 'en' },
+            { label: 'Tiếng Việt', value: 'vi' },
+            { label: '日本語', value: 'jp' },
           ],
         },
       },
