@@ -15,6 +15,7 @@ cd "$ROOT_DIR"
 # Flags
 SKIP_PULL=false
 SKIP_MIGRATION=false
+RUN_SEED=false
 
 for arg in "$@"; do
   case $arg in
@@ -24,6 +25,10 @@ for arg in "$@"; do
       ;;
     --skip-migration)
       SKIP_MIGRATION=true
+      shift
+      ;;
+    --seed)
+      RUN_SEED=true
       shift
       ;;
     *)
@@ -102,6 +107,11 @@ if [[ "$SKIP_MIGRATION" == "false" ]]; then
   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/sync-permissions.js
 else
   warn "Skipping database migrations (--skip-migration flag active)."
+fi
+
+if [[ "$RUN_SEED" == "true" ]]; then
+  log "Running database seeds..."
+  docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/seeds/run-seed.js
 fi
 
 # 5. Smoke Test & Health Check
