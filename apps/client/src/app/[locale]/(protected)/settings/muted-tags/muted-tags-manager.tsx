@@ -15,6 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -60,18 +67,22 @@ export function MutedTagsManager({
   });
 
   return (
-    <Card className="shadow-xs">
-      <CardHeader className="space-y-1 border-b pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <EyeOff className="text-primary size-5" aria-hidden="true" />
+    <Card className="border-border/80 overflow-hidden rounded-3xl shadow-xs">
+      <CardHeader className="border-border/70 space-y-1.5 border-b p-6">
+        <CardTitle className="flex items-center gap-2.5 text-xl font-bold tracking-tight">
+          <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-xl">
+            <EyeOff className="size-4" aria-hidden="true" />
+          </div>
           {title}
         </CardTitle>
-        <CardDescription className="text-pretty">{description}</CardDescription>
+        <CardDescription className="text-xs leading-relaxed text-pretty">
+          {description}
+        </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-5">
-        <div className="space-y-2">
-          <p className="text-xs font-medium">
+      <CardContent className="space-y-6 p-6">
+        <div className="space-y-2.5">
+          <p className="text-foreground text-xs font-semibold">
             Search &amp; Add Canonical Tag to Personal NG List
           </p>
           <TagInputAutocomplete
@@ -90,20 +101,30 @@ export function MutedTagsManager({
         </div>
 
         {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="space-y-2.5">
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <Skeleton className="h-14 w-full rounded-2xl" />
           </div>
         ) : mutedList.length === 0 ? (
-          <div className="text-muted-foreground rounded-xl border border-dashed p-8 text-center text-xs">
-            Your personal NG-Tag mute list is currently empty.
-          </div>
+          <Empty className="border-border/80 rounded-2xl border border-dashed py-12">
+            <EmptyMedia variant="icon">
+              <EyeOff className="text-muted-foreground size-6" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle className="text-base">No Muted Tags</EmptyTitle>
+              <EmptyDescription className="text-xs">
+                Your personal NG-Tag mute list is currently empty. Tags added
+                here and optionally their descendant sub-tags will be filtered
+                out.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
-          <div className="divide-y rounded-xl border">
+          <div className="divide-border/60 border-border/70 divide-y overflow-hidden rounded-2xl border">
             {mutedList.map((entry) => (
               <div
                 key={entry.id}
-                className="flex flex-wrap items-center justify-between gap-3 p-3.5"
+                className="hover:bg-muted/40 flex flex-wrap items-center justify-between gap-3 p-4 transition-colors"
               >
                 <TagHoverCard
                   locale={locale}
@@ -115,9 +136,9 @@ export function MutedTagsManager({
                 />
 
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-xs">
+                  <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
                     <GitBranch
-                      className="text-muted-foreground size-3.5"
+                      className="text-primary size-3.5"
                       aria-hidden="true"
                     />
                     <span className="text-muted-foreground">
@@ -143,7 +164,7 @@ export function MutedTagsManager({
                     disabled={removeMutation.isPending}
                     aria-label={`Unmute tag ${entry.tag.name}`}
                     onClick={() => removeMutation.mutate(entry.tag.id)}
-                    className="text-destructive hover:text-destructive size-8"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-8 cursor-pointer rounded-lg transition-colors"
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
                   </Button>

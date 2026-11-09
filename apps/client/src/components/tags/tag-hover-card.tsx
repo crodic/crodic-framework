@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowUpRight, BookOpenText, GitBranch } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpenText,
+  Check,
+  Copy,
+  GitBranch,
+} from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -10,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { useTagTooltip } from "@/services/tags";
 import { TagChip, type TagChipProps } from "./tag-chip";
 import { getTagCategoryI18nKey, getTagCategoryToken } from "./tag-tokens";
@@ -26,6 +33,7 @@ export function TagHoverCard({
 }: TagHoverCardProps) {
   const t = useTranslations("Tags");
   const [hasOpened, setHasOpened] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const { data: tooltip, isLoading } = useTagTooltip(
     chipProps.slug,
@@ -37,6 +45,21 @@ export function TagHoverCard({
     tooltip?.category ?? chipProps.category
   );
   const previewImageUrl = tooltip?.featuredImageUrl || featuredImageUrl;
+  const primaryName =
+    tooltip?.translatedName || chipProps.translatedName || chipProps.name;
+
+  const copyTag = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(`#${primaryName}`);
+      setIsCopied(true);
+      toast.success(t("copied") || `Copied #${primaryName}`);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  };
 
   return (
     <HoverCard
@@ -49,7 +72,10 @@ export function TagHoverCard({
       <HoverCardTrigger asChild>
         <TagChip {...chipProps} />
       </HoverCardTrigger>
-      <HoverCardContent align="start" className="w-80 space-y-3 p-4">
+      <HoverCardContent
+        align="start"
+        className="border-border/80 bg-popover/95 w-80 space-y-3 rounded-2xl p-4 shadow-xl backdrop-blur-md"
+      >
         {isLoading ? (
           <div className="space-y-2">
             <Skeleton className="h-4 w-2/3" />
@@ -61,17 +87,13 @@ export function TagHoverCard({
             {previewImageUrl && (
               <Link
                 href={`/dic/${chipProps.slug}`}
-                className="bg-muted/20 block overflow-hidden rounded-lg border"
+                className="bg-muted/20 border-border/60 relative block overflow-hidden rounded-xl border transition-transform duration-200 hover:scale-[1.01]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewImageUrl}
-                  alt={
-                    tooltip?.translatedName ||
-                    chipProps.translatedName ||
-                    chipProps.name
-                  }
-                  className="aspect-[16/9] max-h-28 w-full object-cover"
+                  alt={primaryName}
+                  className="aspect-[16/9] max-h-32 w-full object-cover"
                 />
               </Link>
             )}
@@ -89,22 +111,34 @@ export function TagHoverCard({
                     )
                   )}
                 </span>
-                <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
-                  {t("worksCount", {
-                    count: (
-                      tooltip?.usageCount ??
-                      chipProps.usageCount ??
-                      0
-                    ).toLocaleString(),
-                  })}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
+                    {t("worksCount", {
+                      count: (
+                        tooltip?.usageCount ??
+                        chipProps.usageCount ??
+                        0
+                      ).toLocaleString(),
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyTag}
+                    title="Copy tag"
+                    aria-label={`Copy #${primaryName}`}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer rounded-md p-1 transition-colors"
+                  >
+                    {isCopied ? (
+                      <Check className="size-3 text-emerald-500" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <p className="text-sm leading-snug font-semibold">
-                #
-                {tooltip?.translatedName ||
-                  chipProps.translatedName ||
-                  chipProps.name}
+              <p className="text-foreground text-sm leading-snug font-bold tracking-tight">
+                #{primaryName}
               </p>
               {(tooltip?.translatedName || chipProps.translatedName) &&
                 (tooltip?.name || chipProps.name) !==
@@ -116,17 +150,17 @@ export function TagHoverCard({
             </div>
 
             {tooltip?.parentTag && (
-              <div className="bg-muted/40 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs">
+              <div className="bg-muted/40 border-border/60 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs">
                 <GitBranch
                   className="text-muted-foreground size-3.5 shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-muted-foreground">
+                <span className="text-muted-foreground text-[11px]">
                   {t("parentLabel")}
                 </span>
                 <Link
                   href={`/tags/${tooltip.parentTag.slug}`}
-                  className="truncate font-medium hover:underline"
+                  className="text-foreground truncate font-semibold hover:underline"
                 >
                   #{tooltip.parentTag.translatedName || tooltip.parentTag.name}
                 </Link>
@@ -137,19 +171,19 @@ export function TagHoverCard({
               {tooltip?.summary || t("hoverCardDefaultSummary")}
             </p>
 
-            <div className="flex items-center justify-between gap-2 border-t pt-2.5 text-xs font-medium">
+            <div className="border-border/60 flex items-center justify-between gap-2 border-t pt-2.5 text-xs font-medium">
               <Link
                 href={`/dic/${chipProps.slug}`}
-                className="text-primary inline-flex items-center gap-1 hover:underline"
+                className="text-primary hover:text-primary/80 inline-flex items-center gap-1 transition-colors"
               >
                 <BookOpenText className="size-3.5" aria-hidden="true" />
-                {t("readEncyclopedia")}
+                <span>{t("readEncyclopedia")}</span>
               </Link>
               <Link
                 href={`/tags/${chipProps.slug}`}
-                className="text-foreground/80 hover:text-foreground inline-flex items-center gap-1 hover:underline"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
               >
-                {t("viewTaggedWorks")}
+                <span>{t("viewTaggedWorks")}</span>
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>

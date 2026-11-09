@@ -10,6 +10,7 @@ import {
   Lock,
   LockOpen,
   ShieldCheck,
+  Sparkles,
   Tags,
   X,
 } from "lucide-react";
@@ -98,34 +99,37 @@ export function CollaborativeTagBar({
     },
   });
 
-  const lockTagMutation = useMutation({
-    mutationFn: ({ tagId, locked }: { tagId: string; locked: boolean }) =>
-      setEntityTagLockClient({ entityType, entityId, tagId, locked }),
-    onSuccess: () => invalidate(),
-    onError: () => toast.error("Could not update tag lock"),
+  const reorderMutation = useMutation({
+    mutationFn: (tagIds: string[]) =>
+      reorderEntityTagsClient({ entityType, entityId, tagIds }),
+    onSuccess: invalidate,
+    onError: () => toast.error("Could not reorder tags"),
   });
 
   const editLockMutation = useMutation({
     mutationFn: (tagEditLocked: boolean) =>
       setEntityEditLockClient({ entityType, entityId, tagEditLocked }),
     onSuccess: () => {
-      toast.success("Updated community tag editing lock");
+      toast.success("Tag edit status updated");
       invalidate();
     },
-    onError: () => toast.error("Could not update entity tag lock"),
+    onError: () => toast.error("Failed to update edit permissions"),
   });
 
-  const reorderMutation = useMutation({
-    mutationFn: (tagIds: string[]) =>
-      reorderEntityTagsClient({ entityType, entityId, tagIds }),
-    onSuccess: () => invalidate(),
-    onError: () => toast.error("Could not reorder tags"),
+  const lockTagMutation = useMutation({
+    mutationFn: ({ tagId, locked }: { tagId: string; locked: boolean }) =>
+      setEntityTagLockClient({ entityType, entityId, tagId, locked }),
+    onSuccess: () => {
+      toast.success("Tag status updated");
+      invalidate();
+    },
+    onError: () => toast.error("Could not lock or unlock tag"),
   });
 
   if (isLoading) {
     return (
-      <div className="space-y-2 rounded-xl border p-4">
-        <Skeleton className="h-5 w-44" />
+      <div className="bg-card/70 border-border/80 rounded-2xl border p-4 shadow-xs">
+        <Skeleton className="mb-3 h-4 w-32" />
         <div className="flex flex-wrap gap-2">
           <Skeleton className="h-7 w-24 rounded-full" />
           <Skeleton className="h-7 w-28 rounded-full" />
@@ -153,26 +157,37 @@ export function CollaborativeTagBar({
   return (
     <section
       aria-label="Collaborative tags"
-      className="bg-card space-y-3.5 rounded-xl border p-4 shadow-2xs"
+      className="bg-card/80 border-border/80 space-y-4 rounded-2xl border p-4 shadow-xs backdrop-blur-xs sm:p-5"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Tags className="text-primary size-4" aria-hidden="true" />
-          <h3 className="text-sm font-semibold">{t("tagsTitle")}</h3>
-          <Badge
-            variant="outline"
-            className="font-mono text-[11px] tabular-nums"
-          >
-            <span role="status" aria-atomic="true">
-              {tags.length} / {maxTags}
-            </span>
-          </Badge>
-          {data?.tagEditLocked && (
-            <Badge variant="secondary" className="gap-1 text-[11px]">
-              <Lock className="size-3" aria-hidden="true" />
-              {t("communityEditsLocked")}
-            </Badge>
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-lg">
+            <Tags className="size-4" aria-hidden="true" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-foreground text-sm font-bold tracking-tight">
+                {t("tagsTitle")}
+              </h3>
+              <Badge
+                variant="outline"
+                className="font-mono text-[11px] tabular-nums"
+              >
+                <span role="status" aria-atomic="true">
+                  {tags.length} / {maxTags}
+                </span>
+              </Badge>
+              {data?.tagEditLocked && (
+                <Badge
+                  variant="secondary"
+                  className="gap-1 text-[11px] font-normal"
+                >
+                  <Lock className="size-3" aria-hidden="true" />
+                  {t("communityEditsLocked")}
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -193,7 +208,7 @@ export function CollaborativeTagBar({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 gap-1.5 px-2 text-xs"
+                className="h-8 gap-1.5 rounded-lg px-2.5 text-xs font-medium"
               >
                 <History className="size-3.5" aria-hidden="true" />
                 {t("editHistory")}
@@ -231,7 +246,7 @@ export function CollaborativeTagBar({
                           )}
                         </span>
                       </div>
-                      <p className="font-medium">
+                      <p className="text-foreground font-medium">
                         {entry.tagNameSnapshot
                           ? `#${entry.tagNameSnapshot}`
                           : "Tag Configuration"}
@@ -257,12 +272,14 @@ export function CollaborativeTagBar({
 
       {/* Attached Tag Pills */}
       {tags.length === 0 ? (
-        <p className="text-muted-foreground text-xs italic">
-          No tags attached yet.{" "}
-          {isAuthenticated
-            ? "Be the first to classify this item!"
-            : "Sign in to contribute tags."}
-        </p>
+        <div className="text-muted-foreground border-border/80 rounded-xl border border-dashed p-5 text-center text-xs">
+          <p>
+            No tags attached yet.{" "}
+            {isAuthenticated
+              ? "Be the first to classify this item with community tags!"
+              : "Sign in to contribute tags."}
+          </p>
+        </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((item, idx) => (
@@ -279,7 +296,7 @@ export function CollaborativeTagBar({
               showWikiLink
               trailingSlot={
                 (isOwner || item.deletable) && (
-                  <span className="border-border/70 ml-0.5 inline-flex items-center gap-0.5 border-l pl-1">
+                  <span className="border-border/70 ml-1 inline-flex items-center gap-0.5 border-l pl-1">
                     {isOwner && (
                       <>
                         <button
@@ -287,7 +304,7 @@ export function CollaborativeTagBar({
                           disabled={idx === 0 || reorderMutation.isPending}
                           aria-label={`Move tag ${item.name} left`}
                           onClick={() => moveTag(idx, -1)}
-                          className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="text-muted-foreground hover:text-foreground cursor-pointer rounded-sm p-0.5 disabled:opacity-30"
                         >
                           <ChevronLeft className="size-3" aria-hidden="true" />
                         </button>
@@ -298,7 +315,7 @@ export function CollaborativeTagBar({
                           }
                           aria-label={`Move tag ${item.name} right`}
                           onClick={() => moveTag(idx, 1)}
-                          className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="text-muted-foreground hover:text-foreground cursor-pointer rounded-sm p-0.5 disabled:opacity-30"
                         >
                           <ChevronRight className="size-3" aria-hidden="true" />
                         </button>
@@ -315,7 +332,7 @@ export function CollaborativeTagBar({
                               locked: !item.locked,
                             })
                           }
-                          className="text-muted-foreground hover:text-primary px-0.5"
+                          className="text-muted-foreground hover:text-primary cursor-pointer rounded-sm p-0.5"
                         >
                           {item.locked ? (
                             <LockOpen className="size-3" aria-hidden="true" />
@@ -331,7 +348,7 @@ export function CollaborativeTagBar({
                         disabled={removeMutation.isPending}
                         aria-label={`Remove tag ${item.name}`}
                         onClick={() => removeMutation.mutate(item.tagId)}
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive cursor-pointer rounded-sm p-0.5"
                       >
                         <X className="size-3" aria-hidden="true" />
                       </button>
@@ -346,21 +363,26 @@ export function CollaborativeTagBar({
 
       {/* Inline Folksonomy Add Bar */}
       {canEdit && tags.length < maxTags ? (
-        <TagInputAutocomplete
-          locale={locale}
-          currentCount={tags.length}
-          maxTags={maxTags}
-          disabled={addMutation.isPending}
-          excludeNames={tags.map((t) => t.name)}
-          onSelectTag={(tagName) => addMutation.mutate(tagName)}
-          placeholder="Add tag (up to 10 tags, * creator tags are protected)..."
-        />
+        <div className="pt-1">
+          <TagInputAutocomplete
+            locale={locale}
+            currentCount={tags.length}
+            maxTags={maxTags}
+            disabled={addMutation.isPending}
+            excludeNames={tags.map((t) => t.name)}
+            onSelectTag={(tagName) => addMutation.mutate(tagName)}
+            placeholder="Add tag (up to 10 tags, * creator tags are protected)..."
+          />
+        </div>
       ) : !isAuthenticated ? (
-        <div className="text-muted-foreground flex items-center justify-between border-t pt-2.5 text-xs">
-          <span>Want to help categorize with community folksonomy tags?</span>
+        <div className="text-muted-foreground border-border/60 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
+          <span className="flex items-center gap-1.5">
+            <Sparkles className="text-primary size-3.5" />
+            Want to help categorize with community folksonomy tags?
+          </span>
           <Link
             href="/auth/login"
-            className="text-primary font-medium hover:underline"
+            className="text-primary font-semibold hover:underline"
           >
             Sign in to add tags
           </Link>

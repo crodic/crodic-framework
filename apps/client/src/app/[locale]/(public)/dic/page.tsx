@@ -25,6 +25,13 @@ import {
 } from "@/components/tags/tag-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -175,18 +182,20 @@ export default async function EncyclopediaDirectoryPage({
       <Header />
       <main className="mx-auto w-full max-w-6xl space-y-10 px-4 py-8 sm:px-6 md:py-12">
         {/* Encyclopedia Hub Header */}
-        <section className="border-border/70 from-card via-card/90 to-muted/20 relative z-20 rounded-3xl border bg-gradient-to-b p-6 shadow-xs sm:p-10">
+        <section className="border-border/70 from-card via-card/90 to-muted/20 relative z-20 overflow-hidden rounded-3xl border bg-gradient-to-b p-6 shadow-sm sm:p-10">
           <div
             className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl"
             aria-hidden="true"
           >
-            <div className="bg-primary/5 absolute top-0 right-1/4 h-64 w-64 -translate-y-1/2 rounded-full blur-3xl" />
+            <div className="bg-primary/10 absolute top-0 right-1/4 h-80 w-80 -translate-y-1/2 rounded-full blur-3xl" />
+            <div className="absolute -bottom-10 left-1/4 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
           </div>
+
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge
                 variant="outline"
-                className="border-primary/20 bg-primary/5 text-foreground gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                className="border-primary/20 bg-primary/5 text-foreground gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold shadow-2xs"
               >
                 <BookOpenText
                   className="text-primary size-3.5"
@@ -194,10 +203,10 @@ export default async function EncyclopediaDirectoryPage({
                 />
                 {t("dicHubBadge")} · {locale.toUpperCase()}
               </Badge>
-              <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl">
+              <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-5xl">
                 {t("dicHubTitle")}
               </h1>
-              <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed text-pretty">
+              <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed text-pretty sm:text-base">
                 {t("dicHubDesc")}
               </p>
             </div>
@@ -206,7 +215,7 @@ export default async function EncyclopediaDirectoryPage({
               variant="outline"
               size="sm"
               asChild
-              className="shrink-0 font-medium"
+              className="shrink-0 rounded-xl font-medium"
             >
               <Link href="/tags">
                 <Tags className="size-4" aria-hidden="true" />
@@ -232,10 +241,13 @@ export default async function EncyclopediaDirectoryPage({
                 name="q"
                 defaultValue={searchKeyword}
                 placeholder={t("dicHubSearchPlaceholder")}
-                className="h-10 rounded-xl pl-10"
+                className="h-11 rounded-2xl pl-10 shadow-xs"
               />
             </div>
-            <Button type="submit" className="h-10 shrink-0 px-5 font-semibold">
+            <Button
+              type="submit"
+              className="h-11 shrink-0 rounded-2xl px-6 font-semibold shadow-xs"
+            >
               {t("dicHubSearchBtn")}
             </Button>
           </form>
@@ -243,7 +255,7 @@ export default async function EncyclopediaDirectoryPage({
           {/* Semantic Category Navigation Bar */}
           <nav
             aria-label="Filter encyclopedia by semantic category"
-            className="border-border/60 mt-6 flex flex-wrap items-center gap-1.5 border-t pt-4"
+            className="border-border/60 mt-6 flex [scrollbar-width:none] items-center gap-1.5 overflow-x-auto border-t pt-4 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {CATEGORY_ITEMS.map((cat) => {
               const isActive = activeCategory === cat.key;
@@ -257,10 +269,10 @@ export default async function EncyclopediaDirectoryPage({
                 <Link
                   key={cat.key}
                   href={href}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all duration-150 ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 active:scale-95 ${
                     isActive
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card text-muted-foreground hover:text-foreground border-border/80 hover:bg-muted/50"
+                      : "bg-card text-muted-foreground hover:text-foreground border-border/80 hover:bg-muted/60"
                   }`}
                 >
                   <Icon className="size-3.5 shrink-0" aria-hidden="true" />
@@ -273,9 +285,17 @@ export default async function EncyclopediaDirectoryPage({
 
         {/* Encyclopedia Cards Grid */}
         {sortedEntries.length === 0 ? (
-          <div className="text-muted-foreground border-border/80 rounded-2xl border border-dashed p-12 text-center text-sm">
-            {t("noTagsFound")}
-          </div>
+          <Empty className="border-border/80 rounded-3xl border border-dashed py-12">
+            <EmptyMedia variant="icon">
+              <BookOpenText className="size-6" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle className="text-base">{t("noTagsFound")}</EmptyTitle>
+              <EmptyDescription className="text-xs">
+                No encyclopedia entries found matching your query.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {sortedEntries.map((tag) => {
@@ -285,7 +305,7 @@ export default async function EncyclopediaDirectoryPage({
               return (
                 <div
                   key={tag.id}
-                  className="group border-border/70 bg-card hover:border-foreground/30 relative flex flex-col justify-between overflow-hidden rounded-2xl border shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                  className="group border-border/70 bg-card hover:border-primary/40 relative flex flex-col justify-between overflow-hidden rounded-2xl border shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
                 >
                   <div>
                     {tag.featuredImageUrl ? (
@@ -301,11 +321,11 @@ export default async function EncyclopediaDirectoryPage({
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                         <span
-                          className={`absolute top-2.5 left-2.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase backdrop-blur-md ${token.badge}`}
+                          className={`absolute top-2.5 left-2.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase backdrop-blur-md ${token.badge}`}
                         >
                           {t(getTagCategoryI18nKey(tag.category))}
                         </span>
-                        <span className="bg-background/90 text-foreground absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium shadow-2xs backdrop-blur-xs">
+                        <span className="bg-background/90 text-foreground absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-semibold shadow-2xs backdrop-blur-xs">
                           <BookOpenText
                             className="text-primary size-3"
                             aria-hidden="true"
@@ -318,27 +338,20 @@ export default async function EncyclopediaDirectoryPage({
                         href={`/dic/${tag.slug}`}
                         className={`border-border/50 relative block aspect-[16/9] w-full overflow-hidden border-b bg-gradient-to-br ${token.gradient} transition-transform duration-300`}
                       >
-                        {/* Decorative Geometric Mesh Pattern */}
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
-
-                        {/* Large Artistic Watermark Hashtag */}
-                        <div
-                          className={`pointer-events-none absolute -right-2 -bottom-6 font-mono text-8xl font-black opacity-15 select-none ${token.accentColor}`}
-                        >
-                          #
-                        </div>
+                        {/* Subtle ambient light */}
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_70%)]" />
 
                         {/* Top Badges */}
                         <div className="absolute top-3 left-3 flex items-center gap-1.5">
                           <span
-                            className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase shadow-2xs backdrop-blur-md ${token.badge}`}
+                            className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-2xs backdrop-blur-md ${token.badge}`}
                           >
                             {t(getTagCategoryI18nKey(tag.category))}
                           </span>
                         </div>
 
                         <div className="absolute top-3 right-3">
-                          <span className="text-muted-foreground bg-background/60 border-border/40 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold tabular-nums backdrop-blur-xs">
+                          <span className="text-muted-foreground bg-background/80 border-border/40 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold tabular-nums backdrop-blur-xs">
                             {t("worksCount", {
                               count: tag.usageCount.toLocaleString(),
                             })}
@@ -347,10 +360,10 @@ export default async function EncyclopediaDirectoryPage({
 
                         {/* Center Category Visual Emblem & Micro Identity */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
-                          <div className="bg-background/80 border-border/60 flex size-12 items-center justify-center rounded-2xl border shadow-xs backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                          <div className="bg-background/90 border-border/70 flex size-12 items-center justify-center rounded-2xl border shadow-xs backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
                             <TagCategoryEmblem category={tag.category} />
                           </div>
-                          <span className="text-foreground/90 line-clamp-1 max-w-[85%] text-xs font-semibold tracking-tight">
+                          <span className="text-foreground line-clamp-1 max-w-[85%] text-xs font-bold tracking-tight">
                             #{display}
                           </span>
                         </div>
@@ -374,7 +387,7 @@ export default async function EncyclopediaDirectoryPage({
                           })}
                         </span>
                         {tag.trendingScore > 0 && (
-                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-amber-600 tabular-nums dark:text-amber-400">
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-amber-600 tabular-nums dark:text-amber-400">
                             <Flame className="size-3" aria-hidden="true" />
                             {tag.trendingScore.toFixed(1)}
                           </span>
@@ -416,7 +429,10 @@ export default async function EncyclopediaDirectoryPage({
                     >
                       <BookOpenText className="size-3.5" aria-hidden="true" />
                       <span>{t("dicReadWiki")}</span>
-                      <ArrowRight className="size-3" aria-hidden="true" />
+                      <ArrowRight
+                        className="size-3 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
                     </Link>
 
                     <Link

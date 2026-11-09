@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BadgeCheck, BookOpenText, Lock } from "lucide-react";
+import { BadgeCheck, BookOpenText, Lock, Sparkles } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { TagCategory } from "@/services/tags";
@@ -48,30 +48,37 @@ export const TagChip = React.forwardRef<HTMLDivElement, TagChipProps>(
         ref={ref}
         {...divProps}
         className={cn(
-          "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs whitespace-nowrap transition-colors",
+          "group/chip inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs whitespace-nowrap shadow-2xs transition-all duration-150 hover:scale-[1.02] hover:shadow-xs active:scale-[0.98]",
           token.ring,
           className
         )}
       >
         <Link
           href={`/tags/${slug}`}
-          className="inline-flex min-w-0 items-center gap-1.5 focus-visible:underline focus-visible:outline-none"
+          className="focus-visible:ring-primary inline-flex min-w-0 items-center gap-1.5 rounded-full focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
         >
           <span
-            className={cn("size-1.5 shrink-0 rounded-full", token.dot)}
+            className={cn(
+              "size-2 shrink-0 rounded-full transition-transform duration-150 group-hover/chip:scale-125",
+              token.dot
+            )}
             aria-hidden="true"
           />
           {isAuthorTag && (
-            <span className="text-primary font-bold" aria-label="Creator tag">
-              *
+            <span
+              className="bg-primary/10 py-0.2 text-primary inline-flex items-center gap-0.5 rounded-full px-1 text-[10px] font-bold"
+              title="Creator Tag"
+              aria-label="Creator tag"
+            >
+              <Sparkles className="size-2.5" aria-hidden="true" />
             </span>
           )}
-          <span className="text-foreground max-w-44 truncate font-medium">
+          <span className="text-foreground group-hover/chip:text-primary max-w-48 truncate font-medium transition-colors">
             #{primaryLabel}
           </span>
           {hasSecondary && (
-            <span className="text-muted-foreground max-w-32 truncate text-[11px]">
-              {name}
+            <span className="text-muted-foreground max-w-32 truncate font-mono text-[11px]">
+              ({name})
             </span>
           )}
           {isOfficial && (
@@ -97,7 +104,7 @@ export const TagChip = React.forwardRef<HTMLDivElement, TagChipProps>(
           <Link
             href={`/dic/${slug}`}
             aria-label={`Open encyclopedia entry for ${primaryLabel}`}
-            className="text-muted-foreground hover:text-primary border-border/70 ml-0.5 border-l pl-1.5 transition-colors"
+            className="text-muted-foreground hover:text-primary border-border/70 focus-visible:ring-primary ml-0.5 rounded-sm border-l pl-1.5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <BookOpenText className="size-3.5" aria-hidden="true" />
           </Link>

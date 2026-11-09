@@ -34,10 +34,10 @@ export default async function MutedTagsSettingsPage({ params }: PageProps) {
         <div className="flex items-center justify-between">
           <Link
             href="/tags"
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
             <ArrowLeft className="size-3.5" aria-hidden="true" />
-            Back to Tags Discovery Hub
+            {t("allCanonicalTags") || "Back to Tags Discovery Hub"}
           </Link>
         </div>
 

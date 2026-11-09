@@ -99,7 +99,11 @@ export function WikiCommunityEditor({
       {revisions.length > 0 && (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-xl font-medium"
+            >
               <History className="size-4" aria-hidden="true" />
               {revisionsLabel}
               <Badge
@@ -156,7 +160,10 @@ export function WikiCommunityEditor({
       )}
 
       {isEditLocked ? (
-        <Badge variant="outline" className="h-8 gap-1.5 px-3 text-xs">
+        <Badge
+          variant="outline"
+          className="h-8 gap-1.5 rounded-xl px-3 text-xs font-semibold"
+        >
           <Lock className="size-3.5" aria-hidden="true" />
           {lockedLabel}
         </Badge>
@@ -176,7 +183,7 @@ export function WikiCommunityEditor({
             );
             setEditOpen(true);
           }}
-          className="gap-1.5"
+          className="gap-1.5 rounded-xl font-semibold shadow-xs"
         >
           <Edit3 className="size-4" aria-hidden="true" />
           {contributeLabel}
@@ -184,7 +191,7 @@ export function WikiCommunityEditor({
       )}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="rounded-3xl p-6 sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {t("wikiContributeDialogTitle", { tagName })}

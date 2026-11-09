@@ -7,7 +7,6 @@ import type { DefinedTerm, WithContext } from "schema-dts";
 import {
   ArrowDown,
   ArrowLeft,
-  ArrowRight,
   BadgeCheck,
   BookOpenText,
   Flame,
@@ -22,6 +21,7 @@ import { Footer } from "@/components/layouts/footer";
 import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
 import { MuteTagButton } from "@/components/tags/mute-tag-button";
+import { TagCopyButton } from "@/components/tags/tag-copy-button";
 import { TagHoverCard } from "@/components/tags/tag-hover-card";
 import {
   getTagCategoryI18nKey,
@@ -30,6 +30,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Pagination,
   PaginationContent,
@@ -126,7 +133,7 @@ function WorksPagination({
   );
 }
 
-export default async function TagDetailLandingPage({
+export default async function TagDetailsPage({
   params,
   searchParams,
 }: PageProps) {
@@ -216,13 +223,19 @@ export default async function TagDetailLandingPage({
         </div>
 
         {/* Canonical Tag Hero Card */}
-        <section className="border-border/70 bg-card relative overflow-hidden rounded-3xl border shadow-xs">
+        <section className="border-border/70 bg-card relative overflow-hidden rounded-3xl border shadow-sm">
+          {/* Subtle Ambient Glow */}
+          <div
+            className={`pointer-events-none absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full bg-gradient-to-br opacity-20 blur-3xl ${categoryToken.gradient}`}
+            aria-hidden="true"
+          />
+
           <div className="flex flex-col md:flex-row md:items-stretch">
             {/* Left Content Area */}
-            <div className="flex-1 space-y-4 p-6 sm:p-8">
+            <div className="relative z-10 flex-1 space-y-5 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase ${categoryToken.badge}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase shadow-2xs backdrop-blur-md ${categoryToken.badge}`}
                 >
                   <span
                     className={`size-2 rounded-full ${categoryToken.dot}`}
@@ -234,7 +247,7 @@ export default async function TagDetailLandingPage({
                 {tag.isOfficial && (
                   <Badge
                     variant="secondary"
-                    className="gap-1 text-xs font-medium"
+                    className="gap-1 text-xs font-semibold"
                   >
                     <BadgeCheck
                       className="text-primary size-3.5"
@@ -244,12 +257,12 @@ export default async function TagDetailLandingPage({
                   </Badge>
                 )}
 
-                <span className="text-muted-foreground font-mono text-xs font-medium tabular-nums">
+                <span className="text-muted-foreground font-mono text-xs font-semibold tabular-nums">
                   {t("worksCount", { count: tag.usageCount.toLocaleString() })}
                 </span>
 
                 {tag.trendingScore > 0 && (
-                  <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-amber-600 tabular-nums dark:text-amber-400">
+                  <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-amber-600 tabular-nums dark:text-amber-400">
                     <Flame className="size-3.5" aria-hidden="true" />
                     {tag.trendingScore.toFixed(1)}
                   </span>
@@ -257,14 +270,17 @@ export default async function TagDetailLandingPage({
               </div>
 
               <div>
-                <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl">
+                <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-5xl">
                   #{displayTitle}
                 </h1>
 
                 {tag.translatedName &&
                   tag.translatedName.trim() !== tag.name.trim() && (
-                    <p className="text-muted-foreground mt-1 font-mono text-sm">
-                      {t("canonicalPrefix")} #{tag.name}
+                    <p className="text-muted-foreground mt-1.5 font-mono text-sm">
+                      {t("canonicalPrefix")}{" "}
+                      <span className="text-foreground font-semibold">
+                        #{tag.name}
+                      </span>
                     </p>
                   )}
               </div>
@@ -284,7 +300,7 @@ export default async function TagDetailLandingPage({
                 <Button
                   asChild
                   size="sm"
-                  className="gap-1.5 font-semibold shadow-xs"
+                  className="gap-1.5 rounded-xl font-semibold shadow-xs"
                 >
                   <a href="#tagged-works-section">
                     <Sparkles className="size-4" aria-hidden="true" />
@@ -296,7 +312,7 @@ export default async function TagDetailLandingPage({
                   variant="outline"
                   asChild
                   size="sm"
-                  className="gap-1.5 font-medium"
+                  className="gap-1.5 rounded-xl font-medium"
                 >
                   <Link href={`/dic/${tag.slug}`}>
                     <BookOpenText
@@ -306,6 +322,12 @@ export default async function TagDetailLandingPage({
                     {t("readEncyclopedia")}
                   </Link>
                 </Button>
+
+                <TagCopyButton
+                  tagName={displayTitle}
+                  label={t("copyName") || "Copy Tag"}
+                  copiedLabel={t("copied") || "Copied"}
+                />
 
                 <MuteTagButton
                   tagId={tag.id}
@@ -319,14 +341,14 @@ export default async function TagDetailLandingPage({
               {/* Aliases */}
               {tag.aliases && tag.aliases.length > 0 && (
                 <div className="border-border/60 flex flex-wrap items-center gap-1.5 border-t pt-4 text-xs">
-                  <span className="text-muted-foreground mr-1 font-medium">
+                  <span className="text-muted-foreground mr-1 font-semibold">
                     {t("aliases")}:
                   </span>
                   {tag.aliases.map((al) => (
                     <Badge
                       key={`alias-${al.id}`}
                       variant="secondary"
-                      className="text-xs font-normal whitespace-nowrap"
+                      className="rounded-lg text-xs font-normal whitespace-nowrap"
                     >
                       {al.aliasName}
                     </Badge>
@@ -382,9 +404,9 @@ export default async function TagDetailLandingPage({
             {/* Visual DAG 3-Tier Tree */}
             <div className="space-y-3">
               {/* Tier 1: Parents */}
-              <Card className="border-border/70 shadow-2xs">
+              <Card className="border-border/70 rounded-2xl shadow-2xs">
                 <CardHeader className="pb-2.5">
-                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase">
                     {t("parentConcepts")}
                   </CardTitle>
                 </CardHeader>
@@ -416,16 +438,16 @@ export default async function TagDetailLandingPage({
                 className="my-1 flex items-center justify-center gap-2"
                 aria-hidden="true"
               >
-                <div className="bg-border h-px w-10" />
-                <span className="text-muted-foreground bg-muted/70 border-border/40 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-wider uppercase">
+                <div className="bg-border h-px w-12" />
+                <span className="text-muted-foreground bg-muted/70 border-border/60 inline-flex items-center gap-1 rounded-full border px-3 py-0.5 font-mono text-[10px] tracking-wider uppercase">
                   <ArrowDown className="text-primary size-3" />
                   {t("parentConceptBadge")}
                 </span>
-                <div className="bg-border h-px w-10" />
+                <div className="bg-border h-px w-12" />
               </div>
 
               {/* Tier 2: Current Focused Tag */}
-              <Card className="border-primary/50 bg-primary/5 ring-primary/20 relative overflow-hidden shadow-xs ring-2">
+              <Card className="border-primary/50 bg-primary/5 ring-primary/20 relative overflow-hidden rounded-2xl shadow-xs ring-2">
                 <div className="bg-primary/10 pointer-events-none absolute top-0 right-0 h-16 w-16 translate-x-4 -translate-y-4 rounded-full blur-xl" />
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -437,7 +459,7 @@ export default async function TagDetailLandingPage({
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <span>#{displayTitle}</span>
                     <span
-                      className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${categoryToken.badge}`}
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${categoryToken.badge}`}
                     >
                       {t(getTagCategoryI18nKey(tag.category))}
                     </span>
@@ -462,18 +484,18 @@ export default async function TagDetailLandingPage({
                 className="my-1 flex items-center justify-center gap-2"
                 aria-hidden="true"
               >
-                <div className="bg-border h-px w-10" />
-                <span className="text-muted-foreground bg-muted/70 border-border/40 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-wider uppercase">
+                <div className="bg-border h-px w-12" />
+                <span className="text-muted-foreground bg-muted/70 border-border/60 inline-flex items-center gap-1 rounded-full border px-3 py-0.5 font-mono text-[10px] tracking-wider uppercase">
                   <ArrowDown className="text-primary size-3" />
                   {t("subConceptBadge")}
                 </span>
-                <div className="bg-border h-px w-10" />
+                <div className="bg-border h-px w-12" />
               </div>
 
               {/* Tier 3: Children */}
-              <Card className="border-border/70 shadow-2xs">
+              <Card className="border-border/70 rounded-2xl shadow-2xs">
                 <CardHeader className="pb-2.5">
-                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase">
                     {t("childSubTags")}
                   </CardTitle>
                 </CardHeader>
@@ -503,9 +525,9 @@ export default async function TagDetailLandingPage({
 
             {/* Associative / Sibling / Disambiguation Side Panel */}
             <div className="space-y-4">
-              <Card className="border-border/70 shadow-2xs">
+              <Card className="border-border/70 rounded-2xl shadow-2xs">
                 <CardHeader className="pb-2.5">
-                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+                  <CardTitle className="text-muted-foreground flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase">
                     <Link2
                       className="text-primary size-3.5"
                       aria-hidden="true"
@@ -535,7 +557,7 @@ export default async function TagDetailLandingPage({
                         <Badge
                           key={`dis-${dis.id}`}
                           variant="outline"
-                          className="gap-1 text-xs"
+                          className="gap-1 rounded-lg text-xs"
                         >
                           <Split
                             className="size-3 text-amber-500"
@@ -574,7 +596,12 @@ export default async function TagDetailLandingPage({
               </p>
             </div>
 
-            <Button variant="outline" size="sm" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="rounded-xl font-medium"
+            >
               <Link
                 href={`/tags/${encodeURIComponent(tag.slug)}?expand=${
                   expandHierarchy ? "false" : "true"
@@ -588,15 +615,25 @@ export default async function TagDetailLandingPage({
           </div>
 
           {taggedResults.data.length === 0 ? (
-            <div className="text-muted-foreground border-border/80 rounded-2xl border border-dashed p-12 text-center text-sm">
-              {t("noContentFound")}
-            </div>
+            <Empty className="border-border/80 rounded-2xl border border-dashed py-12">
+              <EmptyMedia variant="icon">
+                <Layers className="size-5" />
+              </EmptyMedia>
+              <EmptyHeader>
+                <EmptyTitle className="text-base">
+                  {t("noContentFound")}
+                </EmptyTitle>
+                <EmptyDescription className="text-xs">
+                  No artworks or entries found with tag #{displayTitle}.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {taggedResults.data.map((entry) => (
                 <Card
                   key={`${entry.entityType}-${entry.entityId}`}
-                  className="group border-border/70 hover:border-foreground/30 shadow-2xs transition-all duration-200 hover:-translate-y-0.5"
+                  className="group border-border/70 hover:border-primary/40 rounded-2xl shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs"
                 >
                   <CardContent className="space-y-3 p-4">
                     <div className="flex items-center justify-between">

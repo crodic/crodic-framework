@@ -64,7 +64,7 @@ export function MuteTagButton({
         }
         toggleMutation.mutate();
       }}
-      className="gap-1.5"
+      className="cursor-pointer gap-1.5 rounded-xl font-medium"
     >
       {isMuted ? (
         <>

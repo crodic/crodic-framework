@@ -93,7 +93,7 @@ export function TagInputAutocomplete({
             placeholder={
               isCapReached ? `Maximum ${maxTags} tags reached` : placeholder
             }
-            className="h-9 pr-3 pl-8 text-xs"
+            className="h-9 rounded-xl pr-3 pl-8 text-xs shadow-2xs"
             aria-label="Search or add tag"
           />
         </div>
@@ -105,7 +105,7 @@ export function TagInputAutocomplete({
             variant="outline"
             disabled={effectiveDisabled || !query.trim()}
             onClick={() => commitRaw(query)}
-            className="h-9 shrink-0 px-3 text-xs"
+            className="h-9 shrink-0 rounded-xl px-3 text-xs font-medium"
           >
             <Plus className="size-3.5" aria-hidden="true" />
             Add
@@ -116,7 +116,7 @@ export function TagInputAutocomplete({
           <span
             role="status"
             aria-atomic="true"
-            className="text-muted-foreground shrink-0 font-mono text-xs tabular-nums"
+            className="text-muted-foreground shrink-0 font-mono text-xs font-semibold tabular-nums"
           >
             {currentCount} / {maxTags}
           </span>
@@ -127,7 +127,7 @@ export function TagInputAutocomplete({
         <div
           role="listbox"
           aria-label="Tag suggestions"
-          className="bg-popover text-popover-foreground absolute top-full right-0 left-0 z-40 mt-1.5 max-h-60 divide-y overflow-y-auto rounded-lg border shadow-md"
+          className="bg-popover/98 text-popover-foreground divide-border/60 border-border/80 absolute top-full right-0 left-0 z-40 mt-1.5 max-h-60 divide-y overflow-y-auto rounded-2xl border shadow-xl backdrop-blur-md"
         >
           {visibleSuggestions.map((item) => {
             const cat = getTagCategoryToken(item.category);
@@ -141,23 +141,23 @@ export function TagInputAutocomplete({
                   e.preventDefault();
                   commitRaw(item.name, item);
                 }}
-                className="hover:bg-muted/60 flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors"
+                className="hover:bg-muted/70 flex w-full cursor-pointer items-center justify-between gap-2 px-3.5 py-2 text-left text-xs transition-colors"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <span
                     className={cn("size-2 shrink-0 rounded-full", cat.dot)}
                     aria-hidden="true"
                   />
-                  <span className="truncate font-medium">
+                  <span className="text-foreground truncate font-semibold">
                     #{item.translatedName || item.name}
                   </span>
                   {item.translatedName && item.translatedName !== item.name && (
-                    <span className="text-muted-foreground truncate">
+                    <span className="text-muted-foreground truncate font-mono text-[11px]">
                       ({item.name})
                     </span>
                   )}
                   {item.matchedAlias && (
-                    <span className="text-muted-foreground truncate text-[11px]">
+                    <span className="text-muted-foreground bg-muted truncate rounded-md px-1.5 py-0.5 font-mono text-[10px]">
                       via {item.matchedAlias}
                     </span>
                   )}
