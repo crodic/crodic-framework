@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  Loader2Icon,
   LockIcon,
   PlusIcon,
   SaveIcon,
@@ -110,21 +111,29 @@ export function AdminEntityTagPanel({
   }
 
   return (
-    <Card className='gap-0 overflow-hidden py-0 shadow-xs'>
-      <CardHeader className='bg-muted/30 flex flex-row items-center justify-between gap-2 border-b px-5 py-3.5'>
-        <div>
+    <Card className='border-border/80 gap-0 overflow-hidden shadow-2xs'>
+      <CardHeader className='bg-muted/30 flex flex-row items-center justify-between gap-3 border-b px-5 py-4'>
+        <div className='space-y-0.5'>
           <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
             <TagsIcon className='text-primary size-4' aria-hidden='true' />
-            {t(
-              'tags.entitySync.title',
-              'Tagged Taxonomy (10-Tag Folksonomy Governance)'
-            )}
+            <span>
+              {t(
+                'tags.entitySync.title',
+                'Tagged Taxonomy (10-Tag Folksonomy Governance)'
+              )}
+            </span>
           </CardTitle>
-          <CardDescription className='text-[11px]'>
-            Author tags (*) are protected from community deletion.
+          <CardDescription className='text-xs'>
+            {t(
+              'tags.entitySync.desc',
+              'Author tags (*) are protected from community deletion.'
+            )}
           </CardDescription>
         </div>
-        <Badge variant='outline' className='font-mono text-xs tabular-nums'>
+        <Badge
+          variant={draftTags.length >= maxTags ? 'destructive' : 'outline'}
+          className='font-mono text-xs tabular-nums'
+        >
           <span role='status' aria-atomic='true'>
             {draftTags.length} / {maxTags}
           </span>
@@ -133,40 +142,43 @@ export function AdminEntityTagPanel({
 
       <CardContent className='space-y-4 p-5'>
         {isFetching ? (
-          <div className='space-y-2'>
-            <Skeleton className='h-8 w-full' />
-            <Skeleton className='h-8 w-2/3' />
+          <div className='space-y-2.5'>
+            <Skeleton className='h-9 w-full rounded-lg' />
+            <Skeleton className='h-9 w-2/3 rounded-lg' />
           </div>
         ) : (
           <>
             {/* Tag Chips with Accessible Keyboard Reordering */}
             {draftTags.length === 0 ? (
-              <p className='text-muted-foreground text-xs italic'>
-                No canonical tags attached yet. Add up to {maxTags} tags below.
+              <p className='text-muted-foreground py-2 text-xs italic'>
+                {t(
+                  'tags.entitySync.emptyPrompt',
+                  'No canonical tags attached yet. Add up to 10 tags below.'
+                )}
               </p>
             ) : (
-              <div className='flex flex-wrap gap-1.5'>
+              <div className='flex flex-wrap gap-2'>
                 {draftTags.map((tagName, idx) => (
                   <div
                     key={`${tagName}-${idx}`}
-                    className='bg-muted/40 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs whitespace-nowrap'
+                    className='bg-card hover:border-foreground/30 border-border/80 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs shadow-2xs transition-all'
                   >
                     <span
-                      className='text-primary font-semibold'
-                      title='Author Tag'
+                      className='text-primary font-bold'
+                      title={t('tags.entitySync.authorTag', 'Author Tag')}
                     >
                       *
                     </span>
-                    <span className='max-w-36 truncate font-medium'>
+                    <span className='max-w-40 truncate font-semibold tracking-tight'>
                       #{tagName}
                     </span>
-                    <div className='ml-0.5 inline-flex items-center border-l pl-1'>
+                    <div className='border-border/60 ml-0.5 inline-flex items-center gap-0.5 border-l pl-1'>
                       <button
                         type='button'
                         disabled={idx === 0}
                         aria-label={`Move tag ${tagName} left`}
                         onClick={() => moveTag(idx, -1)}
-                        className='text-muted-foreground hover:text-foreground disabled:opacity-30'
+                        className='text-muted-foreground hover:text-foreground cursor-pointer rounded p-0.5 transition-colors disabled:opacity-30'
                       >
                         <ChevronLeftIcon
                           className='size-3'
@@ -178,7 +190,7 @@ export function AdminEntityTagPanel({
                         disabled={idx === draftTags.length - 1}
                         aria-label={`Move tag ${tagName} right`}
                         onClick={() => moveTag(idx, 1)}
-                        className='text-muted-foreground hover:text-foreground disabled:opacity-30'
+                        className='text-muted-foreground hover:text-foreground cursor-pointer rounded p-0.5 transition-colors disabled:opacity-30'
                       >
                         <ChevronRightIcon
                           className='size-3'
@@ -189,7 +201,7 @@ export function AdminEntityTagPanel({
                         type='button'
                         aria-label={`Remove tag ${tagName}`}
                         onClick={() => removeAt(idx)}
-                        className='text-muted-foreground hover:text-destructive ml-0.5'
+                        className='text-muted-foreground hover:bg-destructive/15 hover:text-destructive ml-0.5 cursor-pointer rounded p-0.5 transition-colors'
                       >
                         <XIcon className='size-3' aria-hidden='true' />
                       </button>
@@ -201,53 +213,58 @@ export function AdminEntityTagPanel({
 
             {/* Inline Autocomplete Add */}
             {draftTags.length < maxTags && (
-              <div className='space-y-1.5'>
-                <div className='flex gap-1.5'>
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        addTagToken(inputValue)
-                      }
-                    }}
-                    placeholder='Add canonical or new tag...'
-                    className='h-8 text-xs'
-                  />
+              <div className='space-y-2'>
+                <div className='flex gap-2'>
+                  <div className='relative flex-1'>
+                    <Input
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addTagToken(inputValue)
+                        }
+                      }}
+                      placeholder={t(
+                        'tags.entitySync.inputPlaceholder',
+                        'Add canonical tag (e.g. Cyberpunk, Fantasy)...'
+                      )}
+                      className='h-9 text-xs'
+                    />
+                  </div>
                   <Button
                     type='button'
                     size='sm'
                     variant='outline'
-                    className='h-8 shrink-0 px-2.5'
+                    className='h-9 shrink-0 cursor-pointer gap-1.5 px-3 text-xs font-semibold'
                     disabled={!inputValue.trim()}
                     onClick={() => addTagToken(inputValue)}
                   >
                     <PlusIcon className='size-3.5' aria-hidden='true' />
-                    Add
+                    <span>{t('buttons.add', 'Add')}</span>
                   </Button>
                 </div>
 
                 {inputValue.trim().length > 0 && suggestions.length > 0 && (
-                  <div className='bg-popover max-h-36 divide-y overflow-y-auto rounded-md border shadow-xs'>
+                  <div className='bg-popover border-border/80 max-h-40 divide-y overflow-y-auto rounded-xl border shadow-md'>
                     {suggestions.slice(0, 6).map((sug) => (
                       <button
                         key={sug.id}
                         type='button'
                         onClick={() => addTagToken(sug.name)}
-                        className='hover:bg-muted/60 flex w-full items-center justify-between px-2.5 py-1.5 text-left text-xs'
+                        className='hover:bg-primary/5 flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-xs'
                       >
-                        <span className='truncate font-medium'>
+                        <span className='text-foreground truncate font-semibold'>
                           #{sug.name}
                           {sug.translatedName &&
                             sug.translatedName !== sug.name && (
-                              <span className='text-muted-foreground ml-1 font-normal'>
+                              <span className='text-muted-foreground ml-1.5 font-normal'>
                                 ({sug.translatedName})
                               </span>
                             )}
                         </span>
                         <span className='text-muted-foreground font-mono text-[11px] tabular-nums'>
-                          {sug.usageCount}
+                          {sug.usageCount.toLocaleString()}
                         </span>
                       </button>
                     ))}
@@ -257,15 +274,22 @@ export function AdminEntityTagPanel({
             )}
 
             {/* Work-Level Community Tag Lock */}
-            <div className='flex items-center justify-between gap-2 rounded-md border p-2.5'>
-              <div className='flex items-center gap-2 text-xs'>
-                <LockIcon
-                  className='text-muted-foreground size-3.5 shrink-0'
-                  aria-hidden='true'
-                />
-                <span>
-                  {t('tags.entity.freezeEdits', 'Freeze community tag edits')}
-                </span>
+            <div className='border-border/70 bg-muted/20 flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs'>
+              <div className='flex items-center gap-2.5 text-xs'>
+                <div className='shrink-0 rounded-lg bg-amber-500/10 p-1.5 text-amber-600 dark:text-amber-400'>
+                  <LockIcon className='size-3.5' aria-hidden='true' />
+                </div>
+                <div className='space-y-0.5'>
+                  <span className='text-foreground font-semibold'>
+                    {t('tags.entity.freezeEdits', 'Freeze community tag edits')}
+                  </span>
+                  <p className='text-muted-foreground text-[11px]'>
+                    {t(
+                      'tags.entity.freezeEditsDesc',
+                      'When locked, community contributors cannot add or remove tags on this entity.'
+                    )}
+                  </p>
+                </div>
               </div>
               <Switch
                 checked={editLocked}
@@ -283,7 +307,7 @@ export function AdminEntityTagPanel({
             <Button
               type='button'
               size='sm'
-              className='w-full'
+              className='w-full cursor-pointer gap-2 text-xs font-semibold shadow-xs'
               disabled={!isDirty || syncMutation.isPending}
               onClick={() =>
                 syncMutation.mutate({
@@ -294,8 +318,19 @@ export function AdminEntityTagPanel({
                 })
               }
             >
-              <SaveIcon className='size-3.5' aria-hidden='true' />
-              {syncMutation.isPending ? 'Syncing Tags...' : 'Save Author Tags'}
+              {syncMutation.isPending ? (
+                <>
+                  <Loader2Icon className='size-3.5 animate-spin' />
+                  <span>{t('tags.entitySync.saving', 'Syncing Tags...')}</span>
+                </>
+              ) : (
+                <>
+                  <SaveIcon className='size-3.5' aria-hidden='true' />
+                  <span>
+                    {t('tags.entitySync.saveBtn', 'Save Author Tags')}
+                  </span>
+                </>
+              )}
             </Button>
           </>
         )}

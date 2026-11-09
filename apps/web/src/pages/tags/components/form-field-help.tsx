@@ -17,11 +17,11 @@ export function FormFieldHelp({ tooltip, className }: FormFieldHelpProps) {
       <TooltipTrigger asChild>
         <button
           type='button'
-          tabIndex={0}
+          tabIndex={-1}
           aria-label={tooltip}
           onClick={(e) => e.preventDefault()}
           className={cn(
-            'text-muted-foreground/60 hover:text-primary focus-visible:ring-ring inline-flex size-4 shrink-0 cursor-help items-center justify-center transition-colors focus-visible:ring-1 focus-visible:outline-none',
+            'text-muted-foreground/60 hover:text-primary inline-flex size-4 shrink-0 cursor-help items-center justify-center transition-colors',
             className
           )}
         >

@@ -7,6 +7,7 @@ import {
   BookMarkedIcon,
   CheckIcon,
   ClockIcon,
+  GlobeIcon,
   HistoryIcon,
   LockIcon,
   RotateCcwIcon,
@@ -35,6 +36,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import {
   Form,
   FormControl,
@@ -104,7 +112,7 @@ export function EncyclopediaEditorPanel({
     defaultValues: {
       locale: selectedLocale,
       summary: '',
-      body: `<p>Write the encyclopedia overview for <strong>#${tag.name}</strong>...</p>`,
+      body: `<p>${t('tags.encyclopedia.initialBody', 'Write the encyclopedia overview for')} <strong>#${tag.name}</strong>...</p>`,
       featuredImageUrl: '',
       featuredFileId: null,
       changeNote: '',
@@ -127,12 +135,12 @@ export function EncyclopediaEditorPanel({
       form.reset({
         locale: selectedLocale,
         summary: '',
-        body: `<p>Write the encyclopedia overview for <strong>#${tag.name}</strong>...</p>`,
+        body: `<p>${t('tags.encyclopedia.initialBody', 'Write the encyclopedia overview for')} <strong>#${tag.name}</strong>...</p>`,
         featuredImageUrl: '',
         featuredFileId: null,
         changeNote: t(
           'tags.encyclopedia.initialChangeNote',
-          'Khởi tạo bài viết wiki'
+          'Initial encyclopedia article'
         ),
         isEditLocked: false,
       })
@@ -143,7 +151,7 @@ export function EncyclopediaEditorPanel({
     mutationFn: apiUpsertTagEncyclopedia,
     onSuccess: () => {
       toast.success(
-        t('tags.messages.wikiSaved', 'Đã lưu bài viết bách khoa toàn thư')
+        t('tags.messages.wikiSaved', 'Encyclopedia article saved successfully')
       )
       queryClient.invalidateQueries({
         queryKey: ['tag-encyclopedia', tag.id, selectedLocale],
@@ -158,7 +166,7 @@ export function EncyclopediaEditorPanel({
     mutationFn: apiRollbackEncyclopediaRevision,
     onSuccess: () => {
       toast.success(
-        t('tags.messages.wikiRolledBack', 'Khôi phục phiên bản thành công')
+        t('tags.messages.wikiRolledBack', 'Revision restored successfully')
       )
       setRollbackTarget(null)
       queryClient.invalidateQueries({
@@ -173,6 +181,10 @@ export function EncyclopediaEditorPanel({
   const currentLocaleLabel = currentLocaleObj?.label ?? selectedLocale
   const revisionsCount = wiki?.revisions?.length ?? 0
 
+  const handleApplyPresetNote = (note: string) => {
+    form.setValue('changeNote', note, { shouldDirty: true })
+  }
+
   return (
     <>
       {/* Rollback Confirmation Alert Dialog */}
@@ -185,24 +197,24 @@ export function EncyclopediaEditorPanel({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('tags.encyclopedia.rollbackTitle', 'Khôi phục Phiên bản Wiki')}
+              {t('tags.encyclopedia.rollbackTitle', 'Restore Wiki Revision')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 'tags.encyclopedia.rollbackDesc',
-                'Khôi phục phiên bản này sẽ tạo một bản ghi mới bất biến nhằm bảo toàn toàn bộ lịch sử kiểm toán.'
+                'Restoring this revision will create a new immutable revision snapshot preserving complete audit history.'
               )}{' '}
               {rollbackTarget
                 ? t('tags.encyclopedia.revisionLabel', {
                     revision: rollbackTarget.revisionNumber,
-                    defaultValue: `(Phiên bản v${rollbackTarget.revisionNumber})`,
+                    defaultValue: `(Revision v${rollbackTarget.revisionNumber})`,
                   })
                 : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={rollbackMutation.isPending}>
-              {t('buttons.cancel', 'Hủy')}
+              {t('buttons.cancel', 'Cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={rollbackMutation.isPending || !rollbackTarget || !wiki}
@@ -216,8 +228,8 @@ export function EncyclopediaEditorPanel({
               }}
             >
               {rollbackMutation.isPending
-                ? t('tags.encyclopedia.restoringBtn', 'Đang khôi phục...')
-                : t('tags.encyclopedia.restoreAction', 'Khôi phục Phiên bản')}
+                ? t('tags.encyclopedia.restoringBtn', 'Restoring...')
+                : t('tags.encyclopedia.restoreAction', 'Restore Revision')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -236,14 +248,14 @@ export function EncyclopediaEditorPanel({
               </div>
               <div className='min-w-0 flex-1'>
                 <SheetTitle className='text-base font-semibold'>
-                  {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+                  {t('tags.encyclopedia.revisions', 'Revision History')}
                 </SheetTitle>
                 <SheetDescription className='text-xs'>
                   {t('tags.encyclopedia.revisionsDesc', {
                     name: tag.name,
                     locale: currentLocaleLabel,
                     count: revisionsCount,
-                    defaultValue: `#${tag.name} • Ấn bản ${currentLocaleLabel} (${revisionsCount} bản ghi)`,
+                    defaultValue: `#${tag.name} • ${currentLocaleLabel} edition (${revisionsCount} records)`,
                   })}
                 </SheetDescription>
               </div>
@@ -252,28 +264,32 @@ export function EncyclopediaEditorPanel({
 
           <div className='flex-1 overflow-y-auto p-5'>
             {!wiki || !wiki.revisions || wiki.revisions.length === 0 ? (
-              <div className='border-border/70 text-muted-foreground space-y-1.5 rounded-xl border border-dashed p-8 text-center text-xs'>
-                <HistoryIcon className='text-muted-foreground/50 mx-auto size-8' />
-                <p className='text-foreground font-medium'>
-                  {t(
-                    'tags.encyclopedia.noRevisions',
-                    'Chưa có bản ghi lịch sử phiên bản nào cho ngôn ngữ này.'
-                  )}
-                </p>
-                <p className='text-[11px]'>
-                  {t(
-                    'tags.encyclopedia.revisionSnapshotTip',
-                    'Mỗi lần bạn lưu bài viết, một snapshot bất biến sẽ được ghi nhận tại đây.'
-                  )}
-                </p>
-              </div>
+              <Empty className='p-8'>
+                <EmptyHeader>
+                  <EmptyMedia variant='icon'>
+                    <HistoryIcon className='size-5' />
+                  </EmptyMedia>
+                  <EmptyTitle className='text-sm'>
+                    {t(
+                      'tags.encyclopedia.noRevisions',
+                      'No revision history recorded for this edition yet.'
+                    )}
+                  </EmptyTitle>
+                  <EmptyDescription className='text-xs'>
+                    {t(
+                      'tags.encyclopedia.revisionSnapshotTip',
+                      'Each time you save, an immutable snapshot will be recorded here.'
+                    )}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <div className='before:bg-border/70 relative space-y-4 pl-6 before:absolute before:top-2 before:bottom-2 before:left-2.5 before:w-0.5'>
                 {wiki.revisions.map((rev) => {
                   const isCurrent = rev.revisionNumber === wiki.currentRevision
                   const editorDisplayName =
                     rev.editorName ||
-                    t('tags.encyclopedia.contributor', 'Người đóng góp')
+                    t('tags.encyclopedia.contributor', 'Contributor')
                   const initials = editorDisplayName.slice(0, 2).toUpperCase()
 
                   return (
@@ -310,7 +326,7 @@ export function EncyclopediaEditorPanel({
                       >
                         <div className='flex items-center justify-between gap-2'>
                           <div className='flex min-w-0 items-center gap-2'>
-                            <div className='bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold'>
+                            <div className='bg-muted text-foreground border-border/50 flex size-6 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] font-bold'>
                               {initials}
                             </div>
                             <div className='flex min-w-0 flex-wrap items-center gap-1.5'>
@@ -321,7 +337,7 @@ export function EncyclopediaEditorPanel({
                                 <Badge className='h-4 px-1.5 text-[9px] font-bold uppercase'>
                                   {t(
                                     'tags.encyclopedia.currentBadge',
-                                    'Hiện tại'
+                                    'Current'
                                   )}
                                 </Badge>
                               ) : (
@@ -348,10 +364,7 @@ export function EncyclopediaEditorPanel({
                                 aria-hidden='true'
                               />
                               <span>
-                                {t(
-                                  'tags.encyclopedia.rollbackBtn',
-                                  'Khôi phục'
-                                )}
+                                {t('tags.encyclopedia.rollbackBtn', 'Restore')}
                               </span>
                             </Button>
                           )}
@@ -397,7 +410,7 @@ export function EncyclopediaEditorPanel({
               <span>
                 {t(
                   'tags.encyclopedia.title',
-                  'Studio Bách khoa toàn thư Thẻ (dic)'
+                  'Community Encyclopedia Studio (dic)'
                 )}{' '}
                 — #{tag.name}
               </span>
@@ -405,7 +418,10 @@ export function EncyclopediaEditorPanel({
             <CardDescription className='text-xs'>
               {wiki ? (
                 <>
-                  {t('tags.encyclopedia.currentRevision', 'Phiên bản hiện tại')}{' '}
+                  {t(
+                    'tags.encyclopedia.currentRevision',
+                    'Current Edition Revision'
+                  )}{' '}
                   <span className='text-foreground font-mono font-bold tabular-nums'>
                     v{wiki.currentRevision}
                   </span>{' '}
@@ -413,12 +429,12 @@ export function EncyclopediaEditorPanel({
                   <span className='text-foreground font-mono font-bold tabular-nums'>
                     {wiki.viewCount.toLocaleString()}
                   </span>{' '}
-                  {t('tags.encyclopedia.views', 'lượt xem')}
+                  {t('tags.encyclopedia.views', 'views')}
                 </>
               ) : (
                 t(
                   'tags.encyclopedia.noArticle',
-                  'Chưa có bài viết bách khoa cho ngôn ngữ này. Lưu bên dưới để xuất bản phiên bản v1.'
+                  'No wiki article published for this locale yet. Save below to create revision v1.'
                 )
               )}
             </CardDescription>
@@ -427,8 +443,12 @@ export function EncyclopediaEditorPanel({
           <div className='flex flex-wrap items-center gap-2.5'>
             {/* Edition Selector */}
             <div className='flex items-center gap-1.5'>
+              <GlobeIcon
+                className='text-muted-foreground size-3.5'
+                aria-hidden='true'
+              />
               <span className='text-muted-foreground text-xs font-medium'>
-                {t('tags.encyclopedia.edition', 'Ấn bản:')}
+                {t('tags.encyclopedia.edition', 'Edition:')}
               </span>
               <Select
                 value={selectedLocale}
@@ -460,7 +480,7 @@ export function EncyclopediaEditorPanel({
                 aria-hidden='true'
               />
               <span>
-                {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+                {t('tags.encyclopedia.revisions', 'Revision History')}
               </span>
               <Badge
                 variant='secondary'
@@ -494,7 +514,10 @@ export function EncyclopediaEditorPanel({
                     <FormItem>
                       <div className='flex items-center gap-1.5'>
                         <FormLabel className='text-xs font-semibold'>
-                          {t('tags.encyclopedia.summary', 'Tóm tắt mở đầu')}
+                          {t(
+                            'tags.encyclopedia.summary',
+                            'Opening Summary Definition'
+                          )}
                         </FormLabel>
                         <FormFieldHelp tooltip={t('tags.help.wikiSummary')} />
                       </div>
@@ -504,9 +527,9 @@ export function EncyclopediaEditorPanel({
                           rows={2}
                           placeholder={t(
                             'tags.encyclopedia.summaryPlaceholder',
-                            'Định nghĩa bách khoa cô đọng hiển thị trên thẻ tìm kiếm và bản xem trước...'
+                            'Concise editorial definition displayed in search results and hover popovers...'
                           )}
-                          className='text-xs font-medium'
+                          className='text-xs leading-relaxed font-medium'
                         />
                       </FormControl>
                       <FormMessage />
@@ -523,7 +546,7 @@ export function EncyclopediaEditorPanel({
                         <FormLabel className='text-xs font-semibold'>
                           {t(
                             'tags.encyclopedia.body',
-                            'Nội dung bài viết Wiki'
+                            'Wiki Article Rich Content'
                           )}
                         </FormLabel>
                         <FormFieldHelp tooltip={t('tags.help.wikiBody')} />
@@ -558,7 +581,7 @@ export function EncyclopediaEditorPanel({
                         <TagFeaturedImageInput
                           label={t(
                             'tags.encyclopedia.featuredImage',
-                            'Ảnh bìa bài viết (Header Image)'
+                            'Featured Header Image'
                           )}
                           urlValue={field.value || ''}
                           disabled={upsertMutation.isPending}
@@ -581,23 +604,67 @@ export function EncyclopediaEditorPanel({
                   name='changeNote'
                   render={({ field }) => (
                     <FormItem>
-                      <div className='flex items-center gap-1.5'>
-                        <FormLabel className='text-xs font-semibold'>
-                          {t(
-                            'tags.encyclopedia.changeNote',
-                            'Ghi chú thay đổi phiên bản'
-                          )}
-                        </FormLabel>
-                        <FormFieldHelp
-                          tooltip={t('tags.help.wikiChangeNote')}
-                        />
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-1.5'>
+                          <FormLabel className='text-xs font-semibold'>
+                            {t(
+                              'tags.encyclopedia.changeNote',
+                              'Revision Change Note'
+                            )}
+                          </FormLabel>
+                          <FormFieldHelp
+                            tooltip={t('tags.help.wikiChangeNote')}
+                          />
+                        </div>
+
+                        {/* Quick preset chips */}
+                        <div className='flex items-center gap-1.5'>
+                          <button
+                            type='button'
+                            onClick={() =>
+                              handleApplyPresetNote(
+                                t(
+                                  'tags.encyclopedia.initialChangeNote',
+                                  'Initial encyclopedia article'
+                                )
+                              )
+                            }
+                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                          >
+                            + Initial
+                          </button>
+                          <span className='text-muted-foreground/40'>•</span>
+                          <button
+                            type='button'
+                            onClick={() =>
+                              handleApplyPresetNote(
+                                'Expanded character lore & background'
+                              )
+                            }
+                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                          >
+                            + Lore
+                          </button>
+                          <span className='text-muted-foreground/40'>•</span>
+                          <button
+                            type='button'
+                            onClick={() =>
+                              handleApplyPresetNote(
+                                'Fixed typos and clarified phrasing'
+                              )
+                            }
+                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                          >
+                            + Typos
+                          </button>
+                        </div>
                       </div>
                       <FormControl>
                         <Input
                           {...field}
                           placeholder={t(
                             'tags.encyclopedia.changeNotePlaceholder',
-                            'VD: Bổ sung nguồn gốc nhân vật và tác phẩm ra mắt'
+                            'e.g. Added franchise origin, character design details, and appearance history'
                           )}
                           className='text-xs font-medium'
                         />
@@ -629,7 +696,7 @@ export function EncyclopediaEditorPanel({
                               />
                               {t(
                                 'tags.encyclopedia.isEditLocked',
-                                'Khoá chỉnh sửa từ cộng đồng'
+                                'Lock Community Editing'
                               )}
                             </FormLabel>
                             <FormFieldHelp tooltip={t('tags.help.wikiLock')} />
@@ -637,7 +704,7 @@ export function EncyclopediaEditorPanel({
                           <FormDescription className='text-muted-foreground text-[11px] leading-relaxed'>
                             {t(
                               'tags.encyclopedia.isEditLockedDesc',
-                              'Khi bật, chỉ có Quản trị viên mới được phép chỉnh sửa bài viết này.'
+                              'When enabled, only Administrators can edit this wiki edition.'
                             )}
                           </FormDescription>
                         </div>
@@ -651,14 +718,14 @@ export function EncyclopediaEditorPanel({
                       variant='outline'
                       size='sm'
                       onClick={() => setIsHistoryOpen(true)}
-                      className='h-9 cursor-pointer gap-1.5 text-xs'
+                      className='h-9 cursor-pointer gap-1.5 text-xs shadow-2xs'
                     >
                       <HistoryIcon
                         className='text-primary size-3.5'
                         aria-hidden='true'
                       />
                       <span>
-                        {t('tags.encyclopedia.revisions', 'Lịch sử Phiên bản')}
+                        {t('tags.encyclopedia.revisions', 'Revision History')}
                       </span>
                       <Badge
                         variant='secondary'
@@ -671,17 +738,17 @@ export function EncyclopediaEditorPanel({
                     <Button
                       type='submit'
                       disabled={upsertMutation.isPending}
-                      className='h-9 shrink-0 cursor-pointer gap-2 text-xs font-semibold shadow-2xs'
+                      className='h-9 shrink-0 cursor-pointer gap-2 text-xs font-semibold shadow-xs'
                     >
                       <SaveIcon className='size-4' aria-hidden='true' />
                       {upsertMutation.isPending
                         ? t(
                             'tags.encyclopedia.savingRevision',
-                            'Đang xuất bản phiên bản...'
+                            'Publishing Revision...'
                           )
                         : t(
                             'tags.encyclopedia.saveRevision',
-                            'Lưu & Xuất bản Phiên bản'
+                            'Save & Publish Revision'
                           )}
                     </Button>
                   </div>

@@ -116,7 +116,7 @@ const FEATURE_MODULES: FeatureModule[] = [
   {
     id: 'tag-encyclopedia',
     category: 'tags',
-    titleVi: 'Bách Khoa Toàn Thư Thẻ & Lịch Sử Phiên Bản',
+    titleVi: 'Bách Khoa Toàn Thư & Lịch Sử Phiên Bản',
     titleEn: 'Tag Wiki Encyclopedia & Version Rollbacks',
     descVi:
       'Studio biên tập bài viết wiki đa ngôn ngữ (Tiếng Việt, English, 日本語) với Tiptap Editor, tóm tắt hiển thị hover card, ảnh bìa tích hợp Media Library. Mỗi lần lưu ghi nhận một snapshot bất biến cho phép khôi phục phiên bản (Rollback) và cờ khóa chỉnh sửa từ cộng đồng.',

@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertTriangleIcon,
   ArrowRightIcon,
+  BadgeCheckIcon,
+  CheckCircle2Icon,
   GitMergeIcon,
+  Loader2Icon,
   SearchIcon,
-  TriangleAlertIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -36,7 +41,6 @@ import {
   useDataTagAutocomplete,
 } from '../queries'
 import type { TagAutocompleteItem, TagSummary } from '../schema'
-import { FormFieldHelp } from './form-field-help'
 import { TagCategoryBadge, TagNodeChip } from './tag-badges'
 
 interface MergeTagDialogProps {
@@ -108,33 +112,41 @@ export function MergeTagDialog({
           onOpenChange(next)
         }}
       >
-        <DialogContent className='sm:max-w-xl'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2 text-balance'>
-              <GitMergeIcon
-                className='text-primary size-4 shrink-0'
-                aria-hidden='true'
-              />
-              {t('tags.merge.title', 'Merge Into Target Tag')}
-              <FormFieldHelp tooltip={t('tags.help.merge')} />
-            </DialogTitle>
-            <DialogDescription className='text-pretty'>
-              {t(
-                'tags.merge.description',
-                'Atomically migrate all entity attachments, aliases, and DAG edges from this source tag into another canonical tag.'
-              )}
-            </DialogDescription>
+        <DialogContent
+          onOpenAutoFocus={(e) => {
+            e.preventDefault()
+            document.getElementById('merge-target-search')?.focus()
+          }}
+          className='border-border/80 gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl'
+        >
+          <DialogHeader className='border-border/60 bg-card border-b px-6 pt-5 pb-4'>
+            <div className='flex items-center gap-3'>
+              <div className='flex size-10 shrink-0 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-600 shadow-2xs dark:text-violet-400'>
+                <GitMergeIcon className='size-5' aria-hidden='true' />
+              </div>
+              <div>
+                <DialogTitle className='text-foreground text-base font-bold'>
+                  {t('tags.merge.title', 'Merge Into Target Tag')}
+                </DialogTitle>
+                <DialogDescription className='text-xs'>
+                  {t(
+                    'tags.merge.description',
+                    'Atomically migrate all entity attachments, aliases, and DAG edges from this source tag into another canonical tag.'
+                  )}
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className='space-y-4 py-1'>
-            <div className='bg-muted/30 flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3'>
-              <div className='space-y-1'>
-                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-medium tracking-wider uppercase'>
+          <div className='space-y-4 p-6'>
+            {/* Source & Target Comparison Bar */}
+            <div className='border-border/70 bg-muted/20 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs'>
+              <div className='space-y-1.5'>
+                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase'>
                   {t(
                     'tags.merge.sourceLabel',
                     'Source Tag (Will become 301 Alias)'
                   )}
-                  <FormFieldHelp tooltip={t('tags.help.mergeSource')} />
                 </span>
                 <TagNodeChip
                   name={sourceTag.name}
@@ -143,14 +155,14 @@ export function MergeTagDialog({
                   usageCount={sourceTag.usageCount}
                 />
               </div>
-              <ArrowRightIcon
-                className='text-muted-foreground size-4 shrink-0'
-                aria-hidden='true'
-              />
-              <div className='space-y-1'>
-                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-medium tracking-wider uppercase'>
+
+              <div className='bg-background border-border/60 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full border shadow-2xs'>
+                <ArrowRightIcon className='size-4' aria-hidden='true' />
+              </div>
+
+              <div className='space-y-1.5'>
+                <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase'>
                   {t('tags.merge.targetLabel', 'Target Canonical Tag')}
-                  <FormFieldHelp tooltip={t('tags.help.mergeTarget')} />
                 </span>
                 {selectedTarget ? (
                   <TagNodeChip
@@ -160,20 +172,21 @@ export function MergeTagDialog({
                     usageCount={selectedTarget.usageCount}
                   />
                 ) : (
-                  <span className='text-muted-foreground text-xs italic'>
+                  <span className='text-muted-foreground inline-flex items-center rounded-md border border-dashed px-2.5 py-1 text-xs italic'>
                     {t(
                       'tags.merge.selectTargetPrompt',
-                      'Select a target below...'
+                      'Select target tag below...'
                     )}
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Target Selection & Search */}
             <div className='space-y-2'>
               <label
                 htmlFor='merge-target-search'
-                className='text-xs font-medium'
+                className='text-foreground text-xs font-semibold'
               >
                 {t('tags.merge.selectTarget', 'Search Target Canonical Tag')}
               </label>
@@ -184,125 +197,137 @@ export function MergeTagDialog({
                 />
                 <Input
                   id='merge-target-search'
+                  autoFocus
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   placeholder={t(
                     'tags.merge.searchPlaceholder',
                     'Search by canonical name, translation, or alias...'
                   )}
-                  className='pl-9'
+                  className='bg-background h-9 pl-9 text-xs'
                 />
               </div>
 
-              <div className='max-h-48 overflow-y-auto rounded-md border'>
+              {/* Suggestions Container */}
+              <div className='border-border/70 bg-card divide-border/50 max-h-48 divide-y overflow-y-auto rounded-xl border shadow-2xs'>
                 {isSearching ? (
                   <div className='space-y-2 p-3'>
-                    <Skeleton className='h-7 w-full' />
-                    <Skeleton className='h-7 w-full' />
+                    <Skeleton className='h-8 w-full' />
+                    <Skeleton className='h-8 w-full' />
                   </div>
                 ) : filteredSuggestions.length === 0 ? (
-                  <p className='text-muted-foreground p-4 text-center text-xs'>
+                  <p className='text-muted-foreground p-6 text-center text-xs'>
                     {t(
                       'tags.merge.noMatches',
                       'No matching canonical tags found.'
                     )}
                   </p>
                 ) : (
-                  <div className='divide-y'>
-                    {filteredSuggestions.map((item) => {
-                      const isSelected = selectedTarget?.id === item.id
-                      return (
-                        <button
-                          key={item.id}
-                          type='button'
-                          onClick={() => setSelectedTarget(item)}
-                          className={`hover:bg-muted/60 flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors ${
-                            isSelected ? 'bg-primary/10 font-medium' : ''
-                          }`}
-                        >
-                          <div className='flex min-w-0 items-center gap-2'>
-                            <span className='truncate font-medium'>
-                              #{item.name}
-                            </span>
-                            {item.translatedName &&
-                              item.translatedName !== item.name && (
-                                <span className='text-muted-foreground truncate'>
-                                  ({item.translatedName})
-                                </span>
-                              )}
-                            {item.matchedAlias && (
+                  filteredSuggestions.map((item) => {
+                    const isSelected = selectedTarget?.id === item.id
+                    return (
+                      <button
+                        key={item.id}
+                        type='button'
+                        onClick={() => setSelectedTarget(item)}
+                        className={cn(
+                          'hover:bg-primary/5 flex w-full cursor-pointer items-center justify-between gap-3 px-3.5 py-2.5 text-left text-xs transition-colors',
+                          isSelected && 'bg-primary/10 font-semibold'
+                        )}
+                      >
+                        <div className='flex min-w-0 items-center gap-2'>
+                          <span className='text-foreground font-bold'>
+                            #{item.name}
+                          </span>
+                          {item.isOfficial && (
+                            <BadgeCheckIcon
+                              className='text-primary size-3.5 shrink-0'
+                              aria-hidden='true'
+                            />
+                          )}
+                          {item.translatedName &&
+                            item.translatedName !== item.name && (
                               <span className='text-muted-foreground truncate text-[11px]'>
-                                {t('tags.merge.viaAlias', {
-                                  alias: item.matchedAlias,
-                                  defaultValue: `via ${item.matchedAlias}`,
-                                })}
+                                ({item.translatedName})
                               </span>
                             )}
-                          </div>
-                          <div className='flex shrink-0 items-center gap-2'>
-                            <TagCategoryBadge category={item.category} />
-                            <span className='text-muted-foreground font-mono tabular-nums'>
-                              {item.usageCount.toLocaleString()}
-                            </span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
+                          {item.matchedAlias && (
+                            <Badge
+                              variant='secondary'
+                              className='px-1 py-0 font-mono text-[9px]'
+                            >
+                              {t('tags.merge.viaAlias', {
+                                alias: item.matchedAlias,
+                                defaultValue: `via ${item.matchedAlias}`,
+                              })}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className='flex shrink-0 items-center gap-2'>
+                          <TagCategoryBadge
+                            category={item.category}
+                            className='py-0 text-[10px]'
+                          />
+                          <span className='text-muted-foreground font-mono text-[11px] tabular-nums'>
+                            {item.usageCount.toLocaleString()}
+                          </span>
+                          {isSelected && (
+                            <CheckCircle2Icon
+                              className='text-primary size-4'
+                              aria-hidden='true'
+                            />
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })
                 )}
               </div>
             </div>
 
+            {/* Atomic DB Impact Preview */}
             {selectedTarget && (
-              <div className='rounded-lg border p-3.5'>
-                <div className='mb-2 flex items-center gap-1.5 text-xs font-semibold'>
-                  <TriangleAlertIcon
-                    className='size-3.5 text-amber-500'
+              <div className='border-border/80 bg-muted/10 space-y-3 rounded-xl border p-4 shadow-2xs'>
+                <div className='text-foreground flex items-center gap-2 text-xs font-semibold'>
+                  <AlertTriangleIcon
+                    className='size-4 text-amber-500'
                     aria-hidden='true'
                   />
                   <span>
-                    {t(
-                      'tags.merge.impactPreview',
-                      'Impact Preview (Atomic DB Transaction)'
-                    )}
+                    {t('tags.merge.impactPreview', 'Atomic Impact Preview')}
                   </span>
                 </div>
+
                 {isLoadingPreview || !preview ? (
-                  <div className='grid grid-cols-3 gap-2'>
-                    <Skeleton className='h-14 w-full' />
-                    <Skeleton className='h-14 w-full' />
-                    <Skeleton className='h-14 w-full' />
+                  <div className='grid grid-cols-3 gap-2.5'>
+                    <Skeleton className='h-16 w-full rounded-lg' />
+                    <Skeleton className='h-16 w-full rounded-lg' />
+                    <Skeleton className='h-16 w-full rounded-lg' />
                   </div>
                 ) : (
-                  <div className='grid grid-cols-3 gap-2 text-center'>
-                    <div className='bg-muted/30 rounded-md border p-2.5'>
-                      <p className='text-lg font-semibold tabular-nums'>
+                  <div className='grid grid-cols-3 gap-2.5 text-center'>
+                    <div className='border-border/60 bg-background rounded-lg border p-2.5 shadow-2xs'>
+                      <p className='text-foreground font-mono text-lg font-bold tabular-nums'>
                         {preview.affectedEntityTagsCount.toLocaleString()}
                       </p>
-                      <p className='text-muted-foreground text-[11px]'>
-                        {t(
-                          'tags.merge.affectedEntities',
-                          'Content Links Migrated'
-                        )}
+                      <p className='text-muted-foreground text-[11px] font-medium'>
+                        {t('tags.merge.affectedEntities', 'Content Links')}
                       </p>
                     </div>
-                    <div className='bg-muted/30 rounded-md border p-2.5'>
-                      <p className='text-lg font-semibold tabular-nums'>
+                    <div className='border-border/60 bg-background rounded-lg border p-2.5 shadow-2xs'>
+                      <p className='text-foreground font-mono text-lg font-bold tabular-nums'>
                         {preview.aliasesToTransferCount.toLocaleString()}
                       </p>
-                      <p className='text-muted-foreground text-[11px]'>
-                        {t(
-                          'tags.merge.aliasesTransferred',
-                          'Aliases + Redirects'
-                        )}
+                      <p className='text-muted-foreground text-[11px] font-medium'>
+                        {t('tags.merge.aliasesTransferred', '301 Aliases')}
                       </p>
                     </div>
-                    <div className='bg-muted/30 rounded-md border p-2.5'>
-                      <p className='text-lg font-semibold tabular-nums'>
+                    <div className='border-border/60 bg-background rounded-lg border p-2.5 shadow-2xs'>
+                      <p className='text-foreground font-mono text-lg font-bold tabular-nums'>
                         {preview.relationsToRewireCount.toLocaleString()}
                       </p>
-                      <p className='text-muted-foreground text-[11px]'>
-                        {t('tags.merge.relationsRewired', 'DAG Edges Rewired')}
+                      <p className='text-muted-foreground text-[11px] font-medium'>
+                        {t('tags.merge.relationsRewired', 'DAG Edges')}
                       </p>
                     </div>
                   </div>
@@ -311,34 +336,50 @@ export function MergeTagDialog({
             )}
           </div>
 
-          <DialogFooter>
-            <Button variant='outline' onClick={() => onOpenChange(false)}>
+          <DialogFooter className='border-border/60 bg-card border-t px-6 py-3.5'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => onOpenChange(false)}
+              className='cursor-pointer text-xs'
+            >
               {t('buttons.cancel', 'Cancel')}
             </Button>
             <Button
               disabled={!selectedTarget || mergeMutation.isPending}
               onClick={() => setConfirmOpen(true)}
+              className='cursor-pointer gap-2 text-xs font-semibold shadow-xs'
             >
               <GitMergeIcon className='size-4' aria-hidden='true' />
-              {t('tags.merge.btnMerge', 'Review & Merge')}
+              <span>{t('tags.merge.btnMerge', 'Review & Merge')}</span>
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Confirmation Alert Dialog */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className='text-balance'>
               {t('tags.merge.confirmTitle', 'Confirm Atomic Tag Merge')}
             </AlertDialogTitle>
-            <AlertDialogDescription className='text-pretty'>
-              {t(
-                'tags.merge.confirmDesc',
-                'This action marks the source tag as merged, converts its name into an orthographic alias, and redirects all SEO traffic permanently.'
-              )}{' '}
-              <strong>#{sourceTag.name}</strong> &rarr;{' '}
-              <strong>#{selectedTarget?.name}</strong>
+            <AlertDialogDescription className='space-y-2 text-pretty'>
+              <p>
+                {t(
+                  'tags.merge.confirmDesc',
+                  'This action marks the source tag as merged, converts its name into an orthographic alias, and redirects all SEO traffic permanently.'
+                )}
+              </p>
+              <div className='border-border/60 bg-muted/40 flex items-center justify-center gap-2 rounded-lg border p-2.5 font-mono text-xs'>
+                <span className='text-muted-foreground font-bold line-through'>
+                  #{sourceTag.name}
+                </span>
+                <ArrowRightIcon className='text-primary size-3.5' />
+                <span className='text-foreground font-bold'>
+                  #{selectedTarget?.name}
+                </span>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -356,9 +397,14 @@ export function MergeTagDialog({
                 })
               }}
             >
-              {mergeMutation.isPending
-                ? t('tags.merge.merging', 'Merging...')
-                : t('tags.merge.btnConfirm', 'Confirm Merge')}
+              {mergeMutation.isPending ? (
+                <>
+                  <Loader2Icon className='size-4 animate-spin' />
+                  <span>{t('tags.merge.merging', 'Merging...')}</span>
+                </>
+              ) : (
+                t('tags.merge.btnConfirm', 'Confirm Merge')
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

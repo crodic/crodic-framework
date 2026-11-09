@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { FolderSearch, ImagePlus, Loader2, XIcon } from 'lucide-react'
+import { FolderSearch, ImagePlus, InfoIcon, Loader2, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import http from '@/lib/http'
@@ -89,17 +89,28 @@ export function TagFeaturedImageInput({
 
   return (
     <div className={cn('space-y-2', className)}>
-      <div className='flex items-center gap-1.5'>
-        <Label className='text-sm font-medium'>{label}</Label>
-        {tooltip && <FormFieldHelp tooltip={tooltip} />}
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-1.5'>
+          <Label className='text-foreground text-xs font-semibold'>
+            {label}
+          </Label>
+          {tooltip && <FormFieldHelp tooltip={tooltip} />}
+        </div>
+        <span className='text-muted-foreground inline-flex items-center gap-1 text-[11px]'>
+          <InfoIcon className='size-3' aria-hidden='true' />
+          {t(
+            'tags.encyclopedia.fallbackNotice',
+            'Automatic cross-locale image fallback'
+          )}
+        </span>
       </div>
 
-      <div className='bg-muted/15 space-y-3 rounded-xl border p-3.5'>
+      <div className='border-border/70 bg-muted/15 space-y-3.5 rounded-xl border p-4 shadow-2xs'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
           <Input
             placeholder={t(
               'imagePicker.urlOrLibraryPlaceholder',
-              'https://... hoặc chọn từ thư viện / tải lên'
+              'https://... or choose from media library / upload file'
             )}
             value={urlValue}
             disabled={disabled}
@@ -121,7 +132,7 @@ export function TagFeaturedImageInput({
               type='button'
               variant='secondary'
               size='sm'
-              className='h-9 flex-1 px-3 sm:flex-none'
+              className='h-9 flex-1 cursor-pointer px-3.5 text-xs font-semibold sm:flex-none'
               disabled={disabled}
               onClick={() => setIsPickerOpen(true)}
               title={t(
@@ -129,25 +140,28 @@ export function TagFeaturedImageInput({
                 'Choose from Media Library'
               )}
             >
-              <FolderSearch className='size-4' aria-hidden='true' />
-              {t('imagePicker.browse', 'Browse')}
+              <FolderSearch
+                className='text-primary size-4'
+                aria-hidden='true'
+              />
+              <span>{t('imagePicker.browse', 'Browse Library')}</span>
             </Button>
 
             <Button
               type='button'
               variant='outline'
               size='sm'
-              className='bg-background h-9 flex-1 px-3 sm:flex-none'
+              className='bg-background h-9 flex-1 cursor-pointer px-3.5 text-xs font-semibold sm:flex-none'
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploading}
-              title={t('imagePicker.uploadImage', 'Upload image')}
+              title={t('imagePicker.uploadImage', 'Upload image file')}
             >
               {isUploading ? (
                 <Loader2 className='size-4 animate-spin' aria-hidden='true' />
               ) : (
                 <>
                   <ImagePlus className='size-4' aria-hidden='true' />
-                  {t('imagePicker.upload', 'Upload')}
+                  <span>{t('imagePicker.upload', 'Upload')}</span>
                 </>
               )}
             </Button>
@@ -163,11 +177,11 @@ export function TagFeaturedImageInput({
         </div>
 
         {urlValue && (
-          <div className='bg-muted/30 border-border/80 relative flex items-center justify-center overflow-hidden rounded-xl border p-3 shadow-2xs'>
+          <div className='border-border/80 bg-background/80 relative flex items-center justify-center overflow-hidden rounded-xl border p-3 shadow-2xs'>
             <img
               src={urlValue}
-              alt={t('imagePicker.previewAlt', 'Ảnh bìa xem trước')}
-              className='max-h-72 w-auto max-w-full rounded-lg object-contain shadow-2xs transition-all'
+              alt={t('imagePicker.previewAlt', 'Featured header preview')}
+              className='max-h-64 w-auto max-w-full rounded-lg object-contain shadow-2xs transition-all'
               onError={(e) => {
                 ;(e.target as HTMLImageElement).style.display = 'none'
               }}
@@ -179,19 +193,19 @@ export function TagFeaturedImageInput({
               type='button'
               variant='secondary'
               size='sm'
-              aria-label={t('buttons.remove', 'Loại bỏ')}
+              aria-label={t('buttons.remove', 'Remove')}
               disabled={disabled}
-              className='bg-background/90 hover:bg-destructive hover:text-destructive-foreground absolute top-2.5 right-2.5 h-7.5 cursor-pointer gap-1 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors'
+              className='bg-background/90 hover:bg-destructive hover:text-destructive-foreground absolute top-2.5 right-2.5 h-8 cursor-pointer gap-1.5 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors'
               onClick={() => onSelect({ url: '', fileId: null })}
             >
               <XIcon className='size-3.5' aria-hidden='true' />
-              {t('buttons.remove', 'Loại bỏ')}
+              <span>{t('buttons.remove', 'Remove')}</span>
             </Button>
           </div>
         )}
       </div>
 
-      {error && <p className='text-destructive text-xs'>{error}</p>}
+      {error && <p className='text-destructive text-xs font-medium'>{error}</p>}
 
       <FilePickerDialog
         mode='url'

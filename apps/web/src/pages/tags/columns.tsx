@@ -29,6 +29,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
 import {
   AuditActionBadge,
@@ -59,48 +64,91 @@ function TagNameCell({ tag, t }: { tag: TagSummary; t: TFunction }) {
   }
 
   return (
-    <div className='group/tag flex min-w-0 flex-col gap-0.5 py-0.5'>
+    <div className='group/tag flex min-w-0 flex-col gap-0.5 py-1'>
       <div className='flex min-w-0 items-center gap-1.5'>
-        <span className='text-foreground group-hover/tag:text-primary truncate font-semibold transition-colors'>
-          #{tag.name}
+        <span className='text-foreground group-hover/tag:text-primary truncate font-semibold tracking-tight transition-colors'>
+          <span className='text-primary mr-0.5 font-bold opacity-80'>#</span>
+          {tag.name}
         </span>
-        <button
-          type='button'
-          onClick={handleCopy}
-          aria-label={t('tags.actions.copyName', 'Copy tag name')}
-          className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-sm p-0.5 opacity-0 transition-opacity group-hover/tag:opacity-100 focus-visible:opacity-100'
-        >
-          {copied ? (
-            <CheckIcon className='size-3 text-emerald-500' aria-hidden='true' />
-          ) : (
-            <CopyIcon className='size-3' aria-hidden='true' />
-          )}
-        </button>
+
+        <Tooltip delayDuration={200}>
+          <TooltipTrigger asChild>
+            <button
+              type='button'
+              onClick={handleCopy}
+              aria-label={t('tags.actions.copyName', 'Copy tag name')}
+              className='text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring shrink-0 cursor-pointer rounded p-0.5 opacity-0 transition-opacity group-hover/tag:opacity-100 focus-visible:opacity-100 focus-visible:ring-1'
+            >
+              {copied ? (
+                <CheckIcon
+                  className='size-3 text-emerald-500'
+                  aria-hidden='true'
+                />
+              ) : (
+                <CopyIcon className='size-3' aria-hidden='true' />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side='top' className='text-xs'>
+            {copied
+              ? t('tags.actions.copied', 'Copied!')
+              : t('tags.actions.copyName', 'Copy tag name')}
+          </TooltipContent>
+        </Tooltip>
+
         {tag.isOfficial && (
-          <BadgeCheckIcon
-            className='text-primary size-3.5 shrink-0'
-            aria-hidden='true'
-          />
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <span className='inline-flex shrink-0'>
+                <BadgeCheckIcon
+                  className='text-primary size-3.5'
+                  aria-hidden='true'
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side='top' className='text-xs'>
+              {t('tags.flags.official', 'Official Curated Tag')}
+            </TooltipContent>
+          </Tooltip>
         )}
+
         {tag.isSystem && (
-          <LockIcon
-            className='text-muted-foreground size-3.5 shrink-0'
-            aria-hidden='true'
-          />
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <span className='inline-flex shrink-0'>
+                <LockIcon
+                  className='size-3 text-amber-500'
+                  aria-hidden='true'
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side='top' className='text-xs'>
+              {t('tags.flags.system', 'System Protected Tag')}
+            </TooltipContent>
+          </Tooltip>
         )}
+
         {aliasCount > 0 && (
           <Badge
             variant='secondary'
-            className='px-1.5 py-0 text-[10px] font-normal tabular-nums'
+            className='bg-muted/70 px-1.5 py-0 font-mono text-[10px] font-normal tabular-nums'
           >
             +{aliasCount} alias
           </Badge>
         )}
       </div>
-      <div className='text-muted-foreground flex min-w-0 items-center gap-2 text-xs'>
-        <span className='truncate font-mono text-[11px]'>/{tag.slug}</span>
+
+      <div className='text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs'>
+        <span className='text-muted-foreground/80 truncate font-mono text-[11px]'>
+          /{tag.slug}
+        </span>
         {tag.translatedName && tag.translatedName !== tag.name && (
-          <span className='truncate'>· {tag.translatedName}</span>
+          <>
+            <span className='opacity-40'>•</span>
+            <span className='truncate text-[11px] font-medium'>
+              {tag.translatedName}
+            </span>
+          </>
         )}
       </div>
     </div>
@@ -273,7 +321,7 @@ export function getTagsTableColumns({
               <Badge
                 key={loc}
                 variant='outline'
-                className='bg-muted/40 px-1.5 py-0 font-mono text-[10px] uppercase'
+                className='bg-muted/40 px-1.5 py-0 font-mono text-[10px] font-semibold uppercase'
               >
                 {loc}
               </Badge>
@@ -315,36 +363,52 @@ export function getTagsTableColumns({
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='size-8'
+                  className='size-8 cursor-pointer'
                   aria-label={`Actions for tag ${tag.name}`}
                 >
                   <MoreHorizontalIcon className='size-4' aria-hidden='true' />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-48'>
-                <DropdownMenuItem onClick={() => onViewStudio(tag)}>
-                  <EyeIcon className='size-4' aria-hidden='true' />
-                  {t('tags.actions.openStudio', 'Open Governance Studio')}
+              <DropdownMenuContent align='end' className='w-52'>
+                <DropdownMenuItem
+                  onClick={() => onViewStudio(tag)}
+                  className='cursor-pointer gap-2'
+                >
+                  <EyeIcon className='text-primary size-4' aria-hidden='true' />
+                  <span>
+                    {t('tags.actions.openStudio', 'Open Governance Studio')}
+                  </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(tag)}>
+                <DropdownMenuItem
+                  onClick={() => onEdit(tag)}
+                  className='cursor-pointer gap-2'
+                >
                   <EditIcon className='size-4' aria-hidden='true' />
-                  {t('buttons.edit', 'Edit')}
+                  <span>{t('buttons.edit', 'Edit')}</span>
                 </DropdownMenuItem>
                 {!tag.isSystem && tag.status !== 'merged' && (
-                  <DropdownMenuItem onClick={() => onMerge(tag)}>
-                    <GitMergeIcon className='size-4' aria-hidden='true' />
-                    {t('tags.actions.mergeTag', 'Merge Into Tag...')}
+                  <DropdownMenuItem
+                    onClick={() => onMerge(tag)}
+                    className='cursor-pointer gap-2'
+                  >
+                    <GitMergeIcon
+                      className='size-4 text-violet-500'
+                      aria-hidden='true'
+                    />
+                    <span>
+                      {t('tags.actions.mergeTag', 'Merge Into Tag...')}
+                    </span>
                   </DropdownMenuItem>
                 )}
                 {!tag.isSystem && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className='text-destructive focus:text-destructive'
+                      className='text-destructive focus:text-destructive cursor-pointer gap-2'
                       onClick={() => onDelete(tag)}
                     >
                       <TrashIcon className='size-4' aria-hidden='true' />
-                      {t('buttons.delete', 'Delete')}
+                      <span>{t('buttons.delete', 'Delete')}</span>
                     </DropdownMenuItem>
                   </>
                 )}
@@ -376,7 +440,7 @@ export function getAuditLogsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={t('tags.audit.action', 'Hành động')}
+          label={t('tags.audit.action', 'Action')}
         />
       ),
       cell: ({ row }) => <AuditActionBadge action={row.original.action} />,
@@ -388,7 +452,7 @@ export function getAuditLogsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={t('tags.audit.tagSnapshot', 'Ảnh chụp thẻ')}
+          label={t('tags.audit.tagSnapshot', 'Tag Snapshot')}
         />
       ),
       cell: ({ row }) => {
@@ -437,7 +501,7 @@ export function getAuditLogsTableColumns({
                   onNavigateToTag(log.tagId)
                 }
               }}
-              className='border-border/70 bg-card text-foreground hover:border-primary hover:text-primary disabled:hover:border-border/70 disabled:hover:text-foreground inline-flex cursor-pointer items-center rounded-lg border px-2.5 py-1 font-mono text-xs font-semibold transition-colors disabled:no-underline'
+              className='border-border/70 bg-card text-foreground hover:border-primary hover:text-primary disabled:hover:border-border/70 disabled:hover:text-foreground inline-flex cursor-pointer items-center rounded-lg border px-2.5 py-1 font-mono text-xs font-semibold shadow-2xs transition-colors disabled:no-underline'
             >
               {log.tagNameSnapshot.startsWith('#')
                 ? log.tagNameSnapshot
@@ -448,7 +512,7 @@ export function getAuditLogsTableColumns({
 
         return (
           <span className='text-muted-foreground text-xs italic'>
-            {t('tags.audit.entityConfig', 'Cấu hình thực thể')}
+            {t('tags.audit.entityConfig', 'Entity Configuration')}
           </span>
         )
       },
@@ -460,11 +524,11 @@ export function getAuditLogsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={t('tags.audit.targetEntity', 'Thực thể đích')}
+          label={t('tags.audit.targetEntity', 'Target Entity')}
         />
       ),
       cell: ({ row }) => (
-        <div className='bg-muted/50 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-xs'>
+        <div className='bg-muted/50 border-border/40 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs'>
           <LayersIcon
             className='text-muted-foreground size-3'
             aria-hidden='true'
@@ -485,7 +549,7 @@ export function getAuditLogsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={t('tags.audit.actor', 'Người thực hiện')}
+          label={t('tags.audit.actor', 'Actor')}
         />
       ),
       cell: ({ row }) => {
@@ -496,7 +560,7 @@ export function getAuditLogsTableColumns({
 
         return (
           <div className='inline-flex items-center gap-2 text-xs'>
-            <div className='bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold'>
+            <div className='bg-muted text-foreground border-border/50 flex size-6 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] font-bold'>
               {initials}
             </div>
             <div className='flex items-center gap-1.5'>
@@ -509,8 +573,8 @@ export function getAuditLogsTableColumns({
               <span className='text-foreground font-medium'>
                 {log.actorName ||
                   (log.isAdminAction
-                    ? t('tags.audit.adminUser', 'Quản trị viên')
-                    : t('tags.audit.communityUser', 'Thành viên cộng đồng'))}
+                    ? t('tags.audit.adminUser', 'Administrator')
+                    : t('tags.audit.communityUser', 'Community Contributor'))}
               </span>
             </div>
           </div>
@@ -524,7 +588,7 @@ export function getAuditLogsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={t('tags.audit.timestamp', 'Thời gian')}
+          label={t('tags.audit.timestamp', 'Timestamp')}
           className='justify-end'
         />
       ),

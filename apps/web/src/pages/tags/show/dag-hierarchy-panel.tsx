@@ -44,7 +44,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { TagCategoryBadge, TagNodeChip } from '../components/tag-badges'
+import {
+  CATEGORY_ICONS,
+  TagCategoryBadge,
+  TagNodeChip,
+} from '../components/tag-badges'
 import {
   apiAddTagRelation,
   apiRemoveTagRelation,
@@ -89,7 +93,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
     mutationFn: apiAddTagRelation,
     onSuccess: () => {
       toast.success(
-        t('tags.messages.relationAdded', 'Đã thêm liên kết ngữ nghĩa')
+        t(
+          'tags.messages.relationAdded',
+          'Semantic relation linked successfully'
+        )
       )
       setLinkingId(null)
       invalidateGraph()
@@ -104,7 +111,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
     mutationFn: apiRemoveTagRelation,
     onSuccess: () => {
       toast.success(
-        t('tags.messages.relationRemoved', 'Đã gỡ liên kết ngữ nghĩa')
+        t(
+          'tags.messages.relationRemoved',
+          'Semantic relation unlinked successfully'
+        )
       )
       setPendingUnlink(null)
       invalidateGraph()
@@ -137,7 +147,13 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
     })
   }
 
-  const { parents, children, siblings, related, disambiguations } = tag.graph
+  const {
+    parents = [],
+    children = [],
+    siblings = [],
+    related = [],
+    disambiguations = [],
+  } = tag.graph || {}
 
   const isAlreadyLinked = (candidateId: string): boolean => {
     if (direction === 'parent') return parents.some((p) => p.id === candidateId)
@@ -150,6 +166,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
   }
 
   const candidates = suggestions.filter((item) => item.id !== tag.id)
+  const CurrentIcon = CATEGORY_ICONS[tag.category] || GitBranchIcon
 
   return (
     <>
@@ -163,19 +180,19 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('tags.hierarchy.unlinkTitle', 'Huỷ liên kết Quan hệ Thẻ')}
+              {t('tags.hierarchy.unlinkTitle', 'Unlink Tag Relation')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
                 'tags.hierarchy.unlinkDesc',
-                'Bạn có chắc chắn muốn gỡ mối quan hệ ngữ nghĩa này? Bảng bao đóng bắc cầu (closure table) sẽ được tính toán lại ngay lập tức.'
+                'Are you sure you want to remove this semantic relationship? The transitive closure table will be recomputed immediately.'
               )}{' '}
               {pendingUnlink ? `(${pendingUnlink.label})` : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={removeRelationMutation.isPending}>
-              {t('buttons.cancel', 'Hủy')}
+              {t('buttons.cancel', 'Cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={removeRelationMutation.isPending || !pendingUnlink}
@@ -190,8 +207,8 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               }}
             >
               {removeRelationMutation.isPending
-                ? t('tags.hierarchy.unlinking', 'Đang gỡ...')
-                : t('tags.hierarchy.unlinkAction', 'Gỡ liên kết')}
+                ? t('tags.hierarchy.unlinking', 'Unlinking...')
+                : t('tags.hierarchy.unlinkAction', 'Unlink Relation')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -211,13 +228,13 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                   <DialogTitle className='text-foreground text-base font-bold'>
                     {t(
                       'tags.hierarchy.modalTitle',
-                      'Liên kết Quan hệ Ngữ nghĩa Thẻ'
+                      'Link Semantic Tag Relation'
                     )}
                   </DialogTitle>
                   <p className='text-muted-foreground text-xs'>
                     {t('tags.hierarchy.modalDesc', {
                       name: tag.name,
-                      defaultValue: `Thiết lập phân cấp và liên kết cho #${tag.name}`,
+                      defaultValue: `Configure hierarchy and relations for #${tag.name}`,
                     })}
                   </p>
                 </div>
@@ -236,7 +253,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {t('tags.hierarchy.tabParent', 'Thẻ Cha (Parent)')}
+                {t('tags.hierarchy.tabParent', 'Parent Tag')}
               </button>
               <button
                 type='button'
@@ -248,7 +265,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {t('tags.hierarchy.tabChild', 'Thẻ Con (Child)')}
+                {t('tags.hierarchy.tabChild', 'Child Tag')}
               </button>
               <button
                 type='button'
@@ -260,7 +277,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {t('tags.hierarchy.tabRelated', 'Thẻ Liên Quan (Related)')}
+                {t('tags.hierarchy.tabRelated', 'Related Tag')}
               </button>
               <button
                 type='button'
@@ -272,7 +289,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {t('tags.hierarchy.tabDisambiguation', 'Đồng Âm (Disambig)')}
+                {t('tags.hierarchy.tabDisambiguation', 'Disambiguation')}
               </button>
             </div>
 
@@ -282,22 +299,22 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 {direction === 'parent' &&
                   t('tags.hierarchy.hintParent', {
                     name: tag.name,
-                    defaultValue: `Thẻ được chọn sẽ là cha bao quát #${tag.name}`,
+                    defaultValue: `Selected tag will become the parent encompassing #${tag.name}`,
                   })}
                 {direction === 'child' &&
                   t('tags.hierarchy.hintChild', {
                     name: tag.name,
-                    defaultValue: `#${tag.name} sẽ là cha bao quát thẻ được chọn`,
+                    defaultValue: `#${tag.name} will become the parent encompassing selected tag`,
                   })}
                 {direction === 'related' &&
                   t('tags.hierarchy.hintRelated', {
                     name: tag.name,
-                    defaultValue: `Mối quan hệ ngang hàng cùng chủ đề với #${tag.name}`,
+                    defaultValue: `Peer associative relationship on the same topic with #${tag.name}`,
                   })}
                 {direction === 'disambiguation' &&
                   t('tags.hierarchy.hintDisambiguation', {
                     name: tag.name,
-                    defaultValue: `Phân biệt nghĩa / đồng âm khác ngữ cảnh với #${tag.name}`,
+                    defaultValue: `Distinguish meaning / homonym in different contexts with #${tag.name}`,
                   })}
               </span>
             </div>
@@ -314,7 +331,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t(
                 'tags.hierarchy.searchPlaceholderFull',
-                'Gõ tên thẻ, bản dịch hoặc alias (VD: Frieren, Fantasy, Original)...'
+                'Search by tag name, translation, or alias (e.g., Frieren, Fantasy, Original)...'
               )}
               className='placeholder:text-muted-foreground flex-1 bg-transparent text-sm font-medium outline-none'
               autoFocus
@@ -332,7 +349,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             ) : null}
           </div>
 
-          {/* Results List (Clean, borderless, spacious, spotlight style) */}
+          {/* Results List */}
           <div className='max-h-[380px] space-y-1 overflow-y-auto p-3'>
             {candidates.length === 0 && !isSearching ? (
               <div className='space-y-2 p-10 text-center'>
@@ -340,17 +357,17 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                   {searchQuery
                     ? t(
                         'tags.hierarchy.noMatchesFound',
-                        'Không tìm thấy thẻ phù hợp'
+                        'No matching tags found'
                       )
                     : t(
                         'tags.hierarchy.typeToSearch',
-                        'Gõ tên thẻ hoặc alias để tìm kiếm'
+                        'Type a tag name or alias to search'
                       )}
                 </p>
                 <p className='text-muted-foreground text-xs'>
                   {t(
                     'tags.hierarchy.searchHelp',
-                    'Hệ thống tự động tìm kiếm qua tên chuẩn, bản dịch đa ngôn ngữ và từ đồng nghĩa alias.'
+                    'System searches automatically across canonical names, multilingual translations, and aliases.'
                   )}
                 </p>
               </div>
@@ -403,7 +420,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                           <span className='text-primary/90 bg-primary/10 rounded px-1.5 py-0.5 font-sans text-[11px] font-medium'>
                             {t('tags.hierarchy.matchedAliasPrefix', {
                               alias: item.matchedAlias,
-                              defaultValue: `Khớp alias: ${item.matchedAlias}`,
+                              defaultValue: `Matched alias: ${item.matchedAlias}`,
                             })}
                           </span>
                         ) : null}
@@ -412,7 +429,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                         <span className='tabular-nums'>
                           {t('tags.show.usesTooltip', {
                             count: item.usageCount?.toLocaleString() ?? 0,
-                            defaultValue: `${item.usageCount?.toLocaleString() ?? 0} lượt dùng`,
+                            defaultValue: `${item.usageCount?.toLocaleString() ?? 0} uses`,
                           })}
                         </span>
                       </div>
@@ -423,20 +440,18 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                       {alreadyLinked ? (
                         <span className='text-muted-foreground bg-muted inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium'>
                           <CheckIcon className='size-3 text-emerald-500' />
-                          {t('tags.hierarchy.alreadyLinked', 'Đã liên kết')}
+                          {t('tags.hierarchy.alreadyLinked', 'Already linked')}
                         </span>
                       ) : isCurrentlyLinking ? (
                         <div className='text-primary flex items-center gap-1.5 px-2 py-1 text-xs font-medium'>
                           <Loader2Icon className='size-3.5 animate-spin' />
                           <span>
-                            {t('tags.hierarchy.linking', 'Đang liên kết...')}
+                            {t('tags.hierarchy.linking', 'Linking...')}
                           </span>
                         </div>
                       ) : (
                         <span className='text-primary bg-primary/10 inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100'>
-                          <span>
-                            {t('tags.hierarchy.linkAction', 'Liên kết')}
-                          </span>
+                          <span>{t('tags.hierarchy.linkAction', 'Link')}</span>
                           <ArrowRightIcon className='size-3' />
                         </span>
                       )}
@@ -452,7 +467,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <span>
               {t(
                 'tags.hierarchy.clickToLinkPrompt',
-                'Bấm trực tiếp vào hàng thẻ bất kỳ để liên kết nhanh'
+                'Click directly on any tag row to link quickly'
               )}
             </span>
             <Button
@@ -462,13 +477,13 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               onClick={() => setIsDialogOpen(false)}
               className='h-8 cursor-pointer text-xs'
             >
-              {t('buttons.close', 'Đóng')}
+              {t('buttons.close', 'Close')}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* 100% Full-Width Semantic DAG Workspace */}
+      {/* Semantic DAG Hierarchy Flow Canvas */}
       <div className='space-y-6'>
         {/* Header Action Bar */}
         <div className='border-border/80 bg-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 shadow-2xs'>
@@ -478,15 +493,12 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </div>
             <div>
               <h2 className='text-foreground text-base font-semibold'>
-                {t(
-                  'tags.hierarchy.dagTitle',
-                  'Cây Phân Cấp Ngữ Nghĩa (DAG Hierarchy)'
-                )}
+                {t('tags.hierarchy.dagTitle', 'Semantic DAG Hierarchy')}
               </h2>
               <p className='text-muted-foreground text-xs'>
                 {t(
                   'tags.hierarchy.dagDesc',
-                  'Mô hình hóa quan hệ cha - con, đồng cấp, liên quan và phân biệt đồng âm.'
+                  'Model parent-child, sibling, associative, and disambiguation relationships.'
                 )}
               </p>
             </div>
@@ -500,7 +512,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             >
               <PlusIcon className='size-4' aria-hidden='true' />
               <span>
-                {t('tags.hierarchy.setupRelationBtn', 'Thiết lập Quan hệ Thẻ')}
+                {t('tags.hierarchy.setupRelationBtn', 'Set Up Tag Relations')}
               </span>
             </Button>
           </div>
@@ -512,7 +524,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
-                  {t('tags.hierarchy.parents', 'Thẻ Cha')}
+                  {t('tags.hierarchy.parents', 'Parent Tags')}
                 </CardTitle>
                 <Badge
                   variant='outline'
@@ -524,7 +536,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardDescription className='text-xs'>
                 {t(
                   'tags.hierarchy.parentsDesc',
-                  'Khái niệm bao quát hơn chứa thẻ này trong truy vấn phân cấp.'
+                  'Broader concepts encompassing this tag in hierarchy queries.'
                 )}
               </CardDescription>
             </div>
@@ -536,7 +548,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
-              <span>{t('tags.hierarchy.addParentBtn', 'Thêm Thẻ Cha')}</span>
+              <span>{t('tags.hierarchy.addParentBtn', 'Add Parent Tag')}</span>
             </Button>
           </CardHeader>
           <CardContent>
@@ -544,7 +556,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <p className='text-muted-foreground py-2 text-xs italic'>
                 {t(
                   'tags.hierarchy.rootNode',
-                  'Thẻ gốc (Root taxonomy node) — chưa liên kết thẻ cha nào.'
+                  'Root taxonomy node — no parent tags linked.'
                 )}
               </p>
             ) : (
@@ -583,7 +595,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <ArrowDownIcon className='text-primary size-3.5' />
             {t(
               'tags.hierarchy.inheritanceConnector',
-              'Kế thừa phân cấp (Is-A / Inheritance)'
+              'Taxonomy Inheritance (Is-A / Parent)'
             )}
           </span>
           <div className='bg-border h-px max-w-xs flex-1' />
@@ -598,7 +610,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <div className='flex items-center justify-between'>
                 <span className='text-primary inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase'>
                   <span className='bg-primary size-2 animate-pulse rounded-full' />
-                  {t('tags.hierarchy.currentNode', 'Thẻ Hiện Tại')}
+                  {t('tags.hierarchy.currentNode', 'Current Focus Tag')}
                 </span>
                 <Badge
                   variant='outline'
@@ -608,6 +620,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 </Badge>
               </div>
               <CardTitle className='flex flex-wrap items-center gap-2.5 text-xl font-bold'>
+                <CurrentIcon
+                  className='text-primary size-5 shrink-0'
+                  aria-hidden='true'
+                />
                 <span>#{tag.name}</span>
                 {tag.isOfficial && (
                   <BadgeCheckIcon
@@ -626,11 +642,11 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 </code>
               </div>
               <div className='flex items-center gap-2'>
-                <span>{t('tags.hierarchy.usageLabel', 'Sử dụng:')}</span>
+                <span>{t('tags.hierarchy.usageLabel', 'Usage:')}</span>
                 <span className='text-foreground font-mono font-semibold tabular-nums'>
                   {tag.usageCount.toLocaleString()}
                 </span>
-                <span>{t('tags.hierarchy.taggedItems', 'lượt gắn thẻ')}</span>
+                <span>{t('tags.show.uses', 'uses')}</span>
               </div>
             </CardContent>
           </Card>
@@ -641,7 +657,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.siblings', 'Thẻ Cùng Cấp')}
+                    {t('tags.hierarchy.siblings', 'Sibling Tags')}
                   </CardTitle>
                   <Badge
                     variant='outline'
@@ -654,7 +670,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardDescription className='text-xs'>
                 {t(
                   'tags.hierarchy.siblingsDesc',
-                  'Các thẻ có chung Thẻ Cha trong đồ thị phân loại.'
+                  'Tags sharing common parent concepts in the graph.'
                 )}
               </CardDescription>
             </CardHeader>
@@ -663,7 +679,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noSiblings',
-                    'Chưa có thẻ cùng cấp từ thẻ cha chung.'
+                    'No sibling tags found under shared parent tags.'
                   )}
                 </p>
               ) : (
@@ -694,7 +710,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <ArrowDownIcon className='size-3.5 text-emerald-500' />
             {t(
               'tags.hierarchy.specializationConnector',
-              'Phân nhánh thẻ con (Sub-types / Specialization)'
+              'Sub-concept Specialization (Sub-types / Children)'
             )}
           </span>
           <div className='bg-border h-px max-w-xs flex-1' />
@@ -706,7 +722,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
-                  {t('tags.hierarchy.children', 'Thẻ Con')}
+                  {t('tags.hierarchy.children', 'Child Sub-Tags')}
                 </CardTitle>
                 <Badge
                   variant='outline'
@@ -718,7 +734,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <CardDescription className='text-xs'>
                 {t(
                   'tags.hierarchy.childrenDesc',
-                  'Các thẻ con cụ thể tự động được bao hàm khi mở rộng tìm kiếm thẻ này.'
+                  'Specific sub-tags automatically included when expanding search.'
                 )}
               </CardDescription>
             </div>
@@ -730,7 +746,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
-              <span>{t('tags.hierarchy.addChildBtn', 'Thêm Thẻ Con')}</span>
+              <span>{t('tags.hierarchy.addChildBtn', 'Add Child Tag')}</span>
             </Button>
           </CardHeader>
           <CardContent>
@@ -738,7 +754,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               <p className='text-muted-foreground py-2 text-xs italic'>
                 {t(
                   'tags.hierarchy.leafNode',
-                  'Thẻ lá (Leaf tag) — chưa có thẻ con trực thuộc.'
+                  'Leaf tag — no child sub-tags attached.'
                 )}
               </p>
             ) : (
@@ -779,7 +795,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     aria-hidden='true'
                   />
                   <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.related', 'Thẻ Liên Quan')}
+                    {t('tags.hierarchy.related', 'Related Tags')}
                   </CardTitle>
                   <Badge
                     variant='outline'
@@ -791,7 +807,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <CardDescription className='text-xs'>
                   {t(
                     'tags.hierarchy.relatedDesc',
-                    'Liên kết ngữ nghĩa ngang hàng giữa các khái niệm.'
+                    'Peer associative semantic relationships between related concepts.'
                   )}
                 </CardDescription>
               </div>
@@ -804,7 +820,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>
-                  {t('tags.hierarchy.addRelatedBtn', 'Thêm Liên Kết')}
+                  {t('tags.hierarchy.addRelatedBtn', 'Add Related Link')}
                 </span>
               </Button>
             </CardHeader>
@@ -813,7 +829,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noRelated',
-                    'Chưa có liên kết ngang hàng.'
+                    'No associative related links established.'
                   )}
                 </p>
               ) : (
@@ -851,7 +867,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     aria-hidden='true'
                   />
                   <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.disambiguations', 'Phân Biệt Đồng Âm')}
+                    {t('tags.hierarchy.disambiguations', 'Disambiguation Tags')}
                   </CardTitle>
                   <Badge
                     variant='outline'
@@ -863,7 +879,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <CardDescription className='text-xs'>
                   {t(
                     'tags.hierarchy.disambiguationsDesc',
-                    'Các thẻ có từ ngữ tương đồng nhưng khác biệt ngữ cảnh.'
+                    'Tags with similar phrasing but different semantic contexts.'
                   )}
                 </CardDescription>
               </div>
@@ -876,7 +892,10 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>
-                  {t('tags.hierarchy.addDisambiguationBtn', 'Thêm Đồng Âm')}
+                  {t(
+                    'tags.hierarchy.addDisambiguationBtn',
+                    'Add Disambiguation'
+                  )}
                 </span>
               </Button>
             </CardHeader>
@@ -885,7 +904,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <p className='text-muted-foreground py-2 text-xs italic'>
                   {t(
                     'tags.hierarchy.noDisambiguations',
-                    'Không có phân định đồng âm.'
+                    'No disambiguation notices required.'
                   )}
                 </p>
               ) : (

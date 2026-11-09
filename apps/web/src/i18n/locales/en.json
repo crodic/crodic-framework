@@ -1548,5 +1548,22 @@
   "helpCenter.noResultsDesc": "Try searching with different keywords like \"DAG\", \"wiki\", \"merge\", \"upload\", \"role\", or clear the search filter.",
   "helpCenter.contactSupport": "Need Additional Support?",
   "helpCenter.contactSupportDesc": "If you experience system errors or need elevated permission grants, please reach out to the lead administrator.",
-  "helpCenter.auditLogsBtn": "View Activity Logs"
+  "helpCenter.auditLogsBtn": "View Activity Logs",
+  "tags.encyclopedia.kpiTotalArticles": "Total Wiki Articles",
+  "tags.encyclopedia.kpiTotalArticlesDesc": "Localized encyclopedia entries",
+  "tags.encyclopedia.kpiLockedArticles": "Admin Curated",
+  "tags.encyclopedia.kpiLockedArticlesDesc": "Protected against community edits",
+  "tags.encyclopedia.kpiOpenArticles": "Community Open",
+  "tags.encyclopedia.kpiOpenArticlesDesc": "Open for community contributions",
+  "tags.encyclopedia.kpiTotalViews": "Total Readers",
+  "tags.encyclopedia.kpiTotalViewsDesc": "Knowledge page views across locales",
+  "tags.form.previewBadge": "Live Taxonomy Preview",
+  "tags.form.previewDesc": "Real-time preview of badge styling, category accent, and localization chip.",
+  "tags.form.previewChip": "Search Chip Preview",
+  "tags.form.previewCard": "Hover Card Preview",
+  "tags.hierarchy.treeOverview": "Interactive Taxonomy Tree",
+  "tags.hierarchy.quickFilter": "Filter relations by keyword or category...",
+  "tags.show.tabEntityFolksonomy": "Entity Folksonomy (10-Tag Cap)",
+  "tags.show.metricRelations": "DAG Relations",
+  "tags.show.metricEditions": "Wiki Editions"
 }

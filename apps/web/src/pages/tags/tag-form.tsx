@@ -6,6 +6,7 @@ import {
   BadgeCheckIcon,
   CheckIcon,
   CopyIcon,
+  EyeIcon,
   GlobeIcon,
   HashIcon,
   LanguagesIcon,
@@ -51,7 +52,12 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { FormFieldHelp } from './components/form-field-help'
-import { TagStatusBadge } from './components/tag-badges'
+import {
+  TagCategoryBadge,
+  TagNodeChip,
+  TagSafetyBadge,
+  TagStatusBadge,
+} from './components/tag-badges'
 import {
   TAG_LOCALES,
   tagFormSchema,
@@ -143,7 +149,17 @@ export function TagForm({
   })
 
   const watchedName = useWatch({ control: form.control, name: 'name' })
+  const watchedCategory = useWatch({ control: form.control, name: 'category' })
+  const watchedSafety = useWatch({
+    control: form.control,
+    name: 'safetyRating',
+  })
   const watchedStatus = useWatch({ control: form.control, name: 'status' })
+  const watchedIsOfficial = useWatch({
+    control: form.control,
+    name: 'isOfficial',
+  })
+  const watchedIsSystem = useWatch({ control: form.control, name: 'isSystem' })
   const watchedTranslations = useWatch({
     control: form.control,
     name: 'translations',
@@ -152,7 +168,12 @@ export function TagForm({
   const handleGenerateSlug = () => {
     const currentName = form.getValues('name')
     if (!currentName?.trim()) {
-      toast.error(t('tags.form.nameRequiredForSlug'))
+      toast.error(
+        t(
+          'tags.form.nameRequiredForSlug',
+          'Please enter a canonical name first'
+        )
+      )
       return
     }
     const generated = currentName
@@ -168,7 +189,9 @@ export function TagForm({
         shouldValidate: true,
         shouldDirty: true,
       })
-      toast.success(t('tags.form.slugGenerated'))
+      toast.success(
+        t('tags.form.slugGenerated', 'Slug generated from canonical name')
+      )
     }
   }
 
@@ -178,7 +201,7 @@ export function TagForm({
     navigator.clipboard.writeText(currentSlug)
     setCopiedSlug(true)
     setTimeout(() => setCopiedSlug(false), 1500)
-    toast.success(t('tags.actions.copied'))
+    toast.success(t('tags.actions.copied', 'Copied to clipboard'))
   }
 
   const handleQuickAddAlias = () => {
@@ -191,7 +214,9 @@ export function TagForm({
         (al) => al.aliasName.toLowerCase() === trimmed.toLowerCase()
       )
     ) {
-      toast.error(t('tags.form.aliasExists'))
+      toast.error(
+        t('tags.form.aliasExists', 'Alias already exists in the list')
+      )
       return
     }
 
@@ -209,14 +234,17 @@ export function TagForm({
   const activeLocaleItem =
     activeLocaleIndex >= 0 ? TAG_LOCALES[activeLocaleIndex] : TAG_LOCALES[0]
 
+  const activeTranslation =
+    watchedTranslations?.[activeLocaleIndex]?.translatedName || ''
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className='flex flex-1 flex-col gap-6'
       >
-        {/* Clean, Unified Sticky Header Card */}
-        <div className='bg-card/95 border-border/80 sticky top-0 z-30 rounded-2xl border p-4 shadow-2xs backdrop-blur-md sm:p-5'>
+        {/* Sticky Glassmorphic Header Action Bar */}
+        <div className='bg-card/95 border-border/80 sticky top-0 z-30 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5'>
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div className='flex items-center gap-3'>
               <Button
@@ -225,24 +253,31 @@ export function TagForm({
                 size='icon'
                 onClick={() => navigate(-1)}
                 className='size-9 shrink-0 cursor-pointer shadow-2xs'
-                aria-label={t('buttons.back')}
+                aria-label={t('buttons.back', 'Back')}
               >
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
               </Button>
 
               <div className='space-y-0.5'>
-                <div className='flex items-center gap-2.5'>
+                <div className='flex flex-wrap items-center gap-2.5'>
                   <h1 className='text-foreground text-xl font-bold tracking-tight sm:text-2xl'>
                     {initialData
                       ? `#${watchedName || initialData.name}`
-                      : t('tags.form.createTitle')}
+                      : t('tags.form.createTitle', 'Create Canonical Tag')}
                   </h1>
                   <TagStatusBadge status={watchedStatus} />
+                  <TagCategoryBadge category={watchedCategory} />
                 </div>
                 <p className='text-muted-foreground text-xs'>
                   {initialData
-                    ? t('tags.form.editSubtitle')
-                    : t('tags.form.createSubtitle')}
+                    ? t(
+                        'tags.form.editSubtitle',
+                        'Configure canonical identity, multilingual localizations, and aliases.'
+                      )
+                    : t(
+                        'tags.form.createSubtitle',
+                        'Register a new canonical tag into the platform taxonomy.'
+                      )}
                 </p>
               </div>
             </div>
@@ -255,12 +290,12 @@ export function TagForm({
                 disabled={isSubmitting}
                 className='cursor-pointer text-xs'
               >
-                {t('buttons.cancel', 'Hủy')}
+                {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button
                 type='submit'
                 disabled={isSubmitting}
-                className='cursor-pointer gap-1.5 shadow-xs'
+                className='cursor-pointer gap-2 shadow-xs'
               >
                 {isSubmitting ? (
                   <>
@@ -268,15 +303,15 @@ export function TagForm({
                       className='size-4 animate-spin'
                       aria-hidden='true'
                     />
-                    <span>{t('buttons.saving', 'Đang lưu...')}</span>
+                    <span>{t('buttons.saving', 'Saving...')}</span>
                   </>
                 ) : (
                   <>
                     <SaveIcon className='size-4' aria-hidden='true' />
                     <span>
                       {initialData
-                        ? t('buttons.saveChanges', 'Lưu thay đổi')
-                        : t('buttons.createTag', 'Tạo thẻ')}
+                        ? t('buttons.saveChanges', 'Save Changes')
+                        : t('buttons.createTag', 'Create Tag')}
                     </span>
                   </>
                 )}
@@ -284,6 +319,41 @@ export function TagForm({
             </div>
           </div>
         </div>
+
+        {/* Live Taxonomy Preview Strip */}
+        <Card className='border-border/70 bg-muted/20 relative overflow-hidden shadow-2xs'>
+          <CardContent className='flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5'>
+            <div className='flex items-center gap-3'>
+              <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
+                <EyeIcon className='size-4' aria-hidden='true' />
+              </div>
+              <div>
+                <p className='text-foreground text-xs font-semibold'>
+                  {t('tags.form.previewBadge', 'Live Taxonomy Preview')}
+                </p>
+                <p className='text-muted-foreground text-[11px]'>
+                  {t(
+                    'tags.form.previewDesc',
+                    'Real-time preview of badge styling, category accent, and localization chip.'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Visual Chip Representation */}
+            <div className='flex flex-wrap items-center gap-2.5'>
+              <TagNodeChip
+                name={watchedName?.trim() || 'example-tag'}
+                translatedName={activeTranslation}
+                category={watchedCategory}
+                isOfficial={watchedIsOfficial}
+                isSystem={watchedIsSystem}
+                usageCount={initialData?.usageCount ?? 0}
+              />
+              <TagSafetyBadge safetyRating={watchedSafety} />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 2-Column Responsive Workspace Grid */}
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
@@ -298,10 +368,13 @@ export function TagForm({
                   </div>
                   <div>
                     <CardTitle className='text-base font-semibold'>
-                      {t('tags.form.canonicalSection')}
+                      {t('tags.form.canonicalSection', 'Canonical Identity')}
                     </CardTitle>
                     <CardDescription className='text-xs'>
-                      {t('tags.form.canonicalDesc')}
+                      {t(
+                        'tags.form.canonicalDesc',
+                        'Define the primary canonical tag name, category, safety rating, and governance flags.'
+                      )}
                     </CardDescription>
                   </div>
                 </div>
@@ -318,12 +391,12 @@ export function TagForm({
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-1.5'>
                             <FormLabel className='text-xs font-semibold'>
-                              {t('tags.form.name')}
+                              {t('tags.form.name', 'Canonical Name')}
                             </FormLabel>
                             <FormFieldHelp tooltip={t('tags.help.name')} />
                           </div>
                           <span className='text-muted-foreground font-mono text-[10px]'>
-                            {t('tags.form.required')}
+                            {t('tags.form.required', 'Required')}
                           </span>
                         </div>
                         <FormControl>
@@ -333,7 +406,10 @@ export function TagForm({
                             </span>
                             <Input
                               {...field}
-                              placeholder={t('tags.form.namePlaceholder')}
+                              placeholder={t(
+                                'tags.form.namePlaceholder',
+                                'e.g. Cyberpunk, 葬送のフリーレン, Landscape'
+                              )}
                               className='text-foreground pl-8 font-semibold tracking-tight'
                             />
                           </div>
@@ -351,7 +427,7 @@ export function TagForm({
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-1.5'>
                             <FormLabel className='text-xs font-semibold'>
-                              {t('tags.form.slug')}
+                              {t('tags.form.slug', 'Custom Slug (Optional)')}
                             </FormLabel>
                             <FormFieldHelp tooltip={t('tags.help.slug')} />
                           </div>
@@ -364,7 +440,7 @@ export function TagForm({
                               className='size-3'
                               aria-hidden='true'
                             />
-                            {t('tags.form.syncSlug')}
+                            {t('tags.form.syncSlug', 'Auto-Slug')}
                           </button>
                         </div>
                         <FormControl>
@@ -374,14 +450,20 @@ export function TagForm({
                             </span>
                             <Input
                               {...field}
-                              placeholder={t('tags.form.slugPlaceholder')}
+                              placeholder={t(
+                                'tags.form.slugPlaceholder',
+                                'Auto-generated from canonical name if empty'
+                              )}
                               className='pr-8 pl-6 font-mono text-xs'
                             />
                             {field.value && (
                               <button
                                 type='button'
                                 onClick={handleCopySlug}
-                                aria-label={t('tags.actions.copySlug')}
+                                aria-label={t(
+                                  'tags.actions.copySlug',
+                                  'Copy slug'
+                                )}
                                 className='text-muted-foreground hover:text-foreground absolute right-2.5 cursor-pointer'
                               >
                                 {copiedSlug ? (
@@ -410,83 +492,106 @@ export function TagForm({
                   <FormField
                     control={form.control}
                     name='category'
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className='flex items-center gap-1.5'>
-                          <FormLabel className='text-xs font-semibold'>
-                            {t('tags.form.category')}
-                          </FormLabel>
-                          <FormFieldHelp tooltip={t('tags.help.category')} />
-                        </div>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger className='w-full text-xs font-medium'>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value='general'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-sky-500'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.general')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='copyright'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-violet-600'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.copyright')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='character'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-emerald-600'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.character')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='artist'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-amber-600'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.artist')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='meta'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-blue-600'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.meta')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='system'>
-                              <div className='flex items-center gap-2'>
-                                <span
-                                  className='size-2 rounded-full bg-rose-600'
-                                  aria-hidden='true'
-                                />
-                                <span>{t('tags.category.system')}</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <div className='flex items-center gap-1.5'>
+                            <FormLabel className='text-xs font-semibold'>
+                              {t('tags.form.category', 'Semantic Category')}
+                            </FormLabel>
+                            <FormFieldHelp tooltip={t('tags.help.category')} />
+                          </div>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='w-full text-xs font-medium'>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value='general'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-sky-500'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t('tags.category.general', 'General')}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value='copyright'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-violet-600'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t(
+                                      'tags.category.copyright',
+                                      'Copyright / Series'
+                                    )}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value='character'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-emerald-600'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t('tags.category.character', 'Character')}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value='artist'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-amber-600'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t(
+                                      'tags.category.artist',
+                                      'Artist / Creator'
+                                    )}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value='meta'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-indigo-600'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t(
+                                      'tags.category.meta',
+                                      'Meta / Technique'
+                                    )}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value='system'>
+                                <div className='flex items-center gap-2'>
+                                  <span
+                                    className='size-2 rounded-full bg-rose-600'
+                                    aria-hidden='true'
+                                  />
+                                  <span>
+                                    {t('tags.category.system', 'System')}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )
+                    }}
                   />
 
                   <FormField
@@ -496,7 +601,7 @@ export function TagForm({
                       <FormItem>
                         <div className='flex items-center gap-1.5'>
                           <FormLabel className='text-xs font-semibold'>
-                            {t('tags.form.safetyRating')}
+                            {t('tags.form.safetyRating', 'Safety Rating')}
                           </FormLabel>
                           <FormFieldHelp
                             tooltip={t('tags.help.safetyRating')}
@@ -518,7 +623,7 @@ export function TagForm({
                                   className='size-2 rounded-full bg-emerald-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.safety.safe')}</span>
+                                <span>{t('tags.safety.safe', 'Safe')}</span>
                               </div>
                             </SelectItem>
                             <SelectItem value='sensitive'>
@@ -527,7 +632,9 @@ export function TagForm({
                                   className='size-2 rounded-full bg-amber-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.safety.sensitive')}</span>
+                                <span>
+                                  {t('tags.safety.sensitive', 'Sensitive')}
+                                </span>
                               </div>
                             </SelectItem>
                             <SelectItem value='r18'>
@@ -536,7 +643,7 @@ export function TagForm({
                                   className='size-2 rounded-full bg-rose-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.safety.r18')}</span>
+                                <span>{t('tags.safety.r18', 'R-18')}</span>
                               </div>
                             </SelectItem>
                             <SelectItem value='r18g'>
@@ -545,7 +652,7 @@ export function TagForm({
                                   className='size-2 rounded-full bg-red-700'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.safety.r18g')}</span>
+                                <span>{t('tags.safety.r18g', 'R-18G')}</span>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -562,7 +669,7 @@ export function TagForm({
                       <FormItem>
                         <div className='flex items-center gap-1.5'>
                           <FormLabel className='text-xs font-semibold'>
-                            {t('tags.form.status')}
+                            {t('tags.form.status', 'Lifecycle Status')}
                           </FormLabel>
                           <FormFieldHelp tooltip={t('tags.help.status')} />
                         </div>
@@ -582,7 +689,7 @@ export function TagForm({
                                   className='size-2 rounded-full bg-emerald-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.status.active')}</span>
+                                <span>{t('tags.status.active', 'Active')}</span>
                               </div>
                             </SelectItem>
                             <SelectItem value='pending'>
@@ -591,7 +698,9 @@ export function TagForm({
                                   className='size-2 rounded-full bg-amber-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.status.pending')}</span>
+                                <span>
+                                  {t('tags.status.pending', 'Pending')}
+                                </span>
                               </div>
                             </SelectItem>
                             <SelectItem value='banned'>
@@ -600,16 +709,16 @@ export function TagForm({
                                   className='size-2 rounded-full bg-rose-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.status.banned')}</span>
+                                <span>{t('tags.status.banned', 'Banned')}</span>
                               </div>
                             </SelectItem>
                             <SelectItem value='merged'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-purple-500'
+                                  className='size-2 rounded-full bg-violet-500'
                                   aria-hidden='true'
                                 />
-                                <span>{t('tags.status.merged')}</span>
+                                <span>{t('tags.status.merged', 'Merged')}</span>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -631,10 +740,16 @@ export function TagForm({
                   </div>
                   <div>
                     <CardTitle className='text-base font-semibold'>
-                      {t('tags.form.translationsSection')}
+                      {t(
+                        'tags.form.translationsSection',
+                        'Multilingual Translations'
+                      )}
                     </CardTitle>
                     <CardDescription className='text-xs'>
-                      {t('tags.form.translationsDesc')}
+                      {t(
+                        'tags.form.translationsDesc',
+                        'Provide localized display names and concise hover summaries across supported languages.'
+                      )}
                     </CardDescription>
                   </div>
                 </div>
@@ -649,7 +764,7 @@ export function TagForm({
                       aria-hidden='true'
                     />
                     <span className='text-foreground text-xs font-semibold'>
-                      {t('tags.form.selectLocale', 'Ngôn ngữ:')}
+                      {t('tags.form.selectLocale', 'Language:')}
                     </span>
                   </div>
 
@@ -709,7 +824,10 @@ export function TagForm({
                         <FormItem>
                           <div className='flex items-center gap-1.5'>
                             <FormLabel className='text-xs font-semibold'>
-                              {t('tags.form.displayName')}
+                              {t(
+                                'tags.form.displayName',
+                                'Translated Display Name'
+                              )}
                             </FormLabel>
                             <FormFieldHelp
                               tooltip={t('tags.help.displayName')}
@@ -727,6 +845,7 @@ export function TagForm({
                                   'tags.form.translatedPlaceholder',
                                   {
                                     locale: activeLocaleItem.label,
+                                    defaultValue: `Display name in ${activeLocaleItem.label}...`,
                                   }
                                 )}
                                 className='pl-8 text-xs font-medium'
@@ -734,7 +853,10 @@ export function TagForm({
                             </div>
                           </FormControl>
                           <FormDescription className='text-muted-foreground text-[11px]'>
-                            {t('tags.form.translatedTip')}
+                            {t(
+                              'tags.form.translatedTip',
+                              'Community members browsing in this locale see this title.'
+                            )}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -752,7 +874,10 @@ export function TagForm({
                             <div className='flex items-center justify-between'>
                               <div className='flex items-center gap-1.5'>
                                 <FormLabel className='text-xs font-semibold'>
-                                  {t('tags.form.shortSummary')}
+                                  {t(
+                                    'tags.form.shortSummary',
+                                    'Hover Tooltip Summary'
+                                  )}
                                 </FormLabel>
                                 <FormFieldHelp
                                   tooltip={t('tags.help.shortSummary')}
@@ -773,7 +898,10 @@ export function TagForm({
                               <Textarea
                                 {...field}
                                 rows={3}
-                                placeholder={t('tags.form.summaryPlaceholder')}
+                                placeholder={t(
+                                  'tags.form.summaryPlaceholder',
+                                  'Concise 1-2 sentence definition shown in artwork hover cards and autocomplete popovers...'
+                                )}
                                 className='resize-none text-xs leading-relaxed'
                               />
                             </FormControl>
@@ -798,10 +926,18 @@ export function TagForm({
                     className='text-primary size-4'
                     aria-hidden='true'
                   />
-                  <span>{t('tags.form.governanceSection')}</span>
+                  <span>
+                    {t(
+                      'tags.form.governanceSection',
+                      'Governance & Protection'
+                    )}
+                  </span>
                 </CardTitle>
                 <CardDescription className='text-xs'>
-                  {t('tags.form.governanceDesc')}
+                  {t(
+                    'tags.form.governanceDesc',
+                    'Set access control and trust verification flags.'
+                  )}
                 </CardDescription>
               </CardHeader>
 
@@ -825,11 +961,14 @@ export function TagForm({
                             aria-hidden='true'
                           />
                           <FormLabel className='cursor-pointer text-xs font-semibold'>
-                            {t('tags.form.isOfficial')}
+                            {t('tags.form.isOfficial', 'Official Verified Tag')}
                           </FormLabel>
                         </div>
                         <FormDescription className='text-[11px] leading-relaxed'>
-                          {t('tags.form.isOfficialDesc')}
+                          {t(
+                            'tags.form.isOfficialDesc',
+                            'Marks this tag as curated by platform moderators.'
+                          )}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -861,11 +1000,14 @@ export function TagForm({
                             aria-hidden='true'
                           />
                           <FormLabel className='cursor-pointer text-xs font-semibold'>
-                            {t('tags.form.isSystem')}
+                            {t('tags.form.isSystem', 'System Tag')}
                           </FormLabel>
                         </div>
                         <FormDescription className='text-[11px] leading-relaxed'>
-                          {t('tags.form.isSystemDesc')}
+                          {t(
+                            'tags.form.isSystemDesc',
+                            'Prevents community deletion and merges.'
+                          )}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -889,7 +1031,9 @@ export function TagForm({
                       className='text-primary size-4'
                       aria-hidden='true'
                     />
-                    <span>{t('tags.form.aliasesSection')}</span>
+                    <span>
+                      {t('tags.form.aliasesSection', 'Orthographic Aliases')}
+                    </span>
                   </CardTitle>
                   <Badge
                     variant='outline'
@@ -899,7 +1043,10 @@ export function TagForm({
                   </Badge>
                 </div>
                 <CardDescription className='text-xs'>
-                  {t('tags.form.aliasesDesc')}
+                  {t(
+                    'tags.form.aliasesDesc',
+                    'Map synonyms, abbreviations, and common typos to automatically resolve and 301-redirect to this canonical tag.'
+                  )}
                 </CardDescription>
               </CardHeader>
 
@@ -915,7 +1062,10 @@ export function TagForm({
                         handleQuickAddAlias()
                       }
                     }}
-                    placeholder={t('tags.form.aliasQuickPlaceholder')}
+                    placeholder={t(
+                      'tags.form.aliasQuickPlaceholder',
+                      'Add synonym, abbreviation, or typo (e.g. FGO, Saber)...'
+                    )}
                     className='bg-background h-8 text-xs'
                   />
                   <div className='flex items-center gap-2'>
@@ -930,16 +1080,16 @@ export function TagForm({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value='synonym'>
-                          {t('tags.aliasType.synonym')}
+                          {t('tags.aliasType.synonym', 'Synonym')}
                         </SelectItem>
                         <SelectItem value='abbreviation'>
-                          {t('tags.aliasType.abbreviation')}
+                          {t('tags.aliasType.abbreviation', 'Abbreviation')}
                         </SelectItem>
                         <SelectItem value='typo'>
-                          {t('tags.aliasType.typo')}
+                          {t('tags.aliasType.typo', 'Typo / Variant')}
                         </SelectItem>
                         <SelectItem value='legacy_merge'>
-                          {t('tags.aliasType.legacyMerge')}
+                          {t('tags.aliasType.legacyMerge', 'Legacy Merge')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -951,7 +1101,7 @@ export function TagForm({
                       className='h-8 shrink-0 cursor-pointer gap-1 px-3 text-xs font-semibold'
                     >
                       <PlusIcon className='size-3.5' aria-hidden='true' />
-                      {t('buttons.add')}
+                      {t('buttons.add', 'Add')}
                     </Button>
                   </div>
                 </div>
@@ -959,7 +1109,10 @@ export function TagForm({
                 {/* Active Aliases Chip Area */}
                 {aliasFields.length === 0 ? (
                   <div className='border-border/70 text-muted-foreground rounded-xl border border-dashed p-5 text-center text-xs'>
-                    {t('tags.form.noAliases')}
+                    {t(
+                      'tags.form.noAliases',
+                      'No orthographic aliases configured yet. Add abbreviations (e.g. "FGO"), romanizations, or common typos so search and autocomplete resolve directly to this tag.'
+                    )}
                   </div>
                 ) : (
                   <div className='flex flex-wrap gap-1.5'>
@@ -981,7 +1134,7 @@ export function TagForm({
                             type='button'
                             onClick={() => removeAlias(idx)}
                             className='text-muted-foreground hover:bg-destructive/15 hover:text-destructive cursor-pointer rounded p-0.5 transition-colors'
-                            title={t('tags.form.removeAlias')}
+                            title={t('tags.form.removeAlias', 'Remove alias')}
                             aria-label={`Remove alias ${val?.aliasName}`}
                           >
                             <XIcon className='size-3' aria-hidden='true' />

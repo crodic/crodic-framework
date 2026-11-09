@@ -7,8 +7,8 @@ export function ForbiddenError() {
   const { t } = useTranslation()
 
   return (
-    <div className='h-svh'>
-      <div className='m-auto flex size-full flex-col items-center justify-center gap-2'>
+    <div className='flex min-h-dvh w-full items-center justify-center p-4 sm:p-6'>
+      <div className='flex w-full max-w-md flex-col items-center justify-center gap-2 text-center'>
         <h1 className='text-[7rem] leading-tight font-bold'>403</h1>
         <span className='font-medium'>{t('errors.forbidden.title')}</span>
         <p className='text-muted-foreground text-center'>
