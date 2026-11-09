@@ -1,12 +1,9 @@
 name: Deploy to Production (VPS)
 
 on:
-  workflow_run:
-    workflows: ["CI"]
+  push:
     branches:
       - main
-    types:
-      - completed
   workflow_dispatch:
     inputs:
       skip_migration:
@@ -22,35 +19,20 @@ concurrency:
 jobs:
   deploy:
     name: Deploy Monorepo to VPS
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
 
     steps:
-      - name: Trigger Deployment via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script_stop: true
-          script: |
-            set -e
-            DEPLOY_DIR="${{ secrets.DEPLOY_PATH || '/var/www/crodic-framework' }}"
-            echo "Navigating to deploy directory: $DEPLOY_DIR"
-            cd "$DEPLOY_DIR"
+      - name: Execute Deployment Script
+        run: |
+          set -e
+          cd /var/www/crodic-framework
+          git checkout main
+          git pull origin main
+          chmod +x scripts/deploy.sh
 
-            # Check if deploy.sh exists
-            if [ ! -f "scripts/deploy.sh" ]; then
-              echo "Error: scripts/deploy.sh not found in $DEPLOY_DIR"
-              exit 1
-            fi
+          DEPLOY_FLAGS=""
+          if [ "${{ inputs.skip_migration }}" = "true" ]; then
+            DEPLOY_FLAGS="--skip-migration"
+          fi
 
-            chmod +x scripts/deploy.sh
-
-            DEPLOY_FLAGS=""
-            if [ "${{ inputs.skip_migration }}" = "true" ]; then
-              DEPLOY_FLAGS="--skip-migration"
-            fi
-
-            ./scripts/deploy.sh $DEPLOY_FLAGS
+          ./scripts/deploy.sh $DEPLOY_FLAGS

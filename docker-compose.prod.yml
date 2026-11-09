@@ -115,7 +115,7 @@ services:
       - app-network
 
   minio:
-    image: minio/minio:latest
+    image: pgsty/silo:latest
     container_name: crodic_minio
     restart: unless-stopped
     command: server /data --console-address ":${MINIO_CONSOLE_PORT:-9001}"
@@ -131,7 +131,7 @@ services:
       - app-network
 
   minio-init:
-    image: minio/mc:latest
+    image: pgsty/mc:latest
     container_name: crodic_minio_init
     depends_on:
       minio:
