@@ -149,6 +149,18 @@ services:
     networks:
       - app-network
 
+  # ==============================================================================
+  # Cloudflare Tunnel (Zero Trust - Secure Remote Access without port forwarding)
+  # ==============================================================================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: crodic_tunnel
+    restart: unless-stopped
+    network_mode: host
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+
 volumes:
   postgres_data:
   redis_data:
