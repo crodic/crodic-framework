@@ -13,7 +13,7 @@ services:
       - path: apps/api/.env
         required: false
     ports:
-      - "${API_PORT:-8000}:${APP_PORT:-8000}"
+      - "${API_PORT:-8001}:${APP_PORT:-8000}"
     volumes:
       - api_storage:/app/storage
     depends_on:
