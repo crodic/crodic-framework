@@ -44,8 +44,9 @@ COPY apps/api ./apps/api
 
 RUN pnpm --filter api build \
   && pnpm --filter api deploy --prod --legacy /prod/api \
-  && mkdir -p /prod/api/public \
-  && cp -r apps/api/dist /prod/api/dist
+  && mkdir -p /prod/api/public /prod/api/dist/database \
+  && cp -r apps/api/dist /prod/api/dist \
+  && cp -r apps/api/src/database/data /prod/api/dist/database/data
 
 FROM base AS production
 ENV NODE_ENV=production
