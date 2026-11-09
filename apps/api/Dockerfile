@@ -49,6 +49,7 @@ RUN pnpm --filter api build \
 
 FROM base AS production
 ENV NODE_ENV=production
+ENV CI=true
 
 RUN mkdir -p \
   /app/storage/public \

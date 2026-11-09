@@ -96,10 +96,10 @@ if [[ "$SKIP_MIGRATION" == "false" ]]; then
   sleep 5
 
   log "Running database migrations..."
-  docker compose -f docker-compose.prod.yml exec -T api pnpm migration:run:prod
+  docker compose -f docker-compose.prod.yml exec -T -e CI=true api node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run
 
   log "Syncing RBAC permissions..."
-  docker compose -f docker-compose.prod.yml exec -T api pnpm permissions:sync:prod
+  docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/sync-permissions.js
 else
   warn "Skipping database migrations (--skip-migration flag active)."
 fi
@@ -107,11 +107,19 @@ fi
 # 5. Smoke Test & Health Check
 log "Performing health check verification..."
 
+CHECK_PORT="8001"
+if [ -f "$ROOT_DIR/.env" ]; then
+  ENV_PORT=$(grep -E '^API_PORT=' "$ROOT_DIR/.env" | cut -d '=' -f2 | tr -d ' "\r' || true)
+  if [ -n "$ENV_PORT" ]; then
+    CHECK_PORT="$ENV_PORT"
+  fi
+fi
+
 RETRIES=15
 HEALTH_OK=false
 
 for i in $(seq 1 $RETRIES); do
-  if curl -sf http://127.0.0.1:8000/health >/dev/null 2>&1; then
+  if curl -sf "http://127.0.0.1:${CHECK_PORT}/health" >/dev/null 2>&1; then
     HEALTH_OK=true
     break
   fi
@@ -119,7 +127,7 @@ for i in $(seq 1 $RETRIES); do
 done
 
 if [[ "$HEALTH_OK" == "true" ]]; then
-  info "API Health Check passed (http://127.0.0.1:8000/health)."
+  info "API Health Check passed (http://127.0.0.1:${CHECK_PORT}/health)."
 else
   warn "API Health Check did not respond with 200 within 30s. Check logs: docker compose -f docker-compose.prod.yml logs api"
 fi
