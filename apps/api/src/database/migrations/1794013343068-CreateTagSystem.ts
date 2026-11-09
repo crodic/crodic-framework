@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreatePixivTagSystem1794013343068 implements MigrationInterface {
-  name = 'CreatePixivTagSystem1794013343068';
+export class CreateTagSystem1794013343068 implements MigrationInterface {
+  name = 'CreateTagSystem1794013343068';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -161,58 +161,7 @@ export class CreatePixivTagSystem1794013343068 implements MigrationInterface {
       `CREATE UNIQUE INDEX "UQ_entity_tag_configs_target" ON "entity_tag_configs" ("entity_type", "entity_id") `,
     );
     await queryRunner.query(
-      `ALTER TABLE "file_folders" ADD "title" character varying(255)`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" ADD "color" character varying(20) NOT NULL DEFAULT '#8B5CF6'`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" ADD "parent_id" bigint`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" ADD "depth" integer NOT NULL DEFAULT '0'`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD "visibility" character varying NOT NULL DEFAULT 'public'`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD "is_starred" boolean NOT NULL DEFAULT false`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD "created_by_admin_id" bigint`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD "updated_by_admin_id" bigint`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD "deleted_at" TIMESTAMP WITH TIME ZONE`,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_file_folders_parent_id" ON "file_folders" ("parent_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_files_visibility" ON "files" ("visibility") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_files_created_by_admin_id" ON "files" ("created_by_admin_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_files_updated_by_admin_id" ON "files" ("updated_by_admin_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_files_folder_created_at" ON "files" ("folder", "created_at") `,
-    );
-    await queryRunner.query(
       `ALTER TABLE "tag_aliases" ADD CONSTRAINT "FK_tag_aliases_tag_id" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" ADD CONSTRAINT "FK_file_folders_parent_id" FOREIGN KEY ("parent_id") REFERENCES "file_folders"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD CONSTRAINT "FK_files_created_by_admin" FOREIGN KEY ("created_by_admin_id") REFERENCES "admin_users"("id") ON DELETE SET NULL ON UPDATE CASCADE`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" ADD CONSTRAINT "FK_files_updated_by_admin" FOREIGN KEY ("updated_by_admin_id") REFERENCES "admin_users"("id") ON DELETE SET NULL ON UPDATE CASCADE`,
     );
     await queryRunner.query(
       `ALTER TABLE "tag_encyclopedia_revisions" ADD CONSTRAINT "FK_tag_encyclopedia_revisions_encyclopedia_id" FOREIGN KEY ("encyclopedia_id") REFERENCES "tag_encyclopedias"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -350,43 +299,8 @@ export class CreatePixivTagSystem1794013343068 implements MigrationInterface {
       `ALTER TABLE "tag_encyclopedia_revisions" DROP CONSTRAINT "FK_tag_encyclopedia_revisions_encyclopedia_id"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "files" DROP CONSTRAINT "FK_files_updated_by_admin"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" DROP CONSTRAINT "FK_files_created_by_admin"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" DROP CONSTRAINT "FK_file_folders_parent_id"`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "tag_aliases" DROP CONSTRAINT "FK_tag_aliases_tag_id"`,
     );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_files_folder_created_at"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_files_updated_by_admin_id"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_files_created_by_admin_id"`,
-    );
-    await queryRunner.query(`DROP INDEX "public"."IDX_files_visibility"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_file_folders_parent_id"`);
-    await queryRunner.query(`ALTER TABLE "files" DROP COLUMN "deleted_at"`);
-    await queryRunner.query(
-      `ALTER TABLE "files" DROP COLUMN "updated_by_admin_id"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "files" DROP COLUMN "created_by_admin_id"`,
-    );
-    await queryRunner.query(`ALTER TABLE "files" DROP COLUMN "is_starred"`);
-    await queryRunner.query(`ALTER TABLE "files" DROP COLUMN "visibility"`);
-    await queryRunner.query(`ALTER TABLE "file_folders" DROP COLUMN "depth"`);
-    await queryRunner.query(
-      `ALTER TABLE "file_folders" DROP COLUMN "parent_id"`,
-    );
-    await queryRunner.query(`ALTER TABLE "file_folders" DROP COLUMN "color"`);
-    await queryRunner.query(`ALTER TABLE "file_folders" DROP COLUMN "title"`);
     await queryRunner.query(
       `DROP INDEX "public"."UQ_entity_tag_configs_target"`,
     );
