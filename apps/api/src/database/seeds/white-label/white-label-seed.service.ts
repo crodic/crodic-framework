@@ -28,6 +28,10 @@ type StaticWhiteLabelSeed = {
 };
 
 const THEME_COLOR_PATHS = [
+  resolve(__dirname, '../../data/theme-colors.ts'),
+  resolve(__dirname, '../../../database/data/theme-colors.ts'),
+  resolve(process.cwd(), 'dist/database/data/theme-colors.ts'),
+  resolve(process.cwd(), 'src/database/data/theme-colors.ts'),
   resolve(process.cwd(), '../web/src/lib/theme-colors.ts'),
   resolve(process.cwd(), 'apps/web/src/lib/theme-colors.ts'),
   resolve(process.cwd(), '../../apps/web/src/lib/theme-colors.ts'),
