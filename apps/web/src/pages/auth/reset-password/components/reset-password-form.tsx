@@ -54,7 +54,7 @@ export function ResetPasswordForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-2', className)}
+        className={cn('grid gap-4.5 sm:gap-5', className)}
         {...props}
       >
         <FormField
@@ -62,11 +62,14 @@ export function ResetPasswordForm({
           name='newPassword'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('auth.resetPassword.password')}</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                {t('auth.resetPassword.password')}
+              </FormLabel>
               <FormControl>
                 <PasswordInput
                   placeholder='************'
                   autoComplete='new-password'
+                  className='h-10 sm:h-10.5'
                   {...field}
                 />
               </FormControl>
@@ -79,11 +82,14 @@ export function ResetPasswordForm({
           name='confirmPassword'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('auth.resetPassword.confirmPassword')}</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                {t('auth.resetPassword.confirmPassword')}
+              </FormLabel>
               <FormControl>
                 <PasswordInput
                   placeholder='************'
                   autoComplete='new-password'
+                  className='h-10 sm:h-10.5'
                   {...field}
                 />
               </FormControl>
@@ -91,9 +97,13 @@ export function ResetPasswordForm({
             </FormItem>
           )}
         />
-        <Button type='submit' disabled={isLoading} className='mt-2'>
+        <Button
+          type='submit'
+          disabled={isLoading}
+          className='mt-2.5 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:mt-3 sm:h-11'
+        >
           {isLoading && (
-            <Loader2 className='mr-2 size-4 animate-spin' aria-hidden='true' />
+            <Loader2 className='size-4 animate-spin' aria-hidden='true' />
           )}
           {isLoading
             ? t('auth.resetPassword.buttonResetting')

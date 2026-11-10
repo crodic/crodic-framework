@@ -62,7 +62,7 @@ export function SignUpForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-3', className)}
+        className={cn('grid gap-4 sm:gap-4.5', className)}
         {...props}
       >
         <FormField
@@ -70,9 +70,13 @@ export function SignUpForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className='text-sm font-medium'>Email</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  placeholder='name@example.com'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -83,9 +87,13 @@ export function SignUpForm({
           name='password'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className='text-sm font-medium'>Password</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  placeholder='********'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,33 +104,42 @@ export function SignUpForm({
           name='confirmPassword'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                Confirm Password
+              </FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  placeholder='********'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
+        <Button
+          className='mt-2.5 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:mt-3 sm:h-11'
+          disabled={isLoading}
+        >
           Create Account
         </Button>
 
-        <div className='relative my-2'>
+        <div className='relative my-2 sm:my-3'>
           <div className='absolute inset-0 flex items-center'>
-            <span className='w-full border-t' />
+            <span className='border-border/70 w-full border-t' />
           </div>
           <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background text-muted-foreground px-2'>
+            <span className='bg-card text-muted-foreground px-2'>
               Or continue with
             </span>
           </div>
         </div>
 
-        <div className='grid grid-cols-2 gap-2'>
+        <div className='grid grid-cols-2 gap-3'>
           <Button
             variant='outline'
-            className='w-full'
+            className='h-10 w-full cursor-pointer gap-2 font-medium'
             type='button'
             disabled={isLoading}
           >
@@ -130,7 +147,7 @@ export function SignUpForm({
           </Button>
           <Button
             variant='outline'
-            className='w-full'
+            className='h-10 w-full cursor-pointer gap-2 font-medium'
             type='button'
             disabled={isLoading}
           >

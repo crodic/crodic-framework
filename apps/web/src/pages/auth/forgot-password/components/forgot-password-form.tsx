@@ -48,7 +48,7 @@ export function ForgotPasswordForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-2', className)}
+        className={cn('grid gap-4.5 sm:gap-5', className)}
         {...props}
       >
         <FormField
@@ -56,21 +56,30 @@ export function ForgotPasswordForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('auth.forgotPassword.email')}</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                {t('auth.forgotPassword.email')}
+              </FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  placeholder='name@example.com'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
-          {t('buttons.continue')}
+        <Button
+          className='mt-2.5 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:mt-3 sm:h-11'
+          disabled={isLoading}
+        >
           {isLoading ? (
             <Loader2 className='size-4 animate-spin' aria-hidden='true' />
           ) : (
             <ArrowRight className='size-4' aria-hidden='true' />
           )}
+          {t('buttons.continue')}
         </Button>
       </form>
     </Form>

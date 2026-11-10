@@ -42,7 +42,7 @@ export function SignInForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-3', className)}
+        className={cn('grid gap-4.5 sm:gap-5', className)}
         {...props}
       >
         {unverifiedEmail && <UnverifiedEmailAlert email={unverifiedEmail} />}
@@ -51,9 +51,15 @@ export function SignInForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('auth.signIn.email')}</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                {t('auth.signIn.email')}
+              </FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  placeholder='name@example.com'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -64,21 +70,30 @@ export function SignInForm({
           name='password'
           render={({ field }) => (
             <FormItem className='relative'>
-              <FormLabel>{t('auth.signIn.password')}</FormLabel>
+              <FormLabel className='text-sm font-medium'>
+                {t('auth.signIn.password')}
+              </FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  placeholder='********'
+                  className='h-10 sm:h-10.5'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
               <Link
                 to='/forgot-password'
-                className='text-muted-foreground absolute end-0 -top-0.5 text-sm font-medium hover:opacity-75'
+                className='text-muted-foreground hover:text-foreground absolute end-0 -top-0.5 text-sm font-medium transition-colors'
               >
                 {t('auth.signIn.messageForgotPassword')}
               </Link>
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isPending}>
+        <Button
+          className='mt-2.5 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:mt-3 sm:h-11'
+          disabled={isPending}
+        >
           {isPending ? (
             <Loader2 className='size-4 animate-spin' aria-hidden='true' />
           ) : (

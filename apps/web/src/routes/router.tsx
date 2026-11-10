@@ -42,6 +42,11 @@ const ResetPassword = lazy(() =>
 const SignIn = lazy(() =>
   import('@/pages/auth/sign-in').then((m) => ({ default: m.SignIn }))
 )
+const SignUp = lazy(() =>
+  import('@/pages/auth/sign-up').then((m) => ({ default: m.SignUp }))
+)
+const TermsPage = lazy(() => import('@/pages/legal/terms'))
+const PrivacyPage = lazy(() => import('@/pages/legal/privacy'))
 const PageCmsPageOverview = lazy(() =>
   import('@/pages/cms-pages').then((m) => ({ default: m.PageCmsPageOverview }))
 )
@@ -212,6 +217,14 @@ const appRoutes: RouteObject[] = [
     ),
   },
   {
+    path: '/sign-up',
+    element: (
+      <Suspense fallback={<Loader />}>
+        <SignUp />
+      </Suspense>
+    ),
+  },
+  {
     path: '/forgot-password',
     element: (
       <Suspense fallback={<Loader />}>
@@ -224,6 +237,22 @@ const appRoutes: RouteObject[] = [
     element: (
       <Suspense fallback={<Loader />}>
         <ResetPassword />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/terms',
+    element: (
+      <Suspense fallback={<Loader />}>
+        <TermsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/privacy',
+    element: (
+      <Suspense fallback={<Loader />}>
+        <PrivacyPage />
       </Suspense>
     ),
   },
