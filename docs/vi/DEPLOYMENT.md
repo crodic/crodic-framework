@@ -71,15 +71,15 @@ Dự án hỗ trợ 2 phương án đưa dịch vụ ra Internet:
 
 ### 1.2. Danh Mục Cổng (Port Mapping)
 
-| Dịch Vụ               | Container Name    | Cổng Host (VPS)           | Cổng Container  | Ghi Chú                                         |
-| :-------------------- | :---------------- | :------------------------ | :-------------- | :---------------------------------------------- |
-| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Tránh xung đột cổng 8000 mặc định trên VPS      |
-| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Phục vụ SPA qua Nginx nội bộ container          |
-| **Client Web**        | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)      |
-| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Chỉ bind localhost, lưu volume `postgres_data`  |
-| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | Hàng đợi BullMQ & Cache, có mật khẩu            |
-| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | Dùng image `pgsty/silo` siêu nhẹ thay thế MinIO |
-| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Chạy ngầm kết nối ra Cloudflare Edge            |
+| Dịch Vụ               | Container Name    | Cổng Host (VPS)           | Cổng Container  | Ghi Chú                                                                                     |
+| :-------------------- | :---------------- | :------------------------ | :-------------- | :------------------------------------------------------------------------------------------ |
+| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Tránh xung đột cổng 8000 mặc định trên VPS                                                  |
+| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Phục vụ SPA qua Nginx nội bộ container                                                      |
+| **Client Web**        | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)                                                  |
+| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Chỉ bind localhost, lưu volume `postgres_data`                                              |
+| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | Hàng đợi BullMQ & Cache, có mật khẩu                                                        |
+| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | Dùng image `pgsty/silo` siêu nhẹ thay thế MinIO. Cổng 9000 kết nối CDN (`cdn.crodic.click`) |
+| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Chạy ngầm kết nối ra Cloudflare Edge                                                        |
 
 ### 1.3. Cấu Hình VPS Khuyến Nghị
 
@@ -241,10 +241,10 @@ REDIS_PORT=6379
 MINIO_HOST=minio
 MINIO_PORT=9000
 MINIO_CONSOLE_PORT=9001
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=MatKhauSiloStorage123!
-AWS_DEFAULT_S3_BUCKET=nest-uploads
-AWS_PRIVATE_BUCKET=nest-uploads-private
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_DEFAULT_S3_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
 
 # Token Cloudflare Tunnel (Lấy từ Cloudflare Zero Trust Dashboard)
 CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...
@@ -272,13 +272,17 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_PASSWORD=MatKhauRedisBaoMat123!
 
-# Storage S3
-STORAGE_DRIVER=s3
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=MatKhauSiloStorage123!
-AWS_DEFAULT_REGION=us-east-1
-AWS_DEFAULT_S3_BUCKET=nest-uploads
+# Storage S3 & Cloudflare CDN
+FILESYSTEM_DISK=s3
+STORAGE_PUBLIC_DISK=s3
+STORAGE_PRIVATE_DISK=local
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_REGION=us-east-1
+AWS_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
 AWS_ENDPOINT=http://minio:9000
+AWS_URL=https://cdn.crodic.click/crodic-public-uploads
 AWS_USE_PATH_STYLE_ENDPOINT=true
 
 # Điều hướng liên kết xác thực (Email, Reset Password, 2FA)
@@ -342,15 +346,161 @@ Với Cloudflare Tunnel, bạn không cần mở cổng 80, 443 hay 8001 trên t
 2. Vào **Networks > Tunnels > Create a tunnel > Chọn Cloudflared**.
 3. Đặt tên tunnel (ví dụ: `crodic-vps-tunnel`) và sao chép chuỗi mã Token trong câu lệnh cài đặt.
 4. Gán token vào biến `CLOUDFLARE_TUNNEL_TOKEN` trong file `.env` ở thư mục gốc.
-5. Tại tab **Public Hostname**, thêm 3 quy tắc điều hướng:
+5. Tại tab **Public Hostname**, thêm 4 quy tắc điều hướng:
 
-| Public Hostname      | Service Type | URL Đích Trên Host |
-| :------------------- | :----------- | :----------------- |
-| `crodic.click`       | `HTTP`       | `localhost:3000`   |
-| `admin.crodic.click` | `HTTP`       | `localhost:8080`   |
-| `api.crodic.click`   | `HTTP`       | `localhost:8001`   |
+| Public Hostname      | Service Type | URL Đích Trên Host | Chức Năng                            |
+| :------------------- | :----------- | :----------------- | :----------------------------------- |
+| `crodic.click`       | `HTTP`       | `localhost:3000`   | Client Web (Next.js SSR)             |
+| `admin.crodic.click` | `HTTP`       | `localhost:8080`   | Admin Portal (Vite React SPA)        |
+| `api.crodic.click`   | `HTTP`       | `localhost:8001`   | Backend API (NestJS)                 |
+| `cdn.crodic.click`   | `HTTP`       | `localhost:9000`   | S3 Object Storage CDN (MinIO / Silo) |
 
 Container `crodic_tunnel` chạy với cờ `network_mode: host` trong [`docker-compose.prod.yml`](../../docker-compose.prod.yml) sẽ tự động đồng bộ và định tuyến lưu lượng vào các port nội bộ tương ứng.
+
+---
+
+### 4.2. Hướng Dẫn Cấu Hình Cloudflare CDN Caching Cho MinIO Storage
+
+Hệ thống lưu trữ ảnh và tài liệu của Crodic Framework sử dụng mô hình kết hợp **Self-Hosted MinIO/Silo** và **Cloudflare Global CDN** thông qua Cloudflare Tunnel. Mô hình này mang lại 3 ưu điểm vượt trội:
+
+- **Tốc độ tải siêu tốc**: Tệp tin tĩnh (ảnh, avatar, tài liệu) được lưu đệm (cache) tại hàng trăm cụm máy chủ Cloudflare Edge gần người dùng nhất (`cf-cache-status: HIT`).
+- **Tiết kiệm 99% tài nguyên VPS**: VPS không phải tốn CPU hay băng thông đường truyền để phục vụ lượt xem ảnh lặp đi lặp lại.
+- **Bảo mật tuyệt đối**: Port lưu trữ 9000 chỉ bind trên `127.0.0.1` của VPS, không mở cổng nào ra ngoài Internet. Toàn bộ lượt truy cập đều được kiểm soát và định tuyến an toàn qua Cloudflare Tunnel.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Người Dùng (Browser)
+    participant CF as Cloudflare Edge CDN (cdn.crodic.click)
+    participant VPS as VPS Cloudflare Tunnel (:9000)
+    participant MinIO as MinIO / Silo Storage
+    participant API as NestJS API (:8001)
+
+    rect rgb(240, 248, 255)
+    Note over Client,API: Luồng Tải Lên (Upload File)
+    Client->>API: 1. POST /api/v1/files/uploads (Multipart)
+    API->>MinIO: 2. Lưu trực tiếp qua Docker network (http://minio:9000)
+    MinIO-->>API: 3. Lưu thành công key: image/main/xyz.png
+    API-->>Client: 4. Trả về CDN URL: https://cdn.crodic.click/crodic-public-uploads/image/main/xyz.png
+    end
+
+    rect rgb(245, 255, 245)
+    Note over Client,MinIO: Luồng Tải File Public Qua CDN
+    Client->>CF: 5. GET https://cdn.crodic.click/crodic-public-uploads/image/main/xyz.png
+    alt Lần đầu tiên truy cập (Cache MISS)
+        CF->>VPS: 6. Kéo tệp qua Tunnel localhost:9000
+        VPS->>MinIO: 7. Lấy tệp từ bucket crodic-public-uploads
+        MinIO-->>CF: 8. Trả tệp dữ liệu (HTTP 200)
+        CF->>CF: 9. Lưu bản sao vào Edge Cache (TTL 1 tháng)
+    else Từ lần thứ hai trở đi (Cache HIT)
+        CF-->>Client: 10. Trả ngay lập tức từ Cloudflare Edge Cache (cf-cache-status: HIT)
+    end
+    CF-->>Client: 11. Trả ảnh về trình duyệt (HTTP 200 OK)
+    end
+```
+
+#### Bước 1: Thêm Public Hostname Trong Cloudflare Tunnel
+
+1. Truy cập [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/) > **Networks** > **Tunnels**.
+2. Chọn tunnel của bạn (ví dụ `crodic-vps-tunnel`) > **Configure** > tab **Public Hostname**.
+3. Bấm **Add a public hostname** và điền:
+   - **Subdomain**: `cdn`
+   - **Domain**: `crodic.click` (chọn domain của bạn)
+   - **Path**: Để trống
+   - **Service**: Chọn `HTTP`
+   - **URL**: `localhost:9000`
+4. Bấm **Save hostname**. Bây giờ `https://cdn.crodic.click` đã kết nối an toàn tới MinIO S3 API trên VPS.
+
+#### Bước 2: Thiết Lập Cache Rule Trên Cloudflare Dashboard
+
+Mặc định Cloudflare không lưu cache các response trả về từ S3 API. Ta cần tạo một Cache Rule để Cloudflare Edge chủ động lưu đệm mọi tệp tĩnh trên domain CDN:
+
+1. Đăng nhập [Cloudflare Dashboard](https://dash.cloudflare.com/) thông thường.
+2. Chọn tên miền (ví dụ `crodic.click`) > Mục **Caching** trên thanh menu bên trái > **Cache Rules**.
+3. Bấm **Create rule** và điền thông số:
+   - **Rule name**: `Cache MinIO S3 CDN Assets`
+   - **When incoming requests match (Quy tắc lọc tùy chỉnh)**:
+     - Field: `Hostname`
+     - Operator: `equals`
+     - Value: `cdn.crodic.click`
+       _(Biểu thức xem trước: `http.host eq "cdn.crodic.click"`)_
+   - **Cache eligibility**: Chọn **Eligible for cache** (Cho phép lưu cache)
+   - **Edge TTL**: Chọn **Override origin** > Chọn khoảng thời gian: `1 month` (1 tháng) hoặc tùy chọn của bạn
+   - **Browser TTL**: Chọn `Respect origin` hoặc `Override origin` (`1 month`)
+4. Bấm **Deploy** để quy tắc có hiệu lực toàn cầu.
+
+#### Bước 3: Tạo & Phân Quyền Bucket Trên MinIO
+
+Hệ thống phân biệt rõ ràng giữa 2 loại dữ liệu:
+
+| Loại Bucket            | Tên Bucket Mẫu           | Quyền Truy Cập                   | Mục Đích Sử Dụng                                                 | Cơ Chế Phục Vụ                                                     |
+| :--------------------- | :----------------------- | :------------------------------- | :--------------------------------------------------------------- | :----------------------------------------------------------------- |
+| **Công khai (Public)** | `crodic-public-uploads`  | Anonymous Download (`download`)  | Avatar, banner, logo, hình ảnh bài viết, file đính kèm công khai | Trực tiếp qua CDN Cloudflare (`cf-cache-status: HIT`)              |
+| **Riêng tư (Private)** | `crodic-private-uploads` | Chặn ẩn danh hoàn toàn (Private) | Hóa đơn, CMND/CCCD, tài liệu hợp đồng, file nội bộ nhạy cảm      | Tạo Presigned URL có thời hạn (`temporaryUrl`) hoặc route xác thực |
+
+Khi triển khai lần đầu, container `crodic_minio_init` sẽ tự động khởi tạo 2 bucket này theo biến môi trường trong file `.env`. Nếu cần tạo hoặc kiểm tra lại bằng tay trên VPS, thực hiện lệnh sau:
+
+```bash
+docker run --rm --network crodic-framework_app-network --entrypoint /bin/sh pgsty/mc:latest -c '
+  mc alias set myminio http://minio:9000 <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY>
+  mc mb --ignore-existing myminio/crodic-public-uploads
+  mc anonymous set download myminio/crodic-public-uploads
+  mc mb --ignore-existing myminio/crodic-private-uploads
+  mc ls myminio
+'
+```
+
+#### Bước 4: Cấu Hình Biến Môi Trường `apps/api/.env`
+
+Đảm bảo backend NestJS trỏ đúng cấu hình S3 CDN:
+
+```env
+# Kích hoạt lưu trữ S3 cho các file public
+FILESYSTEM_DISK=s3
+STORAGE_PUBLIC_DISK=s3
+STORAGE_PRIVATE_DISK=local # hoặc s3-private nếu muốn lưu file mật lên bucket private S3
+
+# Thông tin tài khoản MinIO / Silo
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_REGION=us-east-1
+AWS_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
+
+# Kết nối nội bộ khi upload
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+# Domain CDN công khai trả về cho trình duyệt
+AWS_URL=https://cdn.crodic.click/crodic-public-uploads
+```
+
+> [!IMPORTANT]
+>
+> - `AWS_ENDPOINT=http://minio:9000`: Dùng hostname nội bộ Docker `minio` để upload trực tiếp trong container network tốc độ cao, không đi vòng ra ngoài Internet.
+> - `AWS_URL`: Tiền tố CDN công khai sẽ được nối vào tên file khi API trả link cho Web / Mobile (ví dụ: `${AWS_URL}/image/main/xyz.png`).
+> - `AWS_USE_PATH_STYLE_ENDPOINT=true`: Bắt buộc với MinIO / Silo vì định dạng URL là `hostname/bucket/key` thay vì `bucket.hostname/key`.
+
+#### Bước 5: Kiểm Tra & Nghiệm Thu CDN
+
+Sau khi upload một file ảnh từ trang quản trị hoặc ứng dụng client, mở Terminal và kiểm tra header phản hồi:
+
+```bash
+curl -I https://cdn.crodic.click/crodic-public-uploads/image/main/example.png
+```
+
+Kết quả mong đợi:
+
+```http
+HTTP/2 200
+server: cloudflare
+cf-cache-status: HIT
+content-type: image/png
+cache-control: public, max-age=...
+```
+
+- `server: cloudflare`: Xác nhận tệp được phục vụ qua hạ tầng Cloudflare.
+- `cf-cache-status: HIT`: Xác nhận Cloudflare Edge đã lưu cache tệp, không còn gửi request về VPS nữa.
 
 ---
 
@@ -549,3 +699,18 @@ gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_pos
 ### 5. Dịch vụ S3 / MinIO báo lỗi kéo image hoặc cấp phép
 
 - **Xử lý**: Image MinIO chính thức trên Docker Hub thường gặp vấn đề cấp phép và dung lượng lớn. Dự án đã chuyển sang sử dụng image chuẩn `pgsty/silo:latest` (drop-in S3-compatible server siêu nhẹ) và `pgsty/mc:latest` để tự động khởi tạo bucket `nest-uploads`. Dữ liệu lưu bền vững trong volume `minio_data`.
+
+### 6. Lỗi `NoSuchBucket: The specified bucket does not exist` khi tải tệp lên
+
+- **Hiện tượng**: Khi người dùng tải ảnh hoặc tệp lên, API trả về mã lỗi HTTP 404/500 kèm thông báo `NoSuchBucket: The specified bucket does not exist` trong log container `crodic_api`.
+- **Nguyên nhân**: Tên bucket khai báo trong biến `AWS_BUCKET` (ví dụ `crodic-public-uploads`) chưa được khởi tạo trên MinIO / Silo.
+- **Xử lý**: Chạy lệnh tạo bucket và cấp quyền tải công khai bằng `pgsty/mc`:
+  ```bash
+  docker run --rm --network crodic-framework_app-network --entrypoint /bin/sh pgsty/mc:latest -c '
+    mc alias set myminio http://minio:9000 <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY>
+    mc mb --ignore-existing myminio/<AWS_BUCKET>
+    mc anonymous set download myminio/<AWS_BUCKET>
+    mc mb --ignore-existing myminio/<AWS_PRIVATE_BUCKET>
+  '
+  ```
+  Sau đó kiểm tra danh sách bucket bằng `mc ls myminio` và thử tải tệp lại từ giao diện.

@@ -517,24 +517,8 @@ export class FileService {
       public_id: publicId,
     });
 
-    const diskName = this.normalizeUploadDisk(
-      file.disk ?? this.currentDiskName,
-    );
-
     const expires = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    let url: string;
-
-    if (diskName === 's3' || diskName === 's3-private') {
-      const storageKey = this.toStorageKey(file.path);
-      const disk = this.writeDisk(diskName);
-      try {
-        url = await disk.temporaryUrl(storageKey, expiresInSeconds);
-      } catch {
-        url = this.generateSignedUrl(file, expires);
-      }
-    } else {
-      url = this.generateSignedUrl(file, expires);
-    }
+    const url = this.generateSignedUrl(file, expires);
 
     return {
       url,

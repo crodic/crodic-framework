@@ -71,15 +71,15 @@ The project supports two production routing options:
 
 ### 1.2. Port Allocation Table
 
-| Service               | Container Name    | Host Port (VPS)           | Container Port  | Notes                                       |
-| :-------------------- | :---------------- | :------------------------ | :-------------- | :------------------------------------------ |
-| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Avoids port 8000 conflicts on host          |
-| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Serves SPA via internal Nginx in container  |
-| **Client Website**    | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)  |
-| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Bound to localhost, volume `postgres_data`  |
-| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | BullMQ queues and cache with password auth  |
-| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | High-efficiency `pgsty/silo` S3 replacement |
-| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Runs daemon connection to Cloudflare edge   |
+| Service               | Container Name    | Host Port (VPS)           | Container Port  | Notes                                                                                      |
+| :-------------------- | :---------------- | :------------------------ | :-------------- | :----------------------------------------------------------------------------------------- |
+| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Avoids port 8000 conflicts on host                                                         |
+| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Serves SPA via internal Nginx in container                                                 |
+| **Client Website**    | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)                                                 |
+| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Bound to localhost, volume `postgres_data`                                                 |
+| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | BullMQ queues and cache with password auth                                                 |
+| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | High-efficiency `pgsty/silo` S3 replacement. Port 9000 routed via CDN (`cdn.crodic.click`) |
+| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Runs daemon connection to Cloudflare edge                                                  |
 
 ### 1.3. Recommended VPS Specifications
 
@@ -233,10 +233,10 @@ REDIS_PORT=6379
 MINIO_HOST=minio
 MINIO_PORT=9000
 MINIO_CONSOLE_PORT=9001
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=StrongSiloKey123!
-AWS_DEFAULT_S3_BUCKET=nest-uploads
-AWS_PRIVATE_BUCKET=nest-uploads-private
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_DEFAULT_S3_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
 
 # Token from Cloudflare Zero Trust Dashboard
 CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...
@@ -262,12 +262,17 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_PASSWORD=StrongRedisPassword123!
 
-STORAGE_DRIVER=s3
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=StrongSiloKey123!
-AWS_DEFAULT_REGION=us-east-1
-AWS_DEFAULT_S3_BUCKET=nest-uploads
+# Storage S3 & Cloudflare CDN
+FILESYSTEM_DISK=s3
+STORAGE_PUBLIC_DISK=s3
+STORAGE_PRIVATE_DISK=s3-private # or local
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_REGION=us-east-1
+AWS_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
 AWS_ENDPOINT=http://minio:9000
+AWS_URL=https://cdn.crodic.click/crodic-public-uploads
 AWS_USE_PATH_STYLE_ENDPOINT=true
 
 AUTH_PORTAL_URL=https://admin.crodic.click
@@ -324,15 +329,161 @@ SENTRY_ENVIROMENT=production
 2. Navigate to **Networks > Tunnels > Create a tunnel > Select Cloudflared**.
 3. Name your tunnel (e.g. `crodic-vps-tunnel`) and copy the installation token string.
 4. Paste the token into `CLOUDFLARE_TUNNEL_TOKEN` inside the root `.env` file.
-5. In the **Public Hostname** tab, configure the following rules:
+5. In the **Public Hostname** tab, configure the following 4 rules:
 
-| Public Hostname      | Service Type | Host Target URL  |
-| :------------------- | :----------- | :--------------- |
-| `crodic.click`       | `HTTP`       | `localhost:3000` |
-| `admin.crodic.click` | `HTTP`       | `localhost:8080` |
-| `api.crodic.click`   | `HTTP`       | `localhost:8001` |
+| Public Hostname      | Service Type | Host Target URL  | Purpose                              |
+| :------------------- | :----------- | :--------------- | :----------------------------------- |
+| `crodic.click`       | `HTTP`       | `localhost:3000` | Client Web (Next.js SSR)             |
+| `admin.crodic.click` | `HTTP`       | `localhost:8080` | Admin Portal (Vite React SPA)        |
+| `api.crodic.click`   | `HTTP`       | `localhost:8001` | Backend API (NestJS)                 |
+| `cdn.crodic.click`   | `HTTP`       | `localhost:9000` | S3 Object Storage CDN (MinIO / Silo) |
 
 The `crodic_tunnel` container running `network_mode: host` in [`docker-compose.prod.yml`](../../docker-compose.prod.yml) will establish the outbound connection and forward traffic seamlessly.
+
+---
+
+### 4.2. Configuring Cloudflare CDN Caching for MinIO Storage
+
+The media storage architecture in Crodic Framework couples **Self-Hosted MinIO/Silo** with **Cloudflare Global CDN** through Cloudflare Tunnel. This architecture provides three major advantages:
+
+- **Blazing Performance**: Public assets (images, avatars, logos) are cached across hundreds of Cloudflare Edge servers globally (`cf-cache-status: HIT`).
+- **99% VPS Resource Savings**: The VPS spends 0% CPU and network bandwidth serving repetitive asset downloads.
+- **Strict Security Isolation**: Port 9000 is only bound to host `127.0.0.1`, completely closed to the public Internet. All external traffic is inspected and routed securely through Cloudflare.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as User (Browser)
+    participant CF as Cloudflare Edge CDN (cdn.crodic.click)
+    participant VPS as VPS Cloudflare Tunnel (:9000)
+    participant MinIO as MinIO / Silo Storage
+    participant API as NestJS API (:8001)
+
+    rect rgb(240, 248, 255)
+    Note over Client,API: Upload Flow (Fast Internal)
+    Client->>API: 1. POST /api/v1/files/uploads (Multipart)
+    API->>MinIO: 2. Save directly over Docker network (http://minio:9000)
+    MinIO-->>API: 3. Saved successfully with key: image/main/xyz.png
+    API-->>Client: 4. Returns CDN URL: https://cdn.crodic.click/crodic-public-uploads/image/main/xyz.png
+    end
+
+    rect rgb(245, 255, 245)
+    Note over Client,MinIO: Public Asset Retrieval via CDN
+    Client->>CF: 5. GET https://cdn.crodic.click/crodic-public-uploads/image/main/xyz.png
+    alt First request (Cache MISS)
+        CF->>VPS: 6. Fetches asset through Tunnel localhost:9000
+        VPS->>MinIO: 7. Reads asset from crodic-public-uploads bucket
+        MinIO-->>CF: 8. Returns raw asset stream (HTTP 200)
+        CF->>CF: 9. Saves copy to Cloudflare Edge Cache (1 month TTL)
+    else Subsequent requests (Cache HIT)
+        CF-->>Client: 10. Served instantly from Cloudflare Edge Cache (cf-cache-status: HIT)
+    end
+    CF-->>Client: 11. Asset delivered to browser (HTTP 200 OK)
+    end
+```
+
+#### Step 1: Add Public Hostname in Cloudflare Tunnel
+
+1. Go to [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/) > **Networks** > **Tunnels**.
+2. Select your tunnel (e.g. `crodic-vps-tunnel`) > **Configure** > **Public Hostname** tab.
+3. Click **Add a public hostname**:
+   - **Subdomain**: `cdn`
+   - **Domain**: `crodic.click` (choose your domain)
+   - **Path**: Leave empty
+   - **Service**: `HTTP`
+   - **URL**: `localhost:9000`
+4. Click **Save hostname**. `https://cdn.crodic.click` is now securely linked to MinIO S3 API on your VPS.
+
+#### Step 2: Configure Cache Rules on Cloudflare Dashboard
+
+By default, Cloudflare does not cache raw S3 API responses. Create a dedicated Cache Rule to ensure Cloudflare Edge caches all public assets:
+
+1. Log into the standard [Cloudflare Dashboard](https://dash.cloudflare.com/).
+2. Select your zone/domain (e.g. `crodic.click`) > **Caching** on the sidebar > **Cache Rules**.
+3. Click **Create rule**:
+   - **Rule name**: `Cache MinIO S3 CDN Assets`
+   - **When incoming requests match (Custom filter expression)**:
+     - Field: `Hostname`
+     - Operator: `equals`
+     - Value: `cdn.crodic.click`
+       _(Expression Preview: `http.host eq "cdn.crodic.click"`)_
+   - **Cache eligibility**: Select **Eligible for cache** (Cache Everything)
+   - **Edge TTL**: Select **Override origin** > Choose duration: `1 month` (or your preferred duration)
+   - **Browser TTL**: Select `Respect origin` or `Override origin` (`1 month`)
+4. Click **Deploy** to propagate globally.
+
+#### Step 3: Create & Authorize MinIO Buckets
+
+The system enforces strict data isolation between public and private data:
+
+| Bucket Type | Example Bucket Name      | Access Policy                   | Intended Usage                                           | Delivery Mechanism                                         |
+| :---------- | :----------------------- | :------------------------------ | :------------------------------------------------------- | :--------------------------------------------------------- |
+| **Public**  | `crodic-public-uploads`  | Anonymous Download (`download`) | Avatars, banners, logos, post images, public attachments | Direct Cloudflare CDN Edge (`cf-cache-status: HIT`)        |
+| **Private** | `crodic-private-uploads` | Deny Anonymous Access (Private) | Invoices, KYC documents, contracts, internal reports     | HMAC Signed URLs via API Gateway (`expires` + `signature`) |
+
+Upon first deployment, the `crodic_minio_init` container automatically provisions both buckets based on root `.env`. If you need to manually configure or verify buckets on your VPS:
+
+```bash
+docker run --rm --network crodic-framework_app-network --entrypoint /bin/sh pgsty/mc:latest -c '
+  mc alias set myminio http://minio:9000 <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY>
+  mc mb --ignore-existing myminio/crodic-public-uploads
+  mc anonymous set download myminio/crodic-public-uploads
+  mc mb --ignore-existing myminio/crodic-private-uploads
+  mc ls myminio
+'
+```
+
+#### Step 4: Configure `apps/api/.env`
+
+Ensure the NestJS backend points to your S3 and CDN setup:
+
+```env
+# Enable S3 storage for public and private assets
+FILESYSTEM_DISK=s3
+STORAGE_PUBLIC_DISK=s3
+STORAGE_PRIVATE_DISK=s3-private # or local
+
+# MinIO / Silo Credentials
+AWS_ACCESS_KEY_ID=crodic_5ce135e51e0b5f4e
+AWS_SECRET_ACCESS_KEY=36605c11bdd76bd03c0f64f04a80a448ed17dd7b9862db7a
+AWS_REGION=us-east-1
+AWS_BUCKET=crodic-public-uploads
+AWS_PRIVATE_BUCKET=crodic-private-uploads
+
+# Internal Docker network endpoint for fast upload & streaming
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+# Public CDN prefix returned to frontend clients
+AWS_URL=https://cdn.crodic.click/crodic-public-uploads
+```
+
+> [!IMPORTANT]
+>
+> - `AWS_ENDPOINT=http://minio:9000`: Direct container-to-container communication within Docker network at gigabit speeds without routing outside to the Internet.
+> - `AWS_URL`: Public CDN prefix prepended to stored file paths when returned to web/mobile clients (e.g. `${AWS_URL}/image/main/xyz.png`).
+> - `AWS_USE_PATH_STYLE_ENDPOINT=true`: Required for MinIO / Silo (`hostname/bucket/key` path style).
+
+#### Step 5: Verification & Acceptance
+
+After uploading an image via the Admin Portal or Client Website, run `curl` to verify response headers:
+
+```bash
+curl -I https://cdn.crodic.click/crodic-public-uploads/image/main/example.png
+```
+
+Expected output:
+
+```http
+HTTP/2 200
+server: cloudflare
+cf-cache-status: HIT
+content-type: image/png
+cache-control: public, max-age=...
+```
+
+- `server: cloudflare`: Confirms request is routed through Cloudflare's global edge network.
+- `cf-cache-status: HIT`: Confirms asset is cached at edge and served without touching VPS resources.
 
 ---
 
@@ -517,3 +668,18 @@ gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_pos
 ### 5. S3 / MinIO Pull Failures
 
 - **Fix**: The project uses `pgsty/silo:latest` (lightweight, license-friendly S3 drop-in) and `pgsty/mc:latest` to automatically initialize the `nest-uploads` bucket. Data persists in the `minio_data` volume.
+
+### 6. `NoSuchBucket: The specified bucket does not exist` Error on Upload
+
+- **Symptom**: When uploading a file, the API responds with HTTP 404/500 and the `crodic_api` container log displays `NoSuchBucket: The specified bucket does not exist`.
+- **Cause**: The bucket name defined in `AWS_BUCKET` (e.g. `crodic-public-uploads`) has not been created yet in MinIO / Silo.
+- **Fix**: Run `pgsty/mc` to create the bucket and apply public download permissions:
+  ```bash
+  docker run --rm --network crodic-framework_app-network --entrypoint /bin/sh pgsty/mc:latest -c '
+    mc alias set myminio http://minio:9000 <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY>
+    mc mb --ignore-existing myminio/<AWS_BUCKET>
+    mc anonymous set download myminio/<AWS_BUCKET>
+    mc mb --ignore-existing myminio/<AWS_PRIVATE_BUCKET>
+  '
+  ```
+  Then inspect the bucket list via `mc ls myminio` and retry uploading from the UI.

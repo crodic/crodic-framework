@@ -54,6 +54,7 @@ export class TransformController {
     @Param('transformations') transformations: string,
     @Param('publicId') publicId: string,
     @Param('ext') ext: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     const file = await this.fileStreamService.transform(
@@ -64,7 +65,13 @@ export class TransformController {
     );
 
     this.applySecurityHeaders(res, file.mime);
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    const isSigned = Boolean(req.query?.expires || req.query?.signature);
+    res.setHeader(
+      'Cache-Control',
+      isSigned
+        ? 'private, no-cache, no-store, must-revalidate'
+        : 'public, max-age=31536000, immutable',
+    );
     res.setHeader('Content-Type', file.mime);
     res.setHeader('Content-Length', String(file.size));
 
@@ -90,7 +97,13 @@ export class TransformController {
 
       this.applySecurityHeaders(res, file.mime);
       res.setHeader('Accept-Ranges', 'bytes');
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      const isSigned = Boolean(req.query?.expires || req.query?.signature);
+      res.setHeader(
+        'Cache-Control',
+        isSigned
+          ? 'private, no-cache, no-store, must-revalidate'
+          : 'public, max-age=31536000, immutable',
+      );
       res.setHeader('Content-Type', file.mime);
       res.setHeader('Content-Length', String(file.contentLength ?? file.size));
 
