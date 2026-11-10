@@ -27,6 +27,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
+import { DashboardKpiCards } from './components/dashboard-kpi-cards'
+import { QueueMetricsBarChart } from './components/queue-metrics-bar-chart'
+import { QueueStatusDonutChart } from './components/queue-status-donut-chart'
 
 type HealthIndicator = {
   status?: string
@@ -96,6 +99,16 @@ export function Dashboard() {
     refetchInterval: 15_000,
   })
 
+  const queues = queueQuery.data?.queues ?? []
+  const systemIndicator = healthQuery.data?.details?.system as
+    { uptime?: string; [key: string]: unknown } | undefined
+  const redisIndicator = healthQuery.data?.details?.redis as
+    { latency?: string; status?: string; [key: string]: unknown } | undefined
+  const dbIndicator = healthQuery.data?.details?.database as
+    { status?: string; [key: string]: unknown } | undefined
+
+  const isGlobalFetching = healthQuery.isFetching || queueQuery.isFetching
+
   return (
     <>
       <Helmet>
@@ -103,31 +116,78 @@ export function Dashboard() {
         <meta name='description' content={t('dashboard.title')} />
       </Helmet>
 
-      {/* ===== Top Heading ===== */}
-
       {/* ===== Main ===== */}
       <Main className='flex flex-1 flex-col gap-6'>
-        <div>
-          <h1 className='text-2xl font-bold tracking-tight text-balance md:text-3xl'>
-            {t('dashboard.title')}
-          </h1>
-          <p className='text-muted-foreground text-pretty'>
-            {t('dashboard.systemHealth.description')}
-          </p>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+          <div>
+            <h1 className='text-2xl font-bold tracking-tight text-balance md:text-3xl'>
+              {t('dashboard.title')}
+            </h1>
+            <p className='text-muted-foreground text-sm text-pretty'>
+              {t('dashboard.systemHealth.description')}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => {
+                healthQuery.refetch()
+                queueQuery.refetch()
+              }}
+              disabled={isGlobalFetching}
+              className='gap-2'
+            >
+              <RefreshCwIcon
+                className={
+                  isGlobalFetching ? 'size-3.5 animate-spin' : 'size-3.5'
+                }
+              />
+              <span>{t('dashboard.systemHealth.refresh', 'Refresh All')}</span>
+            </Button>
+          </div>
         </div>
 
+        {/* 1. Executive Metric KPI Cards */}
+        <DashboardKpiCards
+          queues={queues}
+          healthStatus={healthQuery.data?.status}
+          systemUptime={systemIndicator?.uptime as string | undefined}
+          redisLatency={redisIndicator?.latency as string | undefined}
+          databaseStatus={dbIndicator?.status as string | undefined}
+        />
+
+        {/* 2. shadcn Interactive Charts Row */}
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+          <div className='lg:col-span-2'>
+            <QueueMetricsBarChart
+              queues={queues}
+              isLoading={queueQuery.isFetching}
+            />
+          </div>
+          <div>
+            <QueueStatusDonutChart
+              queues={queues}
+              isLoading={queueQuery.isFetching}
+            />
+          </div>
+        </div>
+
+        {/* 3. Detailed Queue Workers */}
+        <QueueMonitoringSection
+          data={queueQuery.data}
+          isLoading={queueQuery.isFetching}
+          onRefresh={() => queueQuery.refetch()}
+        />
+
+        {/* 4. Infrastructure Health Checks */}
         <SystemHealthSection
           health={healthQuery.data}
           isLoading={healthQuery.isFetching}
           isError={healthQuery.isError}
           updatedAt={healthQuery.dataUpdatedAt}
           onRefresh={() => healthQuery.refetch()}
-        />
-
-        <QueueMonitoringSection
-          data={queueQuery.data}
-          isLoading={queueQuery.isFetching}
-          onRefresh={() => queueQuery.refetch()}
         />
       </Main>
     </>
