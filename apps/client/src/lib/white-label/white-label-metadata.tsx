@@ -26,7 +26,7 @@ export function WhiteLabelMetadata({
 
     // 2. Dynamic Title (if provided)
     const title =
-      whiteLabel.siteTitle || whiteLabel.metaTitle || whiteLabel.brandName;
+      whiteLabel.metaTitle || whiteLabel.siteTitle || whiteLabel.brandName;
     if (title) {
       document.title = title;
     }

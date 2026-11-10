@@ -22,17 +22,62 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Landing" });
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const whiteLabel = await fetchActiveClientWhiteLabel();
 
   const languages = Object.fromEntries(
     routing.locales.map((loc) => [loc, `${baseUrl}/${loc}`])
   );
 
+  const title =
+    whiteLabel?.metaTitle ||
+    whiteLabel?.siteTitle ||
+    whiteLabel?.brandName ||
+    t("metaTitle");
+
+  const description =
+    whiteLabel?.metaDescription ||
+    whiteLabel?.siteTagline ||
+    t("metaDescription");
+
+  const canonicalUrl = whiteLabel?.canonicalUrl || `${baseUrl}/${locale}`;
+
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
+
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title: {
+      absolute: title,
+    },
+    description,
     alternates: {
-      canonical: `${baseUrl}/${locale}`,
+      canonical: canonicalUrl,
       languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName,
+      type: "website",
+      ...(whiteLabel?.ogImage
+        ? {
+            images: [
+              {
+                url: whiteLabel.ogImage,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(whiteLabel?.twitterImage || whiteLabel?.ogImage
+        ? { images: [whiteLabel.twitterImage || whiteLabel.ogImage!] }
+        : {}),
     },
   };
 }

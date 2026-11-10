@@ -18,15 +18,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
 
-  const defaultTitle = "Visel Art - Creative Platform";
-  const defaultDescription = "Creative Design & Modern Platform";
+  const defaultTitle = "Kosume - Creative Platform for Artists";
+  const defaultDescription =
+    "Creative Portfolio & Community for Digital Artists";
 
   if (!whiteLabel || !isWhiteLabelEnabled) {
     return {
       metadataBase: new URL(baseUrl),
       title: {
         default: defaultTitle,
-        template: `%s | Visel Art`,
+        template: `%s | Kosume`,
       },
       description: defaultDescription,
       icons: {
@@ -36,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: defaultTitle,
         description: defaultDescription,
         url: baseUrl,
-        siteName: "Visel Art",
+        siteName: "Kosume",
         type: "website",
         images: [
           { url: "/og-image.png", width: 1200, height: 630, alt: defaultTitle },
@@ -52,13 +53,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const title =
-    whiteLabel.siteTitle ||
     whiteLabel.metaTitle ||
+    whiteLabel.siteTitle ||
     whiteLabel.brandName ||
     defaultTitle;
   const description = whiteLabel.metaDescription || defaultDescription;
   const iconUrl = whiteLabel.siteFavicon || "/favicon.png";
-  const siteName = whiteLabel.brandName || "Visel Art";
+  const siteName = whiteLabel.brandName || "Kosume";
 
   return {
     metadataBase: new URL(baseUrl),
