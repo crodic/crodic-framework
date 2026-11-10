@@ -1,162 +1,208 @@
-# Production Deployment Guide with Docker Compose (VPS)
+# Comprehensive Production Deployment Guide (VPS & Docker Compose)
 
 > **English** | [Tiếng Việt](../vi/DEPLOYMENT.md)
 
-This guide provides a step-by-step production deployment procedure for the entire monorepo on an Ubuntu VPS using **Docker Compose** ([`docker-compose.prod.yml`](../../docker-compose.prod.yml)) and **Nginx Reverse Proxy**, including:
-
-- **NestJS 11 API** (`apps/api`) running on port `8000` with a persistent volume mount at `/app/storage`.
-- **Next.js 16 Client Website** (`apps/client`) running Server-Side Rendering (SSR) in `standalone` mode on port `3000`.
-- **Vite 6 + React 19 Admin Portal** (`apps/web`) serving a Single-Page Application (SPA) through Nginx (with Gzip & Immutable Cache headers) on port `8080` (container port `80`).
-- **PostgreSQL 16**, **Redis 7**, and **MinIO (S3 Storage)** isolated inside the internal Docker network (`app-network`) and bound exclusively to `127.0.0.1` on the host machine.
-- **Nginx Reverse Proxy + Certbot (Let's Encrypt)** on the host machine handling SSL/TLS (HTTPS) termination across all domains.
+This document provides a comprehensive, step-by-step production deployment guide for the entire Monorepo on an Ubuntu VPS using **Docker Compose** ([`docker-compose.prod.yml`](../../docker-compose.prod.yml)), automated CI/CD via a **GitHub Actions Self-Hosted Runner**, and secure domain routing through **Cloudflare Tunnel (Zero Trust)** or **Nginx Reverse Proxy**.
 
 ---
 
 ## Table of Contents
 
-1. [Deployment Architecture & CI/CD Flow](#1-deployment-architecture--cicd-flow)
-2. [Step 1: VPS Preparation, Swap & Docker Installation](#step-1-vps-preparation-swap--docker-installation)
-3. [Step 2: Domain DNS Configuration](#step-2-domain-dns-configuration)
-4. [Step 3: Clone Repository & Configure `.env` Files](#step-3-clone-repository--configure-env-files)
-5. [Step 4: Build & Start Services with Docker Compose](#step-4-build--start-services-with-docker-compose)
-6. [Step 5: Run Migrations, Sync Permissions & Seed Database](#step-5-run-migrations-sync-permissions--seed-database)
-7. [Step 6: Configure Nginx Reverse Proxy & SSL (HTTPS)](#step-6-configure-nginx-reverse-proxy--ssl-https)
-8. [Step 7: Release & Redeployment Workflow](#step-7-release--redeployment-workflow)
-9. [Step 8: Smoke Testing & Automated Database Backups](#step-8-smoke-testing--automated-database-backups)
-10. [Troubleshooting](#troubleshooting)
+1. [Deployment Architecture & Network Topology](#1-deployment-architecture--network-topology)
+2. [Step 1: VPS Setup, Swap Configuration & Docker Installation](#step-1-vps-setup-swap-configuration--docker-installation)
+3. [Step 2: Install GitHub Actions Self-Hosted Runner on VPS](#step-2-install-github-actions-self-hosted-runner-on-vps)
+4. [Step 3: Clone Repository & Configure 4 `.env` Files](#step-3-clone-repository--configure-4-env-files)
+5. [Step 4: Domain Routing (Cloudflare Tunnel / Nginx)](#step-4-domain-routing-cloudflare-tunnel--nginx)
+6. [Step 5: Initial Deployment & Database Provisioning](#step-5-initial-deployment--database-provisioning)
+7. [Step 6: Automated CI/CD Workflow (GitHub Actions)](#step-6-automated-cicd-workflow-github-actions)
+8. [Step 7: Day-2 Operations, Management & Backups](#step-7-day-2-operations-management--backups)
+9. [Troubleshooting & FAQs](#troubleshooting--faqs)
 
 ---
 
-## 1. Deployment Architecture & CI/CD Flow
+## 1. Deployment Architecture & Network Topology
 
 ### 1.1. Network & Routing Diagram
 
+The project supports two production routing options:
+
+- **Option 1 (Recommended & In Use)**: **Cloudflare Tunnel (Zero Trust)**. All public traffic routes through an outbound encrypted tunnel. **No public ports need to be exposed** on the VPS firewall, providing automatic DDoS mitigation and 100% origin IP masking.
+- **Option 2**: Host **Nginx Reverse Proxy + Let's Encrypt Certbot SSL**.
+
 ```
-                         [ Internet: End Users ]
-                                    │
-                     ┌──────────────┴──────────────┐
-                     │  Nginx Reverse Proxy (Host) │
-                     │    Ports 80 / 443 (SSL)     │
-                     └──────────────┬──────────────┘
-                                    │
-       ┌────────────────────────────┼────────────────────────────┐
-       │ api.yourdomain.com         │ yourdomain.com             │ admin.yourdomain.com
-       ▼ (:8000)                    ▼ (:3000)                    ▼ (:8080 -> :80)
-┌──────────────┐             ┌──────────────┐             ┌──────────────┐
-│  crodic_api  │             │crodic_client │             │  crodic_web  │
-│  NestJS 11   │             │  Next.js 16  │             │ Nginx + Vite │
-└──────┬───┬───┘             └──────┬───────┘             └──────────────┘
-       │   │                        │ (SSR internal fetch)
-       │   └──────────────┬─────────┘
-       ▼                  ▼
-┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-│  PostgreSQL  │   │    Redis     │   │    MinIO     │
-│  :5432       │   │    :6379     │   │  :9000/:9001 │
-└──────────────┘   └──────────────┘   └──────────────┘
-     (Isolated inside internal Docker network app-network & 127.0.0.1)
+                           [ Internet: End Users & Admins ]
+                                          │
+                ┌─────────────────────────┴─────────────────────────┐
+                ▼ (Option 1: Zero Trust)                            ▼ (Option 2: Direct)
+     ┌─────────────────────────┐                         ┌─────────────────────────┐
+     │ Cloudflare Edge Network │                         │ Nginx Reverse Proxy     │
+     │ (*.crodic.click)        │                         │ Ports 80 / 443 (SSL)    │
+     └────────────┬────────────┘                         └────────────┬────────────┘
+                  │                                                   │
+                  ▼ (Outbound Tunnel: network_mode: host)             │
+     ┌─────────────────────────┐                                      │
+     │  crodic_tunnel          │                                      │
+     │  (cloudflare/cloudflared)                                      │
+     └────────────┬────────────┘                                      │
+                  │                                                   │
+  ────────────────┴───────────────────────────────────────────────────┴───────────────────
+  HOST MACHINE (VPS Ubuntu):
+        ┌────────────────────────────────┬────────────────────────────────┐
+        │ api.crodic.click               │ crodic.click                   │ admin.crodic.click
+        ▼ (:8001 -> container :8000)     ▼ (:3000 -> container :3000)     ▼ (:8080 -> container :80)
+ ┌──────────────┐                 ┌──────────────┐                 ┌──────────────┐
+ │  crodic_api  │                 │crodic_client │                 │  crodic_web  │
+ │  NestJS 11   │                 │  Next.js 16  │                 │ Nginx + Vite │
+ └──────┬───┬───┘                 └──────┬───────┘                 └──────────────┘
+        │   │                            │ (SSR internal fetch http://api:8000)
+        │   └──────────────┬─────────────┘
+        ▼                  ▼                                ┌─────────────────────────┐
+ ┌──────────────┐   ┌──────────────┐                        │    crodic_minio_init    │
+ │  PostgreSQL  │   │    Redis     │                        │    (pgsty/mc bucket)    │
+ │  :5432       │   │    :6379     │                        └────────────┬────────────┘
+ └──────────────┘   └──────────────┘                                     ▼
+        ▲                  ▲                                ┌─────────────────────────┐
+        │                  │                                │      crodic_minio       │
+        └──────────────────┴────────────────────────────────┤   (pgsty/silo S3 API)   │
+                                                            │       :9000/:9001       │
+                                                            └─────────────────────────┘
+ (Database & cache services are isolated in Docker app-network & bound to 127.0.0.1 on host)
 ```
 
-### 1.2. Core CI/CD & Docker Build Principles
+### 1.2. Port Allocation Table
 
-1. **GitHub Actions CI ([`.github/workflows/ci-cd.yml`](../../.github/workflows/ci-cd.yml)) as Quality Gate**:
-   - Automatically runs Lint, Type-check, Unit Tests, E2E Tests, and compile verification (`pnpm build`) for `api`, `web`, `client`, and `@repo/query-builder` on every Pull Request and push to `main`.
-2. **Native `.env` Configuration per Workspace on the Server**:
-   - No intermediate `ARG`/`ENV` build-arg plumbing in Dockerfiles or Docker Compose.
-   - The server maintains standard `.env` files in each workspace:
-     - `.env` (at repository root): Configures host port mappings and infrastructure credentials (`postgres`, `redis`, `minio`).
-     - `apps/api/.env`: Runtime environment variables for NestJS (injected at runtime via `env_file`).
-     - `apps/web/.env`: Environment variables for Vite (natively read by Vite during `pnpm --filter web build`).
-     - `apps/client/.env`: Environment variables for Next.js (natively read by Next.js during `pnpm --filter client build` and injected at runtime via `env_file` for SSR).
-3. **Workspace-Scoped Docker Layer Caching**:
-   - The `deps` stage copies only `package.json` manifests and `pnpm-lock.yaml`, ensuring `pnpm install --frozen-lockfile` stays 100% cached unless dependencies change.
-   - Each Dockerfile's `builder` stage copies only `packages/` and its own workspace directory (`apps/api`, `apps/web`, or `apps/client`).
-   - [`.dockerignore`](../../.dockerignore) excludes `apps/api/.env*`, `docs/`, and `.github/` from the build context:
-     - Updating `apps/api/.env` never triggers an API image rebuild; Docker Compose simply restarts the container with the updated `env_file` in 1 second.
-     - Updating code in `apps/web` only rebuilds the `web` image while leaving `api` and `client` cached and untouched.
+| Service               | Container Name    | Host Port (VPS)           | Container Port  | Notes                                       |
+| :-------------------- | :---------------- | :------------------------ | :-------------- | :------------------------------------------ |
+| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Avoids port 8000 conflicts on host          |
+| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Serves SPA via internal Nginx in container  |
+| **Client Website**    | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)  |
+| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Bound to localhost, volume `postgres_data`  |
+| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | BullMQ queues and cache with password auth  |
+| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | High-efficiency `pgsty/silo` S3 replacement |
+| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Runs daemon connection to Cloudflare edge   |
 
 ### 1.3. Recommended VPS Specifications
 
-| Specification          | Minimum Required             | Recommended (Production) |
-| :--------------------- | :--------------------------- | :----------------------- |
-| **Operating System**   | Ubuntu 22.04 LTS / 24.04 LTS | Ubuntu 24.04 LTS x86_64  |
-| **CPU**                | 2 vCPUs                      | 4 vCPUs                  |
-| **RAM**                | 4 GB (+ 4GB Swap)            | 8 GB (+ 4GB Swap)        |
-| **Storage (SSD/NVMe)** | 40 GB SSD                    | 80+ GB NVMe SSD          |
+| Criteria    | Minimum Requirement                 | Recommended Production Spec |
+| :---------- | :---------------------------------- | :-------------------------- |
+| **OS**      | Ubuntu 22.04 LTS / 24.04 LTS x86_64 | Ubuntu 24.04 LTS x86_64     |
+| **CPU**     | 2 vCPU                              | 4 vCPU                      |
+| **RAM**     | 4 GB (**4GB - 8GB Swap mandatory**) | 8 GB (+ 4GB Swap)           |
+| **Storage** | 40 GB NVMe SSD                      | 80+ GB NVMe SSD             |
 
 ---
 
-## Step 1: VPS Preparation, Swap & Docker Installation
+## Step 1: VPS Setup, Swap Configuration & Docker Installation
 
-SSH into your VPS:
+Connect via SSH to your VPS as `root` or a user with `sudo` permissions:
 
 ```bash
 ssh root@<YOUR_VPS_IP>
 ```
 
-### 1.1. Update system packages & install essentials
+### 1.1. Update System & Install Core Packages
 
 ```bash
 apt update && apt upgrade -y
-apt install -y curl wget git ufw htop ca-certificates gnupg nginx certbot python3-certbot-nginx
+apt install -y curl wget git ufw htop ca-certificates gnupg
 ```
 
-### 1.2. Create a 4GB Swapfile (OOM protection during Next.js & Vite builds)
+### 1.2. Create 4GB - 8GB Swap Space (Mandatory)
+
+> [!IMPORTANT]
+> Compiling TypeScript bundles and optimizing Next.js (`apps/client`) and Vite (`apps/web`) requires transient spikes in memory. Without swap space, the Linux kernel will terminate build processes abruptly with `Exit code 137 (OOM Killed)`.
 
 ```bash
-fallocate -l 4G /swapfile
+# Create 4GB swapfile (or 8GB if VPS has 4GB physical RAM)
+fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
+
+# Ensure swap persists across reboots
 echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+
+# Optimize swappiness
 sysctl vm.swappiness=10
 echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf
+
+# Verify memory & swap status
+free -h
 ```
 
-### 1.3. Install official Docker Engine & Docker Compose Plugin
+### 1.3. Install Docker Engine & Docker Compose Plugin
 
 ```bash
 curl -fsSL https://get.docker.com | sh
 systemctl enable --now docker
+
+# Verify Docker version (Docker 26+ and Docker Compose v2.20+ required)
 docker --version
 docker compose version
 ```
 
-### 1.4. Configure UFW Firewall
+### 1.4. Create Production Work Directory
+
+The project standardizes on `/var/www/crodic-framework`:
 
 ```bash
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-ufw status
+mkdir -p /var/www/crodic-framework
 ```
 
 ---
 
-## Step 2: Domain DNS Configuration
+## Step 2: Install GitHub Actions Self-Hosted Runner on VPS
 
-Configure **A Records** with your DNS provider pointing to your VPS IP address:
+Rather than storing VPS SSH keys in third-party CI runners and exposing port 22, the project uses a native **GitHub Actions Self-Hosted Runner** executing directly on the host machine. The runner communicates outbound over HTTPS.
 
-| Type  | Host                 | Value (Target)  | Target Service                       |
-| :---- | :------------------- | :-------------- | :----------------------------------- |
-| **A** | `@` (yourdomain.com) | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000) |
-| **A** | `www`                | `<YOUR_VPS_IP>` | Client Website (`apps/client` :3000) |
-| **A** | `api`                | `<YOUR_VPS_IP>` | REST API Backend (`apps/api` :8000)  |
-| **A** | `admin`              | `<YOUR_VPS_IP>` | Admin Portal (`apps/web` :8080)      |
+### 2.1. Generate Runner Registration Token
+
+1. Open your repository on GitHub.
+2. Navigate to **Settings > Actions > Runners > New self-hosted runner**.
+3. Choose OS: **Linux**, Architecture: **x64**.
+4. GitHub will show download instructions and a single-use registration `<TOKEN>`.
+
+### 2.2. Install and Register the Runner
+
+Run the commands in a dedicated directory:
+
+```bash
+mkdir -p /opt/actions-runner && cd /opt/actions-runner
+
+# Download runner package (e.g. v2.322.0)
+curl -o actions-runner-linux-x64-2.322.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.322.0/actions-runner-linux-x64-2.322.0.tar.gz
+tar xzf ./actions-runner-linux-x64-2.322.0.tar.gz
+
+# Configure runner to your repository
+./config.sh --url https://github.com/<ORG>/<REPO> --token <TOKEN> --name vps-production-runner --work /var/www/crodic-framework --unattended --replace
+```
+
+### 2.3. Run Runner as a Systemd Service
+
+To keep the runner active permanently across reboots:
+
+```bash
+cd /opt/actions-runner
+sudo ./svc.sh install
+sudo ./svc.sh start
+sudo ./svc.sh status
+```
+
+Check GitHub at **Settings > Actions > Runners** — `vps-production-runner` should display an **Idle** green badge.
 
 ---
 
-## Step 3: Clone Repository & Configure `.env` Files
+## Step 3: Clone Repository & Configure 4 `.env` Files
 
-### 3.1. Clone repository on the server
+### 3.1. Clone Repository into `/var/www/crodic-framework`
 
 ```bash
-mkdir -p /opt/crodic
-cd /opt/crodic
-git clone git@github.com:<ORG>/<REPO>.git .
+cd /var/www/crodic-framework
+git clone https://github.com/<ORG>/<REPO>.git .
+git checkout main
 ```
 
-### 3.2. Initialize the 4 `.env` files from templates
+### 3.2. Initialize 4 Environment Files from Templates
 
 ```bash
 cp .env.example .env
@@ -165,18 +211,18 @@ cp apps/web/.env.example apps/web/.env
 cp apps/client/.env.example apps/client/.env
 ```
 
-### 3.3. Configure each `.env` file
+### 3.3. Configuration Values for Each File
 
-#### 1. Root `.env` (Infrastructure & Port Mappings)
+#### 1. Root `.env` (Infrastructure, Host Ports & Cloudflare Token)
 
 ```env
-API_PORT=8000
+API_PORT=8001
 WEB_PORT=8080
 CLIENT_PORT=3000
 
 POSTGRES_HOST=postgres
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=StrongDatabasePassword123!
+POSTGRES_PASSWORD=StrongDbPassword123!
 POSTGRES_DB=monorepo
 POSTGRES_PORT=5432
 
@@ -188,27 +234,27 @@ MINIO_HOST=minio
 MINIO_PORT=9000
 MINIO_CONSOLE_PORT=9001
 AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=StrongMinioPassword123!
+AWS_SECRET_ACCESS_KEY=StrongSiloKey123!
 AWS_DEFAULT_S3_BUCKET=nest-uploads
 AWS_PRIVATE_BUCKET=nest-uploads-private
+
+# Token from Cloudflare Zero Trust Dashboard
+CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...
 ```
 
 #### 2. `apps/api/.env` (NestJS Backend)
 
-Update the key production settings in `apps/api/.env`:
-
 ```env
 NODE_ENV=production
 APP_PORT=8000
-APP_URL=https://api.yourdomain.com
+APP_URL=https://api.crodic.click
 APP_DEBUG=false
-APP_CORS_ORIGIN=https://yourdomain.com,https://www.yourdomain.com,https://admin.yourdomain.com
+APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
 
-# Internal Docker network service hostnames
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
 DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=StrongDatabasePassword123!
+DATABASE_PASSWORD=StrongDbPassword123!
 DATABASE_NAME=monorepo
 DATABASE_SYNCHRONIZE=false
 
@@ -216,39 +262,50 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_PASSWORD=StrongRedisPassword123!
 
-# Authentication Redirect URLs
-AUTH_PORTAL_URL=https://admin.yourdomain.com
-AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.yourdomain.com/reset-password
-USER_AUTH_CLIENT_URL=https://yourdomain.com
-USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://yourdomain.com/auth/reset-password
+STORAGE_DRIVER=s3
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=StrongSiloKey123!
+AWS_DEFAULT_REGION=us-east-1
+AWS_DEFAULT_S3_BUCKET=nest-uploads
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+AUTH_PORTAL_URL=https://admin.crodic.click
+AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.crodic.click/reset-password
+USER_AUTH_CLIENT_URL=https://crodic.click
+USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://crodic.click/auth/reset-password
+
+# Generate secure 32+ character secrets: openssl rand -base64 32
+AUTH_JWT_SECRET=strong-random-admin-jwt-secret-string-32-chars
+USER_AUTH_JWT_SECRET=strong-random-client-jwt-secret-string-32-chars
 ```
 
-_(Ensure all `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`, etc. are replaced with cryptographically random strings at least 32 characters long)._
-
-#### 3. `apps/web/.env` (Vite Admin Portal)
+#### 3. `apps/web/.env` (Admin Portal - Vite + React)
 
 ```env
 PORT=5173
-VITE_API_URL=https://api.yourdomain.com/api/v1
-VITE_APP_NAME=Animazing
-VITE_SOCKET_URL=https://api.yourdomain.com
+VITE_API_URL=https://api.crodic.click/api/v1
+VITE_APP_NAME="Crodic Framework"
+VITE_SOCKET_URL=https://api.crodic.click
 VITE_AUTH_KEY="${VITE_APP_NAME}_AUTH_KEY"
-VITE_CLIENT_URL=https://yourdomain.com
+VITE_CLIENT_URL=https://crodic.click
 VITE_SENTRY_ENVIRONMENT=production
 ```
 
-#### 4. `apps/client/.env` (Next.js Client Website)
+#### 4. `apps/client/.env` (Client Website - Next.js)
 
 ```env
 PORT=3000
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com
-NEXT_PUBLIC_SOCKET_URL=https://api.yourdomain.com
-NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.yourdomain.com
-# Internal Docker network URL for Server-Side Rendering (SSR) fetches
+NEXT_PUBLIC_APP_URL=https://crodic.click
+NEXT_PUBLIC_API_URL=https://api.crodic.click
+NEXT_PUBLIC_SOCKET_URL=https://api.crodic.click
+NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.crodic.click
+
+# Internal Docker network SSR endpoint
 SERVER_API_URL=http://api:8000
+
 TOKEN_EXPIRY_MINUTES_REMAINING=1m
-APP_NAME=Visel
+APP_NAME=Crodic
 NEXT_PUBLIC_ENABLE_WHITE_LABEL=true
 NEXT_PUBLIC_USE_CASE=as-needed
 NEXT_PUBLIC_APP_LOCALE=en
@@ -259,198 +316,204 @@ SENTRY_ENVIROMENT=production
 
 ---
 
-## Step 4: Build & Start Services with Docker Compose
+## Step 4: Domain Routing (Cloudflare Tunnel / Nginx)
 
-From `/opt/crodic`, build and start all production containers:
+### Option A: Cloudflare Tunnel (Zero Trust - Recommended & Active)
 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+1. Log into the [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/).
+2. Navigate to **Networks > Tunnels > Create a tunnel > Select Cloudflared**.
+3. Name your tunnel (e.g. `crodic-vps-tunnel`) and copy the installation token string.
+4. Paste the token into `CLOUDFLARE_TUNNEL_TOKEN` inside the root `.env` file.
+5. In the **Public Hostname** tab, configure the following rules:
 
-Check running container statuses:
+| Public Hostname      | Service Type | Host Target URL  |
+| :------------------- | :----------- | :--------------- |
+| `crodic.click`       | `HTTP`       | `localhost:3000` |
+| `admin.crodic.click` | `HTTP`       | `localhost:8080` |
+| `api.crodic.click`   | `HTTP`       | `localhost:8001` |
 
-```bash
-docker compose -f docker-compose.prod.yml ps
-```
-
-Inspect real-time application logs:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f api client web
-```
+The `crodic_tunnel` container running `network_mode: host` in [`docker-compose.prod.yml`](../../docker-compose.prod.yml) will establish the outbound connection and forward traffic seamlessly.
 
 ---
 
-## Step 5: Run Migrations, Sync Permissions & Seed Database
+### Option B: Host Nginx Reverse Proxy & Certbot Let's Encrypt
 
-On the initial deployment, initialize the database schema, RBAC permissions, and default admin user inside `crodic_api`:
+If not using Cloudflare Tunnel:
 
-```bash
-# 1. Run TypeORM database migrations
-docker exec -it crodic_api npm run migration:run:prod
-
-# 2. Synchronize RBAC permission catalog
-docker exec -it crodic_api npm run permissions:sync:prod
-
-# 3. Seed initial Super Admin account and baseline data
-docker exec -it crodic_api npm run seed:run:prod
-```
-
----
-
-## Step 6: Configure Nginx Reverse Proxy & SSL (HTTPS)
-
-A production-ready Nginx configuration template is provided at [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf). Copy it directly to your VPS:
-
-```bash
-sudo cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
-```
-
-Then edit `/etc/nginx/sites-available/crodic.conf` and replace `yourdomain.com`, `api.yourdomain.com`, `admin.yourdomain.com` with your actual domains:
-
-```nginx
-# 1. Backend API (api.yourdomain.com -> 127.0.0.1:8000)
-server {
-    listen 80;
-    server_name api.yourdomain.com;
-    client_max_body_size 50M;
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# 2. Admin Portal (admin.yourdomain.com -> 127.0.0.1:8080)
-server {
-    listen 80;
-    server_name admin.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# 3. Client Website (yourdomain.com -> 127.0.0.1:3000)
-server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Enable the site configuration and issue Let's Encrypt SSL certificates via Certbot:
-
-```bash
-ln -s /etc/nginx/sites-available/crodic.conf /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-
-# Provision HTTPS certificates for all domains
-certbot --nginx -d yourdomain.com -d www.yourdomain.com -d api.yourdomain.com -d admin.yourdomain.com
-```
+1. Point your domain A-records (`@`, `admin`, `api`) to the VPS public IP.
+2. Allow HTTP/HTTPS ports through UFW:
+   ```bash
+   ufw allow 80/tcp
+   ufw allow 443/tcp
+   ufw --force enable
+   ```
+3. Copy the template from [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf):
+   ```bash
+   cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
+   ```
+4. Adjust `server_name` and proxy ports:
+   - `api.crodic.click` -> `proxy_pass http://127.0.0.1:8001;`
+   - `admin.crodic.click` -> `proxy_pass http://127.0.0.1:8080;`
+   - `crodic.click` -> `proxy_pass http://127.0.0.1:3000;`
+5. Enable and issue SSL certificates:
+   ```bash
+   ln -s /etc/nginx/sites-available/crodic.conf /etc/nginx/sites-enabled/
+   nginx -t && systemctl reload nginx
+   certbot --nginx -d crodic.click -d www.crodic.click -d admin.crodic.click -d api.crodic.click
+   ```
 
 ---
 
-## Step 7: Release & Redeployment Workflow
+## Step 5: Initial Deployment & Database Provisioning
 
-### Option 1: Automated CD via GitHub Actions (Recommended)
-
-An automated Continuous Deployment workflow is pre-configured at [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml). Whenever changes are merged into `main` and all CI tests pass, it automatically SSHs into your VPS and runs the deployment.
-
-Configure the following GitHub Repository Secrets under **Settings > Secrets and variables > Actions**:
-
-- `VPS_HOST`: VPS IP address or hostname.
-- `VPS_USERNAME`: SSH username (e.g., `root` or deploy user).
-- `VPS_SSH_KEY`: SSH private key for authentication.
-- `VPS_PORT`: SSH port (default: `22`).
-- `DEPLOY_PATH`: Target directory path on your VPS (e.g., `/opt/crodic` or `/var/www/crodic-framework`).
-
-### Option 2: Manual Deployment via Deploy Script
-
-On your VPS, run the self-contained deployment script [`scripts/deploy.sh`](../../scripts/deploy.sh):
+In `/var/www/crodic-framework`, execute the deployment script with the `--seed` flag to perform initial database population:
 
 ```bash
-cd /opt/crodic
+cd /var/www/crodic-framework
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh --seed
+```
+
+### What the script executes under the hood:
+
+1. **Prerequisite Check**: Verifies Docker, Compose v2, and presence of all 4 `.env` files.
+2. **Build Docker Images**: Builds production images for `api`, `web`, `client`, and boots `postgres`, `redis`, `silo S3`, and `cloudflared`.
+3. **Run TypeORM Migrations**:
+   Executes migrations via Node directly in container with `-e CI=true` to avoid TTY errors:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run
+   ```
+4. **Sync RBAC Permissions**:
+   Populates system permissions table:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/sync-permissions.js
+   ```
+5. **Run Database Seeds (`--seed`)**:
+   Creates default Super Admin account and White-Label theme configurations:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/seeds/run-seed.js
+   ```
+6. **Automated Smoke Test**:
+   Polls `http://127.0.0.1:8001/health` to confirm the API is responding before completing.
+7. **Cleanup**:
+   Prunes dangling images automatically (`docker image prune -f`).
+
+---
+
+## Step 6: Automated CI/CD Workflow (GitHub Actions)
+
+Configured at [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml).
+
+### 6.1. Push-to-Deploy
+
+Whenever code is merged to `main`:
+
+1. The `self-hosted` runner on the VPS activates.
+2. It changes directory to `/var/www/crodic-framework`, executes `git pull origin main`, and triggers `./scripts/deploy.sh`.
+3. Thanks to multi-stage Docker caching:
+   - Editing only `apps/web` triggers rebuild solely for `crodic_web` (~15s), with zero disruption to `api` or `client`.
+   - Backend changes rebuild `crodic_api`, apply new migrations, and verify health checks.
+
+### 6.2. Manual Workflow Dispatch
+
+To trigger redeployment or run migrations manually:
+
+1. Go to the **Actions** tab on GitHub.
+2. Select **Deploy to Production (VPS)**.
+3. Click **Run workflow**.
+4. _(Optional)_ Check `skip_migration` if no database schema updates are required.
+
+---
+
+## Step 7: Day-2 Operations, Management & Backups
+
+### 7.1. Deploy Script Flags
+
+```bash
+# Standard deploy (git pull + build + migrations + healthcheck)
 ./scripts/deploy.sh
+
+# Deploy with database re-seeding
+./scripts/deploy.sh --seed
+
+# Deploy local changes without git pull (useful for debugging directly on server)
+./scripts/deploy.sh --skip-pull
+
+# Deploy without running migrations
+./scripts/deploy.sh --skip-migration
 ```
 
-This script automatically:
+### 7.2. Common Docker Management Commands
 
-1. Pulls the latest commits (`git pull`).
-2. Builds changed Docker images.
-3. Restarts containers with Docker Compose (`docker compose up -d`).
-4. Runs database migrations (`migration:run:prod`) and syncs RBAC permissions (`permissions:sync:prod`).
-5. Performs an automated health check and cleans up dangling Docker images.
+```bash
+# Check status of all containers
+docker compose -f docker-compose.prod.yml ps
 
-> [!TIP]
-> Thanks to workspace-scoped layer caching in the Dockerfiles:
->
-> - If a commit only modifies `apps/web`, only `crodic_web` is rebuilt and restarted; `crodic_api` and `crodic_client` remain 100% cached.
-> - If you only change runtime variables in `apps/api/.env`, running `docker compose -f docker-compose.prod.yml up -d` restarts `crodic_api` with the new environment in 1 second without rebuilding the image.
+# View real-time logs
+docker compose -f docker-compose.prod.yml logs -f api
+docker compose -f docker-compose.prod.yml logs -f web
+docker compose -f docker-compose.prod.yml logs -f client
+docker compose -f docker-compose.prod.yml logs -f cloudflared
+
+# Restart an individual service without downtime for others
+docker compose -f docker-compose.prod.yml restart api
+
+# Graceful shutdown of entire cluster
+docker compose -f docker-compose.prod.yml down
+```
+
+### 7.3. Automated Daily PostgreSQL Backups (Cronjob)
+
+Configure an automated daily backup at 02:00 AM with 14-day retention:
+
+```bash
+mkdir -p /var/backups/postgres
+crontab -e
+
+# Append the following crontab entry:
+0 2 * * * docker exec crodic_postgres pg_dump -U postgres monorepo | gzip > /var/backups/postgres/db_$(date +\%F_%H%M%S).sql.gz && find /var/backups/postgres -type f -name "db_*.sql.gz" -mtime +14 -delete
+```
+
+To restore from a backup:
+
+```bash
+gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_postgres psql -U postgres -d monorepo
+```
 
 ---
 
-## Step 8: Smoke Testing & Automated Database Backups
+## Troubleshooting & FAQs
 
-### 8.1. Smoke Tests
+### 1. Build aborted with `Exit code 137 (OOM Killed)`
 
-```bash
-curl -f -I https://api.yourdomain.com/api/v1/health
-curl -f -I https://yourdomain.com
-curl -f -I https://admin.yourdomain.com
-```
+- **Cause**: Out of physical RAM during compilation.
+- **Fix**: Run `free -h`. Ensure a 4GB - 8GB swapfile has been created as detailed in [Step 1.2](#step-1-vps-setup-swap-configuration--docker-installation).
 
-### 8.2. Automated PostgreSQL Daily Backups (Cronjob)
+### 2. `ERR_PNPM_NO_TTY` Error Inside Container
 
-Set up a daily cronjob at 02:00 AM server time:
-
-```bash
-mkdir -p /opt/backups/postgres
-
-# Add to crontab (crontab -e):
-0 2 * * * docker exec crodic_postgres pg_dump -U postgres monorepo | gzip > /opt/backups/postgres/db_$(date +\%F).sql.gz && find /opt/backups/postgres -type f -mtime +7 -delete
-```
-
----
-
-## Troubleshooting
-
-### 1. Build terminates with `Exit code 137 (OOM Killed)`
-
-- **Cause**: The Linux kernel terminated the build due to insufficient RAM.
-- **Resolution**: Verify Swap is active via `free -h` ([Step 1.2](#12-create-a-4gb-swapfile-oom-protection-during-nextjs--vite-builds)). On lower-memory servers, build services sequentially:
+- **Cause**: Running interactive CLI tools in headless environments.
+- **Fix**: The script invokes compiled JavaScript directly via `node` with `-e CI=true`:
   ```bash
-  docker compose -f docker-compose.prod.yml build api
-  docker compose -f docker-compose.prod.yml build web
-  docker compose -f docker-compose.prod.yml build client
-  docker compose -f docker-compose.prod.yml up -d
+  docker compose -f docker-compose.prod.yml exec -T -e CI=true api node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run
   ```
 
-### 2. Browser CORS errors when calling API from Admin or Client
+### 3. Browser CORS Errors
 
-- **Resolution**: Ensure `APP_CORS_ORIGIN` in `apps/api/.env` includes all frontend origins with `https://` and no trailing slash, then restart the API container: `docker compose -f docker-compose.prod.yml up -d api`.
+- **Cause**: Origin not permitted in API configuration.
+- **Fix**: Ensure `APP_CORS_ORIGIN` in `apps/api/.env` lists all origins with `https://` and without trailing slashes:
+  ```env
+  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+  ```
+  Then reload: `docker compose -f docker-compose.prod.yml up -d api`.
 
-### 3. Updating variables in `apps/web/.env` or `apps/client/.env`
+### 4. Vite or Next.js Environment Variables Not Updating
 
-- **Note**: `VITE_*` and `NEXT_PUBLIC_*` variables are compiled into the static JS bundle during build. After modifying these files on the server, run `docker compose -f docker-compose.prod.yml up -d --build web client` to rebuild the frontend bundles.
+- **Cause**: `VITE_*` and `NEXT_PUBLIC_*` are statically embedded at build time.
+- **Fix**: Rebuild the respective images:
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d --build web client
+  ```
+
+### 5. S3 / MinIO Pull Failures
+
+- **Fix**: The project uses `pgsty/silo:latest` (lightweight, license-friendly S3 drop-in) and `pgsty/mc:latest` to automatically initialize the `nest-uploads` bucket. Data persists in the `minio_data` volume.

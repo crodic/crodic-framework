@@ -1,115 +1,133 @@
-# Hướng Dẫn Triển Khai Production Với Docker Compose (VPS)
+# Hướng Dẫn Triển Khai Production Toàn Diện (VPS & Docker Compose)
 
 > [English](../en/DEPLOYMENT.md) | **Tiếng Việt**
 
-Tài liệu này hướng dẫn chi tiết từng bước triển khai toàn bộ hệ thống Monorepo lên máy chủ VPS Ubuntu theo kiến trúc chuẩn bằng **Docker Compose** ([`docker-compose.prod.yml`](../../docker-compose.prod.yml)) và **Nginx Reverse Proxy**, bao gồm:
-
-- **NestJS 11 API** (`apps/api`) chạy trên cổng `8000`, gắn volume lưu trữ bền vững `/app/storage`.
-- **Next.js 16 Client Website** (`apps/client`) chạy Server-Side Rendering (SSR) chế độ `standalone` trên cổng `3000`.
-- **Vite 6 + React 19 Admin Portal** (`apps/web`) phục vụ SPA qua Nginx (đã bật Gzip & Immutable Cache) trên cổng `8080` (container port `80`).
-- **PostgreSQL 16**, **Redis 7** và **MinIO (S3 Storage)** chạy trong mạng nội bộ Docker (`app-network`) và chỉ bind vào `127.0.0.1` trên máy chủ host để bảo mật tối đa.
-- **Nginx Reverse Proxy + Certbot (Let's Encrypt)** trên máy chủ VPS xử lý SSL/TLS (HTTPS) cho cả 3 domain.
+Tài liệu này hướng dẫn chi tiết từng bước triển khai toàn bộ hệ thống Monorepo lên máy chủ VPS Ubuntu theo kiến trúc chuẩn sản xuất bằng **Docker Compose** ([`docker-compose.prod.yml`](../../docker-compose.prod.yml)), tự động hóa CI/CD bằng **GitHub Actions Self-Hosted Runner**, và định tuyến tên miền qua **Cloudflare Tunnel (Zero Trust)** hoặc **Nginx Reverse Proxy**.
 
 ---
 
 ## Mục Lục
 
-1. [Kiến Trúc Triển Khai & Luồng CI/CD](#1-kiến-trúc-triển-khai--luồng-cicd)
-2. [Bước 1: Chuẩn Bị VPS, Swap & Cài Đặt Docker](#bước-1-chuẩn-bị-vps-swap--cài-đặt-docker)
-3. [Bước 2: Cấu Hình DNS Tên Miền](#bước-2-cấu-hình-dns-tên-miền)
-4. [Bước 3: Clone Mã Nguồn & Cấu Hình Các File `.env`](#bước-3-clone-mã-nguồn--cấu-hình-các-file-env)
-5. [Bước 4: Build & Khởi Chạy Hệ Thống Với Docker Compose](#bước-4-build--khởi-chạy-hệ-thống-với-docker-compose)
-6. [Bước 5: Chạy Migration, Đồng Bộ Quyền & Seed Dữ Liệu](#bước-5-chạy-migration-đồng-bộ-quyền--seed-dữ-liệu)
-7. [Bước 6: Cấu Hình Nginx Reverse Proxy & Chứng Chỉ SSL (HTTPS)](#bước-6-cấu-hình-nginx-reverse-proxy--chứng-chỉ-ssl-https)
-8. [Bước 7: Quy Trình Cập Nhật Phiên Bản Mới (Redeploy)](#bước-7-quy-trình-cập-nhật-phiên-bản-mới-redeploy)
-9. [Bước 8: Kiểm Tra Hoạt Động (Smoke Tests) & Sao Lưu](#bước-8-kiểm-tra-hoạt-động-smoke-tests--sao-lưu)
-10. [Xử Lý Sự Cố Thường Gặp (Troubleshooting)](#xử-lý-sự-cố-thường-gặp-troubleshooting)
+1. [Kiến Trúc Triển Khai & Sơ Đồ Hạ Tầng](#1-kiến-trúc-triển-khai--sơ-đồ-hạ-tầng)
+2. [Bước 1: Chuẩn Bị VPS, Tạo Swap & Cài Đặt Docker](#bước-1-chuẩn-bị-vps-tạo-swap--cài-đặt-docker)
+3. [Bước 2: Cài Đặt GitHub Actions Self-Hosted Runner Trên VPS](#bước-2-cài-đặt-github-actions-self-hosted-runner-trên-vps)
+4. [Bước 3: Clone Mã Nguồn & Cấu Hình 4 File `.env`](#bước-3-clone-mã-nguồn--cấu-hình-4-file-env)
+5. [Bước 4: Cấu Hình Tên Miền & Routing (Cloudflare Tunnel / Nginx)](#bước-4-cấu-hình-tên-miền--routing-cloudflare-tunnel--nginx)
+6. [Bước 5: Triển Khai Lần Đầu & Khởi Tạo Cơ Sở Dữ Liệu](#bước-5-triển-khai-lần-đầu--khởi-tạo-cơ-sở-dữ-liệu)
+7. [Bước 6: Quy Trình CI/CD Tự Động Hóa (GitHub Actions)](#bước-6-quy-trình-cicd-tự-động-hóa-github-actions)
+8. [Bước 7: Vận Hành, Quản Trị Hàng Ngày & Sao Lưu](#bước-7-vận-hành-quản-trị-hàng-ngày--sao-lưu)
+9. [Xử Lý Sự Cố Thường Gặp (Troubleshooting)](#xử-lý-sự-cố-thường-gặp-troubleshooting)
 
 ---
 
-## 1. Kiến Trúc Triển Khai & Luồng CI/CD
+## 1. Kiến Trúc Triển Khai & Sơ Đồ Hạ Tầng
 
-### 1.1. Sơ Đồ Kiến Trúc Mạng
+### 1.1. Sơ Đồ Mạng & Điều Phối Dịch Vụ
+
+Dự án hỗ trợ 2 phương án đưa dịch vụ ra Internet:
+
+- **Phương án 1 (Khuyến nghị - Đang áp dụng)**: **Cloudflare Tunnel (Zero Trust)**. Toàn bộ lưu lượng đi qua tunnel mã hóa, **không cần mở bất kỳ cổng nào** trên tường lửa VPS, chống DDoS và ẩn IP gốc 100%.
+- **Phương án 2**: **Nginx Reverse Proxy (Host) + Certbot SSL** truyền thống.
 
 ```
-                         [ Internet: Người dùng truy cập ]
-                                        │
-                         ┌──────────────┴──────────────┐
-                         │  Nginx Reverse Proxy (Host) │
-                         │    Ports 80 / 443 (SSL)     │
-                         └──────────────┬──────────────┘
-                                        │
-       ┌────────────────────────────────┼────────────────────────────────┐
-       │ api.yourdomain.com             │ yourdomain.com                 │ admin.yourdomain.com
-       ▼ (:8000)                        ▼ (:3000)                        ▼ (:8080 -> :80)
-┌──────────────┐                 ┌──────────────┐                 ┌──────────────┐
-│  crodic_api  │                 │crodic_client │                 │  crodic_web  │
-│  NestJS 11   │                 │  Next.js 16  │                 │ Nginx + Vite │
-└──────┬───┬───┘                 └──────┬───────┘                 └──────────────┘
-       │   │                            │ (SSR internal fetch)
-       │   └──────────────┬─────────────┘
-       ▼                  ▼
-┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-│  PostgreSQL  │   │    Redis     │   │    MinIO     │
-│  :5432       │   │    :6379     │   │  :9000/:9001 │
-└──────────────┘   └──────────────┘   └──────────────┘
-       (Cô lập trong mạng Docker nội bộ app-network & 127.0.0.1)
+                          [ Internet: Người Dùng & Quản Trị Viên ]
+                                             │
+                   ┌─────────────────────────┴─────────────────────────┐
+                   ▼ (Phương án 1: Zero Trust)                         ▼ (Phương án 2: Direct)
+        ┌─────────────────────────┐                         ┌─────────────────────────┐
+        │ Cloudflare Edge Network │                         │ Nginx Reverse Proxy     │
+        │ (*.crodic.click)        │                         │ Ports 80 / 443 (SSL)    │
+        └────────────┬────────────┘                         └────────────┬────────────┘
+                     │                                                   │
+                     ▼ (Outbound Tunnel: network_mode: host)             │
+        ┌─────────────────────────┐                                      │
+        │  crodic_tunnel          │                                      │
+        │  (cloudflare/cloudflared)                                      │
+        └────────────┬────────────┘                                      │
+                     │                                                   │
+  ───────────────────┴───────────────────────────────────────────────────┴───────────────────
+  MÁY CHỦ HOST (VPS Ubuntu):
+        ┌────────────────────────────────┬────────────────────────────────┐
+        │ api.crodic.click               │ crodic.click                   │ admin.crodic.click
+        ▼ (:8001 -> container :8000)     ▼ (:3000 -> container :3000)     ▼ (:8080 -> container :80)
+ ┌──────────────┐                 ┌──────────────┐                 ┌──────────────┐
+ │  crodic_api  │                 │crodic_client │                 │  crodic_web  │
+ │  NestJS 11   │                 │  Next.js 16  │                 │ Nginx + Vite │
+ └──────┬───┬───┘                 └──────┬───────┘                 └──────────────┘
+        │   │                            │ (SSR internal fetch http://api:8000)
+        │   └──────────────┬─────────────┘
+        ▼                  ▼                                ┌─────────────────────────┐
+ ┌──────────────┐   ┌──────────────┐                        │    crodic_minio_init    │
+ │  PostgreSQL  │   │    Redis     │                        │    (pgsty/mc bucket)    │
+ │  :5432       │   │    :6379     │                        └────────────┬────────────┘
+ └──────────────┘   └──────────────┘                                     ▼
+        ▲                  ▲                                ┌─────────────────────────┐
+        │                  │                                │      crodic_minio       │
+        └──────────────────┴────────────────────────────────┤   (pgsty/silo S3 API)   │
+                                                            │       :9000/:9001       │
+                                                            └─────────────────────────┘
+ (Các dịch vụ dữ liệu cô lập trong mạng Docker app-network & bind 127.0.0.1 trên Host)
 ```
 
-### 1.2. Nguyên Tắc Thiết Kế CI/CD & Docker Build Chuẩn
+### 1.2. Danh Mục Cổng (Port Mapping)
 
-1. **GitHub Actions CI ([`.github/workflows/ci-cd.yml`](../../.github/workflows/ci-cd.yml)) đóng vai trò Quality Gate**:
-   - Tự động kiểm tra Lint, Type-check, Unit Test, E2E Test và kiểm thử biên dịch (`pnpm build`) cho `api`, `web`, `client` và `@repo/query-builder` trên mọi Pull Request và mỗi khi push lên `main`.
-2. **Mỗi ứng dụng tự quản lý file `.env` chuẩn của riêng mình trên Server**:
-   - Không dùng các biến trung gian `ARG`/`ENV` phức tạp trong Dockerfile hay Docker Compose.
-   - Trên máy chủ có 4 file `.env` rõ ràng:
-     - `.env` (ở thư mục gốc): Cấu hình cổng và thông tin khởi tạo hạ tầng (`postgres`, `redis`, `minio`).
-     - `apps/api/.env`: Biến môi trường Runtime của NestJS (nạp qua `env_file` khi chạy container).
-     - `apps/web/.env`: Biến môi trường của Vite (được Vite tự động đọc trực tiếp khi chạy `pnpm --filter web build`).
-     - `apps/client/.env`: Biến môi trường của Next.js (được Next.js tự động đọc trực tiếp khi chạy `pnpm --filter client build` và nạp qua `env_file` lúc chạy SSR).
-3. **Tối ưu hóa Docker Layer Cache theo từng Workspace**:
-   - Stage `deps` chỉ copy các file `package.json` và `pnpm-lock.yaml`, giúp bước `pnpm install --frozen-lockfile` luôn được cache 100% nếu không cài thêm thư viện mới.
-   - Stage `builder` của từng Dockerfile chỉ copy thư mục `packages/` và thư mục của riêng ứng dụng đó (`apps/api`, `apps/web`, hoặc `apps/client`).
-   - File [`.dockerignore`](../../.dockerignore) loại trừ `apps/api/.env*`, `docs/`, `.github/` khỏi build context:
-     - Khi bạn chỉ sửa biến trong `apps/api/.env`, Docker **không cần build lại image API** mà chỉ khởi động lại container trong 1 giây.
-     - Khi bạn sửa code của `apps/web`, Docker **chỉ build lại đúng image `web`**, giữ nguyên cache và không làm gián đoạn `api` hay `client`.
+| Dịch Vụ               | Container Name    | Cổng Host (VPS)           | Cổng Container  | Ghi Chú                                         |
+| :-------------------- | :---------------- | :------------------------ | :-------------- | :---------------------------------------------- |
+| **Backend API**       | `crodic_api`      | `8001`                    | `8000`          | Tránh xung đột cổng 8000 mặc định trên VPS      |
+| **Admin Portal**      | `crodic_web`      | `8080`                    | `80`            | Phục vụ SPA qua Nginx nội bộ container          |
+| **Client Web**        | `crodic_client`   | `3000`                    | `3000`          | Next.js Server-Side Rendering (Standalone)      |
+| **PostgreSQL 16**     | `crodic_postgres` | `127.0.0.1:5432`          | `5432`          | Chỉ bind localhost, lưu volume `postgres_data`  |
+| **Redis 7**           | `crodic_redis`    | `127.0.0.1:6379`          | `6379`          | Hàng đợi BullMQ & Cache, có mật khẩu            |
+| **S3 Storage (Silo)** | `crodic_minio`    | `127.0.0.1:9000` / `9001` | `9000` / `9001` | Dùng image `pgsty/silo` siêu nhẹ thay thế MinIO |
+| **Cloudflare Tunnel** | `crodic_tunnel`   | `network_mode: host`      | -               | Chạy ngầm kết nối ra Cloudflare Edge            |
 
 ### 1.3. Cấu Hình VPS Khuyến Nghị
 
-| Tiêu Chí              | Cấu Hình Tối Thiểu           | Cấu Hình Khuyến Nghị (Production) |
-| :-------------------- | :--------------------------- | :-------------------------------- |
-| **Hệ Điều Hành**      | Ubuntu 22.04 LTS / 24.04 LTS | Ubuntu 24.04 LTS x86_64           |
-| **CPU**               | 2 vCPU                       | 4 vCPU                            |
-| **RAM**               | 4 GB (+ 4GB Swap)            | 8 GB (+ 4GB Swap)                 |
-| **Ổ Cứng (SSD/NVMe)** | 40 GB SSD                    | 80+ GB NVMe SSD                   |
+| Tiêu Chí         | Cấu Hình Tối Thiểu                    | Khuyến Nghị Sản Xuất    |
+| :--------------- | :------------------------------------ | :---------------------- |
+| **Hệ Điều Hành** | Ubuntu 22.04 LTS / 24.04 LTS x86_64   | Ubuntu 24.04 LTS x86_64 |
+| **CPU**          | 2 vCPU                                | 4 vCPU                  |
+| **RAM**          | 4 GB (**bắt buộc có 4GB - 8GB Swap**) | 8 GB (+ 4GB Swap)       |
+| **Ổ Cứng**       | 40 GB NVMe SSD                        | 80+ GB NVMe SSD         |
 
 ---
 
-## Bước 1: Chuẩn Bị VPS, Swap & Cài Đặt Docker
+## Bước 1: Chuẩn Bị VPS, Tạo Swap & Cài Đặt Docker
 
-Kết nối SSH vào VPS:
+Kết nối SSH vào máy chủ VPS với quyền `root` hoặc user có quyền `sudo`:
 
 ```bash
 ssh root@<IP_VPS_CUA_BAN>
 ```
 
-### 1.1. Cập nhật hệ thống & cài đặt công cụ cơ bản
+### 1.1. Cập nhật hệ thống & cài công cụ nền tảng
 
 ```bash
 apt update && apt upgrade -y
-apt install -y curl wget git ufw htop ca-certificates gnupg nginx certbot python3-certbot-nginx
+apt install -y curl wget git ufw htop ca-certificates gnupg
 ```
 
-### 1.2. Tạo 4GB Swapfile (Chống tràn RAM khi compile Next.js & Vite)
+### 1.2. Tạo 4GB - 8GB Swapfile (Bắt buộc)
+
+> [!IMPORTANT]
+> Quá trình biên dịch TypeScript và tối ưu bundle của Next.js (`apps/client`) và Vite (`apps/web`) ngốn nhiều RAM trong thời gian ngắn. Nếu không có Swap, tiến trình biên dịch sẽ bị kernel Linux tắt đột ngột với mã lỗi `Exit code 137 (OOM Killed)`.
 
 ```bash
-fallocate -l 4G /swapfile
+# Tạo file swap 4GB (hoặc 8G nếu RAM VPS là 4GB)
+fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
+
+# Thiết lập tự động mount khi khởi động lại VPS
 echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+
+# Tối ưu hóa tần suất sử dụng swap
 sysctl vm.swappiness=10
 echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf
+
+# Kiểm tra dung lượng RAM & Swap
+free -h
 ```
 
 ### 1.3. Cài đặt Docker Engine & Docker Compose Plugin chính thức
@@ -117,43 +135,73 @@ echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf
 ```bash
 curl -fsSL https://get.docker.com | sh
 systemctl enable --now docker
+
+# Kiểm tra phiên bản (Yêu cầu Docker 26+ và Docker Compose v2.20+)
 docker --version
 docker compose version
 ```
 
-### 1.4. Cấu hình Tường Lửa (UFW Firewall)
+### 1.4. Thiết lập thư mục triển khai chuẩn
+
+Thư mục mặc định được thống nhất sử dụng xuyên suốt hệ thống và trong CI/CD là `/var/www/crodic-framework`:
 
 ```bash
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-ufw status
+mkdir -p /var/www/crodic-framework
 ```
 
 ---
 
-## Bước 2: Cấu Hình DNS Tên Miền
+## Bước 2: Cài Đặt GitHub Actions Self-Hosted Runner Trên VPS
 
-Trỏ các bản ghi **A Record** tại nhà cung cấp DNS về địa chỉ IP của VPS:
+Thay vì dùng SSH action tiềm ẩn nguy cơ bảo mật khóa private key và phụ thuộc mở port 22 ra ngoài, dự án sử dụng **GitHub Actions Self-Hosted Runner** chạy trực tiếp trên máy chủ. Runner lắng nghe lệnh từ GitHub qua cổng HTTPS outbound (không cần mở inbound port).
 
-| Loại (Type) | Tên (Host)           | Giá Trị (Target)   | Dịch Vụ Đích                             |
-| :---------- | :------------------- | :----------------- | :--------------------------------------- |
-| **A**       | `@` (yourdomain.com) | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000) |
-| **A**       | `www`                | `<IP_VPS_CUA_BAN>` | Website khách hàng (`apps/client` :3000) |
-| **A**       | `api`                | `<IP_VPS_CUA_BAN>` | REST API Backend (`apps/api` :8000)      |
-| **A**       | `admin`              | `<IP_VPS_CUA_BAN>` | Cổng quản trị Admin (`apps/web` :8080)   |
+### 2.1. Lấy Token Runner từ GitHub Repository
+
+1. Mở Repository trên GitHub bằng trình duyệt.
+2. Điều hướng tới **Settings > Actions > Runners > New self-hosted runner**.
+3. Chọn hệ điều hành: **Linux**, Kiến trúc: **x64**.
+4. GitHub sẽ hiển thị chuỗi lệnh tải runner và mã `<TOKEN>` một lần.
+
+### 2.2. Cài đặt và đăng ký Runner trên VPS
+
+Thực hiện cài đặt runner trong thư mục riêng:
+
+```bash
+# Tạo thư mục runner
+mkdir -p /opt/actions-runner && cd /opt/actions-runner
+
+# Tải gói runner mới nhất (ví dụ bản 2.322.0)
+curl -o actions-runner-linux-x64-2.322.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.322.0/actions-runner-linux-x64-2.322.0.tar.gz
+tar xzf ./actions-runner-linux-x64-2.322.0.tar.gz
+
+# Cấu hình runner kết nối với repository của bạn
+# (Thay <ORG>/<REPO> và <TOKEN> bằng giá trị trên GitHub hiển thị)
+./config.sh --url https://github.com/<ORG>/<REPO> --token <TOKEN> --name vps-production-runner --work /var/www/crodic-framework --unattended --replace
+```
+
+### 2.3. Cài Runner thành Systemd Daemon Service
+
+Để đảm bảo Runner luôn tự khởi động cùng máy chủ và phục hồi nếu tiến trình dừng:
+
+```bash
+cd /opt/actions-runner
+sudo ./svc.sh install
+sudo ./svc.sh start
+sudo ./svc.sh status
+```
+
+Kiểm tra tại GitHub: **Settings > Actions > Runners**, bạn sẽ thấy `vps-production-runner` có trạng thái xanh **Idle** (Sẵn sàng).
 
 ---
 
-## Bước 3: Clone Mã Nguồn & Cấu Hình Các File `.env`
+## Bước 3: Clone Mã Nguồn & Cấu Hình 4 File `.env`
 
-### 3.1. Clone repository về máy chủ
+### 3.1. Clone mã nguồn về thư mục `/var/www/crodic-framework`
 
 ```bash
-mkdir -p /opt/crodic
-cd /opt/crodic
-git clone git@github.com:<ORG>/<REPO>.git .
+cd /var/www/crodic-framework
+git clone https://github.com/<ORG>/<REPO>.git .
+git checkout main
 ```
 
 ### 3.2. Khởi tạo 4 file `.env` từ file mẫu
@@ -165,90 +213,115 @@ cp apps/web/.env.example apps/web/.env
 cp apps/client/.env.example apps/client/.env
 ```
 
-### 3.3. Chỉnh sửa nội dung các file `.env`
+### 3.3. Cấu hình chi tiết từng file `.env`
 
-#### 1. File `.env` ở thư mục gốc (Hạ tầng & Cổng)
+#### 1. File `.env` gốc (Hạ tầng, Port máy chủ & Cloudflare Token)
+
+Mở file `.env`:
 
 ```env
-API_PORT=8000
+# Port máy chủ VPS ánh xạ ra ngoài
+API_PORT=8001
 WEB_PORT=8080
 CLIENT_PORT=3000
 
+# Cơ sở dữ liệu PostgreSQL (nội bộ Docker)
 POSTGRES_HOST=postgres
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=MatKhauDatabaseManh123!
+POSTGRES_PASSWORD=MatKhauDatabaseBaoMat123!
 POSTGRES_DB=monorepo
 POSTGRES_PORT=5432
 
+# Redis Cache & BullMQ Queue
 REDIS_HOST=redis
-REDIS_PASSWORD=MatKhauRedisManh123!
+REDIS_PASSWORD=MatKhauRedisBaoMat123!
 REDIS_PORT=6379
 
+# S3 Storage (pgsty/silo)
 MINIO_HOST=minio
 MINIO_PORT=9000
 MINIO_CONSOLE_PORT=9001
 AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=MatKhauMinioManh123!
+AWS_SECRET_ACCESS_KEY=MatKhauSiloStorage123!
 AWS_DEFAULT_S3_BUCKET=nest-uploads
 AWS_PRIVATE_BUCKET=nest-uploads-private
+
+# Token Cloudflare Tunnel (Lấy từ Cloudflare Zero Trust Dashboard)
+CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...
 ```
 
 #### 2. File `apps/api/.env` (Backend NestJS)
 
-Chỉnh sửa các thông số quan trọng trong `apps/api/.env`:
-
 ```env
 NODE_ENV=production
 APP_PORT=8000
-APP_URL=https://api.yourdomain.com
+APP_URL=https://api.crodic.click
 APP_DEBUG=false
-APP_CORS_ORIGIN=https://yourdomain.com,https://www.yourdomain.com,https://admin.yourdomain.com
+APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
 
-# Kết nối tới container postgres và redis trong mạng Docker nội bộ
+# Kết nối database container qua mạng app-network
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
 DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=MatKhauDatabaseManh123!
+DATABASE_PASSWORD=MatKhauDatabaseBaoMat123!
 DATABASE_NAME=monorepo
 DATABASE_SYNCHRONIZE=false
 
+# Redis
 REDIS_HOST=redis
 REDIS_PORT=6379
-REDIS_PASSWORD=MatKhauRedisManh123!
+REDIS_PASSWORD=MatKhauRedisBaoMat123!
 
-# URL điều hướng xác thực
-AUTH_PORTAL_URL=https://admin.yourdomain.com
-AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.yourdomain.com/reset-password
-USER_AUTH_CLIENT_URL=https://yourdomain.com
-USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://yourdomain.com/auth/reset-password
+# Storage S3
+STORAGE_DRIVER=s3
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=MatKhauSiloStorage123!
+AWS_DEFAULT_REGION=us-east-1
+AWS_DEFAULT_S3_BUCKET=nest-uploads
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+# Điều hướng liên kết xác thực (Email, Reset Password, 2FA)
+AUTH_PORTAL_URL=https://admin.crodic.click
+AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.crodic.click/reset-password
+USER_AUTH_CLIENT_URL=https://crodic.click
+USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://crodic.click/auth/reset-password
+
+# JWT Secrets (Bắt buộc tạo chuỗi ngẫu nhiên tối thiểu 32 ký tự)
+AUTH_JWT_SECRET=chuoi-ngau-nhien-bao-mat-admin-jwt-secret-32-chars
+USER_AUTH_JWT_SECRET=chuoi-ngau-nhien-bao-mat-client-jwt-secret-32-chars
 ```
 
-_(Đừng quên thay thế các khóa `AUTH_JWT_SECRET`, `USER_AUTH_JWT_SECRET`... bằng chuỗi ngẫu nhiên tối thiểu 32 ký tự)._
+> [!TIP]
+> Bạn có thể sinh chuỗi bí mật ngẫu nhiên bảo mật cao bằng lệnh:
+> `openssl rand -base64 32`
 
-#### 3. File `apps/web/.env` (Cổng Quản Trị Vite)
+#### 3. File `apps/web/.env` (Admin Portal - Vite + React)
 
 ```env
 PORT=5173
-VITE_API_URL=https://api.yourdomain.com/api/v1
-VITE_APP_NAME=Animazing
-VITE_SOCKET_URL=https://api.yourdomain.com
+VITE_API_URL=https://api.crodic.click/api/v1
+VITE_APP_NAME="Crodic Framework"
+VITE_SOCKET_URL=https://api.crodic.click
 VITE_AUTH_KEY="${VITE_APP_NAME}_AUTH_KEY"
-VITE_CLIENT_URL=https://yourdomain.com
+VITE_CLIENT_URL=https://crodic.click
 VITE_SENTRY_ENVIRONMENT=production
 ```
 
-#### 4. File `apps/client/.env` (Website Khách Hàng Next.js)
+#### 4. File `apps/client/.env` (Client Website - Next.js)
 
 ```env
 PORT=3000
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com
-NEXT_PUBLIC_SOCKET_URL=https://api.yourdomain.com
-NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.yourdomain.com
-# Gọi trực tiếp qua mạng nội bộ Docker khi render phía server (SSR)
+NEXT_PUBLIC_APP_URL=https://crodic.click
+NEXT_PUBLIC_API_URL=https://api.crodic.click
+NEXT_PUBLIC_SOCKET_URL=https://api.crodic.click
+NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.crodic.click
+
+# SSR server-to-server fetch qua mạng nội bộ Docker
 SERVER_API_URL=http://api:8000
+
 TOKEN_EXPIRY_MINUTES_REMAINING=1m
-APP_NAME=Visel
+APP_NAME=Crodic
 NEXT_PUBLIC_ENABLE_WHITE_LABEL=true
 NEXT_PUBLIC_USE_CASE=as-needed
 NEXT_PUBLIC_APP_LOCALE=en
@@ -259,198 +332,220 @@ SENTRY_ENVIROMENT=production
 
 ---
 
-## Bước 4: Build & Khởi Chạy Hệ Thống Với Docker Compose
+## Bước 4: Cấu Hình Tên Miền & Routing (Cloudflare Tunnel / Nginx)
 
-Từ thư mục gốc `/opt/crodic`, chạy lệnh:
+### Phương Án A: Cloudflare Tunnel (Khuyến Nghị - Đang Áp Dụng)
 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+Với Cloudflare Tunnel, bạn không cần mở cổng 80, 443 hay 8001 trên tường lửa của VPS. Toàn bộ lưu lượng được bảo vệ bởi mạng toàn cầu của Cloudflare.
 
-Kiểm tra trạng thái các container đang chạy:
+1. Đăng nhập vào [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/).
+2. Vào **Networks > Tunnels > Create a tunnel > Chọn Cloudflared**.
+3. Đặt tên tunnel (ví dụ: `crodic-vps-tunnel`) và sao chép chuỗi mã Token trong câu lệnh cài đặt.
+4. Gán token vào biến `CLOUDFLARE_TUNNEL_TOKEN` trong file `.env` ở thư mục gốc.
+5. Tại tab **Public Hostname**, thêm 3 quy tắc điều hướng:
 
-```bash
-docker compose -f docker-compose.prod.yml ps
-```
+| Public Hostname      | Service Type | URL Đích Trên Host |
+| :------------------- | :----------- | :----------------- |
+| `crodic.click`       | `HTTP`       | `localhost:3000`   |
+| `admin.crodic.click` | `HTTP`       | `localhost:8080`   |
+| `api.crodic.click`   | `HTTP`       | `localhost:8001`   |
 
-Theo dõi log khởi động của hệ thống:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f api client web
-```
-
----
-
-## Bước 5: Chạy Migration, Đồng Bộ Quyền & Seed Dữ Liệu
-
-Trong lần triển khai đầu tiên, thực thi các lệnh khởi tạo cơ sở dữ liệu bên trong container `crodic_api`:
-
-```bash
-# 1. Chạy TypeORM Migrations tạo bảng
-docker exec -it crodic_api npm run migration:run:prod
-
-# 2. Đồng bộ danh mục quyền hạn (RBAC Permissions)
-docker exec -it crodic_api npm run permissions:sync:prod
-
-# 3. Khởi tạo tài khoản Super Admin mặc định và dữ liệu nền
-docker exec -it crodic_api npm run seed:run:prod
-```
+Container `crodic_tunnel` chạy với cờ `network_mode: host` trong [`docker-compose.prod.yml`](../../docker-compose.prod.yml) sẽ tự động đồng bộ và định tuyến lưu lượng vào các port nội bộ tương ứng.
 
 ---
 
-## Bước 6: Cấu Hình Nginx Reverse Proxy & Chứng Chỉ SSL (HTTPS)
+### Phương Án B: Nginx Reverse Proxy (Host) & Certbot Let's Encrypt
 
-Source code đã chuẩn bị sẵn file cấu hình hoàn chỉnh tại [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf). Bạn chỉ cần copy vào Nginx trên VPS:
+Nếu không sử dụng Cloudflare Tunnel:
 
-```bash
-sudo cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
-```
-
-Sau đó mở file `/etc/nginx/sites-available/crodic.conf` và thay thế domain `yourdomain.com`, `api.yourdomain.com`, `admin.yourdomain.com` bằng tên miền thật của bạn:
-
-```nginx
-# 1. Backend API (api.yourdomain.com -> 127.0.0.1:8000)
-server {
-    listen 80;
-    server_name api.yourdomain.com;
-    client_max_body_size 50M;
-
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# 2. Admin Portal (admin.yourdomain.com -> 127.0.0.1:8080)
-server {
-    listen 80;
-    server_name admin.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# 3. Client Website (yourdomain.com -> 127.0.0.1:3000)
-server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Kích hoạt cấu hình và cấp phát chứng chỉ SSL miễn phí bằng Certbot:
-
-```bash
-ln -s /etc/nginx/sites-available/crodic.conf /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-
-# Cấp chứng chỉ HTTPS tự động cho cả 3 domain
-certbot --nginx -d yourdomain.com -d www.yourdomain.com -d api.yourdomain.com -d admin.yourdomain.com
-```
+1. Trỏ DNS A-record của `@`, `admin`, `api` về IP VPS.
+2. Mở cổng tường lửa UFW:
+   ```bash
+   ufw allow 80/tcp
+   ufw allow 443/tcp
+   ufw --force enable
+   ```
+3. Cài đặt Nginx & Certbot:
+   ```bash
+   apt install -y nginx certbot python3-certbot-nginx
+   ```
+4. Copy file cấu hình mẫu [`deploy/nginx/vps-reverse-proxy.conf`](../../deploy/nginx/vps-reverse-proxy.conf):
+   ```bash
+   cp deploy/nginx/vps-reverse-proxy.conf /etc/nginx/sites-available/crodic.conf
+   ```
+5. Chỉnh sửa `server_name` và port proxy_pass:
+   - `api.crodic.click` -> `proxy_pass http://127.0.0.1:8001;`
+   - `admin.crodic.click` -> `proxy_pass http://127.0.0.1:8080;`
+   - `crodic.click` -> `proxy_pass http://127.0.0.1:3000;`
+6. Kích hoạt và cấp chứng chỉ SSL:
+   ```bash
+   ln -s /etc/nginx/sites-available/crodic.conf /etc/nginx/sites-enabled/
+   nginx -t && systemctl reload nginx
+   certbot --nginx -d crodic.click -d www.crodic.click -d admin.crodic.click -d api.crodic.click
+   ```
 
 ---
 
-## Bước 7: Quy Trình Cập Nhật Phiên Bản Mới (Redeploy)
+## Bước 5: Triển Khai Lần Đầu & Khởi Tạo Cơ Sở Dữ Liệu
 
-### Cách 1: Tự động qua GitHub Actions CD (Khuyến nghị)
-
-Source code đã thiết lập sẵn workflow [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml). Mỗi khi merge code vào nhánh `main` và các bài test CI hoàn tất thành công, workflow sẽ tự động SSH vào VPS và triển khai.
-
-Cấu hình các GitHub Repository Secrets sau tại **Settings > Secrets and variables > Actions**:
-
-- `VPS_HOST`: Địa chỉ IP hoặc domain của VPS.
-- `VPS_USERNAME`: Tên người dùng SSH (ví dụ: `root` hoặc deploy user).
-- `VPS_SSH_KEY`: Private Key SSH dùng để đăng nhập vào VPS.
-- `VPS_PORT`: Cổng SSH (mặc định: `22`).
-- `DEPLOY_PATH`: Đường dẫn thư mục dự án trên VPS (ví dụ: `/opt/crodic` hoặc `/var/www/crodic-framework`).
-
-### Cách 2: Triển khai thủ công bằng Deploy Script
-
-Trên máy chủ VPS, bạn chỉ cần chạy file script đã tạo sẵn [`scripts/deploy.sh`](../../scripts/deploy.sh):
+Tại thư mục `/var/www/crodic-framework`, chạy script triển khai chuẩn với cờ `--seed` để khởi tạo database lần đầu:
 
 ```bash
-cd /opt/crodic
+cd /var/www/crodic-framework
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh --seed
+```
+
+### Các bước script tự động thực hiện:
+
+1. **Kiểm tra tiên quyết**: Xác thực Docker, Docker Compose và sự tồn tại của 4 file `.env`.
+2. **Build Docker Images**: Biên dịch image sản xuất cho `api`, `web`, `client`, khởi chạy cơ sở dữ liệu `postgres`, `redis`, `silo S3` và `cloudflared tunnel`.
+3. **Chạy TypeORM Migrations**:
+   Khởi tạo cấu trúc bảng thông qua lệnh node trực tiếp bên trong container (tránh lỗi TTY):
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run
+   ```
+4. **Đồng bộ phân quyền RBAC**:
+   Nạp danh mục quyền hạn hệ thống vào bảng `permissions`:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/sync-permissions.js
+   ```
+5. **Nạp dữ liệu mẫu & Super Admin (`--seed`)**:
+   Khởi tạo tài khoản quản trị mặc định và theme màu White-label:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec -T -e CI=true api node dist/database/seeds/run-seed.js
+   ```
+6. **Smoke Test & Healthcheck**:
+   Kiểm tra tự động endpoint `http://127.0.0.1:8001/health` để đảm bảo API và Database hoạt động hoàn hảo trước khi kết thúc.
+7. **Dọn dẹp tài nguyên**:
+   Tự động xóa các Docker image cũ không còn sử dụng (`docker image prune -f`).
+
+---
+
+## Bước 6: Quy Trình CI/CD Tự Động Hóa (GitHub Actions)
+
+Dự án đã tích hợp sẵn workflow tự động hóa tại [`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml).
+
+### 6.1. Triển khai tự động khi Push code
+
+Mỗi khi lập trình viên tạo Pull Request hoặc merge commit vào nhánh `main`:
+
+1. GitHub Actions kích hoạt runner `self-hosted` trên VPS.
+2. Runner tự động di chuyển vào `/var/www/crodic-framework`, kéo code mới (`git pull origin main`).
+3. Thực thi `./scripts/deploy.sh`.
+4. Nhờ cơ chế tối ưu Docker Layer Cache:
+   - Nếu chỉ sửa code của `apps/web`: Docker chỉ build lại `crodic_web` trong 10-15 giây, các container `api`, `client`, `postgres` không bị ảnh hưởng.
+   - Nếu sửa code backend: Docker build lại `crodic_api`, chạy migration mới và kiểm tra health check tự động.
+
+### 6.2. Kích hoạt triển khai thủ công (Manual Dispatch)
+
+Khi cần deploy lại hoặc chạy migration riêng lẻ:
+
+1. Truy cập tab **Actions** trên GitHub.
+2. Chọn workflow **Deploy to Production (VPS)**.
+3. Bấm nút **Run workflow**.
+4. _(Tùy chọn)_ Đánh dấu vào ô `skip_migration` nếu bản deploy không cần chạy migration.
+
+---
+
+## Bước 7: Vận Hành, Quản Trị Hàng Ngày & Sao Lưu
+
+### 7.1. Các cờ lệnh của `scripts/deploy.sh`
+
+Bạn có thể chạy script thủ công trên VPS với các tham số:
+
+```bash
+# Triển khai chuẩn (kéo git + build + migration + healthcheck)
 ./scripts/deploy.sh
+
+# Triển khai kèm nạp lại hạt giống dữ liệu (Seeds)
+./scripts/deploy.sh --seed
+
+# Triển khai mà không kéo git pull (Hữu ích khi bạn sửa file trực tiếp trên VPS để debug)
+./scripts/deploy.sh --skip-pull
+
+# Triển khai bỏ qua chạy migration
+./scripts/deploy.sh --skip-migration
 ```
 
-Script sẽ tự động:
-
-1. Kéo mã nguồn mới nhất (`git pull`).
-2. Build các image thay đổi với Docker Compose.
-3. Cập nhật và khởi động container (`docker compose up -d`).
-4. Chạy migration cơ sở dữ liệu (`migration:run:prod`) và đồng bộ quyền hạn RBAC (`permissions:sync:prod`).
-5. Kiểm tra Health Check và tự động dọn dẹp các Docker image cũ.
-
-> [!TIP]
-> Nhờ cơ chế tách lớp cache trong Dockerfile:
->
-> - Nếu bản cập nhật chỉ sửa `apps/web`, chỉ `crodic_web` được build và khởi động lại; `crodic_api` và `crodic_client` được giữ nguyên 100%.
-> - Nếu bạn chỉ sửa biến trong `apps/api/.env`, lệnh `docker compose -f docker-compose.prod.yml up -d` sẽ nạp lại biến môi trường và khởi động lại `crodic_api` ngay lập tức mà không cần build lại image.
-
----
-
-## Bước 8: Kiểm Tra Hoạt Động (Smoke Tests) & Sao Lưu
-
-### 8.1. Kiểm tra phản hồi các dịch vụ
+### 7.2. Các câu lệnh quản trị Docker thường dùng
 
 ```bash
-curl -f -I https://api.yourdomain.com/api/v1/health
-curl -f -I https://yourdomain.com
-curl -f -I https://admin.yourdomain.com
+# Xem trạng thái tất cả các container
+docker compose -f docker-compose.prod.yml ps
+
+# Xem log thời gian thực của một dịch vụ cụ thể
+docker compose -f docker-compose.prod.yml logs -f api
+docker compose -f docker-compose.prod.yml logs -f web
+docker compose -f docker-compose.prod.yml logs -f client
+docker compose -f docker-compose.prod.yml logs -f cloudflared
+
+# Khởi động lại 1 container đơn lẻ (không gián đoạn các dịch vụ khác)
+docker compose -f docker-compose.prod.yml restart api
+
+# Tạm dừng toàn bộ hệ thống
+docker compose -f docker-compose.prod.yml down
 ```
 
-### 8.2. Sao lưu cơ sở dữ liệu PostgreSQL tự động (Cronjob)
+### 7.3. Sao lưu cơ sở dữ liệu PostgreSQL tự động (Cronjob)
 
-Tạo cronjob sao lưu PostgreSQL mỗi ngày vào 02:00 sáng:
+Để đảm bảo an toàn dữ liệu, thiết lập lịch sao lưu cơ sở dữ liệu tự động mỗi ngày vào 02:00 sáng và tự động xóa bản sao lưu cũ hơn 14 ngày:
 
 ```bash
-mkdir -p /opt/backups/postgres
+# 1. Tạo thư mục chứa backup
+mkdir -p /var/backups/postgres
 
-# Thêm vào crontab (crontab -e):
-0 2 * * * docker exec crodic_postgres pg_dump -U postgres monorepo | gzip > /opt/backups/postgres/db_$(date +\%F).sql.gz && find /opt/backups/postgres -type f -mtime +7 -delete
+# 2. Mở crontab để chỉnh sửa
+crontab -e
+
+# 3. Dán dòng cấu hình sau vào cuối file crontab:
+0 2 * * * docker exec crodic_postgres pg_dump -U postgres monorepo | gzip > /var/backups/postgres/db_$(date +\%F_%H%M%S).sql.gz && find /var/backups/postgres -type f -name "db_*.sql.gz" -mtime +14 -delete
+```
+
+Lệnh khôi phục cơ sở dữ liệu từ file backup khi cần:
+
+```bash
+gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_postgres psql -U postgres -d monorepo
 ```
 
 ---
 
 ## Xử Lý Sự Cố Thường Gặp (Troubleshooting)
 
-### 1. Quá trình build bị dừng đột ngột với `Exit code 137 (OOM Killed)`
+### 1. Build bị dừng đột ngột với mã lỗi `Exit code 137 (OOM Killed)`
 
-- **Nguyên nhân**: Hạt nhân Linux tắt tiến trình biên dịch do thiếu RAM.
-- **Cách khắc phục**: Kiểm tra Swap bằng lệnh `free -h` và đảm bảo đã tạo tối thiểu 4GB Swap ở [Bước 1.2](#12-tạo-4gb-swapfile-chống-tràn-ram-khi-compile-nextjs--vite). Nếu VPS ít RAM, có thể build từng dịch vụ lần lượt:
+- **Hiện tượng**: Khi đang build container `web` hoặc `client`, tiến trình đột ngột dừng và báo lỗi code 137.
+- **Nguyên nhân**: Máy chủ VPS hết bộ nhớ RAM vật lý.
+- **Xử lý**: Kiểm tra bằng lệnh `free -h`. Bắt buộc phải tạo Swap dung lượng tối thiểu 4GB - 8GB theo hướng dẫn tại [Bước 1.2](#12-tạo-4gb--8gb-swapfile-bắt-buộc).
+
+### 2. Lỗi `ERR_PNPM_NO_TTY` khi chạy lệnh bên trong container
+
+- **Hiện tượng**: `pnpm run migration:run` báo lỗi yêu cầu TTY khi chạy trong script hoặc CI.
+- **Xử lý**: Dự án đã chuẩn hóa việc chạy các file JavaScript đã biên dịch bằng lệnh `node` trực tiếp kèm biến môi trường `-e CI=true`:
   ```bash
-  docker compose -f docker-compose.prod.yml build api
-  docker compose -f docker-compose.prod.yml build web
-  docker compose -f docker-compose.prod.yml build client
-  docker compose -f docker-compose.prod.yml up -d
+  docker compose -f docker-compose.prod.yml exec -T -e CI=true api node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run
   ```
 
-### 2. Lỗi CORS khi gọi API từ Admin hoặc Client
+### 3. Lỗi CORS khi gọi API từ trình duyệt
 
-- **Cách khắc phục**: Kiểm tra biến `APP_CORS_ORIGIN` trong `apps/api/.env` đã liệt kê đầy đủ các domain có `https://` và không có dấu `/` ở cuối, sau đó chạy `docker compose -f docker-compose.prod.yml up -d api`.
+- **Hiện tượng**: Trình duyệt báo `Cross-Origin Request Blocked`.
+- **Xử lý**: Mở `apps/api/.env`, kiểm tra biến `APP_CORS_ORIGIN` đã chứa đầy đủ danh sách domain kèm giao thức `https://` và **không có dấu gạch chéo `/` ở cuối**:
+  ```env
+  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+  ```
+  Sau khi sửa, khởi động lại container API:
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d api
+  ```
 
-### 3. Thay đổi biến trong `apps/web/.env` hoặc `apps/client/.env`
+### 4. Thay đổi biến môi trường trong `apps/web/.env` hoặc `apps/client/.env` nhưng giao diện không nhận
 
-- **Lưu ý**: Các biến `VITE_*` và `NEXT_PUBLIC_*` được trình biên dịch đóng gói vào bundle lúc build. Khi thay đổi các file này trên server, hãy chạy `docker compose -f docker-compose.prod.yml up -d --build web client` để cập nhật bundle mới.
+- **Nguyên nhân**: Các biến có tiền tố `VITE_*` (trong React) và `NEXT_PUBLIC_*` (trong Next.js) được đóng gói cố định vào file bundle JS tại thời điểm build image (`pnpm build`).
+- **Xử lý**: Khi chỉnh sửa các file `.env` này, bạn bắt buộc phải build lại image tương ứng:
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d --build web client
+  ```
+
+### 5. Dịch vụ S3 / MinIO báo lỗi kéo image hoặc cấp phép
+
+- **Xử lý**: Image MinIO chính thức trên Docker Hub thường gặp vấn đề cấp phép và dung lượng lớn. Dự án đã chuyển sang sử dụng image chuẩn `pgsty/silo:latest` (drop-in S3-compatible server siêu nhẹ) và `pgsty/mc:latest` để tự động khởi tạo bucket `nest-uploads`. Dữ liệu lưu bền vững trong volume `minio_data`.
