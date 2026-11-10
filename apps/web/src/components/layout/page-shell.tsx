@@ -55,12 +55,12 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4',
         className
       )}
       {...props}
     >
-      <div className='flex items-start gap-3 sm:gap-4'>
+      <div className='flex min-w-0 items-start gap-2.5 sm:gap-4'>
         {backTo !== undefined && (
           <Button
             variant='outline'
@@ -78,15 +78,15 @@ export function PageHeader({
             <ArrowLeftIcon className='size-4' aria-hidden='true' />
           </Button>
         )}
-        <div className='space-y-1'>
+        <div className='min-w-0 flex-1 space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
-            <h1 className='text-2xl font-bold tracking-tight text-balance'>
+            <h1 className='text-xl font-bold tracking-tight text-balance break-words sm:text-2xl'>
               {title}
             </h1>
             {badges}
           </div>
           {description && (
-            <p className='text-muted-foreground text-sm text-pretty'>
+            <p className='text-muted-foreground text-xs text-pretty sm:text-sm'>
               {description}
             </p>
           )}
@@ -94,7 +94,7 @@ export function PageHeader({
       </div>
 
       {actions && (
-        <div className='flex flex-wrap items-center gap-2 sm:shrink-0'>
+        <div className='flex flex-wrap items-center gap-2 self-start sm:shrink-0 sm:self-auto'>
           {actions}
         </div>
       )}

@@ -229,7 +229,7 @@
   "files.picker.loadedAll": "Showing all {{count}} files",
   "files.picker.select": "Select file",
   "files.picker.selectCount": "Select {{count}} file(s)",
-  "files.picker.demoButton": "Demo picker",
+  "files.picker.demoButton": "File Picker",
   "files.picker.demoValue": "Selected URL",
   "files.picker.upload": "Upload",
   "files.picker.uploadTo": "Upload to:",

@@ -23,7 +23,7 @@ export function Header({
       )}
       {...props}
     >
-      <div className='flex h-full items-center gap-3 px-4 sm:gap-4 sm:px-6'>
+      <div className='flex h-full items-center gap-2 px-3 sm:gap-4 sm:px-6'>
         <SidebarTrigger variant='outline' className='max-md:scale-110' />
         <Separator orientation='vertical' className='h-6' />
         <AppBreadcrumb />

@@ -34,6 +34,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             className={cn(
               // Enable content container queries
               '@container/content',
+              'max-w-full min-w-0 overflow-x-hidden',
 
               // If layout is fixed, set height to 100dvh to prevent overflow
               'has-data-[layout=fixed]:h-dvh',
@@ -43,7 +44,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             )}
           >
             <Header fixed>
-              <div className='ms-auto flex items-center space-x-3 sm:space-x-4'>
+              <div className='ms-auto flex items-center space-x-1.5 sm:space-x-3'>
                 <Search />
                 <LanguageSwitch />
                 <ThemeSwitch />

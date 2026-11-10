@@ -229,7 +229,7 @@
   "files.picker.loadedAll": "Đã hiển thị toàn bộ {{count}} tệp",
   "files.picker.select": "Chọn tệp",
   "files.picker.selectCount": "Chọn {{count}} tệp",
-  "files.picker.demoButton": "Demo chọn tệp",
+  "files.picker.demoButton": "Chọn tệp tin",
   "files.picker.demoValue": "URL đã chọn",
   "files.picker.upload": "Tải lên",
   "files.picker.uploadTo": "Tải vào:",

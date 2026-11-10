@@ -1,10 +1,11 @@
 import type { WebsiteSettingsSchema } from '@/pages/settings/schema'
 
 export const DEFAULT_WEBSITE_METADATA = {
-  title: 'ADMIN DASHBOARD',
-  metaTitle: 'Vite Admin Dashboard',
-  description: 'Admin Dashboard UI built with Shadcn and Vite.',
-  socialTitle: 'Shadcn Admin',
+  title: 'Crodic Framework',
+  metaTitle: 'Crodic Framework - Enterprise Admin & Management Portal',
+  description:
+    'High-performance enterprise administration portal built by Crodic Crystal, featuring robust RBAC, real-time monitoring, and modular white-label support.',
+  socialTitle: 'Crodic Framework',
   favicon: '/images/favicon.png',
 }
 

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -208,7 +209,7 @@ function SystemHealthSection({
         </div>
       </CardHeader>
       <CardContent className='space-y-4'>
-        <div className='grid gap-3 md:grid-cols-3'>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
           <HealthSummaryItem
             label={t('dashboard.systemHealth.overallStatus')}
             value={overall.label}
@@ -246,9 +247,11 @@ function HealthSummaryItem({
   tone: 'healthy' | 'warning' | 'critical' | 'neutral'
 }) {
   return (
-    <div className='rounded-md border p-3'>
-      <p className='text-muted-foreground text-xs font-medium'>{label}</p>
-      <p className={getHealthToneClass(tone)}>{value}</p>
+    <div className='min-w-0 rounded-md border p-3'>
+      <p className='text-muted-foreground truncate text-xs font-medium'>
+        {label}
+      </p>
+      <p className={cn(getHealthToneClass(tone), 'truncate')}>{value}</p>
     </div>
   )
 }
@@ -274,7 +277,7 @@ function HealthIndicatorCard({
   const healthy = indicator.status === 'up'
 
   return (
-    <div className='flex items-start gap-3 rounded-md border p-3'>
+    <div className='flex min-w-0 items-start gap-3 rounded-md border p-3'>
       <div
         className={
           healthy
@@ -286,10 +289,13 @@ function HealthIndicatorCard({
       </div>
       <div className='min-w-0 flex-1'>
         <div className='flex flex-wrap items-center gap-2'>
-          <p className='font-medium capitalize'>
+          <p className='truncate font-medium capitalize'>
             {formatIndicatorName(indicator.name)}
           </p>
-          <Badge variant={healthy ? 'secondary' : 'destructive'}>
+          <Badge
+            variant={healthy ? 'secondary' : 'destructive'}
+            className='shrink-0'
+          >
             {indicator.status}
           </Badge>
         </div>
@@ -411,7 +417,7 @@ function QueueMonitoringSection({
                       {getQueueStatusText()}
                     </Badge>
                   </div>
-                  <div className='grid grid-cols-4 gap-2 text-center text-xs'>
+                  <div className='grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4'>
                     <div className='bg-muted/50 rounded p-2'>
                       <p className='text-muted-foreground font-medium'>
                         {t('dashboard.queues.waiting')}

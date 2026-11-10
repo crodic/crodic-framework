@@ -71,12 +71,17 @@ export default function PageActivityLogShow() {
     <>
       <Main>
         <div className='space-y-8'>
-          <div className='flex items-center justify-between'>
-            <h1 className='text-2xl font-bold'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+            <h1 className='text-xl font-bold break-words sm:text-2xl'>
               {t('activityLogs.show.title')}
             </h1>
-            <div className='flex items-center gap-2'>
-              <Button onClick={() => navigate(-1)} variant='outline'>
+            <div className='flex items-center gap-2 self-start sm:self-auto'>
+              <Button
+                onClick={() => navigate(-1)}
+                variant='outline'
+                size='sm'
+                className='gap-1.5'
+              >
                 <ArrowLeftIcon size={16} />
                 <span>{t('buttons.back')}</span>
               </Button>

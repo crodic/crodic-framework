@@ -21,15 +21,19 @@
     scrollbar-color: var(--border) transparent;
   }
   html {
-    @apply overflow-x-hidden;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   body {
     @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
-  /* Override Radix scroll locking for sticky headers */
+  /* Override Radix scroll locking for sticky headers while preserving horizontal restraint */
   body[data-scroll-locked] {
-    overflow: unset !important;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
   }
 
   /* Cursor pointer for buttons */

@@ -43,22 +43,42 @@ export function PageLocationOverview() {
           onValueChange={handleTabChange}
           className='w-full space-y-4'
         >
-          <TabsList className='grid w-full grid-cols-2 sm:inline-flex sm:w-auto'>
-            <TabsTrigger value='countries' className='gap-2'>
-              <Flag className='size-4' />
-              <span>{t('locations.tabs.countries', 'Countries')}</span>
+          <TabsList className='grid h-auto w-full grid-cols-2 gap-1.5 p-1 sm:inline-flex sm:h-9 sm:w-auto'>
+            <TabsTrigger
+              value='countries'
+              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+            >
+              <Flag className='size-4 shrink-0' />
+              <span className='truncate'>
+                {t('locations.tabs.countries', 'Countries')}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value='states' className='gap-2'>
-              <Building2 className='size-4' />
-              <span>{t('locations.tabs.states', 'States / Provinces')}</span>
+            <TabsTrigger
+              value='states'
+              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+            >
+              <Building2 className='size-4 shrink-0' />
+              <span className='truncate'>
+                {t('locations.tabs.states', 'States / Provinces')}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value='cities' className='gap-2'>
-              <Globe className='size-4' />
-              <span>{t('locations.tabs.cities', 'Cities / Districts')}</span>
+            <TabsTrigger
+              value='cities'
+              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+            >
+              <Globe className='size-4 shrink-0' />
+              <span className='truncate'>
+                {t('locations.tabs.cities', 'Cities / Districts')}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value='regions' className='gap-2'>
-              <Compass className='size-4' />
-              <span>{t('locations.tabs.regions', 'Regions')}</span>
+            <TabsTrigger
+              value='regions'
+              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+            >
+              <Compass className='size-4 shrink-0' />
+              <span className='truncate'>
+                {t('locations.tabs.regions', 'Regions')}
+              </span>
             </TabsTrigger>
           </TabsList>
 

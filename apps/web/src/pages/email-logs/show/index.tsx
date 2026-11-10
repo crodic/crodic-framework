@@ -65,14 +65,21 @@ export default function PageEmailLogShow() {
     <>
       <Main>
         <div className='space-y-6'>
-          <div className='flex items-center justify-between'>
-            <div>
-              <h1 className='text-2xl font-bold'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='min-w-0 flex-1'>
+              <h1 className='text-xl font-bold break-words sm:text-2xl'>
                 {t('emailLogs.show.title')}
               </h1>
-              <p className='text-muted-foreground'>{data.subject}</p>
+              <p className='text-muted-foreground text-xs break-words sm:text-sm'>
+                {data.subject}
+              </p>
             </div>
-            <Button onClick={() => navigate(-1)} variant='outline'>
+            <Button
+              onClick={() => navigate(-1)}
+              variant='outline'
+              size='sm'
+              className='gap-1.5 self-start sm:self-auto'
+            >
               <ArrowLeftIcon size={16} />
               {t('buttons.back')}
             </Button>

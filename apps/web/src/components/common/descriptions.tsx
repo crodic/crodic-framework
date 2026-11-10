@@ -73,7 +73,7 @@ interface DetailsProps {
 
 export function Descriptions({ children }: DetailsProps) {
   return (
-    <div className='gap-5 sm:grid sm:grid-cols-2 md:grid-cols-3'>
+    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3'>
       {children}
     </div>
   )

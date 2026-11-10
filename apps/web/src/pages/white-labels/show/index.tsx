@@ -211,20 +211,21 @@ export default function PageWhiteLabelShow() {
       />
       <Main className='flex flex-1 flex-col gap-6'>
         {/* Top Header Bar */}
-        <div className='flex flex-wrap items-center justify-between gap-4'>
-          <div className='flex items-center gap-3'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex min-w-0 items-start gap-3'>
             <Button
               variant='ghost'
               size='icon'
               onClick={() => navigate('/white-labels')}
               title={t('whiteLabels.show.back')}
               aria-label={t('whiteLabels.show.back')}
+              className='shrink-0'
             >
               <ArrowLeft className='size-5' />
             </Button>
-            <div>
-              <div className='flex items-center gap-2'>
-                <h2 className='text-2xl font-bold tracking-tight'>
+            <div className='min-w-0 flex-1'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <h2 className='text-xl font-bold tracking-tight break-words sm:text-2xl'>
                   {item.name}
                 </h2>
                 <Badge
@@ -244,13 +245,13 @@ export default function PageWhiteLabelShow() {
                   </Badge>
                 )}
               </div>
-              <p className='text-muted-foreground text-sm'>
+              <p className='text-muted-foreground text-xs break-words sm:text-sm'>
                 {item.description || item.slug}
               </p>
             </div>
           </div>
 
-          <div className='flex flex-wrap items-center gap-2'>
+          <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
             {styles && (
               <>
                 <Button
@@ -321,22 +322,42 @@ export default function PageWhiteLabelShow() {
             onValueChange={(v) => setActiveTab(v as TabType)}
             className='w-full sm:w-auto'
           >
-            <TabsList className='grid w-full grid-cols-2 sm:flex sm:w-auto'>
-              <TabsTrigger value='brand' className='gap-1.5'>
-                <Sparkles className='size-4' />
-                <span>{t('whiteLabels.form.brandAssets')}</span>
+            <TabsList className='grid h-auto w-full grid-cols-2 gap-1.5 p-1 sm:flex sm:h-9 sm:w-auto'>
+              <TabsTrigger
+                value='brand'
+                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+              >
+                <Sparkles className='size-3.5 shrink-0 sm:size-4' />
+                <span className='truncate'>
+                  {t('whiteLabels.form.brandAssets')}
+                </span>
               </TabsTrigger>
-              <TabsTrigger value='colors' className='gap-1.5'>
-                <Paintbrush className='size-4' />
-                <span>{t('whiteLabels.form.colorsFonts')}</span>
+              <TabsTrigger
+                value='colors'
+                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+              >
+                <Paintbrush className='size-3.5 shrink-0 sm:size-4' />
+                <span className='truncate'>
+                  {t('whiteLabels.form.colorsFonts')}
+                </span>
               </TabsTrigger>
-              <TabsTrigger value='seo' className='gap-1.5'>
-                <Search className='size-4' />
-                <span>{t('whiteLabels.form.seoMeta')}</span>
+              <TabsTrigger
+                value='seo'
+                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+              >
+                <Search className='size-3.5 shrink-0 sm:size-4' />
+                <span className='truncate'>
+                  {t('whiteLabels.form.seoMeta')}
+                </span>
               </TabsTrigger>
-              <TabsTrigger value='preview' className='gap-1.5'>
-                <Eye className='text-primary size-4' />
-                <span>{t('whiteLabels.form.livePreview')}</span>
+              <TabsTrigger
+                value='preview'
+                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+              >
+                <Eye className='text-primary size-3.5 shrink-0 sm:size-4' />
+                <span className='truncate'>
+                  {t('whiteLabels.form.livePreview')}
+                </span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
