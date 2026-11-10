@@ -19,7 +19,7 @@ export function DesktopNav() {
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
-        <NavigationMenuItem>
+        <NavigationMenuItem value="features">
           <NavigationMenuTrigger className="bg-transparent text-sm">
             {t("features")}
           </NavigationMenuTrigger>
@@ -32,7 +32,7 @@ export function DesktopNav() {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        <NavigationMenuItem>
+        <NavigationMenuItem value="platform">
           <NavigationMenuTrigger className="bg-transparent text-sm">
             Platform
           </NavigationMenuTrigger>
@@ -45,7 +45,7 @@ export function DesktopNav() {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        <NavigationMenuItem>
+        <NavigationMenuItem value="tags">
           <NavigationMenuLink asChild>
             <Link
               href="/tags"
@@ -56,7 +56,7 @@ export function DesktopNav() {
           </NavigationMenuLink>
         </NavigationMenuItem>
 
-        <NavigationMenuItem>
+        <NavigationMenuItem value="tech-stack">
           <NavigationMenuLink asChild>
             <Link
               href="/#tech-stack"
@@ -67,7 +67,7 @@ export function DesktopNav() {
           </NavigationMenuLink>
         </NavigationMenuItem>
 
-        <NavigationMenuItem>
+        <NavigationMenuItem value="profile">
           <NavigationMenuLink asChild>
             <Link
               href="/profile"

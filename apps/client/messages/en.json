@@ -230,7 +230,18 @@
   "Auth": {
     "layout": {
       "welcome": "Welcome to Crodic Framework",
-      "tagline": "Enterprise full-stack monorepo platform to build & scale modern applications"
+      "tagline": "Enterprise full-stack monorepo platform to build & scale modern applications",
+      "description": "High-performance modular architecture with role-based security, background worker queues, and deep white-label customization.",
+      "operational": "Operational 99.9%",
+      "feature1Title": "Enterprise Security",
+      "feature1Desc": "Multi-tier RBAC permissions, Google OAuth 2.0 & secure JWT sessions.",
+      "feature2Title": "High-Performance Architecture",
+      "feature2Desc": "Turborepo monorepo, Next.js 16 App Router & NestJS microservices.",
+      "feature3Title": "Modular White-Label",
+      "feature3Desc": "Multi-tenant dynamic branding, tokenized theming & custom domains.",
+      "statUptime": "99.9% Uptime",
+      "statLatency": "< 50ms Latency",
+      "statScale": "Enterprise Scale"
     },
     "login": {
       "metaTitle": "Sign In",
