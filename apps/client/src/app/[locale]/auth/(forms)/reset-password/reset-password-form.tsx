@@ -27,6 +27,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { WhiteLabelLogo } from "@/lib/white-label";
 
 export default function ResetPasswordForm() {
   const t = useTranslations("Auth.resetPassword");
@@ -65,9 +67,9 @@ export default function ResetPasswordForm() {
     try {
       await xior.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/reset-password?token=${encodeURIComponent(
-          token,
+          token
         )}`,
-        values,
+        values
       );
       router.push("/auth/login?reset=success");
     } catch (error) {
@@ -80,26 +82,49 @@ export default function ResetPasswordForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <div className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
-      <Card className="w-100">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t("title")}</CardTitle>
-          <CardDescription>{t("description")}</CardDescription>
+    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-md lg:px-4">
+      {/* Mobile Brand Logo */}
+      <div className="mb-6 flex justify-center lg:hidden">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <WhiteLabelLogo
+            fallback={
+              <span className="text-primary text-2xl font-bold tracking-tight">
+                Crodic Framework
+              </span>
+            }
+          />
+        </Link>
+      </div>
+
+      <Card className="border-border/70 bg-card/95 w-full gap-6 rounded-2xl py-8 shadow-xl backdrop-blur-md sm:py-10">
+        <CardHeader className="space-y-2 px-6 sm:px-8">
+          <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {t("title")}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
+            {t("description")}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 sm:px-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 sm:space-y-4.5"
+            >
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("newPassword")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("newPassword")}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
+                        placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={!token || isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -112,12 +137,15 @@ export default function ResetPasswordForm() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("confirmPassword")}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
+                        placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={!token || isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -130,25 +158,25 @@ export default function ResetPasswordForm() {
               ) : null}
               <Button
                 type="submit"
-                className="w-full"
+                className="mt-2 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
                 disabled={!token || isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    {t("submitting")}
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>{t("submitting")}</span>
                   </>
                 ) : (
-                  t("submit")
+                  <span>{t("submit")}</span>
                 )}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
           <Link
             href="/auth/login"
-            className="text-primary text-sm hover:underline"
+            className="text-primary text-xs font-medium underline-offset-4 hover:underline sm:text-sm"
           >
             {t("backToSignIn")}
           </Link>

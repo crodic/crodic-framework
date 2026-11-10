@@ -15,6 +15,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { GoogleIcon } from "@/components/icons/google-icon";
+import { WhiteLabelLogo } from "@/lib/white-label";
 import {
   Card,
   CardContent,
@@ -107,7 +110,7 @@ export default function LoginForm() {
     try {
       const { data } = await http.post<LoginResponseData>(
         "api/v1/user/auth/login",
-        values,
+        values
       );
       const { accessToken, refreshToken } = data;
 
@@ -139,13 +142,30 @@ export default function LoginForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <div className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
-      <Card className="w-100">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t("title")}</CardTitle>
-          <CardDescription>{t("description")}</CardDescription>
+    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-md lg:px-4">
+      {/* Mobile Brand Logo */}
+      <div className="mb-6 flex justify-center lg:hidden">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <WhiteLabelLogo
+            fallback={
+              <span className="text-primary text-2xl font-bold tracking-tight">
+                Crodic Framework
+              </span>
+            }
+          />
+        </Link>
+      </div>
+
+      <Card className="border-border/70 bg-card/95 w-full gap-6 rounded-2xl py-8 shadow-xl backdrop-blur-md sm:py-10">
+        <CardHeader className="space-y-2 px-6 sm:px-8">
+          <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {t("title")}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
+            {t("description")}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 sm:px-8">
           {code && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="size-4" />
@@ -156,19 +176,25 @@ export default function LoginForm() {
             </Alert>
           )}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4.5 sm:space-y-5"
+            >
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("email")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("email")}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder={t("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -180,14 +206,24 @@ export default function LoginForm() {
                 control={form.control}
                 name="password"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
+                  <FormItem className="relative">
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-sm font-medium">
+                        {t("password")}
+                      </FormLabel>
+                      <Link
+                        href="/auth/forgot-password"
+                        className="text-muted-foreground hover:text-primary text-xs font-medium transition-colors sm:text-sm"
+                      >
+                        {t("forgotPassword")}
+                      </Link>
+                    </div>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder={t("passwordPlaceholder")}
                         autoComplete="current-password"
                         disabled={isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -195,44 +231,54 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-end">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-primary text-sm hover:underline"
-                >
-                  {t("forgotPassword")}
-                </Link>
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+              <Button
+                type="submit"
+                className="mt-2 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    {t("submitting")}
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>{t("submitting")}</span>
                   </>
                 ) : (
-                  t("submit")
+                  <span>{t("submit")}</span>
                 )}
               </Button>
+
+              <div className="relative my-3 sm:my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="border-border/70 w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card text-muted-foreground px-2">
+                    {t("noAccount") ? "Or" : "Or continue with"}
+                  </span>
+                </div>
+              </div>
+
               <Button
                 type="button"
-                className="w-full"
+                className="hover:bg-accent/80 h-10.5 w-full cursor-pointer gap-2.5 font-medium transition-all sm:h-11"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => {
                   window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/google`;
                 }}
               >
-                {t("continueGoogle")}
+                <GoogleIcon className="size-4.5 shrink-0" />
+                <span>{t("continueGoogle")}</span>
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-muted-foreground text-sm">
+        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
+          <p className="text-muted-foreground text-center text-xs sm:text-sm">
             {t("noAccount")}{" "}
             <Link
               href="/auth/sign-up"
-              className="text-primary font-medium hover:underline"
+              className="text-primary font-medium underline-offset-4 hover:underline"
             >
               {t("signUp")}
             </Link>

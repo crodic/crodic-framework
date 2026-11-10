@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from './ui/button'
 
 type PasswordInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -19,29 +18,31 @@ export function PasswordInput({
   const [showPassword, setShowPassword] = React.useState(false)
 
   return (
-    <div className={cn('relative rounded-md', className)}>
+    <div className='relative w-full'>
       <input
         type={showPassword ? 'text' : 'password'}
-        className='border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50'
+        className={cn(
+          'border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 pe-10 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+          className
+        )}
         ref={ref}
         disabled={disabled}
         {...props}
       />
-      <Button
+      <button
         type='button'
-        size='icon'
-        variant='ghost'
+        tabIndex={-1}
         disabled={disabled}
         aria-label={showPassword ? 'Hide password' : 'Show password'}
-        className='text-muted-foreground absolute end-1 top-1/2 size-6 -translate-y-1/2 rounded-md'
+        className='text-muted-foreground hover:text-foreground absolute end-0 top-0 flex h-full cursor-pointer items-center justify-center px-3 transition-colors hover:bg-transparent focus:outline-hidden disabled:pointer-events-none disabled:opacity-50'
         onClick={() => setShowPassword((prev) => !prev)}
       >
         {showPassword ? (
-          <Eye className='size-4' aria-hidden='true' />
+          <Eye className='size-4 shrink-0' aria-hidden='true' />
         ) : (
-          <EyeOff className='size-4' aria-hidden='true' />
+          <EyeOff className='size-4 shrink-0' aria-hidden='true' />
         )}
-      </Button>
+      </button>
     </div>
   )
 }

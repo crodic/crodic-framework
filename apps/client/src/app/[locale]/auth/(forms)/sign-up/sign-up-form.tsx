@@ -27,6 +27,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { WhiteLabelLogo } from "@/lib/white-label";
 
 export default function SignUpForm() {
   const t = useTranslations("Auth.signUp");
@@ -71,7 +73,7 @@ export default function SignUpForm() {
           lastName: values.lastName || undefined,
           email: values.email,
           password: values.password,
-        },
+        }
       );
       toast.success(t("successToast"));
       router.push("/auth/login");
@@ -85,27 +87,50 @@ export default function SignUpForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <div className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24">
-      <Card className="w-100">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t("title")}</CardTitle>
-          <CardDescription>{t("description")}</CardDescription>
+    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-lg lg:px-4">
+      {/* Mobile Brand Logo */}
+      <div className="mb-6 flex justify-center lg:hidden">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <WhiteLabelLogo
+            fallback={
+              <span className="text-primary text-2xl font-bold tracking-tight">
+                Crodic Framework
+              </span>
+            }
+          />
+        </Link>
+      </div>
+
+      <Card className="border-border/70 bg-card/95 w-full gap-6 rounded-2xl py-8 shadow-xl backdrop-blur-md sm:py-10">
+        <CardHeader className="space-y-2 px-6 sm:px-8">
+          <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {t("title")}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
+            {t("description")}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 sm:px-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 sm:space-y-4.5"
+            >
+              <div className="grid gap-3.5 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("firstName")}</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        {t("firstName")}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder={t("firstNamePlaceholder")}
                           autoComplete="given-name"
                           disabled={isSubmitting}
+                          className="h-10 sm:h-10.5"
                           {...field}
                         />
                       </FormControl>
@@ -118,12 +143,15 @@ export default function SignUpForm() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("lastName")}</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        {t("lastName")}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder={t("lastNamePlaceholder")}
                           autoComplete="family-name"
                           disabled={isSubmitting}
+                          className="h-10 sm:h-10.5"
                           {...field}
                         />
                       </FormControl>
@@ -137,13 +165,16 @@ export default function SignUpForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("email")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("email")}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder={t("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -156,12 +187,15 @@ export default function SignUpForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("password")}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
+                        placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -174,12 +208,15 @@ export default function SignUpForm() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      {t("confirmPassword")}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
+                        placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={isSubmitting}
+                        className="h-10 sm:h-10.5"
                         {...field}
                       />
                     </FormControl>
@@ -187,25 +224,29 @@ export default function SignUpForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="mt-2 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    {t("submitting")}
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>{t("submitting")}</span>
                   </>
                 ) : (
-                  t("submit")
+                  <span>{t("submit")}</span>
                 )}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-muted-foreground text-sm">
+        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
+          <p className="text-muted-foreground text-center text-xs sm:text-sm">
             {t("alreadyHaveAccount")}{" "}
             <Link
               href="/auth/login"
-              className="text-primary font-medium hover:underline"
+              className="text-primary font-medium underline-offset-4 hover:underline"
             >
               {t("signIn")}
             </Link>

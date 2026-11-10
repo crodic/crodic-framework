@@ -210,7 +210,7 @@ export default registerAs<AuthConfig>('auth', () => {
           'http://localhost:3000/reset-password',
         GOOGLE_OAUTH_CALLBACK_URL:
           process.env.GOOGLE_OAUTH_CALLBACK_URL ||
-          'http://localhost:8001/api/v1/user/auth/google/callback',
+          'http://localhost:8000/api/v1/user/auth/social/google/callback',
 
         ADMIN_PANEL_USERNAME: process.env.ADMIN_PANEL_USERNAME,
         ADMIN_PANEL_PASSWORD: process.env.ADMIN_PANEL_PASSWORD,
