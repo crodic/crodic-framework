@@ -257,7 +257,7 @@ export default async function TagsDiscoveryHubPage({
       <Header />
       <main className="mx-auto w-full max-w-6xl space-y-10 px-4 py-8 sm:px-6 md:py-12">
         {/* Creative Discovery Hero Section */}
-        <section className="border-border/70 from-card via-card/90 to-muted/20 relative z-20 overflow-hidden rounded-3xl border bg-gradient-to-b p-6 shadow-sm sm:p-10">
+        <section className="border-border/70 from-card via-card/90 to-muted/20 relative z-20 rounded-3xl border bg-gradient-to-b p-6 shadow-sm sm:p-10">
           <div
             className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl"
             aria-hidden="true"
