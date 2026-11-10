@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { dancingScript, geistMono, geistSans } from "@/fonts";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -146,6 +147,10 @@ export default async function LocaleLayout({
             </WhiteLabelProvider>
           </Provider>
         </NextIntlClientProvider>
+        <GoogleAnalytics
+          gtmId={process.env.NEXT_PUBLIC_GTM_ID}
+          gaId={process.env.NEXT_PUBLIC_GA_ID}
+        />
       </body>
     </html>
   );
