@@ -291,7 +291,6 @@ USER_AUTH_JWT_SECRET=strong-random-client-jwt-secret-string-32-chars
 PORT=5173
 VITE_API_URL=https://api.crodic.click/api/v1
 VITE_APP_NAME="Crodic Framework"
-VITE_SOCKET_URL=https://api.crodic.click
 VITE_AUTH_KEY="${VITE_APP_NAME}_AUTH_KEY"
 VITE_CLIENT_URL=https://crodic.click
 VITE_SENTRY_ENVIRONMENT=production
@@ -303,7 +302,6 @@ VITE_SENTRY_ENVIRONMENT=production
 PORT=3000
 NEXT_PUBLIC_APP_URL=https://crodic.click
 NEXT_PUBLIC_API_URL=https://api.crodic.click
-NEXT_PUBLIC_SOCKET_URL=https://api.crodic.click
 NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.crodic.click
 
 # Internal Docker network SSR endpoint

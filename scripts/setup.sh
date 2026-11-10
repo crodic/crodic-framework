@@ -173,14 +173,12 @@ step_configure_ports() {
   set_env_val "$CLIENT_DIR/.env" "PORT" "$target_client_port"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_APP_URL" "http://localhost:${target_client_port}"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_API_URL" "http://localhost:${target_api_port}"
-  set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_SOCKET_URL" "http://localhost:${target_api_port}"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_ADMIN_PORTAL_URL" "http://localhost:${target_web_port}"
   set_env_val "$CLIENT_DIR/.env" "SERVER_API_URL" "http://localhost:${target_api_port}"
 
   # 3. Update apps/web/.env
   set_env_val "$WEB_DIR/.env" "PORT" "$target_web_port"
   set_env_val "$WEB_DIR/.env" "VITE_API_URL" "http://localhost:${target_api_port}/api/v1"
-  set_env_val "$WEB_DIR/.env" "VITE_SOCKET_URL" "http://localhost:${target_api_port}"
   set_env_val "$WEB_DIR/.env" "VITE_CLIENT_URL" "http://localhost:${target_client_port}"
 }
 
