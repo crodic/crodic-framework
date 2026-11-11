@@ -81,6 +81,7 @@ import loggerFactory from './utils/logger-factory';
       },
     ]),
     I18nModule.forRootAsync({
+      imports: [ConfigModule],
       resolvers: [
         { use: QueryResolver, options: ['lang'] },
         AcceptLanguageResolver,
@@ -103,12 +104,15 @@ import loggerFactory from './utils/logger-factory';
             path: i18nPath,
             watch: isLocal,
           },
-          typesOutputPath: path.resolve(
-            __dirname,
-            __dirname.includes('dist')
-              ? '../src/generated/i18n.generated.ts'
-              : './generated/i18n.generated.ts',
-          ),
+          typesOutputPath:
+            isLocal || isDev
+              ? path.resolve(
+                  __dirname,
+                  __dirname.includes('dist')
+                    ? '../src/generated/i18n.generated.ts'
+                    : './generated/i18n.generated.ts',
+                )
+              : undefined,
           logging: isLocal || isDev,
         };
       },

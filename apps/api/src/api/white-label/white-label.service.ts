@@ -183,8 +183,13 @@ export class WhiteLabelService {
   async getActiveWhiteLabel(
     target: EWhiteLabelTarget = EWhiteLabelTarget.ADMIN,
   ): Promise<ActiveWhiteLabelResDto | null> {
+    const validTarget =
+      target === EWhiteLabelTarget.CLIENT
+        ? EWhiteLabelTarget.CLIENT
+        : EWhiteLabelTarget.ADMIN;
+
     const active = await this.whiteLabelRepository.findOne({
-      where: { target, isActive: true },
+      where: { target: validTarget, isActive: true },
     });
 
     if (active) {
@@ -192,7 +197,7 @@ export class WhiteLabelService {
     }
 
     const fallback = await this.whiteLabelRepository.findOne({
-      where: { target },
+      where: { target: validTarget },
       order: { createdAt: 'ASC' },
     });
 

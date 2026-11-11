@@ -89,9 +89,12 @@ export class WhiteLabelController {
   getActiveWhiteLabel(
     @Query('target') target?: EWhiteLabelTarget,
   ): Promise<ActiveWhiteLabelResDto | null> {
-    return this.whiteLabelService.getActiveWhiteLabel(
-      target ?? EWhiteLabelTarget.ADMIN,
-    );
+    const validTarget =
+      target === EWhiteLabelTarget.CLIENT
+        ? EWhiteLabelTarget.CLIENT
+        : EWhiteLabelTarget.ADMIN;
+
+    return this.whiteLabelService.getActiveWhiteLabel(validTarget);
   }
 
   @Get()
