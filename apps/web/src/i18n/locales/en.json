@@ -505,6 +505,7 @@
   "settings.appearance.themeDescription": "Automatically switch between day and night themes.",
   "settings.appearance.light": "Light",
   "settings.appearance.dark": "Dark",
+  "settings.appearance.system": "System",
   "settings.appearance.font": "Font",
   "settings.appearance.fontDescription": "Select the font you prefer.",
   "settings.appearance.fontOptions.dynamic": "Dynamic theme",

@@ -29,6 +29,9 @@ i18n
     resources,
     defaultNS,
     fallbackLng: 'en',
+    supportedLngs: ['vi', 'en'],
+    load: 'languageOnly',
+    nonExplicitSupportedLngs: true,
     keySeparator: false,
     returnObjects: false,
     interpolation: {

@@ -33,7 +33,7 @@ import {
 import LanguageSelect from '@/components/common/language-select'
 
 const appearanceFormSchema = z.object({
-  theme: z.enum(['light', 'dark']),
+  theme: z.enum(['light', 'dark', 'system']),
   font: z.enum(fonts),
 })
 
@@ -52,7 +52,7 @@ export function AppearanceForm() {
 
   // This can come from your database or API.
   const defaultValues: Partial<AppearanceFormValues> = {
-    theme: theme as 'light' | 'dark',
+    theme,
     font,
   }
 
@@ -115,10 +115,11 @@ export function AppearanceForm() {
               <RadioGroup
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className='grid max-w-md grid-cols-2 gap-8 pt-2'
+                value={field.value}
+                className='grid max-w-xl grid-cols-1 gap-6 pt-2 sm:grid-cols-3'
               >
                 <FormItem>
-                  <FormLabel className='[&:has([data-state=checked])>div]:border-primary'>
+                  <FormLabel className='[&:has([data-state=checked])>div]:border-primary cursor-pointer'>
                     <FormControl>
                       <RadioGroupItem value='light' className='sr-only' />
                     </FormControl>
@@ -144,7 +145,7 @@ export function AppearanceForm() {
                   </FormLabel>
                 </FormItem>
                 <FormItem>
-                  <FormLabel className='[&:has([data-state=checked])>div]:border-primary'>
+                  <FormLabel className='[&:has([data-state=checked])>div]:border-primary cursor-pointer'>
                     <FormControl>
                       <RadioGroupItem value='dark' className='sr-only' />
                     </FormControl>
@@ -166,6 +167,52 @@ export function AppearanceForm() {
                     </div>
                     <span className='block w-full p-2 text-center font-normal'>
                       {t('settings.appearance.dark')}
+                    </span>
+                  </FormLabel>
+                </FormItem>
+                <FormItem>
+                  <FormLabel className='[&:has([data-state=checked])>div]:border-primary cursor-pointer'>
+                    <FormControl>
+                      <RadioGroupItem value='system' className='sr-only' />
+                    </FormControl>
+                    <div className='border-muted hover:border-accent items-center rounded-md border-2 p-1'>
+                      <div className='flex overflow-hidden rounded-sm'>
+                        {/* Half Light */}
+                        <div className='w-1/2 space-y-2 bg-[#ecedef] p-2'>
+                          <div className='space-y-2 rounded-md bg-white p-2 shadow-xs'>
+                            <div className='h-2 w-10 rounded-lg bg-[#ecedef]' />
+                            <div className='h-2 w-12 rounded-lg bg-[#ecedef]' />
+                          </div>
+                          <div className='flex items-center space-x-1 rounded-md bg-white p-2 shadow-xs'>
+                            <div className='size-3 rounded-full bg-[#ecedef]' />
+                            <div className='h-2 w-10 rounded-lg bg-[#ecedef]' />
+                          </div>
+                          <div className='flex items-center space-x-1 rounded-md bg-white p-2 shadow-xs'>
+                            <div className='size-3 rounded-full bg-[#ecedef]' />
+                            <div className='h-2 w-10 rounded-lg bg-[#ecedef]' />
+                          </div>
+                        </div>
+                        {/* Half Dark */}
+                        <div className='w-1/2 space-y-2 bg-slate-950 p-2'>
+                          <div className='space-y-2 rounded-md bg-slate-800 p-2 shadow-xs'>
+                            <div className='h-2 w-10 rounded-lg bg-slate-400' />
+                            <div className='h-2 w-12 rounded-lg bg-slate-400' />
+                          </div>
+                          <div className='flex items-center space-x-1 rounded-md bg-slate-800 p-2 shadow-xs'>
+                            <div className='size-3 rounded-full bg-slate-400' />
+                            <div className='h-2 w-10 rounded-lg bg-slate-400' />
+                          </div>
+                          <div className='flex items-center space-x-1 rounded-md bg-slate-800 p-2 shadow-xs'>
+                            <div className='size-3 rounded-full bg-slate-400' />
+                            <div className='h-2 w-10 rounded-lg bg-slate-400' />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <span className='block w-full p-2 text-center font-normal'>
+                      {t('settings.appearance.system', {
+                        defaultValue: 'Hệ thống',
+                      })}
                     </span>
                   </FormLabel>
                 </FormItem>

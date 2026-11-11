@@ -9,16 +9,20 @@ import {
 } from '@/components/ui/select'
 
 const LanguageSelect = () => {
-  const { i18n } = useTranslation()
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
+  const currentLang = (i18n.resolvedLanguage || i18n.language || 'vi')
+    .toLowerCase()
+    .startsWith('vi')
+    ? 'vi'
+    : 'en'
 
   return (
     <Select
-      defaultValue={i18n.language || 'en'}
+      value={currentLang}
       onValueChange={(value) => i18n.changeLanguage(value)}
     >
       <SelectTrigger className='flex min-w-62.5'>
-        <SelectValue />
+        <SelectValue placeholder={t('settings.appearance.languages')} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value='en'>

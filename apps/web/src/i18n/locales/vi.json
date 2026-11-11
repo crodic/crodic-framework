@@ -505,6 +505,7 @@
   "settings.appearance.themeDescription": "Tự động chuyển đổi chủ đề sáng/tối.",
   "settings.appearance.light": "Sáng",
   "settings.appearance.dark": "Tối",
+  "settings.appearance.system": "Hệ thống",
   "settings.appearance.font": "Phông chữ",
   "settings.appearance.fontDescription": "Chọn phông chữ bạn muốn.",
   "settings.appearance.fontOptions.dynamic": "Font từ dynamic theme",
