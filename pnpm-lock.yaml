@@ -109,6 +109,9 @@ importers:
       "@nestjs/mapped-types":
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+      "@nestjs/observe":
+        specifier: ^0.3.25
+        version: 0.3.25(@nestjs/bullmq@12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)(bullmq@5.81.5(supports-color@10.2.2)))(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3))(@opentelemetry/api@1.9.1)(bullmq@5.81.5(supports-color@10.2.2))(reflect-metadata@0.2.2)(rxjs@7.8.2)
       "@nestjs/passport":
         specifier: ^12.0.0
         version: 12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(passport@0.7.0)
@@ -4481,6 +4484,50 @@ packages:
       class-transformer:
         optional: true
       class-validator:
+        optional: true
+
+  "@nestjs/observe@0.3.25":
+    resolution:
+      {
+        integrity: sha512-kZ9tgDd2R8fpO4TGArLz1kkIPDCt7v2iyiclDbA2ci7on6Y34EGQcksns1MskxpuY8r8wxN2IMw9dO+7bkrhgw==,
+      }
+    engines: { node: ">= 20.19.0" }
+    hasBin: true
+    peerDependencies:
+      "@nestjs/bull": ^11.0.0 || ^12.0.0
+      "@nestjs/bullmq": ^11.0.0 || ^12.0.0
+      "@nestjs/common": ^11.0.0 || ^12.0.0
+      "@nestjs/core": ^11.0.0 || ^12.0.0
+      "@nestjs/graphql": ^13.0.0 || ^14.0.0
+      "@nestjs/microservices": ^11.0.0 || ^12.0.0
+      "@nestjs/schedule": ^4.0.0 || ^5.0.0 || ^6.0.0 || ^12.0.0
+      "@nestjs/websockets": ^11.0.0 || ^12.0.0
+      "@opentelemetry/api": ^1.0.0
+      "@taskforcesh/bullmq-pro": ^7.0.0
+      bull: ^3.3.0 || ^4.0.0
+      bullmq: ^5.0.0 || ^6.0.0
+      reflect-metadata: ^0.1.12 || ^0.2.0
+      rxjs: ^7.0.0
+    peerDependenciesMeta:
+      "@nestjs/bull":
+        optional: true
+      "@nestjs/bullmq":
+        optional: true
+      "@nestjs/graphql":
+        optional: true
+      "@nestjs/microservices":
+        optional: true
+      "@nestjs/schedule":
+        optional: true
+      "@nestjs/websockets":
+        optional: true
+      "@opentelemetry/api":
+        optional: true
+      "@taskforcesh/bullmq-pro":
+        optional: true
+      bull:
+        optional: true
+      bullmq:
         optional: true
 
   "@nestjs/passport@12.0.0":
@@ -22924,6 +22971,19 @@ snapshots:
     optionalDependencies:
       class-transformer: 0.5.1
       class-validator: 0.15.1
+
+  "@nestjs/observe@0.3.25(@nestjs/bullmq@12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)(bullmq@5.81.5(supports-color@10.2.2)))(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)(@nestjs/schedule@12.0.2(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3))(@opentelemetry/api@1.9.1)(bullmq@5.81.5(supports-color@10.2.2))(reflect-metadata@0.2.2)(rxjs@7.8.2)":
+    dependencies:
+      "@jridgewell/trace-mapping": 0.3.31
+      "@nestjs/common": 12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2)
+      "@nestjs/core": 12.1.3(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/platform-express@12.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
+      rxjs: 7.8.2
+    optionalDependencies:
+      "@nestjs/bullmq": 12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)(bullmq@5.81.5(supports-color@10.2.2))
+      "@nestjs/schedule": 12.0.2(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.1.3)
+      "@opentelemetry/api": 1.9.1
+      bullmq: 5.81.5(supports-color@10.2.2)
 
   "@nestjs/passport@12.0.0(@nestjs/common@12.1.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(passport@0.7.0)":
     dependencies:

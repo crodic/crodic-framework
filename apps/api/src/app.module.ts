@@ -30,6 +30,7 @@ import { RedisModule } from './redis/redis.module';
 import { BackgroundModule } from './background/background.module';
 import storageConfig from './filesystem/config/storage.config';
 import sentryConfig from './config/sentry.config';
+import observeConfig from './config/observe.config';
 import authConfig from './api/auth/config/auth.config';
 import { FilesystemModule } from './filesystem/filesystem.module';
 import { SentryModule } from '@sentry/nestjs/setup';
@@ -40,9 +41,21 @@ import { SharedModule } from './shared/shared.module';
 import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import loggerFactory from './utils/logger-factory';
+import { ObserveModule } from './observe';
 
 @Module({
   imports: [
+    ObserveModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<AllConfigType>) => ({
+        appKey: configService.get('observe.appKey', { infer: true }),
+        appSecret: configService.get('observe.appSecret', { infer: true }),
+        serviceId:
+          configService.get('observe.serviceId', { infer: true }) ||
+          'kosume-local',
+      }),
+    }),
     SentryModule.forRoot(),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
@@ -55,6 +68,7 @@ import loggerFactory from './utils/logger-factory';
         mailConfig,
         storageConfig,
         sentryConfig,
+        observeConfig,
         authConfig,
       ],
       envFilePath:

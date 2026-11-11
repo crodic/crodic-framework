@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import './instrument';
 import {
   ClassSerializerInterceptor,
@@ -17,10 +18,12 @@ import { AllConfigType } from './config/config.type';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { updateGlobalConfig } from 'nestjs-paginate';
 import { setupSwagger } from './utils/setup-swagger';
+import { ObserveInstrument } from './observe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
+    instrument: ObserveInstrument,
   });
 
   app.enableShutdownHooks();

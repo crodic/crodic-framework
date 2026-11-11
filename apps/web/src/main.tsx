@@ -16,6 +16,27 @@ import './instrument'
 import AppRouter from './routes/router'
 import './styles/index.css'
 
+// Automatically reload the page when a chunk fails to load after a new deployment
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault()
+  const RELOAD_KEY = 'vite-preload-reload-timestamp'
+  const MAX_RELOAD_INTERVAL = 10_000 // 10s guard to avoid reload loops
+  try {
+    const lastReloadTime = Number(sessionStorage.getItem(RELOAD_KEY) || 0)
+    const now = Date.now()
+    if (now - lastReloadTime < MAX_RELOAD_INTERVAL) {
+      // eslint-disable-next-line no-console
+      console.error('Preload error loop detected. Stopping automatic reload.')
+      return
+    }
+    sessionStorage.setItem(RELOAD_KEY, String(now))
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to access sessionStorage for reload guard', e)
+  }
+  window.location.reload()
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

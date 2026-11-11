@@ -5,6 +5,7 @@ import { RedisConfig } from '../redis/config/redis-config.type';
 import { StorageConfig } from '../filesystem/config/storage-config.type';
 import { SentryConfig } from './sentry.config';
 import { AuthConfig } from '../api/auth/config/auth-config.type';
+import { ObserveConfig } from './observe.config';
 
 export type AllConfigType = {
   app: AppConfig;
@@ -14,4 +15,5 @@ export type AllConfigType = {
   storage: StorageConfig;
   sentry: SentryConfig;
   auth: AuthConfig;
+  observe: ObserveConfig;
 };
