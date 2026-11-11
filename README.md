@@ -4,6 +4,7 @@
 [![Package Manager](https://img.shields.io/badge/pnpm-10.30.3-orange?logo=pnpm)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-20.19.0-green?logo=node.js)](https://nodejs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-11-red?logo=nestjs)](https://nestjs.com/)
+[![NestJS Observe](https://img.shields.io/badge/NestJS_Observe-APM-EA284E?logo=nestjs)](https://observe.nestjs.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js)](https://nextjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6_React_19-purple?logo=vite)](https://vitejs.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict_7.0-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -32,12 +33,12 @@ monorepo/
 
 ### Workspace Applications & Packages
 
-| Workspace                                              | Type        | Technology Stack                                                        | Description                                                                                                 |
-| :----------------------------------------------------- | :---------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| **[`apps/api`](apps/api)**                             | Application | NestJS 11, TypeORM, PostgreSQL, Redis, BullMQ, Swagger, Sentry          | Core REST API backend with modular architecture, strict DTO validation, and RBAC authentication.            |
-| **[`apps/client`](apps/client)**                       | Application | Next.js 16 (App Router), React 19, Turbopack, TailwindCSS v4, next-intl | Public-facing client web application featuring server components, SEO metadata, and multi-language support. |
-| **[`apps/web`](apps/web)**                             | Application | Vite 6, React 19, TailwindCSS v4, TanStack Query, Radix UI, Tiptap      | Admin management portal with rich data tables, sortable lists, theme editor, and file managers.             |
-| **[`packages/query-builder`](packages/query-builder)** | Package     | TypeScript, Vitest                                                      | Dual-mode query builder supporting standard RESTful / JSON:API queries and `nestjs-paginate`.               |
+| Workspace                                              | Type        | Technology Stack                                                               | Description                                                                                                 |
+| :----------------------------------------------------- | :---------- | :----------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| **[`apps/api`](apps/api)**                             | Application | NestJS 11, TypeORM, PostgreSQL, Redis, BullMQ, Swagger, Sentry, NestJS Observe | Core REST API backend with modular architecture, strict DTO validation, RBAC, and APM telemetry.            |
+| **[`apps/client`](apps/client)**                       | Application | Next.js 16 (App Router), React 19, Turbopack, TailwindCSS v4, next-intl        | Public-facing client web application featuring server components, SEO metadata, and multi-language support. |
+| **[`apps/web`](apps/web)**                             | Application | Vite 6, React 19, TailwindCSS v4, TanStack Query, Radix UI, Tiptap             | Admin management portal with rich data tables, sortable lists, theme editor, and file managers.             |
+| **[`packages/query-builder`](packages/query-builder)** | Package     | TypeScript, Vitest                                                             | Dual-mode query builder supporting standard RESTful / JSON:API queries and `nestjs-paginate`.               |
 
 ---
 
@@ -46,7 +47,7 @@ monorepo/
 - **Backend**: NestJS 11, TypeORM, PostgreSQL 16+, Redis 7+, BullMQ (background queues), Mailpit (local email testing).
 - **Frontend**: Next.js 16 (App Router with React Server Components), Vite 6 + React 19 SPA, Tailwind CSS v4.
 - **State & Forms**: TanStack React Query (`@tanstack/react-query`), Zustand, React Hook Form, Zod validation.
-- **Monitoring & Security**: Sentry error monitoring and performance tracing, JWT authentication with refresh token rotation, strict RBAC authorization.
+- **Monitoring & Security**: NestJS Observe official APM & OpenTelemetry tracing, Sentry error monitoring and performance tracing, JWT authentication with refresh token rotation, strict RBAC authorization.
 - **Code Quality**: ESLint 9/10 flat config, Prettier, TypeScript strict mode, Vitest, Jest.
 - **Versioning & CI/CD**: Semantic Release, Conventional Commits, GitHub Actions.
 
@@ -70,6 +71,7 @@ Detailed documentation is available in the [`docs/`](docs/README.md) directory:
 | 📜 [**Activity Log & Audit Trail**](docs/en/ACTIVITY_LOG.md)        | Automatic and manual activity tracking for security audits.                                                        | [English](docs/en/ACTIVITY_LOG.md) · [Tiếng Việt](docs/vi/ACTIVITY_LOG.md)                     |
 | 🛠️ [**Core Utilities**](docs/en/CORE_UTILITIES.md)                  | Custom NestJS decorators, interceptors, validation pipes, and response formatters.                                 | [English](docs/en/CORE_UTILITIES.md) · [Tiếng Việt](docs/vi/CORE_UTILITIES.md)                 |
 | 🚨 [**Sentry Error Tracking**](docs/en/SENTRY.md)                   | Error capture, tracing, and exception handling across backend and frontend.                                        | [English](docs/en/SENTRY.md) · [Tiếng Việt](docs/vi/SENTRY.md)                                 |
+| 🔭 [**NestJS Observe (APM)**](docs/en/OBSERVE.md)                   | Real-time APM telemetry, latency profiling, error rate, and OpenTelemetry instrumentation.                         | [English](docs/en/OBSERVE.md) · [Tiếng Việt](docs/vi/OBSERVE.md)                               |
 | 🧪 [**Testing Strategy**](docs/en/TESTING.md)                       | Unit tests, mock providers, and E2E test execution guidelines.                                                     | [English](docs/en/TESTING.md) · [Tiếng Việt](docs/vi/TESTING.md)                               |
 | 📦 [**Release & Versioning**](docs/en/RELEASE.md)                   | Automated semantic versioning and changelog generation workflow.                                                   | [English](docs/en/RELEASE.md) · [Tiếng Việt](docs/vi/RELEASE.md)                               |
 

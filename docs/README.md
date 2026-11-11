@@ -22,6 +22,7 @@ Welcome to the documentation hub for this enterprise monorepo. Documentation is 
 | **Activity Log & Audit Trail**            | [English Guide](en/ACTIVITY_LOG.md)           | [Hướng dẫn Tiếng Việt](vi/ACTIVITY_LOG.md)           |
 | **Core Utilities**                        | [English Guide](en/CORE_UTILITIES.md)         | [Hướng dẫn Tiếng Việt](vi/CORE_UTILITIES.md)         |
 | **Sentry Monitoring**                     | [English Guide](en/SENTRY.md)                 | [Hướng dẫn Tiếng Việt](vi/SENTRY.md)                 |
+| **NestJS Observe (APM)**                  | [English Guide](en/OBSERVE.md)                | [Hướng dẫn Tiếng Việt](vi/OBSERVE.md)                |
 | **Testing Strategy**                      | [English Guide](en/TESTING.md)                | [Hướng dẫn Tiếng Việt](vi/TESTING.md)                |
 | **Release & Versioning**                  | [English Guide](en/RELEASE.md)                | [Hướng dẫn Tiếng Việt](vi/RELEASE.md)                |
 
