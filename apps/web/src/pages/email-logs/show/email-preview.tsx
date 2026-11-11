@@ -11,11 +11,12 @@ interface EmailPreviewProps {
 export function EmailPreview({ html }: EmailPreviewProps) {
   const { t } = useTranslation()
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
+  const [activeTab, setActiveTab] = useState('preview')
 
   return (
-    <Tabs defaultValue='preview' className='w-full'>
-      <div className='mb-4 flex items-center justify-between'>
-        <TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
+      <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+        <TabsList className='grid w-full grid-cols-2 sm:w-auto'>
           <TabsTrigger value='preview'>
             {t('emailLogs.show.preview')}
           </TabsTrigger>
@@ -24,30 +25,34 @@ export function EmailPreview({ html }: EmailPreviewProps) {
           </TabsTrigger>
         </TabsList>
 
-        <div className='flex items-center gap-2'>
-          <Button
-            variant={device === 'desktop' ? 'secondary' : 'ghost'}
-            size='sm'
-            onClick={() => setDevice('desktop')}
-          >
-            <Monitor size={16} className='mr-2' />
-            Desktop
-          </Button>
-          <Button
-            variant={device === 'mobile' ? 'secondary' : 'ghost'}
-            size='sm'
-            onClick={() => setDevice('mobile')}
-          >
-            <Smartphone size={16} className='mr-2' />
-            Mobile
-          </Button>
-        </div>
+        {activeTab === 'preview' && (
+          <div className='bg-muted/50 border-border/60 inline-flex items-center gap-1 self-end rounded-lg border p-1 sm:self-auto'>
+            <Button
+              variant={device === 'desktop' ? 'secondary' : 'ghost'}
+              size='sm'
+              className='h-8 px-3 text-xs font-medium'
+              onClick={() => setDevice('desktop')}
+            >
+              <Monitor size={15} className='mr-1.5' />
+              Desktop
+            </Button>
+            <Button
+              variant={device === 'mobile' ? 'secondary' : 'ghost'}
+              size='sm'
+              className='h-8 px-3 text-xs font-medium'
+              onClick={() => setDevice('mobile')}
+            >
+              <Smartphone size={15} className='mr-1.5' />
+              Mobile
+            </Button>
+          </div>
+        )}
       </div>
 
       <TabsContent value='preview' className='mt-0'>
-        <div className='bg-muted/30 flex min-h-[500px] justify-center overflow-hidden rounded-md border p-4'>
+        <div className='bg-muted/30 flex min-h-[500px] justify-center overflow-hidden rounded-md border p-2 sm:p-4'>
           <div
-            className={`h-[600px] overflow-hidden rounded border bg-white shadow-sm transition-[width] duration-200 ease-out ${
+            className={`h-[600px] max-w-full overflow-hidden rounded border bg-white shadow-sm transition-[width] duration-200 ease-out ${
               device === 'mobile' ? 'w-[375px]' : 'w-full'
             }`}
           >
@@ -62,8 +67,8 @@ export function EmailPreview({ html }: EmailPreviewProps) {
       </TabsContent>
 
       <TabsContent value='source' className='mt-0'>
-        <div className='bg-muted/50 max-h-[600px] min-h-[500px] overflow-auto rounded-md border p-4'>
-          <pre className='text-foreground/80 font-mono text-sm break-all whitespace-pre-wrap'>
+        <div className='bg-muted/50 max-h-150 min-h-125 overflow-auto rounded-md border p-3 sm:p-4'>
+          <pre className='text-foreground/80 font-mono text-xs break-all whitespace-pre-wrap sm:text-sm'>
             {html}
           </pre>
         </div>
