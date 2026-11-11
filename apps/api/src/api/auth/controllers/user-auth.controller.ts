@@ -15,17 +15,23 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Query,
   Request,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { ChangePasswordReqDto } from '../dto/change-password.req.dto';
@@ -335,12 +341,31 @@ export class UserAuthenticationController {
     type: UserResDto,
     summary: 'Update current user',
   })
+  @ApiConsumes('multipart/form-data', 'application/json')
   @SkipThrottle()
+  @UseInterceptors(FileInterceptor('avatar'))
   async updateMe(
     @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: UpdateAuthUserMeReqDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /^image\/(png|webp|jpeg)$/,
+            skipMagicNumbersValidation: true,
+            errorMessage: 'Invalid file type',
+          }),
+          new MaxFileSizeValidator({
+            maxSize: 5 * 1024 * 1024,
+            errorMessage: 'File too large',
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    image?: Express.Multer.File,
   ): Promise<{ message: string }> {
-    return await this.userAuthService.updateMe(userId, reqDto);
+    return await this.userAuthService.updateMe(userId, reqDto, image);
   }
 
   private getVerificationRedirectUrl(status: 'success' | 'failed') {

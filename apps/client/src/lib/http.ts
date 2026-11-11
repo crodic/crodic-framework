@@ -26,6 +26,25 @@ export const http = xior.create({
 
 http.interceptors.request.use(
   (config) => {
+    // If request payload is FormData, remove Content-Type so browser fetch automatically sets multipart/form-data with the correct boundary
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      if (config.headers) {
+        if (
+          typeof Headers !== "undefined" &&
+          config.headers instanceof Headers
+        ) {
+          config.headers.delete("content-type");
+          config.headers.delete("Content-Type");
+        } else {
+          for (const key of Object.keys(config.headers)) {
+            if (key.toLowerCase() === "content-type") {
+              delete (config.headers as Record<string, unknown>)[key];
+            }
+          }
+        }
+      }
+    }
+
     if (config.headers?.Authorization) {
       return config;
     }

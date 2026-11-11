@@ -3,7 +3,13 @@ import { CacheKey } from '../../../common/constants/cache.constant';
 import { ESessionUserType } from '../../../common/constants/entity.enum';
 import { createCacheKey } from '../../../utils/cache.util';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import crypto from 'crypto';
 import ms, { StringValue } from 'ms';
@@ -111,6 +117,93 @@ export class AuthRecoveryService {
     } catch {
       throw new BadRequestException('Invalid or expired token');
     }
+  }
+
+  /**
+   * Anti-Spam Layer: Checks both the 60s cooldown and the daily limit (default 5/day)
+   * for a target user ID / account. Throws 429 Too Many Requests if exceeded.
+   */
+  async checkEmailRateLimit(params: {
+    target: string | AutoIncrementID;
+    action: 'verify' | 'forgot';
+    scope: ESessionUserType;
+    cooldownSeconds?: number;
+    dailyLimit?: number;
+  }): Promise<void> {
+    const cooldownSeconds = params.cooldownSeconds ?? 60;
+    const dailyLimit = params.dailyLimit ?? 5;
+
+    const cooldownKey = createCacheKey(
+      CacheKey.EMAIL_COOLDOWN,
+      params.action,
+      params.scope,
+      String(params.target),
+    );
+
+    const isCoolingDown = await this.cacheManager.get<boolean>(cooldownKey);
+    if (isCoolingDown) {
+      throw new HttpException(
+        {
+          code: 'EMAIL_COOLDOWN',
+          message: `Please wait before requesting another email. Try again in ${cooldownSeconds} seconds.`,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dailyKey = createCacheKey(
+      CacheKey.EMAIL_DAILY_COUNT,
+      params.action,
+      params.scope,
+      String(params.target),
+      today,
+    );
+
+    const currentCount = (await this.cacheManager.get<number>(dailyKey)) || 0;
+    if (currentCount >= dailyLimit) {
+      throw new HttpException(
+        {
+          code: 'EMAIL_DAILY_LIMIT_EXCEEDED',
+          message: `You have reached the maximum number of email requests for today (limit: ${dailyLimit}). Please try again tomorrow.`,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  /**
+   * Records that an email was sent in Redis: sets the 60s cooldown and increments daily counter.
+   */
+  async recordEmailSent(params: {
+    target: string | AutoIncrementID;
+    action: 'verify' | 'forgot';
+    scope: ESessionUserType;
+    cooldownSeconds?: number;
+  }): Promise<void> {
+    const cooldownSeconds = params.cooldownSeconds ?? 60;
+    const cooldownKey = createCacheKey(
+      CacheKey.EMAIL_COOLDOWN,
+      params.action,
+      params.scope,
+      String(params.target),
+    );
+    await this.cacheManager.set(cooldownKey, true, cooldownSeconds * 1000);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dailyKey = createCacheKey(
+      CacheKey.EMAIL_DAILY_COUNT,
+      params.action,
+      params.scope,
+      String(params.target),
+      today,
+    );
+    const currentCount = (await this.cacheManager.get<number>(dailyKey)) || 0;
+    await this.cacheManager.set(
+      dailyKey,
+      currentCount + 1,
+      24 * 60 * 60 * 1000,
+    );
   }
 
   private safeEqual(a: string, b: string): boolean {

@@ -1,12 +1,26 @@
-import { StringField } from '../../../../decorators/field.decorators';
+import {
+  BooleanFieldOptional,
+  StringFieldOptional,
+} from '../../../../decorators/field.decorators';
 import { Trim } from '../../../../decorators/transform.decorators';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateAuthUserMeReqDto {
-  @StringField()
+  @StringFieldOptional()
   @Trim()
-  firstName!: string;
+  firstName?: string;
 
-  @StringField()
+  @StringFieldOptional()
   @Trim()
-  lastName!: string;
+  lastName?: string;
+
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+    description: 'Avatar image file (JPEG/PNG/WebP only, max size 5MB)',
+  })
+  avatar?: string;
+
+  @BooleanFieldOptional()
+  removeAvatar?: boolean;
 }

@@ -14,6 +14,7 @@ export type User = {
   avatar: string | null;
   hasPassword: boolean;
   verifiedAt: string | null;
+  notifications?: Record<string, boolean>;
   createdAt: string;
   updatedAt: string;
 };
@@ -25,4 +26,15 @@ export type SocialAccount = {
   emailVerified: boolean;
   displayName?: string;
   avatarUrl?: string;
+};
+
+export type UserSession = {
+  id: string;
+  userId: string;
+  ipAddress?: string;
+  userAgent?: string;
+  expiresAt?: string;
+  revokedAt?: string;
+  createdAt: string;
+  isCurrent: boolean;
 };

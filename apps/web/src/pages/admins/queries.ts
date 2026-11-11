@@ -49,6 +49,13 @@ export async function deleteAdmin(id: string) {
   return await http.delete(`/admin-users/${id}`)
 }
 
+export async function apiResendAdminVerification(id: string) {
+  const response = await http.post<{ message: string }>(
+    `/admin-users/${id}/resend-verification`
+  )
+  return response.data
+}
+
 export const useDataAdminOverview = (params: PaginateQueryParams) =>
   useQuery({
     queryKey: ['admins', params],

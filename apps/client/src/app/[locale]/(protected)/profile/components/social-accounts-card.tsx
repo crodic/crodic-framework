@@ -87,33 +87,39 @@ export function SocialAccountsCard() {
   const isLinking = linkGoogleMutation.isPending;
 
   return (
-    <Card className="shadow-xs">
+    <Card className="border-border/60 rounded-2xl shadow-xs">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Globe className="text-primary size-5" />
-          <CardTitle className="text-xl">{t("title")}</CardTitle>
+          <CardTitle className="text-lg font-semibold sm:text-xl">
+            {t("title")}
+          </CardTitle>
         </div>
-        <CardDescription>{t("description")}</CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
+          {t("description")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-border/50 bg-background/50 flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-muted text-foreground flex size-10 items-center justify-center rounded-full font-bold">
+            <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl font-bold">
               G
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">{t("google")}</span>
+                <span className="text-foreground text-sm font-semibold">
+                  {t("google")}
+                </span>
                 {hasGoogleLinked ? (
                   <Badge
                     variant="outline"
-                    className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-600 dark:text-emerald-400"
+                    className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-600 dark:text-emerald-400"
                   >
                     <CheckCircle2 className="size-3" />
                     {t("linked")}
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs font-normal">
                     {t("notLinked")}
                   </Badge>
                 )}
@@ -129,6 +135,7 @@ export function SocialAccountsCard() {
             variant={hasGoogleLinked ? "secondary" : "outline"}
             disabled={hasGoogleLinked || isLinking || isLoading}
             onClick={handleLinkGoogle}
+            className="shrink-0 rounded-xl text-xs"
           >
             <GoogleLinkButtonContent
               isLinking={isLinking}

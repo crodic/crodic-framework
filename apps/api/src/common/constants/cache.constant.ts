@@ -8,4 +8,6 @@ export enum CacheKey {
   SYSTEM_HAS_ADMIN = 'system:hasAdmin',
   SYSTEM_HAS_ROLE = 'system:hasRole',
   FORGOT_PASSWORD = 'auth:token:%s:%s:forgot-password', // %s: userType, %s: userId
+  EMAIL_COOLDOWN = 'auth:email-cooldown:%s:%s:%s', // %s: action, %s: scope, %s: target
+  EMAIL_DAILY_COUNT = 'auth:email-daily-count:%s:%s:%s:%s', // %s: action, %s: scope, %s: target, %s: date
 }

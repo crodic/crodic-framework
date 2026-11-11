@@ -109,6 +109,23 @@ export class AdminUserController {
 
   // --------------------------------------------------
 
+  @Post(':id/resend-verification')
+  @ApiAuth({
+    summary: 'Resend verification email to admin user',
+    statusCode: HttpStatus.OK,
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.Admin),
+  )
+  async resendVerification(
+    @Param('id') id: AutoIncrementID,
+  ): Promise<{ message: string }> {
+    return await this.adminUserService.resendVerification(id);
+  }
+
+  // --------------------------------------------------
+
   @Delete(':id')
   @ApiAuth({
     summary: 'Delete user',

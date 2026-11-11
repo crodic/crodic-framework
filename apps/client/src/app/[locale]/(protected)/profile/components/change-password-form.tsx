@@ -74,13 +74,17 @@ export function ChangePasswordForm() {
   const isSubmitting = changePasswordMutation.isPending;
 
   return (
-    <Card className="shadow-xs">
+    <Card className="border-border/60 rounded-2xl shadow-xs">
       <CardHeader>
         <div className="flex items-center gap-2">
           <KeyRound className="text-primary size-5" />
-          <CardTitle className="text-xl">{t("changeTitle")}</CardTitle>
+          <CardTitle className="text-lg font-semibold sm:text-xl">
+            {t("changeTitle")}
+          </CardTitle>
         </div>
-        <CardDescription>{t("changeDescription")}</CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
+          {t("changeDescription")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -96,6 +100,7 @@ export function ChangePasswordForm() {
                       type="password"
                       placeholder={t("currentPasswordPlaceholder")}
                       disabled={isSubmitting}
+                      className="rounded-xl"
                       {...field}
                     />
                   </FormControl>
@@ -116,6 +121,7 @@ export function ChangePasswordForm() {
                         type="password"
                         placeholder={t("newPasswordPlaceholder")}
                         disabled={isSubmitting}
+                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -135,6 +141,7 @@ export function ChangePasswordForm() {
                         type="password"
                         placeholder={t("confirmNewPasswordPlaceholder")}
                         disabled={isSubmitting}
+                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -145,7 +152,11 @@ export function ChangePasswordForm() {
             </div>
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />

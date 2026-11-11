@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -45,6 +45,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const handledMessageRef = useRef<string | null>(null);
+  const [isVerificationFailed, setIsVerificationFailed] = useState(false);
 
   const rawCode = searchParams.get(AUTH_QUERY_PARAM.CODE);
   const code = (
@@ -87,6 +88,7 @@ export default function LoginForm() {
 
     if (verification === "failed") {
       toast.error(t("toasts.verificationFailed"));
+      setIsVerificationFailed(true);
     }
 
     if (reset === "success") {
@@ -166,7 +168,16 @@ export default function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 sm:px-8">
-          {code && (
+          {isVerificationFailed && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="size-4" />
+              <AlertTitle>{t("alerts.verification_failed.title")}</AlertTitle>
+              <AlertDescription>
+                {t("alerts.verification_failed.description")}
+              </AlertDescription>
+            </Alert>
+          )}
+          {code && !isVerificationFailed && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="size-4" />
               <AlertTitle>{t(`alerts.${code}.title`)}</AlertTitle>

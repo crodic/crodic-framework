@@ -6,7 +6,14 @@ import { ErrorCode } from '../../common/constants/error-code.constant';
 import { ValidationException } from '../../common/exceptions/validation.exception';
 import { EmailQueueService } from '../../background/queues/email-queue/email-queue.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
@@ -171,7 +178,9 @@ export class AdminUserService {
           this.adminAccountRepository,
         );
 
-    await this.adminAccountRecoveryService.sendVerificationEmail(savedUser);
+    await this.adminAccountRecoveryService.sendVerificationEmail(savedUser, {
+      skipRateLimit: true,
+    });
 
     return plainToInstance(AdminUserResDto, savedUser);
   }
@@ -257,6 +266,24 @@ export class AdminUserService {
   async remove(id: AutoIncrementID) {
     const admin = await this.adminUserRepository.findOneByOrFail({ id });
     await this.adminUserRepository.softRemove(admin);
+  }
+
+  async resendVerification(id: AutoIncrementID): Promise<{ message: string }> {
+    const user = await this.adminUserRepository.findOne({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Admin user not found');
+    }
+
+    if (user.verifiedAt) {
+      throw new BadRequestException('Admin user is already verified');
+    }
+
+    await this.adminAccountRecoveryService.sendVerificationEmail(user);
+
+    return { message: 'Verification email has been sent successfully' };
   }
 
   /**

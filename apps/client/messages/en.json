@@ -121,9 +121,14 @@
     "pageDescription": "Manage your personal details, password security, and connected accounts.",
     "tabs": {
       "general": "General Information",
-      "security": "Security & Accounts"
+      "security": "Security & Accounts",
+      "sessions": "Active Devices"
     },
     "memberSince": "Member since",
+    "lastUpdated": "Last updated",
+    "idCopied": "User ID copied to clipboard",
+    "copyId": "Copy ID",
+    "signOutButton": "Sign Out",
     "verified": "Verified",
     "unverified": "Unverified",
     "role": "Member",
@@ -132,7 +137,52 @@
     "authRequired": "Authentication Required",
     "retry": "Retry",
     "signIn": "Sign In",
-    "signingOut": "Signing out..."
+    "signingOut": "Signing out...",
+    "securityScore": {
+      "title": "Security Health",
+      "subtitle": "Protection Level",
+      "emailVerified": "Email verified",
+      "passwordSet": "Password configured",
+      "socialLinked": "Google linked",
+      "sessionsActive": "Session active",
+      "statusExcellent": "Excellent",
+      "statusGood": "Good",
+      "statusNeedsAttention": "Needs attention"
+    },
+    "accountOverview": {
+      "title": "Account Overview",
+      "userId": "User ID",
+      "emailStatus": "Email Status",
+      "activeDevices": "Active Devices",
+      "registered": "Registered",
+      "lastUpdated": "Last Updated"
+    },
+    "avatar": {
+      "title": "Update Avatar",
+      "description": "Upload, crop, zoom, and rotate your profile picture.",
+      "dropOrClick": "Drag and drop an image here, or click to browse",
+      "dropHint": "Supports PNG, JPEG, WebP up to 5MB",
+      "zoom": "Zoom",
+      "rotate": "Rotate",
+      "changeImage": "Choose another photo",
+      "removeAvatar": "Remove avatar",
+      "confirmRemoveTitle": "Remove profile photo?",
+      "confirmRemoveDesc": "Your profile picture will be reverted to your initials fallback.",
+      "saveAvatar": "Save Avatar",
+      "saving": "Saving...",
+      "success": "Avatar updated successfully.",
+      "removeSuccess": "Avatar removed successfully.",
+      "error": "Failed to update avatar. Please try again."
+    },
+    "emailVerification": {
+      "bannerTitle": "Verify your email address",
+      "bannerDescription": "Your email address ({email}) has not been verified yet. Please check your inbox for the activation link, or request a new one below.",
+      "resendButton": "Resend Verification Email",
+      "sending": "Sending...",
+      "cooldown": "Resend in {seconds}s",
+      "successToast": "Verification email sent successfully! Please check your inbox.",
+      "errorToast": "Failed to send verification email. Please try again later."
+    }
   },
   "GeneralInfo": {
     "title": "Personal Information",
@@ -143,10 +193,21 @@
     "lastNamePlaceholder": "Enter your last name",
     "email": "Email address",
     "emailReadonlyHint": "Your email address is managed through your authentication provider and cannot be changed here.",
+    "copiedEmail": "Email address copied to clipboard.",
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "success": "Profile updated successfully.",
     "error": "Failed to update profile. Please try again.",
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Manage how and when you receive communications from the platform.",
+      "email": "Product & News Updates",
+      "emailDesc": "Receive occasional newsletters and platform release announcements.",
+      "system": "System & Maintenance",
+      "systemDesc": "Get notified about scheduled maintenance, status, and system alerts.",
+      "security": "Security Alerts",
+      "securityDesc": "Receive immediate email alerts for new logins or password changes."
+    },
     "validation": {
       "firstNameRequired": "First name is required.",
       "firstNameMax": "First name cannot exceed 100 characters.",
@@ -207,6 +268,22 @@
       "confirmDescription": "You will need to sign in again to access your account profile.",
       "cancel": "Cancel",
       "confirm": "Yes, log out"
+    },
+    "devices": {
+      "title": "Active Devices & Sessions",
+      "description": "Monitor and manage the browsers and devices currently signed in to your account.",
+      "currentDevice": "This Device",
+      "activeNow": "Active now",
+      "firstSeen": "Signed in",
+      "ip": "IP Address",
+      "revoke": "Revoke",
+      "revoking": "Revoking...",
+      "revokeAllOther": "Sign out all other devices",
+      "revokeAllOtherConfirmTitle": "Sign out of all other devices?",
+      "revokeAllOtherDescription": "This will terminate your active sessions on all other computers, browsers, and mobile devices.",
+      "revokeSuccess": "Device session revoked successfully.",
+      "revokeAllSuccess": "All other device sessions have been revoked.",
+      "noOtherDevices": "No other active devices found."
     }
   },
   "Footer": {
@@ -266,6 +343,10 @@
         "loginError": "Login failed. Please check your credentials."
       },
       "alerts": {
+        "verification_failed": {
+          "title": "Verification Link Expired",
+          "description": "The activation link is invalid or has expired. You can sign in below to request a new verification link from your profile."
+        },
         "session_expired": {
           "title": "Session Expired",
           "description": "Your session has expired. Please sign in again to continue."

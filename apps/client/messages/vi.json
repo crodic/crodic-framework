@@ -121,9 +121,14 @@
     "pageDescription": "Quản lý thông tin cá nhân, cài đặt bảo mật mật khẩu và các tài khoản liên kết.",
     "tabs": {
       "general": "Thông tin chung",
-      "security": "Bảo mật & Tài khoản"
+      "security": "Bảo mật & Mật khẩu",
+      "sessions": "Thiết bị hoạt động"
     },
     "memberSince": "Thành viên từ",
+    "lastUpdated": "Cập nhật gần nhất",
+    "idCopied": "Đã sao chép ID người dùng vào clipboard",
+    "copyId": "Sao chép ID",
+    "signOutButton": "Đăng xuất",
     "verified": "Đã xác thực",
     "unverified": "Chưa xác thực",
     "role": "Thành viên",
@@ -132,7 +137,52 @@
     "authRequired": "Yêu cầu xác thực",
     "retry": "Thử lại",
     "signIn": "Đăng nhập",
-    "signingOut": "Đang đăng xuất..."
+    "signingOut": "Đang đăng xuất...",
+    "securityScore": {
+      "title": "Bảo mật tài khoản",
+      "subtitle": "Mức độ an toàn",
+      "emailVerified": "Đã xác thực email",
+      "passwordSet": "Đã thiết lập mật khẩu",
+      "socialLinked": "Đã liên kết Google",
+      "sessionsActive": "Phiên làm việc bảo vệ",
+      "statusExcellent": "Rất an toàn",
+      "statusGood": "Tốt",
+      "statusNeedsAttention": "Cần cải thiện"
+    },
+    "accountOverview": {
+      "title": "Tổng quan tài khoản",
+      "userId": "ID Người dùng",
+      "emailStatus": "Trạng thái Email",
+      "activeDevices": "Thiết bị hoạt động",
+      "registered": "Ngày đăng ký",
+      "lastUpdated": "Cập nhật gần nhất"
+    },
+    "avatar": {
+      "title": "Cập nhật ảnh đại diện",
+      "description": "Tải lên, cắt tròn, thu phóng và xoay ảnh đại diện của bạn.",
+      "dropOrClick": "Kéo thả ảnh vào đây, hoặc nhấn để chọn tệp",
+      "dropHint": "Hỗ trợ PNG, JPEG, WebP dung lượng tối đa 5MB",
+      "zoom": "Thu phóng",
+      "rotate": "Xoay ảnh",
+      "changeImage": "Chọn ảnh khác",
+      "removeAvatar": "Xóa ảnh đại diện",
+      "confirmRemoveTitle": "Xóa ảnh đại diện?",
+      "confirmRemoveDesc": "Ảnh đại diện của bạn sẽ quay về hình chữ cái viết tắt.",
+      "saveAvatar": "Lưu ảnh đại diện",
+      "saving": "Đang lưu...",
+      "success": "Cập nhật ảnh đại diện thành công.",
+      "removeSuccess": "Đã xóa ảnh đại diện thành công.",
+      "error": "Không thể cập nhật ảnh đại diện. Vui lòng thử lại."
+    },
+    "emailVerification": {
+      "bannerTitle": "Xác thực địa chỉ email của bạn",
+      "bannerDescription": "Địa chỉ email ({email}) của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư đến để kích hoạt tài khoản, hoặc nhấn bên dưới để nhận liên kết mới.",
+      "resendButton": "Gửi lại email xác thực",
+      "sending": "Đang gửi...",
+      "cooldown": "Gửi lại sau {seconds}s",
+      "successToast": "Đã gửi email xác thực thành công! Vui lòng kiểm tra hộp thư của bạn.",
+      "errorToast": "Không thể gửi email xác thực. Vui lòng thử lại sau."
+    }
   },
   "GeneralInfo": {
     "title": "Thông tin cá nhân",
@@ -143,10 +193,21 @@
     "lastNamePlaceholder": "Nhập họ của bạn",
     "email": "Địa chỉ Email",
     "emailReadonlyHint": "Địa chỉ email của bạn được quản lý bởi nhà cung cấp xác thực và không thể thay đổi tại đây.",
+    "copiedEmail": "Đã sao chép địa chỉ email.",
     "saveChanges": "Lưu thay đổi",
     "saving": "Đang lưu...",
     "success": "Cập nhật hồ sơ thành công.",
     "error": "Không thể cập nhật hồ sơ. Vui lòng thử lại.",
+    "notifications": {
+      "title": "Tùy chọn thông báo",
+      "description": "Quản lý cách thức và các thông báo bạn muốn nhận từ nền tảng.",
+      "email": "Cập nhật sản phẩm & Tin tức",
+      "emailDesc": "Nhận bản tin định kỳ và các tính năng mới của sản phẩm.",
+      "system": "Cảnh báo & Vận hành",
+      "systemDesc": "Nhận thông báo về lịch bảo trì hệ thống và các thay đổi quan trọng.",
+      "security": "Cảnh báo bảo mật",
+      "securityDesc": "Nhận thông báo ngay lập tức qua email khi có phiên đăng nhập mới hoặc đổi mật khẩu."
+    },
     "validation": {
       "firstNameRequired": "Vui lòng nhập tên.",
       "firstNameMax": "Tên không được vượt quá 100 ký tự.",
@@ -207,6 +268,22 @@
       "confirmDescription": "Bạn sẽ cần đăng nhập lại để truy cập vào hồ sơ tài khoản của mình.",
       "cancel": "Hủy",
       "confirm": "Đăng xuất ngay"
+    },
+    "devices": {
+      "title": "Thiết bị & Phiên hoạt động",
+      "description": "Theo dõi và quản lý các thiết bị, trình duyệt đang đăng nhập tài khoản của bạn.",
+      "currentDevice": "Thiết bị này",
+      "activeNow": "Đang hoạt động",
+      "firstSeen": "Đăng nhập lúc",
+      "ip": "Địa chỉ IP",
+      "revoke": "Thu hồi",
+      "revoking": "Đang thu hồi...",
+      "revokeAllOther": "Đăng xuất tất cả thiết bị khác",
+      "revokeAllOtherConfirmTitle": "Đăng xuất khỏi tất cả các thiết bị khác?",
+      "revokeAllOtherDescription": "Hành động này sẽ chấm dứt mọi phiên đăng nhập trên các máy tính, trình duyệt và thiết bị di động khác.",
+      "revokeSuccess": "Đã thu hồi phiên đăng nhập thành công.",
+      "revokeAllSuccess": "Đã đăng xuất toàn bộ các thiết bị khác.",
+      "noOtherDevices": "Không có thiết bị nào khác đang hoạt động."
     }
   },
   "Footer": {
@@ -266,6 +343,10 @@
         "loginError": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
       },
       "alerts": {
+        "verification_failed": {
+          "title": "Liên kết xác thực đã hết hạn",
+          "description": "Liên kết kích hoạt không hợp lệ hoặc đã hết hạn. Bạn có thể đăng nhập bên dưới để gửi lại liên kết mới từ trang cá nhân."
+        },
         "session_expired": {
           "title": "Phiên đăng nhập hết hạn",
           "description": "Phiên làm việc của bạn đã kết thúc. Vui lòng đăng nhập lại để tiếp tục."

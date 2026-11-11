@@ -71,13 +71,17 @@ export function SetupPasswordForm() {
   const isSubmitting = setupPasswordMutation.isPending;
 
   return (
-    <Card className="border-primary/20 bg-primary/5 shadow-xs">
+    <Card className="border-primary/20 bg-primary/5 rounded-2xl shadow-xs">
       <CardHeader>
         <div className="flex items-center gap-2">
           <KeyRound className="text-primary size-5" />
-          <CardTitle className="text-xl">{t("setupTitle")}</CardTitle>
+          <CardTitle className="text-lg font-semibold sm:text-xl">
+            {t("setupTitle")}
+          </CardTitle>
         </div>
-        <CardDescription>{t("setupDescription")}</CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
+          {t("setupDescription")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -94,6 +98,7 @@ export function SetupPasswordForm() {
                         type="password"
                         placeholder={t("passwordPlaceholder")}
                         disabled={isSubmitting}
+                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -113,6 +118,7 @@ export function SetupPasswordForm() {
                         type="password"
                         placeholder={t("confirmPasswordPlaceholder")}
                         disabled={isSubmitting}
+                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -123,7 +129,11 @@ export function SetupPasswordForm() {
             </div>
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />

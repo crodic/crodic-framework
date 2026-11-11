@@ -42,6 +42,7 @@ import { UserRegisterReqDto } from '../dto/users/user-register.req.dto';
 import { OAuthProviderProfile } from '../social/oauth-provider-profile.type';
 import { JwtPayloadType } from '../types/jwt-payload.type';
 import { SessionRequestInfo } from '../types/session-request-info.type';
+import { FilesystemService } from '../../../filesystem/filesystem.service';
 import { AuthSessionService } from './auth-session.service';
 import { AuthTokenService, TokenSigningConfig } from './auth-token.service';
 import { AuthConfig, AuthService } from './auth.service';
@@ -59,6 +60,7 @@ export class UserAuthService extends AuthService<
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly jwtService: JwtService,
+    private readonly filesystemService: FilesystemService,
     authTokenService: AuthTokenService,
     private readonly socialAuthService: SocialAuthService,
     authSessionService: AuthSessionService,
@@ -212,7 +214,9 @@ export class UserAuthService extends AuthService<
       : await persistUser(this.userRepository, this.userAccountRepository);
 
     // Send email verification
-    await this.userAccountRecoveryService.sendVerificationEmail(user);
+    await this.userAccountRecoveryService.sendVerificationEmail(user, {
+      skipRateLimit: true,
+    });
 
     return plainToInstance(RegisterResDto, {
       userId: user.id,
@@ -358,6 +362,10 @@ export class UserAuthService extends AuthService<
       throw new ForbiddenException('Forbidden');
     }
 
+    if (user.avatar && !user.avatar.startsWith('http')) {
+      user.avatar = this.filesystemService.disk().url(user.avatar);
+    }
+
     const localAccount = await this.findLocalAccount(user.id);
 
     return plainToInstance(
@@ -407,14 +415,34 @@ export class UserAuthService extends AuthService<
   async updateMe(
     id: AutoIncrementID,
     dto: UpdateAuthUserMeReqDto,
+    file?: Express.Multer.File,
   ): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    user.firstName = dto.firstName;
-    user.lastName = dto.lastName;
+    let avatarPath: string | undefined;
+
+    if (file) {
+      const filename = `avatars/user-${id}-${Date.now()}${file.originalname.substring(file.originalname.lastIndexOf('.'))}`;
+      await this.filesystemService
+        .disk()
+        .put(filename, file.buffer, { mimeType: file.mimetype });
+      avatarPath = this.filesystemService.disk().url(filename);
+    }
+
+    if (dto.firstName !== undefined) {
+      user.firstName = dto.firstName;
+    }
+    if (dto.lastName !== undefined) {
+      user.lastName = dto.lastName;
+    }
+    if (dto.removeAvatar) {
+      user.avatar = undefined;
+    } else if (avatarPath) {
+      user.avatar = avatarPath;
+    }
 
     await this.userRepository.save(user);
 

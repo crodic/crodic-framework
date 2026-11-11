@@ -49,8 +49,20 @@ export abstract class AccountRecoveryService<
 
   protected async onPasswordResetSuccess?(user: TUser): Promise<void>;
 
-  async sendVerificationEmail(user: TUser): Promise<void> {
+  async sendVerificationEmail(
+    user: TUser,
+    options?: { skipRateLimit?: boolean },
+  ): Promise<void> {
     const config = this.getRecoveryConfig();
+
+    if (!options?.skipRateLimit) {
+      await this.authRecoveryService.checkEmailRateLimit({
+        target: user.id,
+        action: 'verify',
+        scope: config.scope,
+      });
+    }
+
     const { token } =
       await this.authRecoveryService.createAndCacheVerificationToken({
         userId: user.id,
@@ -68,6 +80,12 @@ export abstract class AccountRecoveryService<
         email: user.email,
         url: config.confirmEmailUrl(token),
       },
+    });
+
+    await this.authRecoveryService.recordEmailSent({
+      target: user.id,
+      action: 'verify',
+      scope: config.scope,
     });
   }
 
@@ -106,6 +124,9 @@ export abstract class AccountRecoveryService<
     });
 
     if (user) {
+      if (user.verifiedAt) {
+        throw new BadRequestException('Account is already verified');
+      }
       await this.sendVerificationEmail(user);
     }
 
@@ -126,6 +147,13 @@ export abstract class AccountRecoveryService<
     }
 
     const config = this.getRecoveryConfig();
+
+    await this.authRecoveryService.checkEmailRateLimit({
+      target: user.id,
+      action: 'forgot',
+      scope: config.scope,
+    });
+
     const { token } =
       await this.authRecoveryService.createAndCacheVerificationToken({
         userId: user.id,
@@ -143,6 +171,12 @@ export abstract class AccountRecoveryService<
         email: dto.email,
         url: config.forgotPasswordUrl(token),
       },
+    });
+
+    await this.authRecoveryService.recordEmailSent({
+      target: user.id,
+      action: 'forgot',
+      scope: config.scope,
     });
 
     // SECURITY: Do NOT return the reset token to the client in the HTTP response.

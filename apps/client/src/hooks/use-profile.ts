@@ -2,13 +2,14 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { http } from "@/lib/http";
-import { SocialAccount, User } from "@/types/apis";
+import { SocialAccount, User, UserSession } from "@/types/apis";
 import { useRouter } from "@/i18n/navigation";
 import { useAuthStore } from "@/store/use-auth-store";
 import xior from "xior";
 
 export const PROFILE_QUERY_KEY = ["user-profile"] as const;
 export const SOCIAL_ACCOUNTS_QUERY_KEY = ["user-social-accounts"] as const;
+export const SESSIONS_QUERY_KEY = ["user-sessions"] as const;
 
 export function extractErrorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === "object" && "response" in error) {
@@ -74,7 +75,7 @@ export function useSocialAccounts() {
     queryFn: async () => {
       try {
         const response = await http.get<SocialAccount[]>(
-          "/api/v1/user/auth/me/social-accounts",
+          "/api/v1/user/auth/me/social-accounts"
         );
         return response.data;
       } catch (error: unknown) {
@@ -105,15 +106,66 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string }) => {
+    mutationFn: async (data: { firstName?: string; lastName?: string }) => {
       const response = await http.put<{ message: string }>(
         "/api/v1/user/auth/me",
-        data,
+        data
       );
       return response.data;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
+    },
+  });
+}
+
+export function useUpdateAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      removeAvatar,
+    }: {
+      file?: File | Blob | null;
+      removeAvatar?: boolean;
+    }) => {
+      const formData = new FormData();
+      if (file) {
+        let filename = "avatar.jpg";
+        if (file instanceof File) {
+          filename = file.name;
+        } else if (file.type === "image/png") {
+          filename = "avatar.png";
+        } else if (file.type === "image/webp") {
+          filename = "avatar.webp";
+        }
+        formData.append("avatar", file, filename);
+      }
+      if (removeAvatar) {
+        formData.append("removeAvatar", "true");
+      }
+
+      const response = await http.put<{ message: string }>(
+        "/api/v1/user/auth/me",
+        formData
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
+    },
+  });
+}
+
+export function useResendVerificationEmail() {
+  return useMutation({
+    mutationFn: async (data: { email: string }) => {
+      const response = await http.post<{ userId?: string | number }>(
+        "/api/v1/user/auth/verify/email/resend",
+        data
+      );
+      return response.data;
     },
   });
 }
@@ -129,7 +181,7 @@ export function useChangePassword() {
     }) => {
       const response = await http.post<{ message: string }>(
         "/api/v1/user/auth/me/change-password",
-        data,
+        data
       );
       return response.data;
     },
@@ -146,7 +198,7 @@ export function useSetupPassword() {
     mutationFn: async (data: { password: string; confirmPassword: string }) => {
       const response = await http.post<{ message: string }>(
         "/api/v1/user/auth/me/setup-password",
-        data,
+        data
       );
       return response.data;
     },
@@ -160,7 +212,7 @@ export function useLinkGoogle() {
   return useMutation({
     mutationFn: async () => {
       const { data } = await http.post<{ url: string }>(
-        "/api/v1/user/auth/me/social/google/link",
+        "/api/v1/user/auth/me/social/google/link"
       );
       return data.url;
     },
@@ -184,14 +236,82 @@ export function useSignOut() {
           {},
           {
             credentials: "same-origin",
-          },
+          }
         )
         .catch(() => null);
 
       useAuthStore.getState().logout();
       queryClient.setQueryData(PROFILE_QUERY_KEY, null);
       queryClient.setQueryData(SOCIAL_ACCOUNTS_QUERY_KEY, []);
+      queryClient.setQueryData(SESSIONS_QUERY_KEY, []);
       router.push("/auth/login");
+    },
+  });
+}
+
+export function useSessions() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+
+  return useQuery<UserSession[]>({
+    queryKey: SESSIONS_QUERY_KEY,
+    queryFn: async () => {
+      try {
+        const response = await http.get<UserSession[]>(
+          "/api/v1/user/auth/sessions"
+        );
+        return response.data;
+      } catch (error: unknown) {
+        const status =
+          error && typeof error === "object" && "response" in error
+            ? (error as { response?: { status?: number } }).response?.status
+            : undefined;
+        if (status === 401) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !isHydrating && !!accessToken,
+    staleTime: 1000 * 60,
+    retry: (count, error: unknown) => {
+      const status =
+        error && typeof error === "object" && "response" in error
+          ? (error as { response?: { status?: number } }).response?.status
+          : undefined;
+      return status !== 401 && count < 2;
+    },
+  });
+}
+
+export function useRevokeSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const response = await http.delete<{ message: string }>(
+        `/api/v1/user/auth/sessions/${sessionId}`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
+    },
+  });
+}
+
+export function useRevokeAllOtherSessions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await http.delete<{ message: string }>(
+        "/api/v1/user/auth/sessions"
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
     },
   });
 }
