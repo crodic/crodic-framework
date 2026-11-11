@@ -13,6 +13,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Post,
   Put,
@@ -86,6 +87,7 @@ export class WhiteLabelController {
     required: false,
     description: 'Target application (admin or client, default: admin)',
   })
+  @Header('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
   getActiveWhiteLabel(
     @Query('target') target?: EWhiteLabelTarget,
   ): Promise<ActiveWhiteLabelResDto | null> {

@@ -3,7 +3,8 @@ import { EWhiteLabelTarget } from '../../common/constants/entity.enum';
 import { ErrorCode } from '../../common/constants/error-code.constant';
 import { ValidationException } from '../../common/exceptions/validation.exception';
 import { FilesystemService } from '../../filesystem/filesystem.service';
-import { Injectable } from '@nestjs/common';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
@@ -16,6 +17,8 @@ import { extname } from 'path';
 import slugify from 'slugify';
 import { DataSource, IsNull, Not, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { CacheKey } from '../../common/constants/cache.constant';
+import { createCacheKey } from '../../utils/cache.util';
 import { ActiveWhiteLabelResDto } from './dto/active-white-label.res.dto';
 import { CreateWhiteLabelReqDto } from './dto/create-white-label.req.dto';
 import { UpdateWhiteLabelReqDto } from './dto/update-white-label.req.dto';
@@ -37,12 +40,16 @@ export type WhiteLabelUploadFiles = {
 @Injectable()
 export class WhiteLabelService {
   private readonly uploadFolder = 'white-label';
+  private readonly logger = new Logger(WhiteLabelService.name);
+  private static readonly ACTIVE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   constructor(
     @InjectRepository(WhiteLabelEntity)
     private readonly whiteLabelRepository: Repository<WhiteLabelEntity>,
     private readonly dataSource: DataSource,
     private readonly storage: FilesystemService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   private toDto(whiteLabel: WhiteLabelEntity): WhiteLabelResDto {
@@ -55,6 +62,21 @@ export class WhiteLabelService {
     return plainToInstance(ActiveWhiteLabelResDto, whiteLabel, {
       excludeExtraneousValues: true,
     });
+  }
+
+  private async invalidateActiveCache(): Promise<void> {
+    try {
+      await Promise.allSettled([
+        this.cacheManager.del(
+          createCacheKey(CacheKey.WHITE_LABEL_ACTIVE, EWhiteLabelTarget.ADMIN),
+        ),
+        this.cacheManager.del(
+          createCacheKey(CacheKey.WHITE_LABEL_ACTIVE, EWhiteLabelTarget.CLIENT),
+        ),
+      ]);
+    } catch (error) {
+      this.logger.warn(`Failed to invalidate white label cache: ${error}`);
+    }
   }
 
   private assertStyles(styles: unknown): asserts styles is WhiteLabelStyles {
@@ -188,12 +210,33 @@ export class WhiteLabelService {
         ? EWhiteLabelTarget.CLIENT
         : EWhiteLabelTarget.ADMIN;
 
+    const cacheKey = createCacheKey(CacheKey.WHITE_LABEL_ACTIVE, validTarget);
+    try {
+      const cached =
+        await this.cacheManager.get<ActiveWhiteLabelResDto>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to read white label from cache: ${error}`);
+    }
+
     const active = await this.whiteLabelRepository.findOne({
       where: { target: validTarget, isActive: true },
     });
 
     if (active) {
-      return this.toActiveDto(active);
+      const dto = this.toActiveDto(active);
+      try {
+        await this.cacheManager.set(
+          cacheKey,
+          dto,
+          WhiteLabelService.ACTIVE_CACHE_TTL,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to write white label to cache: ${error}`);
+      }
+      return dto;
     }
 
     const fallback = await this.whiteLabelRepository.findOne({
@@ -201,7 +244,23 @@ export class WhiteLabelService {
       order: { createdAt: 'ASC' },
     });
 
-    return fallback ? this.toActiveDto(fallback) : null;
+    if (fallback) {
+      const dto = this.toActiveDto(fallback);
+      try {
+        await this.cacheManager.set(
+          cacheKey,
+          dto,
+          WhiteLabelService.ACTIVE_CACHE_TTL,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `Failed to write white label fallback to cache: ${error}`,
+        );
+      }
+      return dto;
+    }
+
+    return null;
   }
 
   async create(
@@ -261,6 +320,7 @@ export class WhiteLabelService {
 
       const saved = await queryRunner.manager.save(entity);
       await queryRunner.commitTransaction();
+      await this.invalidateActiveCache();
 
       return this.toDto(saved);
     } catch (err) {
@@ -395,6 +455,7 @@ export class WhiteLabelService {
 
       const saved = await queryRunner.manager.save(existing);
       await queryRunner.commitTransaction();
+      await this.invalidateActiveCache();
 
       return this.toDto(saved);
     } catch (err) {
@@ -429,6 +490,7 @@ export class WhiteLabelService {
       const saved = await queryRunner.manager.save(item);
 
       await queryRunner.commitTransaction();
+      await this.invalidateActiveCache();
       return this.toDto(saved);
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -450,6 +512,7 @@ export class WhiteLabelService {
     item.updatedByAdminId = adminId;
 
     const saved = await this.whiteLabelRepository.save(item);
+    await this.invalidateActiveCache();
     return this.toDto(saved);
   }
 
@@ -487,6 +550,7 @@ export class WhiteLabelService {
     }
 
     await this.whiteLabelRepository.softRemove(item);
+    await this.invalidateActiveCache();
   }
 
   async applySetupTheme(params: {
@@ -584,6 +648,7 @@ export class WhiteLabelService {
       }
 
       await queryRunner.commitTransaction();
+      await this.invalidateActiveCache();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

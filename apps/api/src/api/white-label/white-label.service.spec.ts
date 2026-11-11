@@ -1,6 +1,7 @@
 import { AutoIncrementID } from '../../common/types/common.type';
 import { EWhiteLabelTarget } from '../../common/constants/entity.enum';
 import { FilesystemService } from '../../filesystem/filesystem.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -20,6 +21,11 @@ describe('WhiteLabelService', () => {
   };
   let dataSourceMock: {
     createQueryRunner: jest.Mock;
+  };
+  let cacheManagerMock: {
+    get: jest.Mock;
+    set: jest.Mock;
+    del: jest.Mock;
   };
 
   const sampleStyles = {
@@ -51,6 +57,12 @@ describe('WhiteLabelService', () => {
       createQueryRunner: jest.fn(),
     };
 
+    cacheManagerMock = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WhiteLabelService,
@@ -65,6 +77,10 @@ describe('WhiteLabelService', () => {
         {
           provide: DataSource,
           useValue: dataSourceMock,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: cacheManagerMock,
         },
       ],
     }).compile();
@@ -81,7 +97,25 @@ describe('WhiteLabelService', () => {
   });
 
   describe('getActiveWhiteLabel', () => {
-    it('returns active white label when found', async () => {
+    it('returns cached active white label when present in cache', async () => {
+      const cachedData = {
+        id: '1',
+        name: 'Cached Blue',
+        slug: 'cached-blue',
+        target: EWhiteLabelTarget.ADMIN,
+      };
+      cacheManagerMock.get.mockResolvedValue(cachedData);
+
+      const result = await service.getActiveWhiteLabel(EWhiteLabelTarget.ADMIN);
+
+      expect(cacheManagerMock.get).toHaveBeenCalledWith(
+        'white-label:active:admin',
+      );
+      expect(whiteLabelRepositoryValue.findOne).not.toHaveBeenCalled();
+      expect(result).toEqual(cachedData);
+    });
+
+    it('returns active white label and caches it when cache miss', async () => {
       const activeRecord = new WhiteLabelEntity({
         id: '1' as AutoIncrementID,
         name: 'Default Blue',
@@ -91,16 +125,29 @@ describe('WhiteLabelService', () => {
         styles: sampleStyles as any,
       });
 
+      cacheManagerMock.get.mockResolvedValue(null);
       whiteLabelRepositoryValue.findOne.mockResolvedValue(activeRecord);
 
       const result = await service.getActiveWhiteLabel(EWhiteLabelTarget.ADMIN);
 
+      expect(cacheManagerMock.get).toHaveBeenCalledWith(
+        'white-label:active:admin',
+      );
       expect(whiteLabelRepositoryValue.findOne).toHaveBeenCalledWith({
         where: {
           target: EWhiteLabelTarget.ADMIN,
           isActive: true,
         },
       });
+      expect(cacheManagerMock.set).toHaveBeenCalledWith(
+        'white-label:active:admin',
+        expect.objectContaining({
+          id: '1',
+          slug: 'default-blue',
+          target: EWhiteLabelTarget.ADMIN,
+        }),
+        86400000,
+      );
       expect(result).toEqual(
         expect.objectContaining({
           id: '1',
@@ -111,6 +158,7 @@ describe('WhiteLabelService', () => {
     });
 
     it('returns null when no active white label exists', async () => {
+      cacheManagerMock.get.mockResolvedValue(null);
       whiteLabelRepositoryValue.findOne.mockResolvedValue(null);
 
       const result = await service.getActiveWhiteLabel(EWhiteLabelTarget.ADMIN);
@@ -142,7 +190,7 @@ describe('WhiteLabelService', () => {
   });
 
   describe('remove', () => {
-    it('soft removes the white label entity', async () => {
+    it('soft removes the white label entity and invalidates cache', async () => {
       const item = new WhiteLabelEntity({
         id: '1' as AutoIncrementID,
         name: 'To Delete',
@@ -158,6 +206,12 @@ describe('WhiteLabelService', () => {
       await service.remove('1' as AutoIncrementID);
 
       expect(whiteLabelRepositoryValue.softRemove).toHaveBeenCalledWith(item);
+      expect(cacheManagerMock.del).toHaveBeenCalledWith(
+        'white-label:active:admin',
+      );
+      expect(cacheManagerMock.del).toHaveBeenCalledWith(
+        'white-label:active:client',
+      );
     });
   });
 });

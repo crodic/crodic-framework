@@ -10,4 +10,5 @@ export enum CacheKey {
   FORGOT_PASSWORD = 'auth:token:%s:%s:forgot-password', // %s: userType, %s: userId
   EMAIL_COOLDOWN = 'auth:email-cooldown:%s:%s:%s', // %s: action, %s: scope, %s: target
   EMAIL_DAILY_COUNT = 'auth:email-daily-count:%s:%s:%s:%s', // %s: action, %s: scope, %s: target, %s: date
+  WHITE_LABEL_ACTIVE = 'white-label:active:%s', // %s: target
 }
