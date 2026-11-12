@@ -52,16 +52,7 @@ export function getAdminsTableColumns({
         label: i18n.t('adminUsers.table.email'),
         icon: MailIcon,
       },
-      cell: ({ row }) => (
-        <div className='flex items-center gap-2'>
-          <span>{row.original.email}</span>
-          {row.original.deletedAt && (
-            <Badge variant='destructive' className='text-xs'>
-              {i18n.t('common.status.deleted', 'Deleted')}
-            </Badge>
-          )}
-        </div>
-      ),
+      cell: ({ row }) => <div>{row.original.email}</div>,
       enableColumnFilter: true,
     },
     {
@@ -109,6 +100,48 @@ export function getAdminsTableColumns({
           ))}
         </div>
       ),
+      enableColumnFilter: true,
+      enableHiding: false,
+      enableSorting: false,
+    },
+    {
+      id: ColumnKey.status,
+      accessorFn: (row) => (row.deletedAt ? 'deleted' : 'active'),
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('common.status', 'Status')}
+        />
+      ),
+      meta: {
+        variant: 'select',
+        label: i18n.t('common.status', 'Status'),
+        options: [
+          {
+            label: i18n.t('common.status.active', 'Active'),
+            value: 'active',
+          },
+          {
+            label: i18n.t('common.status.deleted', 'Deleted'),
+            value: 'deleted',
+          },
+        ],
+      },
+      cell: ({ row }) => {
+        const isDeleted = Boolean(row.original.deletedAt)
+        return isDeleted ? (
+          <Badge variant='destructive' className='text-xs'>
+            {i18n.t('common.status.deleted', 'Deleted')}
+          </Badge>
+        ) : (
+          <Badge
+            variant='outline'
+            className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
+          >
+            {i18n.t('common.status.active', 'Active')}
+          </Badge>
+        )
+      },
       enableColumnFilter: true,
       enableHiding: false,
       enableSorting: false,

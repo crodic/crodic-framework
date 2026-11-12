@@ -292,7 +292,7 @@ Hệ thống triển khai kiến trúc khôi phục tài khoản hai cấp độ
 
 ### 6.2. Cấp Độ 1: Quản Trị Viên Khôi Phục Trong Admin Portal (`apps/web`)
 
-- **Bộ lọc Trạng thái**: Danh sách Admins (`/admins`) và Users (`/users`) hỗ trợ chuyển đổi giữa tab **Đang hoạt động** và **Đã xóa** thông qua query param `trashed=active|trashed` tích hợp TypeORM `queryBuilder.withDeleted().andWhere('entity.deleted_at IS NOT NULL')`.
+- **Hiển thị Tập Trung trong 1 Bảng (Single Table & Toolbar Filter)**: Danh sách Admins (`/admins`) và Users (`/users`) hiển thị cả tài khoản đang hoạt động lẫn tài khoản đã xóa trong một bảng duy nhất (API listing tự động truy vấn `withDeleted()`). Người dùng có thể lọc nhanh theo cột **Trạng thái** (`Đang hoạt động` / `Đã xóa`) ngay trên thanh công cụ lọc `DataTableToolbar` thông qua query param `status=active|deleted`.
 - **Hành động Khôi phục**: Khi dòng ở trạng thái đã xóa, hiển thị nút Restore (hộp thoại xác nhận) gọi API:
   - `POST /api/v1/admin-users/:id/restore` (yêu cầu quyền `Update:Admin`)
   - `POST /api/v1/users/:id/restore` (yêu cầu quyền `Update:User`)

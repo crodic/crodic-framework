@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { PlusIcon } from 'lucide-react'
-import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
+import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
@@ -9,7 +9,6 @@ import {
   type ResourceQueryBuilderFn,
 } from '@/hooks/use-resource-table'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -24,16 +23,12 @@ const adminsFilterParsers = {
   email: parseAsString,
   fullName: parseAsString,
   role: parseAsArrayOf(parseAsString, ','),
-  trashed: parseAsString.withDefault('active'),
+  status: parseAsString,
 } as const
 
 export function PageAdminOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const [trashed, setTrashed] = useQueryState(
-    'trashed',
-    parseAsString.withDefault('active')
-  )
 
   useBreadcrumb([{ title: t('navigation.management.admins', 'Admins') }])
   const { data: rolesData } = useDataRoleFormOptions()
@@ -50,8 +45,8 @@ export function PageAdminOverview() {
         .ilike('fullName', filter.fullName)
         .in('roles.id', filter.role || [])
 
-      if (filter.trashed === 'trashed') {
-        builder.eq('trashed', 'only')
+      if (filter.status) {
+        builder.eq('status', filter.status)
       }
     }, [])
 
@@ -86,22 +81,6 @@ export function PageAdminOverview() {
           </Button>
         }
       />
-      <div className='flex items-center justify-between'>
-        <Tabs
-          value={trashed}
-          onValueChange={(val) => setTrashed(val)}
-          className='w-auto'
-        >
-          <TabsList className='bg-muted/60 h-9 p-1'>
-            <TabsTrigger value='active' className='px-3 text-xs'>
-              {t('common.status.active', 'Active')}
-            </TabsTrigger>
-            <TabsTrigger value='trashed' className='px-3 text-xs'>
-              {t('common.status.trashed', 'Deleted')}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
       <DataTable
         table={table}
         onClickRowAction={handleRowClick}

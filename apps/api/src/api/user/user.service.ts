@@ -46,21 +46,28 @@ export class UserService {
   ) {}
 
   async findAllUser(query: PaginateQuery): Promise<Paginated<UserResDto>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .withDeleted();
 
     const isTrashedOnly =
       query.filter?.trashed === '$eq:only' ||
       query.filter?.deleted === '$eq:true' ||
       query.filter?.trashed === 'only' ||
-      query.filter?.deleted === 'true';
+      query.filter?.deleted === 'true' ||
+      query.filter?.status === 'deleted' ||
+      query.filter?.status === '$eq:deleted';
 
-    const isTrashedWith =
-      query.filter?.trashed === '$eq:with' || query.filter?.trashed === 'with';
+    const isActiveOnly =
+      query.filter?.status === 'active' ||
+      query.filter?.status === '$eq:active' ||
+      query.filter?.trashed === 'none' ||
+      query.filter?.trashed === '$eq:none';
 
     if (isTrashedOnly) {
-      queryBuilder.withDeleted().andWhere('user.deleted_at IS NOT NULL');
-    } else if (isTrashedWith) {
-      queryBuilder.withDeleted();
+      queryBuilder.andWhere('user.deleted_at IS NOT NULL');
+    } else if (isActiveOnly) {
+      queryBuilder.andWhere('user.deleted_at IS NULL');
     }
 
     const result = await paginate(query, queryBuilder, {

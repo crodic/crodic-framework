@@ -11,6 +11,7 @@ export const ColumnKey = {
   fullName: 'fullName',
   verifiedAt: 'verifiedAt',
   role: 'role',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   avatar: 'avatar',

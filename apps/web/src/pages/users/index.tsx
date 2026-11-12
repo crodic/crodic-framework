@@ -1,11 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { PlusIcon } from 'lucide-react'
-import {
-  parseAsArrayOf,
-  parseAsInteger,
-  parseAsString,
-  useQueryState,
-} from 'nuqs'
+import { parseAsArrayOf, parseAsInteger, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { normalizeDate } from '@/lib/utils'
@@ -15,7 +10,6 @@ import {
   type ResourceQueryBuilderFn,
 } from '@/hooks/use-resource-table'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -31,16 +25,12 @@ const userFilterParsers = {
   [ColumnKey.createdAt]: parseAsArrayOf(parseAsInteger, ','),
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
-  trashed: parseAsString.withDefault('active'),
+  status: parseAsString,
 } as const
 
 export function PageUserOverview() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const [trashed, setTrashed] = useQueryState(
-    'trashed',
-    parseAsString.withDefault('active')
-  )
 
   useBreadcrumb([{ title: t('navigation.management.users', 'Users') }])
 
@@ -63,8 +53,8 @@ export function PageUserOverview() {
         .ilike('fullName', filter.fullName)
         .eq('id', filter.id)
 
-      if (filter.trashed === 'trashed') {
-        builder.eq('trashed', 'only')
+      if (filter.status) {
+        builder.eq('status', filter.status)
       }
     }, [])
 
@@ -92,23 +82,6 @@ export function PageUserOverview() {
           </Button>
         }
       />
-
-      <div className='flex items-center justify-between'>
-        <Tabs
-          value={trashed}
-          onValueChange={(val) => setTrashed(val)}
-          className='w-auto'
-        >
-          <TabsList className='bg-muted/60 h-9 p-1'>
-            <TabsTrigger value='active' className='px-3 text-xs'>
-              {t('common.status.active', 'Active')}
-            </TabsTrigger>
-            <TabsTrigger value='trashed' className='px-3 text-xs'>
-              {t('common.status.trashed', 'Deleted')}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
 
       <DataTable
         table={table}

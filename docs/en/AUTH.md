@@ -292,7 +292,7 @@ The framework provides a two-tiered account restoration architecture (Admin Port
 
 ### 6.2. Tier 1: Administrator Restoration via Admin Portal (`apps/web`)
 
-- **Status Filter Tabs**: Admins (`/admins`) and Users (`/users`) views support switching between **Active** and **Deleted** accounts via query parameter `trashed=active|trashed`, leveraging TypeORM `queryBuilder.withDeleted().andWhere('entity.deleted_at IS NOT NULL')`.
+- **Unified Single Table & Toolbar Filter**: Admins (`/admins`) and Users (`/users`) views display both active and deleted accounts within a single unified table (API listing queries with `withDeleted()`). Users can filter by the **Status** column (`Active` / `Deleted`) directly in the `DataTableToolbar` via query parameter `status=active|deleted`.
 - **Restoration Action**: For soft-deleted records, a Restore action button (with confirmation dialog) calls:
   - `POST /api/v1/admin-users/:id/restore` (requires `Update:Admin` permission)
   - `POST /api/v1/users/:id/restore` (requires `Update:User` permission)

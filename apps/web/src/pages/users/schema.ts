@@ -6,6 +6,7 @@ export const ColumnKey = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   avatar: 'avatar',
+  status: 'status',
   verifiedAt: 'verifiedAt',
   fullName: 'fullName',
   all: 'all',
