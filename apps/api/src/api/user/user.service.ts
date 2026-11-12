@@ -2,7 +2,14 @@ import { AutoIncrementID } from '../../common/types/common.type';
 import { EAccountProvider } from '../../common/constants/entity.enum';
 import { ErrorCode } from '../../common/constants/error-code.constant';
 import { ValidationException } from '../../common/exceptions/validation.exception';
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
@@ -40,6 +47,21 @@ export class UserService {
 
   async findAllUser(query: PaginateQuery): Promise<Paginated<UserResDto>> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
+
+    const isTrashedOnly =
+      query.filter?.trashed === '$eq:only' ||
+      query.filter?.deleted === '$eq:true' ||
+      query.filter?.trashed === 'only' ||
+      query.filter?.deleted === 'true';
+
+    const isTrashedWith =
+      query.filter?.trashed === '$eq:with' || query.filter?.trashed === 'with';
+
+    if (isTrashedOnly) {
+      queryBuilder.withDeleted().andWhere('user.deleted_at IS NOT NULL');
+    } else if (isTrashedWith) {
+      queryBuilder.withDeleted();
+    }
 
     const result = await paginate(query, queryBuilder, {
       sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
@@ -118,7 +140,10 @@ export class UserService {
 
   async findOne(id: AutoIncrementID): Promise<UserResDto> {
     assert(id, 'id is required');
-    const user = await this.userRepository.findOneByOrFail({ id });
+    const user = await this.userRepository.findOneOrFail({
+      where: { id },
+      withDeleted: true,
+    });
 
     return user.toDto(UserResDto);
   }
@@ -140,5 +165,44 @@ export class UserService {
       await manager.getRepository(UserSessionEntity).delete({ userId: id });
       await manager.getRepository(UserEntity).softRemove(user);
     });
+  }
+
+  async restore(id: AutoIncrementID): Promise<UserResDto> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.deletedAt) {
+      throw new BadRequestException('User is not deleted');
+    }
+
+    // Check if another active user has taken this email
+    const activeUser = await this.userRepository.findOne({
+      where: { email: user.email },
+    });
+
+    if (activeUser) {
+      throw new ConflictException(
+        'An active user already exists with this email address',
+      );
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(UserEntity).restore(id);
+    });
+
+    user.deletedAt = null;
+
+    // Send password setup / reactivation email
+    await this.userAccountRecoveryService.sendVerificationEmail(user, {
+      skipRateLimit: true,
+    });
+
+    return plainToInstance(UserResDto, user);
   }
 }

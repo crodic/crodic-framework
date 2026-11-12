@@ -42,6 +42,7 @@ describe('AdminUserService', () => {
       findOneByOrFail: jest.fn(),
       findOneBy: jest.fn(),
       softRemove: jest.fn(),
+      restore: jest.fn(),
       createQueryBuilder: jest.fn(),
     };
 
@@ -271,6 +272,66 @@ describe('AdminUserService', () => {
         adminUserId: '1',
       });
       expect(adminRepoMock.softRemove).toHaveBeenCalledWith(admin);
+    });
+  });
+
+  describe('restore', () => {
+    it('restores a soft-deleted admin user and sends verification email', async () => {
+      const admin = new AdminUserEntity({
+        id: '1' as any,
+        email: 'deleted@example.com',
+        deletedAt: new Date(),
+        roles: [],
+      });
+
+      adminRepoMock.findOne
+        .mockResolvedValueOnce(admin) // findOne withDeleted
+        .mockResolvedValueOnce(null); // findOne active duplicate check
+
+      const result = await service.restore('1' as any);
+
+      expect(dataSourceMock.transaction).toHaveBeenCalled();
+      expect(
+        adminAccountRecoveryServiceMock.sendVerificationEmail,
+      ).toHaveBeenCalledWith(admin, { skipRateLimit: true });
+      expect(cacheMock.del).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('throws NotFoundException when admin is not found', async () => {
+      adminRepoMock.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.restore('999' as any)).rejects.toThrow();
+    });
+
+    it('throws BadRequestException when admin is not deleted', async () => {
+      const admin = new AdminUserEntity({
+        id: '1' as any,
+        email: 'active@example.com',
+        deletedAt: null,
+      });
+
+      adminRepoMock.findOne.mockResolvedValueOnce(admin);
+
+      await expect(service.restore('1' as any)).rejects.toThrow();
+    });
+
+    it('throws ConflictException when active admin with same email exists', async () => {
+      const admin = new AdminUserEntity({
+        id: '1' as any,
+        email: 'duplicate@example.com',
+        deletedAt: new Date(),
+      });
+      const activeAdmin = new AdminUserEntity({
+        id: '2' as any,
+        email: 'duplicate@example.com',
+      });
+
+      adminRepoMock.findOne
+        .mockResolvedValueOnce(admin)
+        .mockResolvedValueOnce(activeAdmin);
+
+      await expect(service.restore('1' as any)).rejects.toThrow();
     });
   });
 });

@@ -339,10 +339,20 @@
         "verificationSuccess": "Tài khoản của bạn đã được xác thực thành công. Bạn có thể đăng nhập ngay bây giờ.",
         "verificationFailed": "Không thể xác thực tài khoản. Liên kết có thể không hợp lệ hoặc đã hết hạn.",
         "resetSuccess": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập.",
+        "restoreSuccess": "Khôi phục tài khoản thành công! Vui lòng đăng nhập bằng mật khẩu mới.",
+        "restoreRequestSuccess": "Đã gửi email khôi phục tài khoản. Vui lòng kiểm tra hộp thư của bạn.",
+        "restoreRequestFailed": "Không thể gửi yêu cầu khôi phục. Vui lòng thử lại sau.",
+        "accountDeleted": "Tài khoản này đã bị xóa hoặc vô hiệu hóa. Bạn có thể yêu cầu khôi phục tài khoản.",
         "socialFailed": "Đăng nhập bằng Google thất bại. Vui lòng thử lại.",
         "loginError": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
       },
       "alerts": {
+        "accountDeleted": {
+          "title": "Tài khoản đã bị xóa",
+          "description": "Tài khoản liên kết với email này hiện đang ở trạng thái đã xóa. Bạn có muốn gửi yêu cầu khôi phục không?",
+          "action": "Khôi phục tài khoản",
+          "sent": "Đã gửi liên kết khôi phục tới email của bạn. Vui lòng kiểm tra hộp thư!"
+        },
         "verification_failed": {
           "title": "Liên kết xác thực đã hết hạn",
           "description": "Liên kết kích hoạt không hợp lệ hoặc đã hết hạn. Bạn có thể đăng nhập bên dưới để gửi lại liên kết mới từ trang cá nhân."
@@ -413,6 +423,24 @@
       "backToSignIn": "Quay lại đăng nhập",
       "tokenMissingToast": "Liên kết đặt lại không hợp lệ hoặc thiếu thông tin.",
       "errorToast": "Không thể đặt lại mật khẩu. Liên kết có thể không hợp lệ hoặc đã hết hạn.",
+      "validation": {
+        "passwordMin": "Mật khẩu phải có ít nhất 8 ký tự.",
+        "passwordsMismatch": "Mật khẩu xác nhận không khớp."
+      }
+    },
+    "restore": {
+      "metaTitle": "Khôi phục tài khoản",
+      "metaDescription": "Thiết lập mật khẩu mới và kích hoạt lại tài khoản",
+      "title": "Khôi phục tài khoản",
+      "description": "Chọn mật khẩu mới để kích hoạt lại tài khoản của bạn.",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "missingToken": "Liên kết khôi phục thiếu token. Vui lòng yêu cầu liên kết mới.",
+      "submit": "Khôi phục tài khoản",
+      "submitting": "Đang xử lý...",
+      "backToSignIn": "Quay lại đăng nhập",
+      "tokenMissingToast": "Liên kết khôi phục không hợp lệ hoặc thiếu thông tin.",
+      "errorToast": "Không thể khôi phục tài khoản. Liên kết có thể không hợp lệ hoặc đã hết hạn.",
       "validation": {
         "passwordMin": "Mật khẩu phải có ít nhất 8 ký tự.",
         "passwordsMismatch": "Mật khẩu xác nhận không khớp."

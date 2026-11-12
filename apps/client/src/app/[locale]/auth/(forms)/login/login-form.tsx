@@ -46,6 +46,11 @@ export default function LoginForm() {
   const queryClient = useQueryClient();
   const handledMessageRef = useRef<string | null>(null);
   const [isVerificationFailed, setIsVerificationFailed] = useState(false);
+  const [deletedAccountEmail, setDeletedAccountEmail] = useState<string | null>(
+    null
+  );
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreRequested, setRestoreRequested] = useState(false);
 
   const rawCode = searchParams.get(AUTH_QUERY_PARAM.CODE);
   const code = (
@@ -73,8 +78,11 @@ export default function LoginForm() {
     const verification = searchParams.get("verification");
     const reset = searchParams.get("reset");
     const social = searchParams.get("social");
+    const restore = searchParams.get("restore");
 
-    const messageKey = [verification, reset, social].filter(Boolean).join(":");
+    const messageKey = [verification, reset, social, restore]
+      .filter(Boolean)
+      .join(":");
 
     if (!messageKey || handledMessageRef.current === messageKey) {
       return;
@@ -95,6 +103,10 @@ export default function LoginForm() {
       toast.success(t("toasts.resetSuccess"));
     }
 
+    if (restore === "success") {
+      toast.success(t("toasts.restoreSuccess"));
+    }
+
     if (social === "failed") {
       toast.error(t("toasts.socialFailed"));
     }
@@ -103,6 +115,7 @@ export default function LoginForm() {
     nextSearchParams.delete("verification");
     nextSearchParams.delete("reset");
     nextSearchParams.delete("social");
+    nextSearchParams.delete("restore");
     const nextQuery = nextSearchParams.toString();
 
     router.replace(nextQuery ? `/auth/login?${nextQuery}` : "/auth/login");
@@ -134,10 +147,42 @@ export default function LoginForm() {
       router.push(redirectTarget);
     } catch (error) {
       if (error instanceof XiorError) {
+        const errorData = error.response?.data;
+        if (
+          errorData?.errorCode === "ACCOUNT_DELETED" ||
+          errorData?.canRestore
+        ) {
+          setDeletedAccountEmail(values.email);
+          setRestoreRequested(false);
+          toast.error(errorData?.message || t("toasts.accountDeleted"));
+          return;
+        }
         toast.error(error.response?.data?.message || t("toasts.loginError"));
       } else {
         toast.error(t("toasts.loginError"));
       }
+    }
+  }
+
+  async function handleRequestRestore() {
+    if (!deletedAccountEmail) return;
+    setIsRestoring(true);
+    try {
+      await http.post("api/v1/user/auth/restore-request", {
+        email: deletedAccountEmail,
+      });
+      setRestoreRequested(true);
+      toast.success(t("toasts.restoreRequestSuccess"));
+    } catch (err) {
+      if (err instanceof XiorError) {
+        toast.error(
+          err.response?.data?.message || t("toasts.restoreRequestFailed")
+        );
+      } else {
+        toast.error(t("toasts.restoreRequestFailed"));
+      }
+    } finally {
+      setIsRestoring(false);
     }
   }
 
@@ -168,6 +213,36 @@ export default function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 sm:px-8">
+          {deletedAccountEmail && (
+            <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200">
+              <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
+              <AlertTitle className="font-semibold">
+                {t("alerts.accountDeleted.title")}
+              </AlertTitle>
+              <AlertDescription className="mt-1 space-y-2 text-sm">
+                <p>{t("alerts.accountDeleted.description")}</p>
+                {restoreRequested ? (
+                  <p className="font-medium text-emerald-600 dark:text-emerald-400">
+                    {t("alerts.accountDeleted.sent")}
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isRestoring}
+                    onClick={handleRequestRestore}
+                    className="mt-2"
+                  >
+                    {isRestoring && (
+                      <Loader2 className="mr-2 size-3.5 animate-spin" />
+                    )}
+                    {t("alerts.accountDeleted.action")}
+                  </Button>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
           {isVerificationFailed && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="size-4" />

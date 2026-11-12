@@ -138,4 +138,21 @@ export class AdminUserController {
   removeUser(@Param('id') id: AutoIncrementID) {
     return this.adminUserService.remove(id);
   }
+
+  // --------------------------------------------------
+
+  @Post(':id/restore')
+  @ApiAuth({
+    summary: 'Restore a soft-deleted admin user',
+    statusCode: HttpStatus.OK,
+    type: AdminUserResDto,
+    errorResponses: [400, 401, 403, 404, 409, 500],
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.Admin),
+  )
+  restoreUser(@Param('id') id: AutoIncrementID): Promise<AdminUserResDto> {
+    return this.adminUserService.restore(id);
+  }
 }

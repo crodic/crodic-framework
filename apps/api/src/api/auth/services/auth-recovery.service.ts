@@ -125,7 +125,7 @@ export class AuthRecoveryService {
    */
   async checkEmailRateLimit(params: {
     target: string | AutoIncrementID;
-    action: 'verify' | 'forgot';
+    action: 'verify' | 'forgot' | 'restore';
     scope: ESessionUserType;
     cooldownSeconds?: number;
     dailyLimit?: number;
@@ -177,7 +177,7 @@ export class AuthRecoveryService {
    */
   async recordEmailSent(params: {
     target: string | AutoIncrementID;
-    action: 'verify' | 'forgot';
+    action: 'verify' | 'forgot' | 'restore';
     scope: ESessionUserType;
     cooldownSeconds?: number;
   }): Promise<void> {

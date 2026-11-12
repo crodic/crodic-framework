@@ -72,4 +72,8 @@ export class AdminUserResDto {
   @ClassField(() => Date)
   @Expose()
   updatedAt!: Date;
+
+  @ClassField(() => Date)
+  @Expose()
+  deletedAt?: Date | null;
 }

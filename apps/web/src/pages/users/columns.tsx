@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
 import i18n from '@/i18n'
 import { Calendar, MailIcon, TextIcon, UserRoundCheckIcon } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
 import { ColumnKey, type UserSchema } from '../users/schema'
@@ -62,7 +63,16 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
           label={i18n.t('users.table.email')}
         />
       ),
-      cell: ({ row }) => <div className='truncate'>{row.original.email}</div>,
+      cell: ({ row }) => (
+        <div className='flex items-center gap-2 truncate'>
+          <span className='truncate'>{row.original.email}</span>
+          {row.original.deletedAt && (
+            <Badge variant='destructive' className='text-xs'>
+              {i18n.t('common.status.deleted', 'Deleted')}
+            </Badge>
+          )}
+        </div>
+      ),
       meta: {
         label: i18n.t('users.table.email'),
         placeholder: i18n.t('users.table.email'),

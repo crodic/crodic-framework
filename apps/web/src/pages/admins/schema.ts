@@ -58,6 +58,7 @@ export const adminSchema = z
     role_id: z.union([z.string(), z.number()]).nullish(),
     createdAt: z.string(),
     updatedAt: z.string(),
+    deletedAt: z.string().nullable().optional(),
   })
   .transform((admin) => {
     const roles = resolveAdminRoles(admin)

@@ -154,6 +154,21 @@ export class UserAuthService extends AuthService<
     });
 
     if (!user) {
+      const deletedUser = await this.userRepository.findOne({
+        where: { email },
+        withDeleted: true,
+      });
+
+      if (deletedUser?.deletedAt) {
+        throw new BadRequestException({
+          errorCode: 'ACCOUNT_DELETED',
+          message:
+            'Tài khoản của bạn đã bị xóa. Bạn có thể gửi yêu cầu khôi phục tài khoản.',
+          canRestore: true,
+          email: deletedUser.email,
+        });
+      }
+
       throw new BadRequestException({ message: 'Invalid credentials' });
     }
 

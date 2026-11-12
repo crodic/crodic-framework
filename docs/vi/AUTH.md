@@ -281,7 +281,36 @@ Form đăng nhập đón nhận các mã này và hiển thị banner cảnh bá
 
 ---
 
-## 6. Lệnh Kiểm Thử & Kiểm Tra Sức Khỏe Toàn Bộ Ứng Dụng
+## 6. Cơ Chế Khôi Phục Tài Khoản (Account Restoration Architecture)
+
+Hệ thống triển khai kiến trúc khôi phục tài khoản hai cấp độ (Admin Portal & Client Self-Service) tuân thủ nghiêm ngặt nguyên tắc **Zero-Trust Security** và toàn vẹn dữ liệu:
+
+### 6.1. Nguyên Lý Lưu Trữ & Xóa Mềm (Soft Delete)
+
+- **Partial Unique Index**: Bảng `users` và `admin_users` sử dụng partial index PostgreSQL `@Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })`.
+- **Khi xóa tài khoản**: Hệ thống thực hiện `softRemove` trên entity người dùng (`deleted_at` được gán timestamp), đồng thời dọn sạch thông tin xác thực (`user_accounts` / `admin_accounts`) và thu hồi toàn bộ phiên hoạt động (`sessions`). Nhờ đó, email được giải phóng ngay lập tức khỏi unique constraint và ngăn chặn hoàn toàn việc sử dụng mật khẩu cũ.
+
+### 6.2. Cấp Độ 1: Quản Trị Viên Khôi Phục Trong Admin Portal (`apps/web`)
+
+- **Bộ lọc Trạng thái**: Danh sách Admins (`/admins`) và Users (`/users`) hỗ trợ chuyển đổi giữa tab **Đang hoạt động** và **Đã xóa** thông qua query param `trashed=active|trashed` tích hợp TypeORM `queryBuilder.withDeleted().andWhere('entity.deleted_at IS NOT NULL')`.
+- **Hành động Khôi phục**: Khi dòng ở trạng thái đã xóa, hiển thị nút Restore (hộp thoại xác nhận) gọi API:
+  - `POST /api/v1/admin-users/:id/restore` (yêu cầu quyền `Update:Admin`)
+  - `POST /api/v1/users/:id/restore` (yêu cầu quyền `Update:User`)
+- **Kiểm soát Xung đột**: Backend kiểm tra nghiêm ngặt không có tài khoản active nào khác đang chiếm giữ email trước khi gỡ cờ `deleted_at`, đồng thời gửi email kích hoạt/cấp lại mật khẩu tới chủ sở hữu.
+
+### 6.3. Cấp Độ 2: Người Dùng Tự Khôi Phục (Self-Service trên `apps/client`)
+
+- **Phát hiện khi Đăng nhập**: Khi người dùng nhập email của tài khoản đã bị xóa mềm, `UserAuthService.signIn` phát hiện và trả về mã lỗi đặc biệt `ACCOUNT_DELETED` kèm cờ `canRestore: true`.
+- **Yêu cầu Khôi phục**: Giao diện đăng nhập `login-form.tsx` hiển thị Alert thông báo và nút **Khôi phục tài khoản**. Bấm nút sẽ gọi `POST /api/v1/user/auth/restore-request` để tạo mã bảo mật có hạn và gửi email HTML (`user-email-restore.hbs`).
+- **Đặt Mật khẩu Mới & Kích hoạt lại**: Người dùng click link trong email dẫn đến trang `apps/client/src/app/[locale]/auth/(forms)/restore/` (`/auth/restore?token=...`). Sau khi nhập mật khẩu mới hợp lệ, request `POST /api/v1/user/auth/restore` sẽ:
+  1. Xác thực và tiêu thụ token an toàn từ Redis cache.
+  2. Khôi phục `deleted_at = null`.
+  3. Mã hóa và lưu mật khẩu mới vào `user_accounts`.
+  4. Thu hồi mọi phiên làm việc cũ và chuyển hướng về trang đăng nhập với thông báo thành công.
+
+---
+
+## 7. Lệnh Kiểm Thử & Kiểm Tra Sức Khỏe Toàn Bộ Ứng Dụng
 
 Chạy từ thư mục gốc của repository:
 

@@ -52,7 +52,16 @@ export function getAdminsTableColumns({
         label: i18n.t('adminUsers.table.email'),
         icon: MailIcon,
       },
-      cell: ({ row }) => <div>{row.original.email}</div>,
+      cell: ({ row }) => (
+        <div className='flex items-center gap-2'>
+          <span>{row.original.email}</span>
+          {row.original.deletedAt && (
+            <Badge variant='destructive' className='text-xs'>
+              {i18n.t('common.status.deleted', 'Deleted')}
+            </Badge>
+          )}
+        </div>
+      ),
       enableColumnFilter: true,
     },
     {

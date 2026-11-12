@@ -208,6 +208,28 @@ export class UserAuthenticationController {
     return await this.userAccountRecoveryService.resetPassword(token, dto);
   }
 
+  @ApiPublic({ summary: 'Request account restoration email' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('restore-request')
+  async requestRestore(
+    @Body() dto: ForgotPasswordReqDto,
+  ): Promise<{ message: string }> {
+    return await this.userAccountRecoveryService.requestRestore(dto);
+  }
+
+  @ApiPublic({
+    type: ResetPasswordResDto,
+    summary: 'Restore account with new password',
+  })
+  @ApiQuery({ name: 'token', type: 'string' })
+  @Post('restore')
+  async restoreAccount(
+    @Query('token') token: string,
+    @Body() dto: ResetPasswordReqDto,
+  ): Promise<ResetPasswordResDto> {
+    return await this.userAccountRecoveryService.restoreAccount(token, dto);
+  }
+
   @ApiPublic({ summary: 'Verify email' })
   @ApiQuery({ name: 'token', type: 'string' })
   @Throttle({ default: { limit: 10, ttl: 60000 } })

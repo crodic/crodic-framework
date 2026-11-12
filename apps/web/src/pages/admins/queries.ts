@@ -49,6 +49,10 @@ export async function deleteAdmin(id: string) {
   return await http.delete(`/admin-users/${id}`)
 }
 
+export async function restoreAdmin(id: string) {
+  return await http.post(`/admin-users/${id}/restore`)
+}
+
 export async function apiResendAdminVerification(id: string) {
   const response = await http.post<{ message: string }>(
     `/admin-users/${id}/resend-verification`

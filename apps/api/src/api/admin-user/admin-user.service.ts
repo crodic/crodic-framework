@@ -8,6 +8,7 @@ import { EmailQueueService } from '../../background/queues/email-queue/email-que
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   Logger,
@@ -188,6 +189,21 @@ export class AdminUserService {
   async findAllUser(query: PaginateQuery): Promise<Paginated<AdminUserResDto>> {
     const queryBuilder = this.adminUserRepository.createQueryBuilder('admin');
 
+    const isTrashedOnly =
+      query.filter?.trashed === '$eq:only' ||
+      query.filter?.deleted === '$eq:true' ||
+      query.filter?.trashed === 'only' ||
+      query.filter?.deleted === 'true';
+
+    const isTrashedWith =
+      query.filter?.trashed === '$eq:with' || query.filter?.trashed === 'with';
+
+    if (isTrashedOnly) {
+      queryBuilder.withDeleted().andWhere('admin.deleted_at IS NOT NULL');
+    } else if (isTrashedWith) {
+      queryBuilder.withDeleted();
+    }
+
     const result = await paginate(query, queryBuilder, {
       sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
       searchableColumns: ['email'],
@@ -213,6 +229,7 @@ export class AdminUserService {
     assert(id, 'id is required');
     const user = await this.adminUserRepository.findOneOrFail({
       where: { id },
+      withDeleted: true,
       relations: ['roles', 'roles.permissionEntities'],
     });
 
@@ -277,6 +294,48 @@ export class AdminUserService {
     });
 
     await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
+  }
+
+  async restore(id: AutoIncrementID): Promise<AdminUserResDto> {
+    const admin = await this.adminUserRepository.findOne({
+      where: { id },
+      withDeleted: true,
+      relations: ['roles', 'roles.permissionEntities'],
+    });
+
+    if (!admin) {
+      throw new NotFoundException('Admin user not found');
+    }
+
+    if (!admin.deletedAt) {
+      throw new BadRequestException('Admin user is not deleted');
+    }
+
+    const activeAdmin = await this.adminUserRepository.findOne({
+      where: { email: admin.email },
+    });
+
+    if (activeAdmin) {
+      throw new ConflictException(
+        'An active admin user already exists with this email address',
+      );
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(AdminUserEntity).restore(id);
+    });
+
+    admin.deletedAt = null;
+
+    await this.adminAccountRecoveryService.sendVerificationEmail(admin, {
+      skipRateLimit: true,
+    });
+
+    await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
+
+    return plainToInstance(AdminUserResDto, admin, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async resendVerification(id: AutoIncrementID): Promise<{ message: string }> {

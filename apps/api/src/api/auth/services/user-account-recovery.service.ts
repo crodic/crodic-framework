@@ -5,11 +5,21 @@ import {
   EAccountProvider,
   ESessionUserType,
 } from '../../../common/constants/entity.enum';
-import { Injectable } from '@nestjs/common';
+import { AutoIncrementID } from '../../../common/types/common.type';
+import { normalizeEmail } from '../../../utils/normalize.util';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 import { EmailQueueService } from '../../../background/queues/email-queue/email-queue.service';
+import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
+import { ResetPasswordReqDto } from '../dto/reset-password.req.dto';
+import { ResetPasswordResDto } from '../dto/reset-password.res.dto';
 import {
   AccountRecoveryConfig,
   AccountRecoveryService,
@@ -28,6 +38,7 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
     private readonly userAccountRepository: Repository<UserAccountEntity>,
     emailQueueService: EmailQueueService,
     private readonly authSessionService: AuthSessionService,
+    private readonly dataSource: DataSource,
   ) {
     super(authRecoveryService, userRepository, emailQueueService);
   }
@@ -95,6 +106,123 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
     await this.authSessionService.revokeAllUserSessions({
       userId: user.id,
       userType: ESessionUserType.USER,
+    });
+  }
+
+  async requestRestore(
+    dto: ForgotPasswordReqDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { email: normalizeEmail(dto.email) },
+      withDeleted: true,
+    });
+
+    if (!user || !user.deletedAt) {
+      return {
+        message:
+          'If your account was deleted, a restoration email has been sent.',
+      };
+    }
+
+    const config = this.getRecoveryConfig();
+
+    await this.authRecoveryService.checkEmailRateLimit({
+      target: user.id,
+      action: 'restore',
+      scope: config.scope,
+    });
+
+    const { token } =
+      await this.authRecoveryService.createAndCacheVerificationToken({
+        userId: user.id,
+        scope: config.scope,
+        secret: config.forgotSecret,
+        expiresIn: config.forgotExpires,
+        cacheKeyPrefix: 'restore_account:' as any,
+      });
+
+    const clientUrl = this.configService.getOrThrow('auth.clientUrl', {
+      infer: true,
+    });
+
+    const restoreUrl = `${clientUrl}/auth/restore?token=${token}`;
+
+    await this.emailQueueService.sendMail({
+      to: user.email,
+      subject: 'Restore your account',
+      template: 'user-email-restore',
+      context: {
+        email: user.email,
+        url: restoreUrl,
+      },
+    });
+
+    await this.authRecoveryService.recordEmailSent({
+      target: user.id,
+      action: 'restore',
+      scope: config.scope,
+    });
+
+    return {
+      message:
+        'If your account was deleted, a restoration email has been sent.',
+    };
+  }
+
+  async restoreAccount(
+    token: string,
+    dto: ResetPasswordReqDto,
+  ): Promise<ResetPasswordResDto> {
+    const config = this.getRecoveryConfig();
+    const { id } = await this.authRecoveryService.verifyAndConsumeToken({
+      token,
+      scope: config.scope,
+      secret: config.forgotSecret,
+      cacheKeyPrefix: 'restore_account:' as any,
+    });
+
+    const user = await this.userRepository.findOne({
+      where: { id: id as AutoIncrementID },
+      withDeleted: true,
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.deletedAt) {
+      throw new BadRequestException('User is not deleted');
+    }
+
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const activeUser = await this.userRepository.findOne({
+      where: { email: user.email },
+    });
+
+    if (activeUser) {
+      throw new ConflictException(
+        'An active user already exists with this email address',
+      );
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(UserEntity).restore(user.id);
+    });
+
+    user.deletedAt = null;
+    await this.saveLocalAccountPassword(user, dto.password);
+
+    await this.authSessionService.revokeAllUserSessions({
+      userId: user.id,
+      userType: ESessionUserType.USER,
+    });
+
+    return plainToInstance(ResetPasswordResDto, {
+      success: true,
+      message: 'Account restored successfully. Please sign in to continue.',
     });
   }
 }

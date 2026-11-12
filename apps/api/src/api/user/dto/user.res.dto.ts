@@ -54,4 +54,8 @@ export class UserResDto {
   @ClassField(() => Date)
   @Expose()
   updatedAt!: Date;
+
+  @ClassField(() => Date)
+  @Expose()
+  deletedAt?: Date | null;
 }

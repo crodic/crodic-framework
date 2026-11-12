@@ -281,7 +281,36 @@ The login form renders these codes through localized notifications (`useTranslat
 
 ---
 
-## 6. Verification & Health Checks
+## 6. Account Restoration Architecture
+
+The framework provides a two-tiered account restoration architecture (Admin Portal & Client Self-Service) adhering strictly to **Zero-Trust Security** and data integrity:
+
+### 6.1. Soft Delete & Credential Lifecycle
+
+- **PostgreSQL Partial Unique Index**: `users` and `admin_users` enforce email uniqueness via `@Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })`.
+- **Account Deletion Protocol**: Calling `remove` performs `softRemove` on the user entity (recording `deleted_at`), completely purges local credentials (`user_accounts` / `admin_accounts`), and revokes all active session tokens (`sessions`). This frees the email constraint while preventing unauthorized access via old passwords.
+
+### 6.2. Tier 1: Administrator Restoration via Admin Portal (`apps/web`)
+
+- **Status Filter Tabs**: Admins (`/admins`) and Users (`/users`) views support switching between **Active** and **Deleted** accounts via query parameter `trashed=active|trashed`, leveraging TypeORM `queryBuilder.withDeleted().andWhere('entity.deleted_at IS NOT NULL')`.
+- **Restoration Action**: For soft-deleted records, a Restore action button (with confirmation dialog) calls:
+  - `POST /api/v1/admin-users/:id/restore` (requires `Update:Admin` permission)
+  - `POST /api/v1/users/:id/restore` (requires `Update:User` permission)
+- **Conflict Prevention**: The backend verifies no active account has claimed the email address prior to clearing `deleted_at`, then automatically dispatches an account activation / credential setup email.
+
+### 6.3. Tier 2: End-User Self-Service Restoration (`apps/client`)
+
+- **Detection on Login**: When an end-user attempts to sign in with an email belonging to a soft-deleted record, `UserAuthService.signIn` detects it and responds with `errorCode: 'ACCOUNT_DELETED'` and `canRestore: true`.
+- **Restoration Request**: `login-form.tsx` displays an Alert prompt with a **Restore Account** action. Clicking it invokes `POST /api/v1/user/auth/restore-request` which generates a time-limited signed recovery token and queues a branded email (`user-email-restore.hbs`).
+- **New Password & Reactivation**: Clicking the link opens `apps/client/src/app/[locale]/auth/(forms)/restore/` (`/auth/restore?token=...`). Submitting a valid new password via `POST /api/v1/user/auth/restore`:
+  1. Atomically verifies and consumes the recovery token from Redis.
+  2. Restores `deleted_at = null`.
+  3. Encrypts and writes the new credentials to `user_accounts`.
+  4. Revokes stale sessions and redirects to the login screen with a success alert.
+
+---
+
+## 7. Verification & Health Checks
 
 Run workspace checks from repository root:
 

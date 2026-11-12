@@ -33,6 +33,7 @@ export const userSchema = z.object({
     }),
   createdAt: z.string(),
   updatedAt: z.string(),
+  deletedAt: z.string().nullable().optional(),
 })
 
 export type UserSchema = z.infer<typeof userSchema>

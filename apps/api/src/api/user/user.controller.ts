@@ -126,4 +126,19 @@ Response includes paginated data, metadata, and navigation links.`,
   removeUser(@Param('id') id: AutoIncrementID) {
     return this.userService.remove(id);
   }
+
+  @Post(':id/restore')
+  @ApiAuth({
+    summary: 'Restore a soft-deleted user',
+    statusCode: HttpStatus.OK,
+    type: UserResDto,
+    errorResponses: [400, 401, 403, 404, 409, 500],
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.User),
+  )
+  restoreUser(@Param('id') id: AutoIncrementID): Promise<UserResDto> {
+    return this.userService.restore(id);
+  }
 }

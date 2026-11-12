@@ -26,9 +26,11 @@ describe('UserService', () => {
   beforeAll(async () => {
     userRepositoryValue = {
       findOne: jest.fn(),
+      findOneOrFail: jest.fn(),
       findOneByOrFail: jest.fn(),
       save: jest.fn(),
       softRemove: jest.fn(),
+      restore: jest.fn(),
     };
     userAccountRepositoryValue = {
       findOne: jest.fn(),
@@ -166,12 +168,13 @@ describe('UserService', () => {
         email: 'jane@example.com',
       });
 
-      userRepositoryValue.findOneByOrFail.mockResolvedValue(user);
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
 
       const result = await service.findOne('1' as any);
 
-      expect(userRepositoryValue.findOneByOrFail).toHaveBeenCalledWith({
-        id: '1',
+      expect(userRepositoryValue.findOneOrFail).toHaveBeenCalledWith({
+        where: { id: '1' },
+        withDeleted: true,
       });
       expect(result).toEqual(expect.objectContaining({ email: user.email }));
     });
@@ -215,6 +218,64 @@ describe('UserService', () => {
         userId: '1',
       });
       expect(userRepositoryValue.softRemove).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('restore', () => {
+    it('restores a soft-deleted user and sends verification email', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        email: 'deleted@example.com',
+        deletedAt: new Date(),
+      });
+
+      userRepositoryValue.findOne
+        .mockResolvedValueOnce(user) // findOne withDeleted
+        .mockResolvedValueOnce(null); // findOne active duplicate check
+
+      const result = await service.restore('1' as any);
+
+      expect(dataSourceMock.transaction).toHaveBeenCalled();
+      expect(
+        userAccountRecoveryServiceMock.sendVerificationEmail,
+      ).toHaveBeenCalledWith(user, { skipRateLimit: true });
+      expect(result).toBeDefined();
+    });
+
+    it('throws NotFoundException when user is not found', async () => {
+      userRepositoryValue.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.restore('999' as any)).rejects.toThrow();
+    });
+
+    it('throws BadRequestException when user is not deleted', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        email: 'active@example.com',
+        deletedAt: null,
+      });
+
+      userRepositoryValue.findOne.mockResolvedValueOnce(user);
+
+      await expect(service.restore('1' as any)).rejects.toThrow();
+    });
+
+    it('throws ConflictException when active user with same email exists', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        email: 'dup@example.com',
+        deletedAt: new Date(),
+      });
+      const activeUser = new UserEntity({
+        id: '2' as any,
+        email: 'dup@example.com',
+      });
+
+      userRepositoryValue.findOne
+        .mockResolvedValueOnce(user)
+        .mockResolvedValueOnce(activeUser);
+
+      await expect(service.restore('1' as any)).rejects.toThrow();
     });
   });
 });

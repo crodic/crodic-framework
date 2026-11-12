@@ -339,10 +339,20 @@
         "verificationSuccess": "Your account has been verified. You can sign in now.",
         "verificationFailed": "We could not verify your account. The link may be invalid or expired.",
         "resetSuccess": "Your password has been reset. Please sign in.",
+        "restoreSuccess": "Account restored successfully! Please sign in with your new password.",
+        "restoreRequestSuccess": "An account restoration email has been sent. Please check your inbox.",
+        "restoreRequestFailed": "Failed to request account restoration. Please try again.",
+        "accountDeleted": "This account has been deleted or deactivated. You can request to restore it.",
         "socialFailed": "Google sign-in failed. Please try again.",
         "loginError": "Login failed. Please check your credentials."
       },
       "alerts": {
+        "accountDeleted": {
+          "title": "Account Has Been Deleted",
+          "description": "The account associated with this email address was previously deleted. Would you like to request to restore it?",
+          "action": "Restore Account",
+          "sent": "A restoration link has been sent to your email. Please check your inbox!"
+        },
         "verification_failed": {
           "title": "Verification Link Expired",
           "description": "The activation link is invalid or has expired. You can sign in below to request a new verification link from your profile."
@@ -413,6 +423,24 @@
       "backToSignIn": "Back to sign in",
       "tokenMissingToast": "Reset link is missing or invalid.",
       "errorToast": "Could not reset your password. The link may be invalid or expired.",
+      "validation": {
+        "passwordMin": "Password must be at least 8 characters.",
+        "passwordsMismatch": "Passwords do not match."
+      }
+    },
+    "restore": {
+      "metaTitle": "Restore Account",
+      "metaDescription": "Set a new password and reactivate your account",
+      "title": "Restore Account",
+      "description": "Choose a new password to reactivate your account.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "missingToken": "The restoration link is missing a token. Please request a new one.",
+      "submit": "Restore Account",
+      "submitting": "Restoring account...",
+      "backToSignIn": "Back to sign in",
+      "tokenMissingToast": "The restoration link is invalid or incomplete.",
+      "errorToast": "Could not restore your account. The link may be invalid or expired.",
       "validation": {
         "passwordMin": "Password must be at least 8 characters.",
         "passwordsMismatch": "Passwords do not match."

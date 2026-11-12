@@ -27,6 +27,10 @@ export async function apiDeleteUser(id: string) {
   return await http.delete(`/users/${id}`)
 }
 
+export async function apiRestoreUser(id: string) {
+  return await http.post(`/users/${id}/restore`)
+}
+
 export async function apiCreateUser(data: UserCreateSchema) {
   return await http.post('/users', data)
 }
