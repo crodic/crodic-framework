@@ -2,7 +2,7 @@ import { ErrorCode } from '../../common/constants/error-code.constant';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserAccountRecoveryService } from '../auth/services/user-account-recovery.service';
 import { UserSessionEntity } from '../auth/entities/user-session.entity';
 import { UserAccountEntity } from './entities/user-account.entity';
@@ -20,6 +20,7 @@ describe('UserService', () => {
   let userSessionRepositoryValue: Partial<
     Record<keyof Repository<UserSessionEntity>, jest.Mock>
   >;
+  let dataSourceMock: { transaction: jest.Mock };
   let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
 
   beforeAll(async () => {
@@ -36,6 +37,19 @@ describe('UserService', () => {
     };
     userSessionRepositoryValue = {
       delete: jest.fn(),
+    };
+    dataSourceMock = {
+      transaction: jest.fn().mockImplementation(async (cb) => {
+        const managerMock = {
+          getRepository: jest.fn().mockImplementation((entity) => {
+            if (entity === UserEntity) return userRepositoryValue;
+            if (entity === UserAccountEntity) return userAccountRepositoryValue;
+            if (entity === UserSessionEntity) return userSessionRepositoryValue;
+            return {};
+          }),
+        };
+        return cb(managerMock);
+      }),
     };
     userAccountRecoveryServiceMock = {
       sendVerificationEmail: jest.fn(),
@@ -55,6 +69,10 @@ describe('UserService', () => {
         {
           provide: getRepositoryToken(UserSessionEntity),
           useValue: userSessionRepositoryValue,
+        },
+        {
+          provide: DataSource,
+          useValue: dataSourceMock,
         },
         {
           provide: ClsService,

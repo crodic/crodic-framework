@@ -495,11 +495,16 @@ export class UserAuthService extends AuthService<
     });
 
     if (existingAccount) {
-      const user = await this.userRepository.findOneByOrFail({
-        id: existingAccount.userId,
+      const user = await this.userRepository.findOne({
+        where: { id: existingAccount.userId },
       });
 
-      return this.createLoginResponse(user, requestInfo);
+      if (user) {
+        return this.createLoginResponse(user, requestInfo);
+      }
+
+      // If user was soft-deleted, clean up the orphaned provider account
+      await this.userAccountRepository.delete({ id: existingAccount.id });
     }
 
     if (!profile.emailVerified) {

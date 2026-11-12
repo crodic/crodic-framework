@@ -51,8 +51,7 @@ export class AdminUserService {
     private readonly cacheManager: Cache,
     private readonly adminAccountRecoveryService: AdminAccountRecoveryService,
     private readonly emailQueueService: EmailQueueService,
-    @Optional()
-    private readonly dataSource?: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   async hasAdmin(): Promise<boolean> {
@@ -154,10 +153,10 @@ export class AdminUserService {
       phone,
     });
 
-    const persistAdmin = async (
-      userRepo: Repository<AdminUserEntity>,
-      accountRepo: Repository<AdminAccountEntity>,
-    ) => {
+    const savedUser = await this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(AdminUserEntity);
+      const accountRepo = manager.getRepository(AdminAccountEntity);
+
       const saved = await userRepo.save(newUser);
 
       if (password) {
@@ -177,19 +176,7 @@ export class AdminUserService {
       }
 
       return saved;
-    };
-
-    const savedUser = this.dataSource?.transaction
-      ? await this.dataSource.transaction((manager) =>
-          persistAdmin(
-            manager.getRepository(AdminUserEntity),
-            manager.getRepository(AdminAccountEntity),
-          ),
-        )
-      : await persistAdmin(
-          this.adminUserRepository,
-          this.adminAccountRepository,
-        );
+    });
 
     await this.adminAccountRecoveryService.sendVerificationEmail(savedUser, {
       skipRateLimit: true,
@@ -279,31 +266,15 @@ export class AdminUserService {
   async remove(id: AutoIncrementID) {
     const admin = await this.adminUserRepository.findOneByOrFail({ id });
 
-    const performRemove = async (
-      userRepo: Repository<AdminUserEntity>,
-      accountRepo: Repository<AdminAccountEntity>,
-      sessionRepo: Repository<AdminSessionEntity>,
-    ) => {
-      await accountRepo.delete({ adminUserId: id });
-      await sessionRepo.delete({ adminUserId: id });
-      await userRepo.softRemove(admin);
-    };
-
-    if (this.dataSource?.transaction) {
-      await this.dataSource.transaction((manager) =>
-        performRemove(
-          manager.getRepository(AdminUserEntity),
-          manager.getRepository(AdminAccountEntity),
-          manager.getRepository(AdminSessionEntity),
-        ),
-      );
-    } else {
-      await performRemove(
-        this.adminUserRepository,
-        this.adminAccountRepository,
-        this.adminSessionRepository,
-      );
-    }
+    await this.dataSource.transaction(async (manager) => {
+      await manager
+        .getRepository(AdminAccountEntity)
+        .delete({ adminUserId: id });
+      await manager
+        .getRepository(AdminSessionEntity)
+        .delete({ adminUserId: id });
+      await manager.getRepository(AdminUserEntity).softRemove(admin);
+    });
 
     await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
   }

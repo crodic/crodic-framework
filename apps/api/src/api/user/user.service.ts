@@ -35,8 +35,7 @@ export class UserService {
     private readonly userSessionRepository: Repository<UserSessionEntity>,
     private cls: ClsService,
     private readonly userAccountRecoveryService: UserAccountRecoveryService,
-    @Optional()
-    private readonly dataSource?: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findAllUser(query: PaginateQuery): Promise<Paginated<UserResDto>> {
@@ -85,10 +84,10 @@ export class UserService {
       email,
     });
 
-    const persistUser = async (
-      userRepo: Repository<UserEntity>,
-      accountRepo: Repository<UserAccountEntity>,
-    ) => {
+    const savedUser = await this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(UserEntity);
+      const accountRepo = manager.getRepository(UserAccountEntity);
+
       const saved = await userRepo.save(newUser);
 
       if (password) {
@@ -110,16 +109,7 @@ export class UserService {
       }
 
       return saved;
-    };
-
-    const savedUser = this.dataSource?.transaction
-      ? await this.dataSource.transaction((manager) =>
-          persistUser(
-            manager.getRepository(UserEntity),
-            manager.getRepository(UserAccountEntity),
-          ),
-        )
-      : await persistUser(this.userRepository, this.userAccountRepository);
+    });
 
     await this.userAccountRecoveryService.sendVerificationEmail(savedUser);
 
@@ -145,30 +135,10 @@ export class UserService {
   async remove(id: AutoIncrementID) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    const performRemove = async (
-      userRepo: Repository<UserEntity>,
-      accountRepo: Repository<UserAccountEntity>,
-      sessionRepo: Repository<UserSessionEntity>,
-    ) => {
-      await accountRepo.delete({ userId: id });
-      await sessionRepo.delete({ userId: id });
-      await userRepo.softRemove(user);
-    };
-
-    if (this.dataSource?.transaction) {
-      await this.dataSource.transaction((manager) =>
-        performRemove(
-          manager.getRepository(UserEntity),
-          manager.getRepository(UserAccountEntity),
-          manager.getRepository(UserSessionEntity),
-        ),
-      );
-    } else {
-      await performRemove(
-        this.userRepository,
-        this.userAccountRepository,
-        this.userSessionRepository,
-      );
-    }
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(UserAccountEntity).delete({ userId: id });
+      await manager.getRepository(UserSessionEntity).delete({ userId: id });
+      await manager.getRepository(UserEntity).softRemove(user);
+    });
   }
 }

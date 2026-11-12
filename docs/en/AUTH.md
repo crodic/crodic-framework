@@ -97,6 +97,59 @@ The authentication architecture adheres strictly to clean software engineering a
   ```
   Both frontend clients send `{ refreshToken: string }` matching this DTO contract.
 
+### 3.4. Identity vs Credentials Separation
+
+The authentication architecture cleanly separates identities from credentials:
+
+1. **User Identity Profiles (`users`, `admin_users`)**:
+   - Holds domain profile data (name, email, avatar, active state, order relations, audit logs).
+   - Preserves business data integrity through **Soft Delete** (`deleted_at: Date | null`).
+   - Uses a **Partial Unique Index** on PostgreSQL:
+     ```typescript
+     @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
+     email!: string;
+     ```
+     This enforces email uniqueness exclusively among active accounts, allowing account re-creation with the same email after soft deletion.
+
+2. **Auth Providers & Credentials (`user_accounts`, `admin_accounts`)**:
+   - Holds authentication methods (`provider`: `LOCAL`, `GOOGLE`, `FACEBOOK`, `APPLE`...) and hashed passwords.
+   - Provider Account ID (`providerAccountId`):
+     - For `LOCAL`: matches the email (`user@example.com`).
+     - For OAuth (`GOOGLE`,...): matches the 3rd-party subject ID (e.g., numeric string `"1093847291823"`).
+   - Unique constraints: `@Index(['provider', 'providerAccountId'], { unique: true })` and `@Index(['userId', 'provider'], { unique: true })`.
+
+3. **Active Sessions (`user_sessions`, `admin_sessions`)**:
+   - Persists live session state, Refresh Token hash, client metadata (`userAgent`, `ipAddress`), and expiration timestamps.
+
+### 3.5. Soft Delete & Account Recreation Lifecycle
+
+When a user or admin account is deleted:
+
+```mermaid
+flowchart TD
+    RemoveAction["Invoke remove(id)"] --> FindUser["Query User/Admin by ID"]
+    FindUser --> DBTransaction["Execute Database Transaction"]
+
+    subgraph TransactionScope["Single Atomic Transaction"]
+        HardDelAccounts["Hard Delete: Purge user_accounts records<br/>(accountRepo.delete({ userId }))"]
+        HardDelSessions["Hard Delete: Purge user_sessions records<br/>(sessionRepo.delete({ userId }))"]
+        SoftDelUser["Soft Delete: Mark deleted_at on users<br/>(userRepo.softRemove(user))"]
+        HardDelAccounts --> HardDelSessions --> SoftDelUser
+    end
+
+    DBTransaction --> TransactionScope
+    TransactionScope --> RecreateReady["Ready for clean account recreation"]
+```
+
+1. **On Delete (`remove(id)`)**:
+   - **Hard Delete credentials & sessions**: Physically purges rows in `*_accounts` and `*_sessions` belonging to the user. This guarantees security (immediate session revocation, old password hashes are deleted) and frees up database Unique constraints `(provider, providerAccountId)`.
+   - **Soft Delete profile**: Stamps `deleted_at` on `users`/`admin_users`, ensuring linked orders, audit logs, and history remain intact.
+2. **On Re-creation (`create` / `signUp`)**:
+   - A new `users` row is created with a new ID without colliding with previous accounts thanks to the Partial Unique Index.
+   - A defensive cleanup step `accountRepo.delete({ provider: LOCAL, providerAccountId: email })` guarantees any legacy orphaned local account record is purged before persisting the new credentials.
+3. **On Social Login (OAuth)**:
+   - In `signInOrRegisterSocialUser`, if a legacy `user_accounts` row points to a previously soft-deleted `userId`, the orphaned record is cleanly purged and a fresh user profile is auto-provisioned.
+
 ---
 
 ## 4. Next.js Client Layer (`apps/client`)

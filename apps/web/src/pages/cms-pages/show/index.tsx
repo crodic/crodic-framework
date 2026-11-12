@@ -338,15 +338,25 @@ export function PageCmsPageShow() {
 
           {/* Right Column: Content & SEO Preview Tabs */}
           <Tabs defaultValue='content' className='w-full'>
-            <div className='flex items-center justify-between pb-3'>
-              <TabsList className='grid w-full grid-cols-2 sm:w-auto'>
-                <TabsTrigger value='content' className='gap-2'>
-                  <FileTextIcon className='size-4' />
-                  {t('cmsPages.show.contentPreview', 'Content Preview')}
+            <div className='flex items-center pb-3'>
+              <TabsList className='grid h-auto w-full grid-cols-1 gap-1.5 p-1 min-[480px]:grid-cols-2 sm:inline-flex sm:h-9 sm:w-auto sm:gap-0'>
+                <TabsTrigger
+                  value='content'
+                  className='h-9 min-w-0 justify-center gap-2 px-3 text-xs font-medium sm:text-sm'
+                >
+                  <FileTextIcon className='size-4 shrink-0' />
+                  <span className='truncate'>
+                    {t('cmsPages.show.contentPreview', 'Content Preview')}
+                  </span>
                 </TabsTrigger>
-                <TabsTrigger value='seo' className='gap-2'>
-                  <SparklesIcon className='text-primary size-4' />
-                  {t('cmsPages.show.seoPreview', 'SEO & Social Preview')}
+                <TabsTrigger
+                  value='seo'
+                  className='h-9 min-w-0 justify-center gap-2 px-3 text-xs font-medium sm:text-sm'
+                >
+                  <SparklesIcon className='text-primary size-4 shrink-0' />
+                  <span className='truncate'>
+                    {t('cmsPages.show.seoPreview', 'SEO & Social Preview')}
+                  </span>
                 </TabsTrigger>
               </TabsList>
             </div>

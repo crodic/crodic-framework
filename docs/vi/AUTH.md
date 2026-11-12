@@ -97,6 +97,59 @@ Kiến trúc xác thực tuân thủ nghiêm ngặt các tiêu chuẩn kỹ thu�
   ```
   Cả hai phía frontend đều gửi payload `{ refreshToken: string }` khớp chuẩn với DTO này.
 
+### 3.4. Phân Tách Danh Tính & Xác Thực (Identity vs Credentials Separation)
+
+Kiến trúc xác thực trong backend tách bạch rõ ràng giữa hai khái niệm:
+
+1. **Hồ sơ Danh tính (`users`, `admin_users`)**:
+   - Chứa thông tin hồ sơ (họ tên, email, avatar, trạng thái kích hoạt, quan hệ đơn hàng, audit log...).
+   - Đảm bảo tính toàn vẹn dữ liệu nghiệp vụ thông qua cơ chế **Soft Delete** (`deleted_at: Date | null`).
+   - Sử dụng **Partial Unique Index** trên PostgreSQL:
+     ```typescript
+     @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
+     email!: string;
+     ```
+     Điều này đảm bảo tính duy nhất của email giữa các tài khoản đang hoạt động, đồng thời cho phép tạo lại tài khoản với cùng email sau khi tài khoản cũ đã bị soft delete.
+
+2. **Thông tin Xác thực & Nhà cung cấp (`user_accounts`, `admin_accounts`)**:
+   - Chứa phương thức đăng nhập (`provider`: `LOCAL`, `GOOGLE`, `FACEBOOK`, `APPLE`...) và mật khẩu đã hash.
+   - Định danh `providerAccountId`:
+     - Với `LOCAL`: chính là email người dùng (`user@example.com`).
+     - Với OAuth (`GOOGLE`,...): là định danh duy nhất từ nhà cung cấp bên thứ ba (`sub` ID số, ví dụ `"1093847291823"`).
+   - Ràng buộc Unique: `@Index(['provider', 'providerAccountId'], { unique: true })` và `@Index(['userId', 'provider'], { unique: true })`.
+
+3. **Phiên Đăng Nhập (`user_sessions`, `admin_sessions`)**:
+   - Lưu trữ trạng thái phiên làm việc thực tế, Refresh Token hash, thông tin thiết bị (`userAgent`, `ipAddress`) và thời điểm hết hạn.
+
+### 3.5. Vòng Đời Soft Delete & Tái Khởi Tạo Tài Khoản (Soft Delete & Recreation Lifecycle)
+
+Khi một tài khoản người dùng hoặc quản trị viên bị xóa khỏi hệ thống:
+
+```mermaid
+flowchart TD
+    RemoveAction["Gọi remove(id)"] --> FindUser["Tìm kiếm User/Admin theo ID"]
+    FindUser --> DBTransaction["Thực hiện Database Transaction"]
+
+    subgraph TransactionScope["Trong 1 Transaction duy nhất"]
+        HardDelAccounts["Hard Delete: Xóa sạch các bản ghi trong user_accounts<br/>(accountRepo.delete({ userId }))"]
+        HardDelSessions["Hard Delete: Xóa sạch toàn bộ phiên trong user_sessions<br/>(sessionRepo.delete({ userId }))"]
+        SoftDelUser["Soft Delete: Gắn nhãn deleted_at cho users<br/>(userRepo.softRemove(user))"]
+        HardDelAccounts --> HardDelSessions --> SoftDelUser
+    end
+
+    DBTransaction --> TransactionScope
+    TransactionScope --> RecreateReady["Sẵn sàng cho việc tạo lại tài khoản mới"]
+```
+
+1. **Khi Xóa (`remove(id)`)**:
+   - **Hard Delete credentials & sessions**: Xóa vật lý toàn bộ bản ghi trong `*_accounts` và `*_sessions` thuộc về user đó. Điều này vừa bảo đảm an toàn bảo mật (thu hồi phiên tức thì, không lưu giữ hash mật khẩu cũ), vừa giải phóng Unique Constraint `(provider, providerAccountId)` trong database.
+   - **Soft Delete hồ sơ**: Gắn thời điểm `deleted_at` cho `users`/`admin_users`, giữ toàn vẹn dữ liệu đơn hàng và lịch sử kiểm toán liên kết.
+2. **Khi Tạo Lại Tài Khoản (`create` / `signUp`)**:
+   - Bản ghi `users` mới được tạo với ID mới mà không bị lỗi trùng email (nhờ Partial Unique Index bỏ qua các bản ghi có `deleted_at IS NOT NULL`).
+   - Lớp phòng vệ an toàn (defensive check) `accountRepo.delete({ provider: LOCAL, providerAccountId: email })` dọn sạch bản ghi local mồ côi (nếu có từ dữ liệu cũ) trước khi lưu credentials mới.
+3. **Khi Đăng Nhập Xã Hội (Social Login / OAuth)**:
+   - Trong `signInOrRegisterSocialUser`, nếu phát hiện bản ghi `user_accounts` từ phiên bản cũ trỏ tới một `userId` đã bị soft-delete, hệ thống tự động xóa bản ghi mồ côi này và cấp tài khoản mới trong sạch cho người dùng.
+
 ---
 
 ## 4. Lớp Next.js Web Client (`apps/client`)

@@ -3,7 +3,7 @@ import { ErrorCode } from '../../common/constants/error-code.constant';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { EmailQueueService } from '../../background/queues/email-queue/email-queue.service';
 import { AdminAccountRecoveryService } from '../auth/services/admin-account-recovery.service';
 import { AdminRoleEntity } from '../admin-role/entities/admin-role.entity';
@@ -27,6 +27,7 @@ describe('AdminUserService', () => {
   let roleRepoMock: Partial<
     Record<keyof Repository<AdminRoleEntity>, jest.Mock>
   >;
+  let dataSourceMock: { transaction: jest.Mock };
   let cacheMock: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let adminAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
   let emailQueueServiceMock: { sendMail: jest.Mock };
@@ -60,6 +61,20 @@ describe('AdminUserService', () => {
       findBy: jest.fn(),
     };
 
+    dataSourceMock = {
+      transaction: jest.fn().mockImplementation(async (cb) => {
+        const managerMock = {
+          getRepository: jest.fn().mockImplementation((entity) => {
+            if (entity === AdminUserEntity) return adminRepoMock;
+            if (entity === AdminAccountEntity) return adminAccountRepoMock;
+            if (entity === AdminSessionEntity) return adminSessionRepoMock;
+            return {};
+          }),
+        };
+        return cb(managerMock);
+      }),
+    };
+
     cacheMock = {
       get: jest.fn(),
       set: jest.fn(),
@@ -90,6 +105,10 @@ describe('AdminUserService', () => {
         {
           provide: getRepositoryToken(AdminRoleEntity),
           useValue: roleRepoMock,
+        },
+        {
+          provide: DataSource,
+          useValue: dataSourceMock,
         },
         {
           provide: CACHE_MANAGER,
