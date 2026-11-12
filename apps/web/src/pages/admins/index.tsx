@@ -59,6 +59,9 @@ export function PageAdminOverview() {
     filterParsers: adminsFilterParsers,
     queryHook: useDataAdminOverview,
     buildQuery,
+    initialState: {
+      columnFilters: [{ id: 'status', value: 'active' }],
+    },
     getRowId: (row) => row.id,
   })
 

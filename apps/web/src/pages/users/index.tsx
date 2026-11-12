@@ -67,6 +67,9 @@ export function PageUserOverview() {
     filterParsers: userFilterParsers,
     queryHook: useDataUserOverview,
     buildQuery,
+    initialState: {
+      columnFilters: [{ id: 'status', value: 'active' }],
+    },
     getRowId: (originalRow) => originalRow.id,
     clearOnDefault: true,
   })

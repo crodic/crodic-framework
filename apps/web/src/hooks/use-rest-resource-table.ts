@@ -1,5 +1,11 @@
-import { useMemo } from 'react'
-import type { ColumnDef, Row, Table, TableState } from '@tanstack/react-table'
+import { useMemo, useState } from 'react'
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  Row,
+  Table,
+  TableState,
+} from '@tanstack/react-table'
 import type { ExtendedColumnSort, QueryKeys } from '@/types/data-table'
 import type { SingleParser } from 'nuqs'
 import { RestQueryBuilder, type RestQueryParams } from '@/lib/query-builder'
@@ -103,6 +109,35 @@ export function useRestResourceTable<
     queryKeys,
   })
 
+  const initialColumnFilters: ColumnFiltersState = useMemo(() => {
+    const urlFilters: ColumnFiltersState = []
+    for (const [key, value] of Object.entries(filter)) {
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== '' &&
+        (!Array.isArray(value) || value.length > 0)
+      ) {
+        urlFilters.push({ id: key, value })
+      }
+    }
+    if (urlFilters.length > 0) {
+      return urlFilters
+    }
+    return initialState?.columnFilters ?? []
+  }, [filter, initialState?.columnFilters])
+
+  const [columnFilters, setColumnFilters] =
+    useState<ColumnFiltersState>(initialColumnFilters)
+
+  const effectiveFilter = useMemo(() => {
+    const res: Record<string, any> = {}
+    for (const f of columnFilters) {
+      res[f.id] = f.value
+    }
+    return res as InferParsers<TParsers>
+  }, [columnFilters])
+
   const queryParams = useMemo(() => {
     const builder = new RestQueryBuilder().page(page).limit(perPage)
 
@@ -117,11 +152,11 @@ export function useRestResourceTable<
     }
 
     if (buildQuery) {
-      buildQuery(builder, filter, search)
+      buildQuery(builder, effectiveFilter, search)
     }
 
     return builder.build()
-  }, [page, perPage, filter, sort, search, buildQuery])
+  }, [page, perPage, effectiveFilter, sort, search, buildQuery])
 
   const { data, isFetching } = queryHook(queryParams)
   const totalPages = data?.meta?.totalPages ?? 0
@@ -131,6 +166,8 @@ export function useRestResourceTable<
     columns,
     pageCount: totalPages,
     queryKeys,
+    columnFilters,
+    onColumnFiltersChange: setColumnFilters,
     initialState: {
       columnPinning: initialColumnPinning,
       ...initialState,
@@ -145,7 +182,7 @@ export function useRestResourceTable<
     data: data?.data ?? [],
     meta: data?.meta,
     isFetching,
-    filter,
+    filter: effectiveFilter,
     page,
     perPage,
     search,

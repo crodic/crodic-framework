@@ -1,5 +1,11 @@
-import { useMemo } from 'react'
-import type { ColumnDef, Row, Table, TableState } from '@tanstack/react-table'
+import { useMemo, useState } from 'react'
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  Row,
+  Table,
+  TableState,
+} from '@tanstack/react-table'
 import type { ExtendedColumnSort } from '@/types/data-table'
 import type { SingleParser } from 'nuqs'
 import {
@@ -104,6 +110,35 @@ export function useResourceTable<
     filterParsers: filterParsers ?? ({} as TParsers),
   })
 
+  const initialColumnFilters: ColumnFiltersState = useMemo(() => {
+    const urlFilters: ColumnFiltersState = []
+    for (const [key, value] of Object.entries(filter)) {
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== '' &&
+        (!Array.isArray(value) || value.length > 0)
+      ) {
+        urlFilters.push({ id: key, value })
+      }
+    }
+    if (urlFilters.length > 0) {
+      return urlFilters
+    }
+    return initialState?.columnFilters ?? []
+  }, [filter, initialState?.columnFilters])
+
+  const [columnFilters, setColumnFilters] =
+    useState<ColumnFiltersState>(initialColumnFilters)
+
+  const effectiveFilter = useMemo(() => {
+    const res: Record<string, any> = {}
+    for (const f of columnFilters) {
+      res[f.id] = f.value
+    }
+    return res as InferParsers<TParsers>
+  }, [columnFilters])
+
   const queryParams = useMemo(() => {
     const builder = new PaginateQueryBuilder().page(page).limit(perPage)
 
@@ -112,12 +147,12 @@ export function useResourceTable<
     }
 
     if (buildQuery) {
-      buildQuery(builder, filter, search)
+      buildQuery(builder, effectiveFilter, search)
     }
 
     builder.applySorts(sortParser(sort))
     return builder.build()
-  }, [page, perPage, filter, sort, search, buildQuery])
+  }, [page, perPage, effectiveFilter, sort, search, buildQuery])
 
   const { data, isFetching } = queryHook(queryParams)
   const totalPages = data?.meta?.totalPages ?? 0
@@ -126,6 +161,8 @@ export function useResourceTable<
     data: data?.data ?? [],
     columns,
     pageCount: totalPages,
+    columnFilters,
+    onColumnFiltersChange: setColumnFilters,
     initialState: {
       columnPinning: initialColumnPinning,
       ...initialState,
@@ -140,7 +177,7 @@ export function useResourceTable<
     data: data?.data ?? [],
     meta: data?.meta,
     isFetching,
-    filter,
+    filter: effectiveFilter,
     page,
     perPage,
     search,

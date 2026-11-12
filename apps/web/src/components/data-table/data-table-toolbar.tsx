@@ -39,7 +39,7 @@ export function DataTableToolbar<TData>({
   )
 
   const onReset = React.useCallback(() => {
-    table.resetColumnFilters()
+    table.resetColumnFilters(true)
   }, [table])
 
   return (

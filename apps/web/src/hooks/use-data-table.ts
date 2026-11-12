@@ -79,6 +79,10 @@ interface UseDataTableProps<TData>
   startTransition?: React.TransitionStartFunction
   storageKey?: string
   enableVisibilityPersistence?: boolean
+  columnFilters?: ColumnFiltersState
+  onColumnFiltersChange?: React.Dispatch<
+    React.SetStateAction<ColumnFiltersState>
+  >
 }
 
 export function useDataTable<TData>(props: UseDataTableProps<TData>) {
@@ -295,7 +299,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   const initialColumnFilters: ColumnFiltersState = React.useMemo(() => {
     if (enableAdvancedFilter) return []
 
-    return Object.entries(filterValues).reduce<ColumnFiltersState>(
+    const urlFilters = Object.entries(filterValues).reduce<ColumnFiltersState>(
       (filters, [key, value]) => {
         if (
           value !== null &&
@@ -312,10 +316,20 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       },
       []
     )
-  }, [filterValues, enableAdvancedFilter])
 
-  const [columnFilters, setColumnFilters] =
+    if (urlFilters.length > 0) {
+      return urlFilters
+    }
+
+    return initialState?.columnFilters ?? []
+  }, [filterValues, enableAdvancedFilter, initialState?.columnFilters])
+
+  const [internalColumnFilters, setInternalColumnFilters] =
     React.useState<ColumnFiltersState>(initialColumnFilters)
+
+  const columnFilters = props.columnFilters ?? internalColumnFilters
+  const setColumnFilters =
+    props.onColumnFiltersChange ?? setInternalColumnFilters
 
   const onColumnFiltersChange = React.useCallback(
     (updaterOrValue: Updater<ColumnFiltersState>) => {
@@ -355,7 +369,12 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
         return next
       })
     },
-    [debouncedSetFilterValues, filterableColumns, enableAdvancedFilter]
+    [
+      debouncedSetFilterValues,
+      filterableColumns,
+      enableAdvancedFilter,
+      setColumnFilters,
+    ]
   )
 
   const table = useReactTable({
