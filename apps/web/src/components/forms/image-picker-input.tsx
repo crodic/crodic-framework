@@ -129,6 +129,8 @@ export function ImagePickerInput({
 
         <input
           ref={fileInputRef}
+          id='image-picker-file-input'
+          name='image-picker-file-input'
           type='file'
           accept='image/*'
           className='hidden'

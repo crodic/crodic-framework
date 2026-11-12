@@ -117,9 +117,9 @@ export function MergeTagDialog({
             e.preventDefault()
             document.getElementById('merge-target-search')?.focus()
           }}
-          className='border-border/80 gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl'
+          className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl'
         >
-          <DialogHeader className='border-border/60 bg-card border-b px-6 pt-5 pb-4'>
+          <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
             <div className='flex items-center gap-3'>
               <div className='flex size-10 shrink-0 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-600 shadow-2xs dark:text-violet-400'>
                 <GitMergeIcon className='size-5' aria-hidden='true' />
@@ -138,9 +138,9 @@ export function MergeTagDialog({
             </div>
           </DialogHeader>
 
-          <div className='space-y-4 p-6'>
+          <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-6'>
             {/* Source & Target Comparison Bar */}
-            <div className='border-border/70 bg-muted/20 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs'>
+            <div className='border-border/70 bg-muted/20 flex flex-col items-stretch justify-between gap-2.5 rounded-xl border p-3 shadow-2xs sm:flex-row sm:items-center sm:gap-3 sm:p-3.5'>
               <div className='space-y-1.5'>
                 <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase'>
                   {t(
@@ -156,8 +156,11 @@ export function MergeTagDialog({
                 />
               </div>
 
-              <div className='bg-background border-border/60 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full border shadow-2xs'>
-                <ArrowRightIcon className='size-4' aria-hidden='true' />
+              <div className='bg-background border-border/60 text-muted-foreground flex size-7 shrink-0 items-center justify-center self-center rounded-full border shadow-2xs sm:size-8'>
+                <ArrowRightIcon
+                  className='size-3.5 rotate-90 sm:size-4 sm:rotate-0'
+                  aria-hidden='true'
+                />
               </div>
 
               <div className='space-y-1.5'>
@@ -336,19 +339,19 @@ export function MergeTagDialog({
             )}
           </div>
 
-          <DialogFooter className='border-border/60 bg-card border-t px-6 py-3.5'>
+          <DialogFooter className='border-border/60 bg-card flex shrink-0 flex-col-reverse gap-2 border-t px-4 py-3 sm:flex-row sm:px-6 sm:py-3.5'>
             <Button
               type='button'
               variant='outline'
               onClick={() => onOpenChange(false)}
-              className='cursor-pointer text-xs'
+              className='w-full cursor-pointer text-xs sm:w-auto'
             >
               {t('buttons.cancel', 'Cancel')}
             </Button>
             <Button
               disabled={!selectedTarget || mergeMutation.isPending}
               onClick={() => setConfirmOpen(true)}
-              className='cursor-pointer gap-2 text-xs font-semibold shadow-xs'
+              className='w-full cursor-pointer gap-2 text-xs font-semibold shadow-xs sm:w-auto'
             >
               <GitMergeIcon className='size-4' aria-hidden='true' />
               <span>{t('tags.merge.btnMerge', 'Review & Merge')}</span>

@@ -148,6 +148,7 @@ function SliderWithInput({
       <div className='flex shrink-0 items-center gap-1'>
         <Input
           id={inputId}
+          name={inputId}
           type='number'
           value={Number(value.toFixed(3))}
           min={min}
@@ -397,7 +398,7 @@ function FontFamilyRow({
 }) {
   return (
     <div className='grid grid-cols-[5rem_minmax(0,1fr)_2.25rem] items-center gap-3'>
-      <Label className='text-muted-foreground text-xs'>{label}</Label>
+      <span className='text-muted-foreground text-xs font-medium'>{label}</span>
       <div className='min-w-0'>
         <FontPicker
           value={value}
@@ -438,7 +439,12 @@ function LetterSpacingControl({
   return (
     <div className='grid gap-2'>
       <div className='flex items-center justify-between gap-2'>
-        <Label className='font-mono text-xs'>Tracking</Label>
+        <Label
+          htmlFor='theme-letter-spacing-input'
+          className='font-mono text-xs'
+        >
+          Tracking
+        </Label>
         <span className='text-muted-foreground bg-muted rounded px-1.5 py-0.5 text-[10px]'>
           em
         </span>
@@ -454,6 +460,8 @@ function LetterSpacingControl({
         />
         <div className='relative w-28 shrink-0'>
           <Input
+            id='theme-letter-spacing-input'
+            name='theme-letter-spacing-input'
             type='number'
             min={-0.1}
             max={0.2}
@@ -703,10 +711,13 @@ function TokenInput({
   onReset?: () => void
   onChange: (value: string) => void
 }) {
+  const inputId = `token-input-${label.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()}`
   return (
     <div className='grid gap-1.5'>
       <div className='flex items-center justify-between gap-2'>
-        <Label className='font-mono text-xs'>{label}</Label>
+        <Label htmlFor={inputId} className='font-mono text-xs'>
+          {label}
+        </Label>
         {common && (
           <span className='text-muted-foreground bg-muted rounded px-1.5 py-0.5 text-[10px]'>
             shared
@@ -722,6 +733,8 @@ function TokenInput({
             />
             <input
               type='color'
+              id={`color-picker-${label.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()}`}
+              name={`color-picker-${label.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()}`}
               value={getColorPickerValue(value)}
               className='absolute inset-0 size-full cursor-pointer opacity-0'
               aria-label={`Pick ${label}`}
@@ -730,6 +743,8 @@ function TokenInput({
           </label>
         )}
         <Input
+          id={inputId}
+          name={inputId}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className='font-mono text-xs'

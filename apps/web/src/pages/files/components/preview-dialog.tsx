@@ -196,9 +196,9 @@ export function PreviewDialog({ file, onOpenChange }: PreviewDialogProps) {
 
   return (
     <Dialog open={Boolean(file)} onOpenChange={onOpenChange}>
-      <DialogContent className='border-border/80 bg-background data-[state=open]:zoom-in-100 data-[state=open]:fade-in-0 flex h-[88vh] max-h-[92vh] w-[96vw] transform-gpu flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl duration-150 ease-out will-change-transform sm:w-[94vw] sm:max-w-6xl xl:max-w-7xl'>
+      <DialogContent className='border-border/80 bg-background data-[state=open]:zoom-in-100 data-[state=open]:fade-in-0 flex h-[min(92vh,calc(100dvh-1.5rem))] max-h-[min(92vh,calc(100dvh-1.5rem))] w-[calc(100vw-1rem)] transform-gpu flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl duration-150 ease-out will-change-transform sm:w-[94vw] sm:max-w-6xl xl:max-w-7xl'>
         {/* Header */}
-        <DialogHeader className='border-border/60 bg-muted/20 flex shrink-0 flex-row items-center justify-between gap-4 border-b px-6 py-3.5 pr-14'>
+        <DialogHeader className='border-border/60 bg-muted/20 flex shrink-0 flex-row items-center justify-between gap-3 border-b px-4 py-3 pr-12 sm:px-6 sm:py-3.5 sm:pr-14'>
           <div className='flex min-w-0 flex-1 items-center gap-3'>
             {fileTypeIcon}
             <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
@@ -305,9 +305,9 @@ export function PreviewDialog({ file, onOpenChange }: PreviewDialogProps) {
 
         {/* Content Body */}
         {file && (
-          <div className='grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]'>
+          <div className='grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden'>
             {/* Left Column: Media Preview Stage */}
-            <div className='relative flex min-h-80 min-w-0 flex-1 items-center justify-center overflow-hidden bg-black/50 p-4 lg:p-6'>
+            <div className='relative flex min-h-56 min-w-0 flex-1 items-center justify-center overflow-hidden bg-black/50 p-4 sm:min-h-80 lg:p-6'>
               {isStageReady ? (
                 <FilePreviewDetail file={file} url={previewUrl} />
               ) : (

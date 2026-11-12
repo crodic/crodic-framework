@@ -49,7 +49,7 @@ export function MoveFileDialog({
 
   return (
     <Dialog open={Boolean(file)} onOpenChange={onOpenChange}>
-      <DialogContent className='w-[92vw] sm:max-w-md'>
+      <DialogContent className='sm:max-w-md'>
         <DialogHeader className='max-w-full min-w-0'>
           <DialogTitle>{t('files.move.title')}</DialogTitle>
           <DialogDescription

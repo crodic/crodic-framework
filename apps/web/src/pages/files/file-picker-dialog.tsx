@@ -553,7 +553,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent
-        className='border-border/80 bg-background flex h-[88vh] max-h-205 min-h-145 w-[96vw] flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-5xl lg:max-w-6xl'
+        className='border-border/80 bg-background flex h-[min(92vh,calc(100dvh-1.5rem))] max-h-[900px] min-h-0 w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl sm:w-[96vw] sm:max-w-5xl lg:max-w-6xl'
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -562,6 +562,8 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         {/* Hidden native input for direct upload */}
         <input
           ref={fileInputRef}
+          id='file-picker-direct-upload'
+          name='file-picker-direct-upload'
           type='file'
           accept={acceptSpec?.acceptString}
           multiple={multiple}
@@ -587,7 +589,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         )}
 
         {/* Header */}
-        <DialogHeader className='border-border/60 bg-muted/20 flex shrink-0 flex-row items-center justify-between gap-4 border-b py-3.5 pr-14 pl-6'>
+        <DialogHeader className='border-border/60 bg-muted/20 flex shrink-0 flex-col items-start justify-between gap-3 border-b p-4 pr-12 sm:flex-row sm:items-center sm:px-6 sm:py-3.5 sm:pr-14'>
           <div className='flex min-w-0 flex-1 flex-col gap-1'>
             <div className='flex items-center gap-2'>
               <DialogTitle className='text-base font-bold'>
@@ -608,7 +610,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
           </div>
 
           {/* Direct Upload Actions & Target Folder Selector */}
-          <div className='flex shrink-0 items-center gap-2'>
+          <div className='flex w-full shrink-0 items-center justify-between gap-2 sm:w-auto sm:justify-end'>
             <div className='flex items-center gap-1.5'>
               <span className='text-muted-foreground hidden text-xs lg:inline'>
                 {t('files.picker.uploadTo', 'Upload to:')}
@@ -662,7 +664,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         </DialogHeader>
 
         {/* Search & Toolbar Bar */}
-        <div className='border-border/60 flex shrink-0 items-center justify-between gap-3 border-b px-6 py-2.5'>
+        <div className='border-border/60 flex shrink-0 items-center justify-between gap-2.5 border-b px-4 py-2 sm:gap-3 sm:px-6 sm:py-2.5'>
           <div className='relative max-w-sm flex-1'>
             <SearchIcon className='text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2' />
             <Input
@@ -886,8 +888,8 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         </div>
 
         {/* Footer */}
-        <DialogFooter className='border-border/60 bg-muted/20 flex shrink-0 flex-row items-center justify-between border-t px-6 py-3.5'>
-          <div className='flex items-center gap-2'>
+        <DialogFooter className='border-border/60 bg-muted/20 flex shrink-0 flex-col-reverse items-stretch justify-between gap-2 border-t px-4 py-2.5 sm:flex-row sm:items-center sm:px-6 sm:py-3.5'>
+          <div className='flex items-center justify-between gap-2 sm:justify-start'>
             {selectedFiles.length > 0 ? (
               <div className='flex items-center gap-2'>
                 <Badge variant='secondary' className='text-xs font-medium'>
@@ -918,14 +920,14 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
             <Button
               variant='outline'
               size='sm'
-              className='h-8 text-xs'
+              className='h-8 flex-1 text-xs sm:flex-initial'
               onClick={() => props.onOpenChange(false)}
             >
               {t('buttons.cancel')}
             </Button>
             <Button
               size='sm'
-              className='h-8 gap-1 text-xs'
+              className='h-8 flex-1 gap-1 text-xs sm:flex-initial'
               disabled={selectedFiles.length === 0}
               onClick={handleConfirm}
             >
@@ -974,7 +976,7 @@ function FilePickerFolderPane({
   }
 
   return (
-    <aside className='border-border/60 bg-muted/15 flex min-h-0 flex-col gap-2 border-r p-3'>
+    <aside className='border-border/60 bg-muted/15 flex max-h-40 min-h-0 flex-col gap-2 border-b p-3 md:max-h-none md:border-r md:border-b-0'>
       <div className='flex items-center justify-between px-1 py-0.5'>
         <h3 className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
           {t('files.folders.title')}

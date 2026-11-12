@@ -82,20 +82,20 @@ export function WhiteLabelPasteCssDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[80vh] flex-col overflow-hidden p-0 shadow-2xl sm:max-w-xl'>
-        <DialogHeader className='border-b px-6 py-4'>
-          <DialogTitle className='flex items-center gap-2 text-base font-semibold'>
-            <Code2Icon className='text-primary size-5' />
+      <DialogContent className='flex max-h-[min(90vh,calc(100dvh-2rem))] w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 shadow-2xl sm:max-w-xl'>
+        <DialogHeader className='shrink-0 border-b px-4 py-3 pr-10 text-left sm:px-6 sm:py-4'>
+          <DialogTitle className='flex items-center gap-2 text-sm font-semibold sm:text-base'>
+            <Code2Icon className='text-primary size-4 sm:size-5' />
             Paste & Inject CSS Variables
           </DialogTitle>
-          <DialogDescription className='text-xs'>
+          <DialogDescription className='line-clamp-2 text-xs sm:line-clamp-none'>
             Paste CSS variables block containing <code>:root</code>,{' '}
             <code>.dark</code>, <code>@theme</code>, or direct{' '}
             <code>--variable: value</code> lines.
           </DialogDescription>
         </DialogHeader>
 
-        <div className='flex-1 space-y-4 overflow-y-auto px-6 py-4'>
+        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-6'>
           <div className='flex items-center justify-between'>
             <Label className='text-xs font-medium'>CSS Code</Label>
             <Button
@@ -119,41 +119,35 @@ export function WhiteLabelPasteCssDialog({
           />
 
           <div className='space-y-1.5'>
-            <Label className='text-xs font-medium'>Target Scope</Label>
+            <span className='text-xs font-medium'>Target Scope</span>
             <RadioGroup
               value={pasteScope}
               onValueChange={(val) => setPasteScope(val as PasteScope)}
-              className='grid grid-cols-2 gap-2 text-xs'
+              className='grid grid-cols-1 gap-2 text-xs sm:grid-cols-2'
             >
-              <div className='bg-muted/30 hover:bg-muted/50 flex items-center space-x-2 rounded-md border p-2.5 transition-colors'>
+              <label className='bg-muted/30 hover:bg-muted/50 flex cursor-pointer items-center space-x-2 rounded-md border p-2.5 transition-colors'>
                 <RadioGroupItem value='auto' id='paste-auto' />
-                <Label
-                  htmlFor='paste-auto'
-                  className='cursor-pointer text-xs font-normal'
-                >
+                <span className='text-xs font-normal'>
                   Auto-detect (:root & .dark)
-                </Label>
-              </div>
-              <div className='bg-muted/30 hover:bg-muted/50 flex items-center space-x-2 rounded-md border p-2.5 transition-colors'>
+                </span>
+              </label>
+              <label className='bg-muted/30 hover:bg-muted/50 flex cursor-pointer items-center space-x-2 rounded-md border p-2.5 transition-colors'>
                 <RadioGroupItem value='current' id='paste-current' />
-                <Label
-                  htmlFor='paste-current'
-                  className='cursor-pointer text-xs font-normal'
-                >
+                <span className='text-xs font-normal'>
                   Current Mode ({editorMode})
-                </Label>
-              </div>
+                </span>
+              </label>
             </RadioGroup>
           </div>
         </div>
 
-        <DialogFooter className='bg-muted/30 flex items-center justify-end gap-3 border-t px-6 py-4'>
+        <DialogFooter className='bg-muted/30 flex shrink-0 flex-col-reverse items-stretch justify-end gap-2 border-t px-4 py-3 sm:flex-row sm:items-center sm:gap-3 sm:px-6 sm:py-3.5'>
           <DialogClose asChild>
             <Button
               type='button'
               variant='outline'
               size='sm'
-              className='h-8 text-xs'
+              className='h-8 w-full text-xs sm:w-auto'
             >
               Cancel
             </Button>
@@ -161,7 +155,7 @@ export function WhiteLabelPasteCssDialog({
           <Button
             type='button'
             size='sm'
-            className='h-8 text-xs'
+            className='h-8 w-full text-xs sm:w-auto'
             onClick={handleApply}
           >
             Inject Tokens

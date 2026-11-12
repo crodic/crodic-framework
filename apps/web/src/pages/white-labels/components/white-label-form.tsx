@@ -216,6 +216,8 @@ export function WhiteLabelForm({
         {/* Hidden file pickers for direct CSS & JSON import */}
         <input
           ref={cssInputRef}
+          id='css-file-import'
+          name='css-file-import'
           type='file'
           accept='.css,text/css'
           className='hidden'
@@ -223,6 +225,8 @@ export function WhiteLabelForm({
         />
         <input
           ref={jsonInputRef}
+          id='json-file-import'
+          name='json-file-import'
           type='file'
           accept='.json,application/json'
           className='hidden'

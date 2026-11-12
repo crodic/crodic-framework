@@ -62,31 +62,24 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
               name='target'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target Scope</FormLabel>
+                  <FormLabel asChild>
+                    <span className='text-sm font-medium'>Target Scope</span>
+                  </FormLabel>
                   <FormControl>
                     <RadioGroup
+                      name={field.name}
                       onValueChange={field.onChange}
                       value={field.value}
                       className='flex items-center gap-4 pt-1.5'
                     >
-                      <div className='flex items-center space-x-2'>
+                      <label className='flex cursor-pointer items-center space-x-2 text-sm leading-none font-medium'>
                         <RadioGroupItem value='admin' id='target-admin' />
-                        <label
-                          htmlFor='target-admin'
-                          className='cursor-pointer text-sm leading-none font-medium'
-                        >
-                          Admin Portal
-                        </label>
-                      </div>
-                      <div className='flex items-center space-x-2'>
+                        <span>Admin Portal</span>
+                      </label>
+                      <label className='flex cursor-pointer items-center space-x-2 text-sm leading-none font-medium'>
                         <RadioGroupItem value='client' id='target-client' />
-                        <label
-                          htmlFor='target-client'
-                          className='cursor-pointer text-sm leading-none font-medium'
-                        >
-                          Client App
-                        </label>
-                      </div>
+                        <span>Client App</span>
+                      </label>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -120,7 +113,10 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             render={({ field }) => (
               <FormItem className='flex items-center justify-between rounded-lg border p-3 shadow-xs'>
                 <div className='space-y-0.5'>
-                  <FormLabel className='text-sm font-medium'>
+                  <FormLabel
+                    htmlFor='target-is-active-switch'
+                    className='cursor-pointer text-sm font-medium'
+                  >
                     Set as Active Profile
                   </FormLabel>
                   <FormDescription className='text-xs'>
@@ -130,6 +126,8 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                 </div>
                 <FormControl>
                   <Switch
+                    id='target-is-active-switch'
+                    name={field.name}
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />

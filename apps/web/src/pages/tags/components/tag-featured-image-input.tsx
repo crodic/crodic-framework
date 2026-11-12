@@ -169,6 +169,8 @@ export function TagFeaturedImageInput({
 
           <input
             ref={fileInputRef}
+            id='tag-featured-image-file'
+            name='tag-featured-image-file'
             type='file'
             accept='image/*'
             className='hidden'

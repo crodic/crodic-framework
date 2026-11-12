@@ -318,6 +318,8 @@ export function UploadDialog({
               )}
             </div>
             <Input
+              id='file-upload-dialog-input'
+              name='file-upload-dialog-input'
               type='file'
               multiple
               className='sr-only'

@@ -95,7 +95,7 @@ export function RegionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-112.5'>
+      <DialogContent className='max-h-[min(90vh,calc(100dvh-2rem))] overflow-y-auto sm:max-w-md'>
         <DialogHeader>
           <DialogTitle>
             {isEdit

@@ -216,9 +216,9 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
       {/* Modern Spotlight-Style Tag Linking Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='border-border/80 gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl md:max-w-2xl'>
+        <DialogContent className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl md:max-w-2xl'>
           {/* Header Bar */}
-          <DialogHeader className='border-border/60 bg-card border-b px-6 pt-5 pb-4'>
+          <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
                 <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
@@ -242,12 +242,12 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </div>
 
             {/* Segmented Pill Direction Selector */}
-            <div className='bg-muted/60 border-border/40 mt-4 flex items-center gap-1.5 rounded-xl border p-1'>
+            <div className='bg-muted/60 border-border/40 mt-3 grid grid-cols-2 gap-1.5 rounded-xl border p-1 sm:mt-4 sm:flex sm:items-center'>
               <button
                 type='button'
                 onClick={() => setDirection('parent')}
                 className={cn(
-                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
+                  'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'parent'
                     ? 'bg-background text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -259,7 +259,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('child')}
                 className={cn(
-                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
+                  'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'child'
                     ? 'bg-background text-emerald-600 shadow-xs dark:text-emerald-400'
                     : 'text-muted-foreground hover:text-foreground'
@@ -271,7 +271,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('related')}
                 className={cn(
-                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
+                  'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'related'
                     ? 'bg-background text-sky-600 shadow-xs dark:text-sky-400'
                     : 'text-muted-foreground hover:text-foreground'
@@ -283,7 +283,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 type='button'
                 onClick={() => setDirection('disambiguation')}
                 className={cn(
-                  'flex-1 cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all',
+                  'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'disambiguation'
                     ? 'bg-background text-amber-600 shadow-xs dark:text-amber-400'
                     : 'text-muted-foreground hover:text-foreground'
@@ -321,7 +321,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </DialogHeader>
 
           {/* Spotlight Search Bar */}
-          <div className='border-border/60 bg-muted/20 flex h-13 items-center gap-3 border-b px-6'>
+          <div className='border-border/60 bg-muted/20 flex h-12 shrink-0 items-center gap-2.5 border-b px-4 sm:h-13 sm:gap-3 sm:px-6'>
             <SearchIcon
               className='text-primary size-4 shrink-0'
               aria-hidden='true'
@@ -350,7 +350,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </div>
 
           {/* Results List */}
-          <div className='max-h-[380px] space-y-1 overflow-y-auto p-3'>
+          <div className='min-h-0 flex-1 space-y-1 overflow-y-auto p-3'>
             {candidates.length === 0 && !isSearching ? (
               <div className='space-y-2 p-10 text-center'>
                 <p className='text-foreground text-sm font-medium'>
@@ -450,7 +450,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                           </span>
                         </div>
                       ) : (
-                        <span className='text-primary bg-primary/10 inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100'>
+                        <span className='text-primary bg-primary/10 inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold opacity-100 transition-opacity sm:px-3 sm:opacity-0 sm:group-hover:opacity-100'>
                           <span>{t('tags.hierarchy.linkAction', 'Link')}</span>
                           <ArrowRightIcon className='size-3' />
                         </span>
@@ -463,8 +463,8 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
           </div>
 
           {/* Footer Bar */}
-          <div className='border-border/60 bg-muted/10 text-muted-foreground flex items-center justify-between border-t px-6 py-3 text-xs'>
-            <span>
+          <div className='border-border/60 bg-muted/10 text-muted-foreground flex shrink-0 flex-col items-start justify-between gap-2 border-t px-4 py-2.5 text-xs sm:flex-row sm:items-center sm:px-6 sm:py-3'>
+            <span className='line-clamp-1'>
               {t(
                 'tags.hierarchy.clickToLinkPrompt',
                 'Click directly on any tag row to link quickly'
@@ -475,7 +475,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               variant='outline'
               size='sm'
               onClick={() => setIsDialogOpen(false)}
-              className='h-8 cursor-pointer text-xs'
+              className='h-8 w-full cursor-pointer text-xs sm:w-auto'
             >
               {t('buttons.close', 'Close')}
             </Button>

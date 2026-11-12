@@ -110,6 +110,7 @@ export function FolderDialog({
             <Label htmlFor='folder-name'>{t('files.table.folder')}</Label>
             <Input
               id='folder-name'
+              name='folder-name'
               value={folder}
               onChange={(event) => setFolder(event.target.value)}
               placeholder={t(

@@ -101,9 +101,9 @@ export function ShareUrlDialog({
 
         <div className='flex flex-col gap-4 py-2'>
           <div className='flex flex-col gap-1.5'>
-            <label className='text-muted-foreground text-xs font-medium'>
+            <span className='text-muted-foreground text-xs font-medium'>
               {t('files.share.duration', 'Link expiration time')}
-            </label>
+            </span>
             <div className='flex gap-2'>
               <Select value={expiresIn} onValueChange={setExpiresIn}>
                 <SelectTrigger className='w-full'>
@@ -134,11 +134,16 @@ export function ShareUrlDialog({
 
           {generatedUrl && (
             <div className='bg-muted/30 flex flex-col gap-2 rounded-lg border p-3'>
-              <label className='text-foreground text-xs font-semibold'>
+              <label
+                htmlFor='share-generated-url'
+                className='text-foreground text-xs font-semibold'
+              >
                 {t('files.share.result', 'Generated link:')}
               </label>
               <div className='flex items-center gap-2'>
                 <Input
+                  id='share-generated-url'
+                  name='share-generated-url'
                   readOnly
                   value={generatedUrl}
                   className='bg-background font-mono text-xs'
