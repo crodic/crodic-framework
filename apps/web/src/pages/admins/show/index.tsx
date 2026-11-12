@@ -7,6 +7,7 @@ import {
   EditIcon,
   Loader2,
   Mail,
+  RotateCcw,
   TrashIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -19,8 +20,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
+import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
@@ -28,6 +35,7 @@ import { NotFoundError } from '@/pages/errors/not-found-error'
 import {
   apiResendAdminVerification,
   deleteAdmin,
+  restoreAdmin,
   useDataGetAdminDetail,
 } from '../queries'
 
@@ -38,9 +46,16 @@ export function PageAdminShow() {
   const params = useParams()
   const id = params.id as string
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
+  const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
   const userId = useAuthStore((s) => s.id)
+  const ability = useAuthStore((s) => s.ability)
+  const canRestore =
+    ability.can('update', 'ADMIN') ||
+    (ability as any).can('restore', 'ADMIN') ||
+    ability.can('manage', 'all')
 
   const { data, isFetching } = useDataGetAdminDetail(id)
+  const isDeleted = Boolean(data?.deletedAt)
 
   const adminName = data?.fullName || data?.email || (id ? `#${id}` : '')
 
@@ -58,6 +73,23 @@ export function PageAdminShow() {
       toast.success('Admin deleted successfully')
       setIsShowDeleteDialog(false)
       navigate('/admins')
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const restoreAdminMutation = useMutation({
+    mutationFn: restoreAdmin,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['admins'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['admin', id],
+      })
+      toast.success(
+        t('adminUsers.messages.restoreSuccess', 'Admin restored successfully')
+      )
+      setIsShowRestoreDialog(false)
     },
     onError: restApiErrorHandler,
   })
@@ -124,6 +156,35 @@ export function PageAdminShow() {
     onError: restApiErrorHandler,
   })
 
+  const renderResendButtonContent = () => {
+    if (resendMutation.isPending) {
+      return (
+        <>
+          <Loader2 className='size-4 animate-spin' aria-hidden='true' />
+          {t('adminUsers.show.resending', 'Sending...')}
+        </>
+      )
+    }
+
+    if (cooldown > 0) {
+      return (
+        <>
+          <Clock className='size-4 opacity-70' aria-hidden='true' />
+          {t('adminUsers.show.cooldown', 'Resend in {{seconds}}s', {
+            seconds: cooldown,
+          })}
+        </>
+      )
+    }
+
+    return (
+      <>
+        <Mail className='size-4' aria-hidden='true' />
+        {t('adminUsers.show.resendVerification', 'Resend verification email')}
+      </>
+    )
+  }
+
   if (isFetching) return <DataLoader />
 
   if (!data) {
@@ -138,6 +199,15 @@ export function PageAdminShow() {
           onOpenChange={(open) => setIsShowDeleteDialog(open)}
           handleDelete={handleDelete}
           isLoading={deleteUserMutation.isPending}
+        />
+      )}
+
+      {isShowRestoreDialog && (
+        <RestoreAlertDialog
+          open={isShowRestoreDialog}
+          onOpenChange={(open) => setIsShowRestoreDialog(open)}
+          handleRestore={() => restoreAdminMutation.mutate(id)}
+          isLoading={restoreAdminMutation.isPending}
         />
       )}
 
@@ -157,56 +227,100 @@ export function PageAdminShow() {
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
                 {t('buttons.cancel')}
               </Button>
-              {!data?.verifiedAt && (
-                <Button
-                  variant='outline'
-                  type='button'
-                  onClick={() => resendMutation.mutate()}
-                  disabled={resendMutation.isPending || cooldown > 0}
-                  className='border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
-                >
-                  {resendMutation.isPending ? (
-                    <Loader2
-                      className='size-4 animate-spin'
-                      aria-hidden='true'
-                    />
-                  ) : cooldown > 0 ? (
-                    <Clock className='size-4 opacity-70' aria-hidden='true' />
-                  ) : (
-                    <Mail className='size-4' aria-hidden='true' />
-                  )}
-                  {resendMutation.isPending
-                    ? t('adminUsers.show.resending', 'Sending...')
-                    : cooldown > 0
-                      ? t(
-                          'adminUsers.show.cooldown',
-                          'Resend in {{seconds}}s',
-                          { seconds: cooldown }
-                        )
-                      : t(
-                          'adminUsers.show.resendVerification',
-                          'Resend verification email'
+              {isDeleted ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {canRestore ? (
+                      <Button
+                        variant='outline'
+                        type='button'
+                        onClick={() => setIsShowRestoreDialog(true)}
+                        disabled={restoreAdminMutation.isPending}
+                        className='border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-400 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-300'
+                      >
+                        {restoreAdminMutation.isPending ? (
+                          <Loader2
+                            className='size-4 animate-spin'
+                            aria-hidden='true'
+                          />
+                        ) : (
+                          <RotateCcw className='size-4' aria-hidden='true' />
                         )}
-                </Button>
+                        {t('buttons.restore', 'Restore')}
+                      </Button>
+                    ) : (
+                      <span className='inline-block cursor-not-allowed'>
+                        <Button
+                          variant='outline'
+                          type='button'
+                          disabled
+                          className='text-muted-foreground border-emerald-500/30 opacity-50'
+                        >
+                          <RotateCcw className='size-4' aria-hidden='true' />
+                          {t('buttons.restore', 'Restore')}
+                        </Button>
+                      </span>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {canRestore
+                      ? t('buttons.restore', 'Restore')
+                      : t(
+                          'adminUsers.errors.noPermissionRestore',
+                          'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                        )}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <>
+                  {!data?.verifiedAt && (
+                    <Button
+                      variant='outline'
+                      type='button'
+                      onClick={() => resendMutation.mutate()}
+                      disabled={resendMutation.isPending || cooldown > 0}
+                      className='border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
+                    >
+                      {renderResendButtonContent()}
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => navigate(`/admins/${data?.id}/edit`)}
+                    disabled={id === userId}
+                  >
+                    <EditIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.edit')}
+                  </Button>
+                  <Button
+                    variant='destructive'
+                    onClick={() => setIsShowDeleteDialog(true)}
+                    disabled={id === userId}
+                  >
+                    <TrashIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.delete')}
+                  </Button>
+                </>
               )}
-              <Button
-                onClick={() => navigate(`/admins/${data?.id}/edit`)}
-                disabled={id === userId}
-              >
-                <EditIcon className='size-4' aria-hidden='true' />
-                {t('buttons.edit')}
-              </Button>
-              <Button
-                variant='destructive'
-                onClick={() => setIsShowDeleteDialog(true)}
-                disabled={id === userId}
-              >
-                <TrashIcon className='size-4' aria-hidden='true' />
-                {t('buttons.delete')}
-              </Button>
             </div>
           }
         />
+
+        {isDeleted && (
+          <div className='border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/15 flex items-center gap-2.5 rounded-lg border p-4 text-sm'>
+            <RotateCcw className='size-4 shrink-0' aria-hidden='true' />
+            <span>
+              {t(
+                'adminUsers.show.accountDeletedNotice',
+                'Tài khoản này đang ở trạng thái đã xóa ({{date}}). Khôi phục để kích hoạt lại tài khoản.',
+                {
+                  date: data.deletedAt
+                    ? format(new Date(data.deletedAt), 'dd/MM/yyyy HH:mm')
+                    : '',
+                }
+              )}
+            </span>
+          </div>
+        )}
 
         <div className='grid grid-cols-1 gap-8 md:grid-cols-[250px_1fr]'>
           <Card className='h-max'>
@@ -250,6 +364,22 @@ export function PageAdminShow() {
                       : undefined
                   }
                 />
+                <DescriptionItem label={t('common.status', 'Status')}>
+                  <div className='mt-2 flex flex-wrap gap-1'>
+                    {isDeleted ? (
+                      <Badge variant='destructive' className='text-xs'>
+                        {t('common.status.deleted', 'Deleted')}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant='outline'
+                        className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
+                      >
+                        {t('common.status.active', 'Active')}
+                      </Badge>
+                    )}
+                  </div>
+                </DescriptionItem>
                 <DescriptionItem label={t('adminUsers.show.emailVerified')}>
                   <div className='mt-2 flex flex-wrap gap-1'>
                     <Badge variant='secondary'>

@@ -1,22 +1,36 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeftIcon, EditIcon, TrashIcon } from 'lucide-react'
+import {
+  ArrowLeftIcon,
+  EditIcon,
+  Loader2,
+  RotateCcw,
+  TrashIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
+import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
-import { apiDeleteUser, useDataGetUserDetail } from '../queries'
+import { apiDeleteUser, apiRestoreUser, useDataGetUserDetail } from '../queries'
 
 export function PageUserShow() {
   const navigate = useNavigate()
@@ -24,8 +38,15 @@ export function PageUserShow() {
   const queryClient = useQueryClient()
   const params = useParams()
   const id = params.id as string
+  const ability = useAuthStore((s) => s.ability)
+  const canRestore =
+    ability.can('update', 'USER') ||
+    (ability as any).can('restore', 'USER') ||
+    ability.can('manage', 'all')
   const { data, isFetching } = useDataGetUserDetail(id)
+  const isDeleted = Boolean(data?.deletedAt)
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
+  const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
 
   const userName = data?.fullName || data?.email || (id ? `#${id}` : '')
 
@@ -33,6 +54,7 @@ export function PageUserShow() {
     { title: t('navigation.management.users', 'Users'), href: '/users' },
     { title: userName },
   ])
+
   const deleteUserMutation = useMutation({
     mutationFn: apiDeleteUser,
     onSuccess: () => {
@@ -42,6 +64,23 @@ export function PageUserShow() {
       toast.success('User deleted successfully')
       setIsShowDeleteDialog(false)
       navigate('/users')
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const restoreUserMutation = useMutation({
+    mutationFn: apiRestoreUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['users'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['user', id],
+      })
+      toast.success(
+        t('users.messages.restoreSuccess', 'User restored successfully')
+      )
+      setIsShowRestoreDialog(false)
     },
     onError: restApiErrorHandler,
   })
@@ -69,6 +108,15 @@ export function PageUserShow() {
         />
       )}
 
+      {isShowRestoreDialog && (
+        <RestoreAlertDialog
+          open={isShowRestoreDialog}
+          onOpenChange={(open) => setIsShowRestoreDialog(open)}
+          handleRestore={() => restoreUserMutation.mutate(id)}
+          isLoading={restoreUserMutation.isPending}
+        />
+      )}
+
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <PageHeader
           title={data?.fullName || t('users.show.title')}
@@ -85,20 +133,85 @@ export function PageUserShow() {
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
                 {t('buttons.cancel')}
               </Button>
-              <Button onClick={() => navigate(`/users/${data?.id}/edit`)}>
-                <EditIcon className='size-4' aria-hidden='true' />
-                {t('buttons.edit')}
-              </Button>
-              <Button
-                variant='destructive'
-                onClick={() => setIsShowDeleteDialog(true)}
-              >
-                <TrashIcon className='size-4' aria-hidden='true' />
-                {t('buttons.delete')}
-              </Button>
+              {isDeleted ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {canRestore ? (
+                      <Button
+                        variant='outline'
+                        type='button'
+                        onClick={() => setIsShowRestoreDialog(true)}
+                        disabled={restoreUserMutation.isPending}
+                        className='border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-400 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-300'
+                      >
+                        {restoreUserMutation.isPending ? (
+                          <Loader2
+                            className='size-4 animate-spin'
+                            aria-hidden='true'
+                          />
+                        ) : (
+                          <RotateCcw className='size-4' aria-hidden='true' />
+                        )}
+                        {t('buttons.restore', 'Restore')}
+                      </Button>
+                    ) : (
+                      <span className='inline-block cursor-not-allowed'>
+                        <Button
+                          variant='outline'
+                          type='button'
+                          disabled
+                          className='text-muted-foreground border-emerald-500/30 opacity-50'
+                        >
+                          <RotateCcw className='size-4' aria-hidden='true' />
+                          {t('buttons.restore', 'Restore')}
+                        </Button>
+                      </span>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {canRestore
+                      ? t('buttons.restore', 'Restore')
+                      : t(
+                          'users.errors.noPermissionRestore',
+                          'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                        )}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <>
+                  <Button onClick={() => navigate(`/users/${data?.id}/edit`)}>
+                    <EditIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.edit')}
+                  </Button>
+                  <Button
+                    variant='destructive'
+                    onClick={() => setIsShowDeleteDialog(true)}
+                  >
+                    <TrashIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.delete')}
+                  </Button>
+                </>
+              )}
             </div>
           }
         />
+
+        {isDeleted && (
+          <div className='border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/15 flex items-center gap-2.5 rounded-lg border p-4 text-sm'>
+            <RotateCcw className='size-4 shrink-0' aria-hidden='true' />
+            <span>
+              {t(
+                'users.show.accountDeletedNotice',
+                'Tài khoản này đang ở trạng thái đã xóa ({{date}}). Khôi phục để kích hoạt lại tài khoản.',
+                {
+                  date: data.deletedAt
+                    ? format(new Date(data.deletedAt), 'dd/MM/yyyy HH:mm')
+                    : '',
+                }
+              )}
+            </span>
+          </div>
+        )}
 
         <div className='grid gap-8 md:grid-cols-[250px_1fr]'>
           <Card className='h-max'>
@@ -130,6 +243,22 @@ export function PageUserShow() {
                   label={t('users.show.fullName')}
                   value={data?.fullName}
                 />
+                <DescriptionItem label={t('common.status', 'Status')}>
+                  <div className='mt-2 flex flex-wrap gap-1'>
+                    {isDeleted ? (
+                      <Badge variant='destructive' className='text-xs'>
+                        {t('common.status.deleted', 'Deleted')}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant='outline'
+                        className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
+                      >
+                        {t('common.status.active', 'Active')}
+                      </Badge>
+                    )}
+                  </div>
+                </DescriptionItem>
                 <DescriptionItem
                   label={t('users.show.emailVerified')}
                   value={data?.verifiedAt ? 'Active' : 'Inactive'}

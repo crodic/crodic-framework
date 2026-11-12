@@ -1,4 +1,4 @@
-import { Loader2, RotateCcw } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
@@ -29,7 +29,7 @@ export function RestoreAlertDialog({
   title = 'common.popup.restoreTitle',
   description = 'common.popup.restoreDescription',
   translationValues,
-  confirmText = 'buttons.restore',
+  confirmText = 'buttons.confirm',
   cancelText = 'buttons.cancel',
   open,
   onOpenChange,
@@ -57,10 +57,8 @@ export function RestoreAlertDialog({
                 className='mr-2 size-4 animate-spin'
                 aria-hidden='true'
               />
-            ) : (
-              <RotateCcw className='mr-2 size-4' aria-hidden='true' />
-            )}
-            {t(confirmText as any) ?? t('buttons.restore')}
+            ) : null}
+            {t(confirmText as any) ?? t('buttons.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
