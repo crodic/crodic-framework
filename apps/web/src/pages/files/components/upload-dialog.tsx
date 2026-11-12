@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
 import { useMutation } from '@tanstack/react-query'
 import {
@@ -7,6 +7,7 @@ import {
   Globe,
   Loader2,
   Lock,
+  Sparkles,
   Upload,
   Video,
   X,
@@ -27,6 +28,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Switch } from '@/components/ui/switch'
 import { formatBytes } from '../columns'
 import { apiUploadFile, MANAGED_FILE_UPLOAD_MAX_SIZE } from '../queries'
 import { type FolderSchema } from '../schema'
@@ -62,10 +64,20 @@ export function UploadDialog({
     'public' | 'private'
   >('public')
   const [files, setFiles] = useState<File[]>([])
+  const [optimizeImage, setOptimizeImage] = useState(true)
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
     {}
   )
   const [isDragOver, setIsDragOver] = useState(false)
+
+  const hasImages = useMemo(() => {
+    return files.some(
+      (f) =>
+        f.type.startsWith('image/') &&
+        !f.type.includes('svg') &&
+        !f.type.includes('gif')
+    )
+  }, [files])
 
   const handleCancelUpload = () => {
     if (uploadMutation.isPending) {
@@ -108,6 +120,7 @@ export function UploadDialog({
           file,
           folder: targetFolder || null,
           visibility: targetVisibility,
+          optimize: optimizeImage,
           signal: controller.signal,
           onProgress: (progress) =>
             setUploadProgress((current) => ({
@@ -228,6 +241,31 @@ export function UploadDialog({
             folders={folders}
             onChange={setTargetFolder}
           />
+          <div className='border-input bg-card/60 flex items-center justify-between rounded-lg border p-3'>
+            <div className='flex flex-col gap-0.5'>
+              <label
+                htmlFor='optimize-image'
+                className='text-foreground flex cursor-pointer items-center gap-1.5 text-xs font-medium'
+              >
+                <Sparkles className='text-primary size-3.5' />
+                <span>
+                  {t('files.upload.optimizeImage', 'Tối ưu hóa hình ảnh')}
+                </span>
+              </label>
+              <p className='text-muted-foreground text-[11px] leading-relaxed'>
+                {t(
+                  'files.upload.optimizeImageHelp',
+                  'Tự động nén WebP và giới hạn kích thước tối đa để tối ưu tốc độ tải trang web.'
+                )}
+              </p>
+            </div>
+            <Switch
+              id='optimize-image'
+              checked={optimizeImage}
+              onCheckedChange={setOptimizeImage}
+              disabled={files.length > 0 && !hasImages}
+            />
+          </div>
           <label
             onDragOver={(e) => {
               e.preventDefault()

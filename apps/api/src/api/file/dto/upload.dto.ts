@@ -27,6 +27,10 @@ export class UploadDto {
   @IsOptional()
   @IsString()
   disk?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  optimize?: boolean;
 }
 
 export class UploadSingleImageDto extends UploadDto {

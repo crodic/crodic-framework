@@ -5,6 +5,7 @@ import { createWriteStream } from 'fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { dirname, join } from 'path';
+import sharp from 'sharp';
 import { pipeline } from 'stream/promises';
 import { FileUploadSessionEntity } from './entities/file-upload-session.entity';
 import { FileEntity } from './entities/file.entity';
@@ -222,5 +223,60 @@ describe('FileChunkUploadService', () => {
       [{ partNumber: 1, etag: '"etag-1"' }],
     );
     expect(result.disk).toBe('s3');
+  });
+
+  it('optimizes image to WebP during chunk upload when optimize is true', async () => {
+    diskRoot = await mkdtemp(join(tmpdir(), 'file-chunk-optimize-'));
+    storageService.disk.mockReturnValue(disk as any);
+    repository.create.mockImplementation((value) => value);
+    repository.save.mockImplementation(async (value) => ({
+      id: '2',
+      url: 'http://localhost/storage/uploads/image/public-id.webp',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...value,
+    }));
+
+    try {
+      const pngBuffer = await sharp({
+        create: {
+          width: 200,
+          height: 100,
+          channels: 4,
+          background: { r: 10, g: 20, b: 30, alpha: 1 },
+        },
+      })
+        .png()
+        .toBuffer();
+
+      const session = await service.createUploadSession({
+        originalName: 'graphic.png',
+        mime: 'image/png',
+        size: pngBuffer.length,
+        folder: 'illustrations',
+        chunkSize: pngBuffer.length,
+        totalChunks: 1,
+        optimize: true,
+      });
+
+      await service.uploadChunk(session.sessionId, 0, {
+        buffer: pngBuffer,
+        size: pngBuffer.length,
+      } as Express.Multer.File);
+
+      const result = await service.completeUploadSession(session.sessionId);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          original_name: 'graphic.webp',
+          folder: 'illustrations',
+          mime: 'image/webp',
+          resource_type: 'image',
+          path: expect.stringMatching(/^image\/illustrations\/.+\.webp$/),
+        }),
+      );
+    } finally {
+      await rm(diskRoot, { recursive: true, force: true });
+    }
   });
 });

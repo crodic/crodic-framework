@@ -39,6 +39,10 @@ import { FileEntity } from './entities/file.entity';
 import { FileFolderService } from './file-folder.service';
 import { UploadFileOptions, UploadImageOptions } from './types/upload.types';
 import { FileValidator } from './validators/file.validator';
+import {
+  isOptimizableImage,
+  optimizeImageBuffer,
+} from './utils/image-optimizer.util';
 
 @Injectable()
 export class FileService {
@@ -333,6 +337,7 @@ export class FileService {
     disk?: string,
     visibility?: 'public' | 'private',
     adminId?: AutoIncrementID,
+    optimize?: boolean,
   ) {
     if (!file) {
       throw new BadRequestException('File not provided');
@@ -342,11 +347,33 @@ export class FileService {
       maxFileSize: FILE_UPLOAD_SINGLE_MAX_SIZE,
     });
 
-    const mime = file.mimetype;
+    let mime = file.mimetype;
+    let size = file.size;
+    let originalName = file.originalname;
+    let buffer = file.buffer;
+    let ext = file.originalname.split('.').pop() || 'bin';
+
+    if (optimize && isOptimizableImage(mime)) {
+      try {
+        const optimized = await optimizeImageBuffer(
+          file.buffer,
+          file.originalname,
+        );
+        buffer = optimized.buffer;
+        size = optimized.size;
+        mime = optimized.mime;
+        ext = optimized.extension;
+        originalName = optimized.originalName;
+      } catch (err) {
+        this.logger.warn(
+          `Failed to optimize image ${file.originalname}: ${err}`,
+        );
+      }
+    }
+
     const resourceType = this.detectResourceType(mime);
     const publicId = uuidv4().replace(/-/g, '').slice(0, 20);
 
-    const ext = file.originalname.split('.').pop();
     const normalizedFolder = this.fileFolderService.normalizeFolder(folder);
     const folderPath = normalizedFolder
       ? posixPath.join(resourceType, normalizedFolder)
@@ -359,7 +386,7 @@ export class FileService {
       visibility,
     );
 
-    await this.writeDisk(uploadDiskName).put(storedPath, file.buffer, {
+    await this.writeDisk(uploadDiskName).put(storedPath, buffer, {
       mimeType: mime,
       visibility: resolvedVisibility,
     });
@@ -367,14 +394,14 @@ export class FileService {
     const media = await this.createFileRecord({
       publicId,
       folder: normalizedFolder,
-      originalName: file.originalname,
+      originalName,
       path: storedPath,
       disk: uploadDiskName,
       visibility: resolvedVisibility,
       mime,
-      size: file.size,
+      size,
       resourceType,
-      buffer: file.buffer,
+      buffer,
       createdByAdminId: adminId,
       updatedByAdminId: adminId,
     });

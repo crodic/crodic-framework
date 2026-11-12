@@ -287,4 +287,5 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 - **Đồng Bộ URL & Chia Sẻ Thư Mục (Folder URL Persistence)**: Đồng bộ thư mục đang chọn (`activeFolder`) trực tiếp lên query param `?folder=...` qua `nuqs`, hỗ trợ tải lại trang giữ nguyên ngữ cảnh và chia sẻ đường dẫn trực tiếp tới từng thư mục.
 - **Cây Thư Mục & Phân Cấp**: Tự động gộp cây thư mục từ máy chủ với các thư mục tạo mới cục bộ, quản lý đường dẫn breadcrumb linh hoạt.
 - **Khu Vực Kéo Thả (Dropzone)**: Tích hợp overlay kéo thả tải tệp trực tiếp vào thư mục hiện hành.
+- **Tối Ưu Hóa Hình Ảnh Khi Tải Lên (Opt-in Image Optimization)**: Hỗ trợ tùy chọn bật/tắt tối ưu hóa ảnh ở popup tải lên. Khi kích hoạt, server tự động dùng `sharp` để auto-orient, giới hạn kích thước tối đa 2560px, nén sang chuẩn WebP chất lượng 82% và strip metadata thừa mà không làm thay đổi database schema.
 - **Thao Tác Tệp Nâng Cao**: Điều khiển drawer kiểm tra chi tiết tệp, cảnh báo xóa hàng loạt, và tạo liên kết chia sẻ tạm thời.

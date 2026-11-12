@@ -28,12 +28,19 @@ import {
   FILE_UPLOAD_CHUNK_SIZE,
   FILE_UPLOAD_MAX_SIZE,
 } from './config/file.config';
-import { CreateChunkUploadSessionDto } from './dto/chunk-upload.dto';
+import {
+  CompleteChunkUploadSessionDto,
+  CreateChunkUploadSessionDto,
+} from './dto/chunk-upload.dto';
 import { FileResDto } from './dto/file.res.dto';
 import { FileEntity } from './entities/file.entity';
 import { FileUploadSessionEntity } from './entities/file-upload-session.entity';
 import { FileFolderService } from './file-folder.service';
 import { FileValidator } from './validators/file.validator';
+import {
+  isOptimizableImage,
+  optimizeImageFile,
+} from './utils/image-optimizer.util';
 
 export type ChunkUploadSession = {
   sessionId: string;
@@ -52,6 +59,7 @@ export type ChunkUploadSession = {
   s3Parts?: Array<{ partNumber: number; etag: string }>;
   imageWidth?: number | null;
   imageHeight?: number | null;
+  optimize?: boolean;
 };
 
 @Injectable()
@@ -202,6 +210,18 @@ export class FileChunkUploadService {
         );
       }
 
+      let isOptimize = Boolean((sessionEntity as any).optimize);
+      if (!isOptimize) {
+        try {
+          const manifest = JSON.parse(
+            await readFile(this.sessionManifestPath(sessionId), 'utf8'),
+          );
+          isOptimize = Boolean(manifest.optimize);
+        } catch {
+          // ignore
+        }
+      }
+
       const session: ChunkUploadSession = {
         sessionId: sessionEntity.id,
         originalName: sessionEntity.originalName,
@@ -220,6 +240,7 @@ export class FileChunkUploadService {
         s3Parts: sessionEntity.s3Parts ?? undefined,
         imageWidth: sessionEntity.imageWidth ?? null,
         imageHeight: sessionEntity.imageHeight ?? null,
+        optimize: isOptimize,
       };
 
       if (this.redis) {
@@ -445,10 +466,14 @@ export class FileChunkUploadService {
       chunkSize: dto.chunkSize,
       uploadedChunks: [],
       createdAt: new Date().toISOString(),
+      optimize: Boolean(dto.optimize),
     };
 
     const targetDriver = this.writeDisk(targetDisk);
-    if (isMultipartCapable(targetDriver)) {
+    const shouldOptimize =
+      Boolean(dto.optimize) && isOptimizableImage(dto.mime);
+
+    if (isMultipartCapable(targetDriver) && !shouldOptimize) {
       const resourceType = this.detectResourceType(session.mime);
       const publicId = uuidv4().replace(/-/g, '').slice(0, 20);
       const ext = session.originalName.split('.').pop() || 'bin';
@@ -550,6 +575,7 @@ export class FileChunkUploadService {
   async completeUploadSession(
     sessionId: string,
     adminId?: AutoIncrementID,
+    dto?: CompleteChunkUploadSessionDto,
   ): Promise<FileResDto> {
     const session = await this.readUploadSession(sessionId);
 
@@ -627,11 +653,6 @@ export class FileChunkUploadService {
 
     const resourceType = this.detectResourceType(session.mime);
     const publicId = uuidv4().replace(/-/g, '').slice(0, 20);
-    const ext = session.originalName.split('.').pop() || 'bin';
-    const folderPath = session.folder
-      ? posixPath.join(resourceType, session.folder)
-      : resourceType;
-    const storedPath = this.makeStorageKey(folderPath, `${publicId}.${ext}`);
     const mergedPath = join(this.sessionPath(sessionId), 'merged');
 
     await mkdir(dirname(mergedPath), { recursive: true });
@@ -655,11 +676,48 @@ export class FileChunkUploadService {
       throw new BadRequestException('Merged file size mismatch');
     }
 
+    let uploadPath = mergedPath;
+    let uploadMime = session.mime;
+    let uploadSize = fileStat.size;
+    let uploadOriginalName = session.originalName;
+    let ext = session.originalName.split('.').pop() || 'bin';
+
+    const shouldOptimize =
+      (dto?.optimize ?? session.optimize) && isOptimizableImage(session.mime);
+
+    if (shouldOptimize) {
+      try {
+        const optimizedPath = join(
+          this.sessionPath(sessionId),
+          'optimized.webp',
+        );
+        const optimized = await optimizeImageFile(
+          mergedPath,
+          optimizedPath,
+          session.originalName,
+        );
+        uploadPath = optimized.path;
+        uploadMime = optimized.mime;
+        uploadSize = optimized.size;
+        ext = optimized.extension;
+        uploadOriginalName = optimized.originalName;
+      } catch (err) {
+        this.logger.warn(
+          `Failed to optimize image in chunk session ${sessionId}: ${err}`,
+        );
+      }
+    }
+
+    const folderPath = session.folder
+      ? posixPath.join(resourceType, session.folder)
+      : resourceType;
+    const storedPath = this.makeStorageKey(folderPath, `${publicId}.${ext}`);
+
     await this.putStorageStream(
       storedPath,
-      createReadStream(mergedPath),
+      createReadStream(uploadPath),
       {
-        mimeType: session.mime,
+        mimeType: uploadMime,
         visibility: session.visibility,
       },
       this.writeDisk(session.disk),
@@ -668,14 +726,14 @@ export class FileChunkUploadService {
     const media = await this.createFileRecord({
       publicId,
       folder: session.folder,
-      originalName: session.originalName,
+      originalName: uploadOriginalName,
       path: storedPath,
       disk: session.disk,
       visibility: session.visibility,
-      mime: session.mime,
-      size: fileStat.size,
+      mime: uploadMime,
+      size: uploadSize,
       resourceType,
-      metadataPath: mergedPath,
+      metadataPath: uploadPath,
       createdByAdminId: adminId,
       updatedByAdminId: adminId,
     });

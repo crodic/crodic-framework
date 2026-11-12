@@ -165,6 +165,8 @@
   "files.upload.visibility": "Visibility",
   "files.upload.publicHelp": "Accessible by anyone with the link / CDN",
   "files.upload.privateHelp": "Restricted to authenticated sessions",
+  "files.upload.optimizeImage": "Optimize images",
+  "files.upload.optimizeImageHelp": "Automatically compress and convert images to WebP to reduce file size without visible quality loss.",
   "files.move.title": "Move file",
   "files.delete.title": "Move to Trash",
   "files.delete.description": "Are you sure you want to move this file to trash? You can restore it later.",

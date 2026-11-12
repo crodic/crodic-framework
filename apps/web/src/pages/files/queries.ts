@@ -74,6 +74,7 @@ export async function apiUploadFile({
   folder,
   disk,
   visibility,
+  optimize,
   onProgress,
   signal,
 }: {
@@ -81,6 +82,7 @@ export async function apiUploadFile({
   folder?: string | null
   disk?: string
   visibility?: 'public' | 'private'
+  optimize?: boolean
   onProgress?: (progress: number) => void
   signal?: AbortSignal
 }) {
@@ -89,6 +91,7 @@ export async function apiUploadFile({
     folder,
     disk,
     visibility,
+    optimize,
     onProgress,
     signal,
   })
@@ -99,6 +102,7 @@ async function apiUploadFileInChunks({
   folder,
   disk,
   visibility,
+  optimize,
   onProgress,
   signal,
 }: {
@@ -106,6 +110,7 @@ async function apiUploadFileInChunks({
   folder?: string | null
   disk?: string
   visibility?: 'public' | 'private'
+  optimize?: boolean
   onProgress?: (progress: number) => void
   signal?: AbortSignal
 }) {
@@ -121,6 +126,7 @@ async function apiUploadFileInChunks({
       visibility,
       totalChunks,
       chunkSize: FILE_UPLOAD_CHUNK_SIZE,
+      optimize: Boolean(optimize),
     },
     { signal }
   )
@@ -171,7 +177,7 @@ async function apiUploadFileInChunks({
 
     const completeResponse = await http.post(
       `/files/uploads/${session.sessionId}/complete`,
-      {},
+      { optimize: Boolean(optimize) },
       { signal }
     )
     onProgress?.(100)

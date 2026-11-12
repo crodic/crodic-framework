@@ -47,7 +47,10 @@ import {
 } from './config/file.config';
 import { UploadSingle } from './decorators/file.decorator';
 import { BulkFileActionDto } from './dto/bulk-file-action.dto';
-import { CreateChunkUploadSessionDto } from './dto/chunk-upload.dto';
+import {
+  CompleteChunkUploadSessionDto,
+  CreateChunkUploadSessionDto,
+} from './dto/chunk-upload.dto';
 import { FileResDto } from './dto/file.res.dto';
 import {
   CreateFolderDto,
@@ -221,9 +224,18 @@ export class FileController {
     @Body('folder') folder?: string,
     @Body('disk') disk?: string,
     @Body('visibility') visibility?: 'public' | 'private',
+    @Body('optimize') optimize?: boolean | string,
     @CurrentUser('id') adminId?: AutoIncrementID,
   ) {
-    return this.fileService.upload(file, folder, disk, visibility, adminId);
+    const isOptimize = optimize === true || optimize === 'true';
+    return this.fileService.upload(
+      file,
+      folder,
+      disk,
+      visibility,
+      adminId,
+      isOptimize,
+    );
   }
 
   @Post('uploads/sessions')
@@ -271,11 +283,13 @@ export class FileController {
   )
   completeUpload(
     @Param('sessionId', ParseUploadSessionIdPipe) sessionId: string,
+    @Body() dto?: CompleteChunkUploadSessionDto,
     @CurrentUser('id') adminId?: AutoIncrementID,
   ): Promise<FileResDto> {
     return this.fileChunkUploadService.completeUploadSession(
       sessionId,
       adminId,
+      dto,
     );
   }
 

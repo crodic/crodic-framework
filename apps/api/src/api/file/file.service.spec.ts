@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { createReadStream } from 'fs';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { dirname, join } from 'path';
+import sharp from 'sharp';
 import { FileFolderEntity } from './entities/file-folder.entity';
 import { FileEntity } from './entities/file.entity';
 import { FileFolderService } from './file-folder.service';
@@ -249,6 +250,52 @@ describe('FileService', () => {
       expect.objectContaining({
         disk: 's3',
         folder: 'avatars',
+      }),
+    );
+  });
+
+  it('optimizes image to webp when optimize option is true', async () => {
+    repository.create.mockImplementation((value) => value);
+    repository.save.mockImplementation(async (value) => ({
+      id: '3',
+      url: 'http://localhost/storage/uploads/image/public-id.webp',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...value,
+    }));
+
+    const pngBuffer = await sharp({
+      create: {
+        width: 100,
+        height: 100,
+        channels: 4,
+        background: { r: 255, g: 0, b: 0, alpha: 1 },
+      },
+    })
+      .png()
+      .toBuffer();
+
+    await service.upload(
+      {
+        originalname: 'logo.png',
+        mimetype: 'image/png',
+        buffer: pngBuffer,
+        size: pngBuffer.length,
+      } as Express.Multer.File,
+      'branding',
+      'local',
+      'public',
+      undefined,
+      true,
+    );
+
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        disk: 'local',
+        folder: 'branding',
+        mime: 'image/webp',
+        original_name: 'logo.webp',
+        path: expect.stringMatching(/^image\/branding\/.+\.webp$/),
       }),
     );
   });

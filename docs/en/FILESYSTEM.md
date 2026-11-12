@@ -287,4 +287,5 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 - **Folder URL Persistence & Link Sharing**: Synchronizes active directory (`activeFolder`) with URL query parameters (`?folder=...`) via `nuqs`, enabling persistent state across page refreshes and direct folder link sharing.
 - **Folder Tree & Hierarchy**: Merges remote server folders with optimistic local states and handles breadcrumb traversal.
 - **Upload Dropzone & Chunks**: Coordinates full drag-and-drop overlays with concurrent multipart chunk uploads.
+- **Opt-in Image Optimization**: Allows users to toggle image optimization on upload. When enabled, the backend uses `sharp` to auto-orient, clamp max dimensions to 2560px, compress to modern WebP (quality 82%), and strip extraneous metadata without requiring any database schema changes.
 - **Multi-File Operations**: Coordinates inspector drawers, batch deletion alerts, and presigned URL generation.

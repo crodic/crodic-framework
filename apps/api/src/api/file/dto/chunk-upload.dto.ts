@@ -58,4 +58,14 @@ export class CreateChunkUploadSessionDto {
   @Min(1)
   @Max(FILE_UPLOAD_CHUNK_SIZE)
   chunkSize: number;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  optimize?: boolean;
+}
+
+export class CompleteChunkUploadSessionDto {
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  optimize?: boolean;
 }

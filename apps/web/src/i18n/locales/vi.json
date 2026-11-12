@@ -165,6 +165,8 @@
   "files.upload.visibility": "Quyền truy cập",
   "files.upload.publicHelp": "Công khai qua liên kết / CDN",
   "files.upload.privateHelp": "Giới hạn cho phiên đăng nhập hợp lệ",
+  "files.upload.optimizeImage": "Tối ưu hóa hình ảnh",
+  "files.upload.optimizeImageHelp": "Tự động nén WebP và giới hạn kích thước tối đa để tối ưu tốc độ tải trang web.",
   "files.move.title": "Di chuyển tệp",
   "files.delete.title": "Chuyển vào thùng rác",
   "files.delete.description": "Bạn có chắc chắn muốn chuyển tệp này vào thùng rác không? Bạn có thể khôi phục lại sau.",
