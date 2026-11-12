@@ -2,9 +2,12 @@ import { AutoIncrementID } from '../../common/types/common.type';
 import { EWhiteLabelTarget } from '../../common/constants/entity.enum';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { CreateWhiteLabelReqDto } from './dto/create-white-label.req.dto';
+import { REQUIRED_WHITE_LABEL_STYLE_KEYS } from './dto/white-label-style.dto';
 import { WhiteLabelEntity } from './entities/white-label.entity';
 import { WhiteLabelService } from './white-label.service';
 
@@ -212,6 +215,41 @@ describe('WhiteLabelService', () => {
       expect(cacheManagerMock.del).toHaveBeenCalledWith(
         'white-label:active:client',
       );
+    });
+  });
+
+  describe('CreateWhiteLabelReqDto with ValidationPipe', () => {
+    it('preserves and parses stringified styles when whitelist and transform are enabled', async () => {
+      const pipe = new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      });
+
+      const fullModeStyles = Object.fromEntries(
+        REQUIRED_WHITE_LABEL_STYLE_KEYS.map((key) => [
+          key,
+          'oklch(0.5 0.2 240)',
+        ]),
+      );
+      const rawPayload = {
+        name: 'asd',
+        target: 'admin',
+        isActive: 'false',
+        styles: JSON.stringify({
+          light: { ...fullModeStyles, spacing: '0.25rem' },
+          dark: { ...fullModeStyles, spacing: '0.25rem' },
+        }),
+        remove_site_logo: 'false',
+      };
+
+      const transformed = (await pipe.transform(rawPayload, {
+        type: 'body',
+        metatype: CreateWhiteLabelReqDto,
+      })) as CreateWhiteLabelReqDto;
+
+      expect(transformed.styles).toBeDefined();
+      expect(transformed.styles.light.primary).toBe('oklch(0.5 0.2 240)');
+      expect(transformed.isActive).toBe(false);
     });
   });
 });

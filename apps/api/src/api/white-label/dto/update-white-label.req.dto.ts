@@ -4,6 +4,7 @@ import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -84,6 +85,7 @@ export class UpdateWhiteLabelReqDto {
     }
     return value;
   })
+  @IsObject()
   styles?: WhiteLabelStyles;
 
   @ApiPropertyOptional({ example: false })

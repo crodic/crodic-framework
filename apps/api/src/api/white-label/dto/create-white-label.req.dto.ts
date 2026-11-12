@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -87,5 +88,7 @@ export class CreateWhiteLabelReqDto {
     }
     return value;
   })
+  @IsNotEmpty()
+  @IsObject()
   styles: WhiteLabelStyles;
 }
