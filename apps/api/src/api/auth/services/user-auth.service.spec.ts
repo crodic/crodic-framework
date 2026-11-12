@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { FilesystemService } from '../../../filesystem/filesystem.service';
 import { UserSessionEntity } from '../entities/user-session.entity';
 import { AuthSessionService } from './auth-session.service';
 import { AuthTokenService } from './auth-token.service';
@@ -79,6 +80,7 @@ describe('UserAuthService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
     };
     jwtService = {
       signAsync: jest.fn(),
@@ -122,6 +124,19 @@ describe('UserAuthService', () => {
         {
           provide: JwtService,
           useValue: jwtService,
+        },
+        {
+          provide: FilesystemService,
+          useValue: {
+            disk: jest.fn().mockReturnValue({
+              put: jest.fn(),
+              delete: jest.fn(),
+              url: jest.fn(),
+            }),
+            put: jest.fn(),
+            delete: jest.fn(),
+            url: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(UserEntity),

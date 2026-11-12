@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { Repository } from 'typeorm';
 import { UserAccountRecoveryService } from '../auth/services/user-account-recovery.service';
+import { UserSessionEntity } from '../auth/entities/user-session.entity';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
@@ -15,6 +16,9 @@ describe('UserService', () => {
   >;
   let userAccountRepositoryValue: Partial<
     Record<keyof Repository<UserAccountEntity>, jest.Mock>
+  >;
+  let userSessionRepositoryValue: Partial<
+    Record<keyof Repository<UserSessionEntity>, jest.Mock>
   >;
   let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
 
@@ -28,6 +32,10 @@ describe('UserService', () => {
     userAccountRepositoryValue = {
       findOne: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
+    };
+    userSessionRepositoryValue = {
+      delete: jest.fn(),
     };
     userAccountRecoveryServiceMock = {
       sendVerificationEmail: jest.fn(),
@@ -43,6 +51,10 @@ describe('UserService', () => {
         {
           provide: getRepositoryToken(UserAccountEntity),
           useValue: userAccountRepositoryValue,
+        },
+        {
+          provide: getRepositoryToken(UserSessionEntity),
+          useValue: userSessionRepositoryValue,
         },
         {
           provide: ClsService,
@@ -171,13 +183,19 @@ describe('UserService', () => {
   });
 
   describe('remove', () => {
-    it('soft removes the selected user', async () => {
+    it('soft removes the selected user and cleans up accounts and sessions', async () => {
       const user = new UserEntity({ id: '1' as any });
 
       userRepositoryValue.findOneByOrFail.mockResolvedValue(user);
 
       await service.remove('1' as any);
 
+      expect(userAccountRepositoryValue.delete).toHaveBeenCalledWith({
+        userId: '1',
+      });
+      expect(userSessionRepositoryValue.delete).toHaveBeenCalledWith({
+        userId: '1',
+      });
       expect(userRepositoryValue.softRemove).toHaveBeenCalledWith(user);
     });
   });

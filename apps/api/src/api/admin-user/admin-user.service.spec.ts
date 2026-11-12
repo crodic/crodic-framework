@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { EmailQueueService } from '../../background/queues/email-queue/email-queue.service';
 import { AdminAccountRecoveryService } from '../auth/services/admin-account-recovery.service';
 import { AdminRoleEntity } from '../admin-role/entities/admin-role.entity';
+import { AdminSessionEntity } from '../auth/entities/admin-session.entity';
 import { AdminUserService } from './admin-user.service';
 import { AdminAccountEntity } from './entities/admin-account.entity';
 import { AdminUserEntity } from './entities/admin-user.entity';
@@ -19,6 +20,9 @@ describe('AdminUserService', () => {
   >;
   let adminAccountRepoMock: Partial<
     Record<keyof Repository<AdminAccountEntity>, jest.Mock>
+  >;
+  let adminSessionRepoMock: Partial<
+    Record<keyof Repository<AdminSessionEntity>, jest.Mock>
   >;
   let roleRepoMock: Partial<
     Record<keyof Repository<AdminRoleEntity>, jest.Mock>
@@ -43,6 +47,11 @@ describe('AdminUserService', () => {
     adminAccountRepoMock = {
       findOne: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    adminSessionRepoMock = {
+      delete: jest.fn(),
     };
 
     roleRepoMock = {
@@ -73,6 +82,10 @@ describe('AdminUserService', () => {
         {
           provide: getRepositoryToken(AdminAccountEntity),
           useValue: adminAccountRepoMock,
+        },
+        {
+          provide: getRepositoryToken(AdminSessionEntity),
+          useValue: adminSessionRepoMock,
         },
         {
           provide: getRepositoryToken(AdminRoleEntity),
@@ -158,7 +171,7 @@ describe('AdminUserService', () => {
       );
       expect(
         adminAccountRecoveryServiceMock.sendVerificationEmail,
-      ).toHaveBeenCalledWith(savedAdmin);
+      ).toHaveBeenCalledWith(savedAdmin, { skipRateLimit: true });
       expect(result).toEqual(expect.objectContaining({ email: dto.email }));
     });
 
@@ -226,12 +239,18 @@ describe('AdminUserService', () => {
   });
 
   describe('remove', () => {
-    it('soft removes the selected admin user', async () => {
+    it('soft removes the selected admin user and cleans up accounts and sessions', async () => {
       const admin = new AdminUserEntity({ id: '1' as any });
       adminRepoMock.findOneByOrFail.mockResolvedValue(admin);
 
       await service.remove('1' as any);
 
+      expect(adminAccountRepoMock.delete).toHaveBeenCalledWith({
+        adminUserId: '1',
+      });
+      expect(adminSessionRepoMock.delete).toHaveBeenCalledWith({
+        adminUserId: '1',
+      });
       expect(adminRepoMock.softRemove).toHaveBeenCalledWith(admin);
     });
   });

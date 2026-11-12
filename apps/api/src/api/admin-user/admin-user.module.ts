@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailQueueModule } from '../../background/queues/email-queue/email-queue.module';
 import { AdminPermissionEntity } from '../admin-permission/entities/admin-permission.entity';
 import { AdminRoleEntity } from '../admin-role/entities/admin-role.entity';
+import { AdminSessionEntity } from '../auth/entities/admin-session.entity';
 import { AuthModule } from '../auth/auth.module';
 import { AdminUserController } from './admin-user.controller';
 import { AdminUserService } from './admin-user.service';
@@ -19,6 +20,7 @@ import { AdminUserEntity } from './entities/admin-user.entity';
       AdminPermissionEntity,
       AdminUserEntity,
       AdminAccountEntity,
+      AdminSessionEntity,
     ]),
     JwtModule.register({}),
   ],

@@ -15,6 +15,7 @@ import {
 } from 'nestjs-paginate';
 import { DataSource, Repository } from 'typeorm';
 import { UserAccountRecoveryService } from '../auth/services/user-account-recovery.service';
+import { UserSessionEntity } from '../auth/entities/user-session.entity';
 import { CreateUserReqDto } from './dto/create-user.req.dto';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
 import { UserResDto } from './dto/user.res.dto';
@@ -30,6 +31,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserAccountEntity)
     private readonly userAccountRepository: Repository<UserAccountEntity>,
+    @InjectRepository(UserSessionEntity)
+    private readonly userSessionRepository: Repository<UserSessionEntity>,
     private cls: ClsService,
     private readonly userAccountRecoveryService: UserAccountRecoveryService,
     @Optional()
@@ -89,6 +92,11 @@ export class UserService {
       const saved = await userRepo.save(newUser);
 
       if (password) {
+        await accountRepo.delete({
+          provider: EAccountProvider.LOCAL,
+          providerAccountId: saved.email,
+        });
+
         await accountRepo.save(
           new UserAccountEntity({
             userId: saved.id,
@@ -136,6 +144,31 @@ export class UserService {
 
   async remove(id: AutoIncrementID) {
     const user = await this.userRepository.findOneByOrFail({ id });
-    await this.userRepository.softRemove(user);
+
+    const performRemove = async (
+      userRepo: Repository<UserEntity>,
+      accountRepo: Repository<UserAccountEntity>,
+      sessionRepo: Repository<UserSessionEntity>,
+    ) => {
+      await accountRepo.delete({ userId: id });
+      await sessionRepo.delete({ userId: id });
+      await userRepo.softRemove(user);
+    };
+
+    if (this.dataSource?.transaction) {
+      await this.dataSource.transaction((manager) =>
+        performRemove(
+          manager.getRepository(UserEntity),
+          manager.getRepository(UserAccountEntity),
+          manager.getRepository(UserSessionEntity),
+        ),
+      );
+    } else {
+      await performRemove(
+        this.userRepository,
+        this.userAccountRepository,
+        this.userSessionRepository,
+      );
+    }
   }
 }

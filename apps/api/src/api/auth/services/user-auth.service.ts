@@ -188,6 +188,12 @@ export class UserAuthService extends AuthService<
     ) => {
       const savedUser = await userRepo.save(newUser);
 
+      // Clean up any orphaned local account from previously soft-deleted user
+      await accountRepo.delete({
+        provider: EAccountProvider.LOCAL,
+        providerAccountId: savedUser.email,
+      });
+
       // Create local credentials account
       await accountRepo.save(
         new UserAccountEntity({

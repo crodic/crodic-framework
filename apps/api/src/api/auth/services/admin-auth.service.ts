@@ -315,6 +315,11 @@ export class AdminAuthService extends AuthService<
     ) => {
       await userRepo.save(user);
 
+      await accountRepo.delete({
+        provider: EAccountProvider.LOCAL,
+        providerAccountId: user.email,
+      });
+
       await accountRepo.save(
         new AdminAccountEntity({
           adminUserId: user.id,

@@ -27,6 +27,7 @@ import {
 import { DataSource, EntityManager, In, LessThan, Repository } from 'typeorm';
 import { AdminAccountRecoveryService } from '../auth/services/admin-account-recovery.service';
 import { AdminRoleEntity } from '../admin-role/entities/admin-role.entity';
+import { AdminSessionEntity } from '../auth/entities/admin-session.entity';
 import { AdminUserResDto } from './dto/admin-user.res.dto';
 import { CreateAdminUserReqDto } from './dto/create-admin-user.req.dto';
 import { UpdateAdminUserReqDto } from './dto/update-admin-user.req.dto';
@@ -42,6 +43,8 @@ export class AdminUserService {
     private readonly adminUserRepository: Repository<AdminUserEntity>,
     @InjectRepository(AdminAccountEntity)
     private readonly adminAccountRepository: Repository<AdminAccountEntity>,
+    @InjectRepository(AdminSessionEntity)
+    private readonly adminSessionRepository: Repository<AdminSessionEntity>,
     @InjectRepository(AdminRoleEntity)
     private readonly roleRepository: Repository<AdminRoleEntity>,
     @Inject(CACHE_MANAGER)
@@ -91,6 +94,11 @@ export class AdminUserService {
     );
 
     if (data.password) {
+      await accountRepo.delete({
+        provider: EAccountProvider.LOCAL,
+        providerAccountId: adminUser.email,
+      });
+
       await accountRepo.save(
         new AdminAccountEntity({
           adminUserId: adminUser.id,
@@ -153,6 +161,11 @@ export class AdminUserService {
       const saved = await userRepo.save(newUser);
 
       if (password) {
+        await accountRepo.delete({
+          provider: EAccountProvider.LOCAL,
+          providerAccountId: saved.email,
+        });
+
         await accountRepo.save(
           new AdminAccountEntity({
             adminUserId: saved.id,
@@ -265,7 +278,34 @@ export class AdminUserService {
 
   async remove(id: AutoIncrementID) {
     const admin = await this.adminUserRepository.findOneByOrFail({ id });
-    await this.adminUserRepository.softRemove(admin);
+
+    const performRemove = async (
+      userRepo: Repository<AdminUserEntity>,
+      accountRepo: Repository<AdminAccountEntity>,
+      sessionRepo: Repository<AdminSessionEntity>,
+    ) => {
+      await accountRepo.delete({ adminUserId: id });
+      await sessionRepo.delete({ adminUserId: id });
+      await userRepo.softRemove(admin);
+    };
+
+    if (this.dataSource?.transaction) {
+      await this.dataSource.transaction((manager) =>
+        performRemove(
+          manager.getRepository(AdminUserEntity),
+          manager.getRepository(AdminAccountEntity),
+          manager.getRepository(AdminSessionEntity),
+        ),
+      );
+    } else {
+      await performRemove(
+        this.adminUserRepository,
+        this.adminAccountRepository,
+        this.adminSessionRepository,
+      );
+    }
+
+    await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
   }
 
   async resendVerification(id: AutoIncrementID): Promise<{ message: string }> {
