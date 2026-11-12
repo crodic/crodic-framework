@@ -284,6 +284,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 
 - **Decoupled Business Logic**: Extracts 16 distinct modal/dialog state hooks and React Query mutations away from the layout component.
 - **View Mode Persistence**: Synchronizes view mode (`grid` vs `table`) seamlessly to `localStorage`.
+- **Folder URL Persistence & Link Sharing**: Synchronizes active directory (`activeFolder`) with URL query parameters (`?folder=...`) via `nuqs`, enabling persistent state across page refreshes and direct folder link sharing.
 - **Folder Tree & Hierarchy**: Merges remote server folders with optimistic local states and handles breadcrumb traversal.
 - **Upload Dropzone & Chunks**: Coordinates full drag-and-drop overlays with concurrent multipart chunk uploads.
 - **Multi-File Operations**: Coordinates inspector drawers, batch deletion alerts, and presigned URL generation.

@@ -284,6 +284,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 
 - **Tách Biệt Nghiệp Vụ Khỏi Giao Diện**: Tách 16 biến state modals/dialogs và các mutation của React Query ra khỏi component hiển thị layout, giúp code gọn hơn 50%.
 - **Lưu Trữ Chế Độ Xem (View Mode)**: Tự động đồng bộ và ghi nhớ chế độ xem `grid` hoặc `table` vào `localStorage`.
+- **Đồng Bộ URL & Chia Sẻ Thư Mục (Folder URL Persistence)**: Đồng bộ thư mục đang chọn (`activeFolder`) trực tiếp lên query param `?folder=...` qua `nuqs`, hỗ trợ tải lại trang giữ nguyên ngữ cảnh và chia sẻ đường dẫn trực tiếp tới từng thư mục.
 - **Cây Thư Mục & Phân Cấp**: Tự động gộp cây thư mục từ máy chủ với các thư mục tạo mới cục bộ, quản lý đường dẫn breadcrumb linh hoạt.
 - **Khu Vực Kéo Thả (Dropzone)**: Tích hợp overlay kéo thả tải tệp trực tiếp vào thư mục hiện hành.
 - **Thao Tác Tệp Nâng Cao**: Điều khiển drawer kiểm tra chi tiết tệp, cảnh báo xóa hàng loạt, và tạo liên kết chia sẻ tạm thời.

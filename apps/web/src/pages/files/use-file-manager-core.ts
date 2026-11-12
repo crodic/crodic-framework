@@ -46,7 +46,6 @@ import { ColumnKey, type FileSchema, type FolderSchema } from './schema'
 
 export const fileFilterParsers = {
   [ColumnKey.originalName]: parseAsString,
-  [ColumnKey.folder]: parseAsString,
   [ColumnKey.resourceType]: parseAsString,
   [ColumnKey.mime]: parseAsString,
   [ColumnKey.status]: parseAsString,
@@ -118,7 +117,27 @@ export function useFileManagerCore() {
 
   // --- View Mode & Navigation ---
   const [activeView, setActiveView] = useState<FileViewType>('all')
-  const [activeFolder, setActiveFolder] = useState<string | null>(null)
+  const [rawActiveFolder, setActiveFolderState] = useQueryState(
+    'folder',
+    parseAsString
+  )
+  const activeFolder = rawActiveFolder || null
+
+  const setActiveFolder = useCallback(
+    (
+      value:
+        string | null | ((prev: string | null) => string | null | undefined)
+    ) => {
+      if (typeof value === 'function') {
+        return setActiveFolderState((prev) => {
+          const next = value(prev || null)
+          return next || null
+        })
+      }
+      return setActiveFolderState(value || null)
+    },
+    [setActiveFolderState]
+  )
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const { data: starredCount = 0 } = useDataFileStarredCount()
   const { data: trashCount = 0 } = useDataFileTrashCount()
@@ -285,7 +304,6 @@ export function useFileManagerCore() {
       .page(page)
       .limit(perPage)
       .ilike('original_name', filter.original_name)
-      .ilike('folder', filter.folder)
       .ilike('mime', filter.mime)
       .eq('resource_type', filter.resource_type)
       .btw('createdAt', createdFrom, createdTo)
@@ -319,7 +337,6 @@ export function useFileManagerCore() {
     page,
     perPage,
     filter.original_name,
-    filter.folder,
     filter.mime,
     filter.resource_type,
     filter.status,
@@ -556,8 +573,13 @@ export function useFileManagerCore() {
       setLocalFolders((current) =>
         current.filter((folder) => folder.folder !== deletingFolder)
       )
-      if (activeFolder === deletingFolder) {
-        setActiveFolder(null)
+      if (
+        activeFolder &&
+        deletingFolder &&
+        (activeFolder === deletingFolder ||
+          activeFolder.startsWith(`${deletingFolder}/`))
+      ) {
+        void setActiveFolder(null)
       }
       setDeletingFolder(null)
       setDeleteFolderFiles(false)
@@ -582,27 +604,26 @@ export function useFileManagerCore() {
   const handleViewChange = useCallback(
     (view: FileViewType) => {
       setActiveView(view)
-      setActiveFolder(null)
+      void setActiveFolder(null)
       table.setPageIndex(0)
       table.resetRowSelection()
       void setFilterQuery({
         [ColumnKey.originalName]: null,
-        [ColumnKey.folder]: null,
         [ColumnKey.mime]: null,
         [ColumnKey.resourceType]: null,
         [ColumnKey.status]: null,
         [ColumnKey.createdAt]: null,
       })
     },
-    [setFilterQuery, table]
+    [setActiveFolder, setFilterQuery, table]
   )
 
   const handleFolderSelect = useCallback(
     (folder: string | null) => {
       setActiveView('all')
-      if (folder === activeFolder) return
+      if (folder === activeFolder && activeView === 'all') return
 
-      setActiveFolder(folder)
+      void setActiveFolder(folder || null)
       table.setPageIndex(0)
       table.resetColumnFilters()
       table.resetSorting()
@@ -610,14 +631,20 @@ export function useFileManagerCore() {
       void setSearch(null)
       void setFilterQuery({
         [ColumnKey.originalName]: null,
-        [ColumnKey.folder]: null,
         [ColumnKey.resourceType]: null,
         [ColumnKey.mime]: null,
         [ColumnKey.status]: null,
         [ColumnKey.createdAt]: null,
       })
     },
-    [activeFolder, table, setSearch, setFilterQuery]
+    [
+      activeFolder,
+      activeView,
+      table,
+      setSearch,
+      setFilterQuery,
+      setActiveFolder,
+    ]
   )
 
   const handleCategorySelect = useCallback(
