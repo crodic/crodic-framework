@@ -23,7 +23,7 @@ const adminsFilterParsers = {
   email: parseAsString,
   fullName: parseAsString,
   role: parseAsArrayOf(parseAsString, ','),
-  status: parseAsString.withDefault('active'),
+  status: parseAsString,
 } as const
 
 export function PageAdminOverview() {

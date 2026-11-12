@@ -7,7 +7,6 @@ import {
   EditIcon,
   Loader2,
   Mail,
-  RotateCcw,
   TrashIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +21,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
-import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
@@ -30,7 +28,6 @@ import { NotFoundError } from '@/pages/errors/not-found-error'
 import {
   apiResendAdminVerification,
   deleteAdmin,
-  restoreAdmin,
   useDataGetAdminDetail,
 } from '../queries'
 
@@ -41,11 +38,9 @@ export function PageAdminShow() {
   const params = useParams()
   const id = params.id as string
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
-  const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
   const userId = useAuthStore((s) => s.id)
 
   const { data, isFetching } = useDataGetAdminDetail(id)
-  const isDeleted = Boolean(data?.deletedAt)
 
   const adminName = data?.fullName || data?.email || (id ? `#${id}` : '')
 
@@ -60,28 +55,9 @@ export function PageAdminShow() {
       queryClient.invalidateQueries({
         queryKey: ['admins'],
       })
-      toast.success(
-        t('adminUsers.messages.deleteSuccess', 'Admin deleted successfully')
-      )
+      toast.success('Admin deleted successfully')
       setIsShowDeleteDialog(false)
       navigate('/admins')
-    },
-    onError: restApiErrorHandler,
-  })
-
-  const restoreAdminMutation = useMutation({
-    mutationFn: () => restoreAdmin(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['admin', id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['admins'],
-      })
-      toast.success(
-        t('adminUsers.messages.restoreSuccess', 'Admin restored successfully')
-      )
-      setIsShowRestoreDialog(false)
     },
     onError: restApiErrorHandler,
   })
@@ -165,15 +141,6 @@ export function PageAdminShow() {
         />
       )}
 
-      {isShowRestoreDialog && (
-        <RestoreAlertDialog
-          open={isShowRestoreDialog}
-          onOpenChange={(open) => setIsShowRestoreDialog(open)}
-          handleRestore={() => restoreAdminMutation.mutate()}
-          isLoading={restoreAdminMutation.isPending}
-        />
-      )}
-
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <PageHeader
           title={data?.fullName || t('adminUsers.show.title')}
@@ -190,69 +157,53 @@ export function PageAdminShow() {
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
                 {t('buttons.cancel')}
               </Button>
-              {isDeleted ? (
+              {!data?.verifiedAt && (
                 <Button
+                  variant='outline'
                   type='button'
-                  onClick={() => setIsShowRestoreDialog(true)}
-                  className='bg-emerald-600 text-white hover:bg-emerald-700'
+                  onClick={() => resendMutation.mutate()}
+                  disabled={resendMutation.isPending || cooldown > 0}
+                  className='border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
                 >
-                  <RotateCcw className='size-4' aria-hidden='true' />
-                  {t('buttons.restore', 'Restore')}
-                </Button>
-              ) : (
-                <>
-                  {!data?.verifiedAt && (
-                    <Button
-                      variant='outline'
-                      type='button'
-                      onClick={() => resendMutation.mutate()}
-                      disabled={resendMutation.isPending || cooldown > 0}
-                      className='border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
-                    >
-                      {resendMutation.isPending ? (
-                        <Loader2
-                          className='size-4 animate-spin'
-                          aria-hidden='true'
-                        />
-                      ) : cooldown > 0 ? (
-                        <Clock
-                          className='size-4 opacity-70'
-                          aria-hidden='true'
-                        />
-                      ) : (
-                        <Mail className='size-4' aria-hidden='true' />
-                      )}
-                      {resendMutation.isPending
-                        ? t('adminUsers.show.resending', 'Sending...')
-                        : cooldown > 0
-                          ? t(
-                              'adminUsers.show.cooldown',
-                              'Resend in {{seconds}}s',
-                              { seconds: cooldown }
-                            )
-                          : t(
-                              'adminUsers.show.resendVerification',
-                              'Resend verification email'
-                            )}
-                    </Button>
+                  {resendMutation.isPending ? (
+                    <Loader2
+                      className='size-4 animate-spin'
+                      aria-hidden='true'
+                    />
+                  ) : cooldown > 0 ? (
+                    <Clock className='size-4 opacity-70' aria-hidden='true' />
+                  ) : (
+                    <Mail className='size-4' aria-hidden='true' />
                   )}
-                  <Button
-                    onClick={() => navigate(`/admins/${data?.id}/edit`)}
-                    disabled={id === userId}
-                  >
-                    <EditIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.edit')}
-                  </Button>
-                  <Button
-                    variant='destructive'
-                    onClick={() => setIsShowDeleteDialog(true)}
-                    disabled={id === userId}
-                  >
-                    <TrashIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.delete')}
-                  </Button>
-                </>
+                  {resendMutation.isPending
+                    ? t('adminUsers.show.resending', 'Sending...')
+                    : cooldown > 0
+                      ? t(
+                          'adminUsers.show.cooldown',
+                          'Resend in {{seconds}}s',
+                          { seconds: cooldown }
+                        )
+                      : t(
+                          'adminUsers.show.resendVerification',
+                          'Resend verification email'
+                        )}
+                </Button>
               )}
+              <Button
+                onClick={() => navigate(`/admins/${data?.id}/edit`)}
+                disabled={id === userId}
+              >
+                <EditIcon className='size-4' aria-hidden='true' />
+                {t('buttons.edit')}
+              </Button>
+              <Button
+                variant='destructive'
+                onClick={() => setIsShowDeleteDialog(true)}
+                disabled={id === userId}
+              >
+                <TrashIcon className='size-4' aria-hidden='true' />
+                {t('buttons.delete')}
+              </Button>
             </div>
           }
         />
@@ -270,18 +221,6 @@ export function PageAdminShow() {
                   />
                 </Avatar>
                 <h3 className='text-lg font-bold'>{data?.fullName || ''}</h3>
-                {isDeleted ? (
-                  <Badge variant='destructive' className='text-xs'>
-                    {t('common.status.deleted', 'Deleted')}
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant='outline'
-                    className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
-                  >
-                    {t('common.status.active', 'Active')}
-                  </Badge>
-                )}
                 <p className='text-muted-foreground text-center text-sm'>
                   {data?.bio || '—'}
                 </p>
@@ -311,31 +250,6 @@ export function PageAdminShow() {
                       : undefined
                   }
                 />
-                <DescriptionItem label={t('common.status', 'Status')}>
-                  <div className='mt-2 flex flex-wrap gap-1'>
-                    {isDeleted ? (
-                      <Badge variant='destructive'>
-                        {t('common.status.deleted', 'Deleted')}
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant='outline'
-                        className='border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
-                      >
-                        {t('common.status.active', 'Active')}
-                      </Badge>
-                    )}
-                  </div>
-                </DescriptionItem>
-                {isDeleted && data?.deletedAt && (
-                  <DescriptionItem
-                    label={t('common.deletedAt', 'Deleted at')}
-                    value={format(
-                      new Date(data.deletedAt),
-                      'dd/MM/yyyy HH:mm aa'
-                    )}
-                  />
-                )}
                 <DescriptionItem label={t('adminUsers.show.emailVerified')}>
                   <div className='mt-2 flex flex-wrap gap-1'>
                     <Badge variant='secondary'>

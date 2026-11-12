@@ -79,7 +79,6 @@ interface UseDataTableProps<TData>
   startTransition?: React.TransitionStartFunction
   storageKey?: string
   enableVisibilityPersistence?: boolean
-  filterParsers?: Record<string, SingleParser<any>>
 }
 
 export function useDataTable<TData>(props: UseDataTableProps<TData>) {
@@ -267,11 +266,6 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       const colKey = getColumnKey(column)
       if (!colKey) return acc
 
-      if (props.filterParsers && props.filterParsers[colKey]) {
-        acc[colKey] = props.filterParsers[colKey]
-        return acc
-      }
-
       const isMulti =
         isMultiValueFilterVariant(column.meta?.variant) ||
         (Boolean(column.meta?.options) && !column.meta?.variant)
@@ -286,12 +280,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       }
       return acc
     }, {})
-  }, [
-    filterableColumns,
-    queryStateOptions,
-    enableAdvancedFilter,
-    props.filterParsers,
-  ])
+  }, [filterableColumns, queryStateOptions, enableAdvancedFilter])
 
   const [filterValues, setFilterValues] = useQueryStates(filterParsers)
 
@@ -327,14 +316,6 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>(initialColumnFilters)
-
-  React.useEffect(() => {
-    setColumnFilters((prev) => {
-      const prevStr = JSON.stringify(prev)
-      const nextStr = JSON.stringify(initialColumnFilters)
-      return prevStr === nextStr ? prev : initialColumnFilters
-    })
-  }, [initialColumnFilters])
 
   const onColumnFiltersChange = React.useCallback(
     (updaterOrValue: Updater<ColumnFiltersState>) => {
