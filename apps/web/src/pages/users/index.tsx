@@ -25,7 +25,7 @@ const userFilterParsers = {
   [ColumnKey.createdAt]: parseAsArrayOf(parseAsInteger, ','),
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
-  status: parseAsString,
+  status: parseAsString.withDefault('active'),
 } as const
 
 export function PageUserOverview() {

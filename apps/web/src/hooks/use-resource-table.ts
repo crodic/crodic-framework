@@ -126,6 +126,8 @@ export function useResourceTable<
     data: data?.data ?? [],
     columns,
     pageCount: totalPages,
+    filterParsers: filterParsers as
+      Record<string, SingleParser<any>> | undefined,
     initialState: {
       columnPinning: initialColumnPinning,
       ...initialState,
