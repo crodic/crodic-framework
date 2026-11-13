@@ -91,7 +91,9 @@ export const fetchPublishedCmsPages = async (): Promise<
     const data = await response.json();
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Failed to fetch published CMS pages:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to fetch published CMS pages:", error);
+    }
     return [];
   }
 };

@@ -77,7 +77,10 @@ export async function fetchActiveClientWhiteLabel(): Promise<ActiveClientWhiteLa
         headers: {
           "Content-Type": "application/json",
         },
-        cache: "no-store",
+        next: {
+          revalidate: 60,
+          tags: ["white-label"],
+        },
       }
     );
 
@@ -91,7 +94,15 @@ export async function fetchActiveClientWhiteLabel(): Promise<ActiveClientWhiteLa
     }
     return data;
   } catch (error) {
-    console.error("Failed to fetch active client white-label:", error);
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof (error as { digest?: unknown }).digest === "string" &&
+      (error as { digest: string }).digest.startsWith("DYNAMIC_")
+    ) {
+      throw error;
+    }
     return null;
   }
 }
