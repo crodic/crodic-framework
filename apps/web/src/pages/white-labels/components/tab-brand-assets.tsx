@@ -1,4 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -27,15 +28,20 @@ type TabBrandAssetsProps = {
 }
 
 export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
+  const { t } = useTranslation()
+
   return (
     <div className='space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle className='text-base font-semibold'>
-            Profile Configuration
+            {t('whiteLabels.show.profileDetails', 'Profile Configuration')}
           </CardTitle>
           <CardDescription>
-            Profile name, target application scope, and activation status.
+            {t(
+              'whiteLabels.show.profileDetailsDesc',
+              'Profile name, target application scope, and activation status.'
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
@@ -45,10 +51,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profile Name *</FormLabel>
+                  <FormLabel required>
+                    {t('whiteLabels.form.name', 'Profile Name')}
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='e.g., Default Blue, Acme Corp'
+                      placeholder={t(
+                        'whiteLabels.form.namePlaceholder',
+                        'e.g., Default Blue, Acme Corp'
+                      )}
                       {...field}
                     />
                   </FormControl>
@@ -62,8 +73,8 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
               name='target'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel asChild>
-                    <span className='text-sm font-medium'>Target Scope</span>
+                  <FormLabel>
+                    {t('whiteLabels.form.targetScope', 'Target Scope')}
                   </FormLabel>
                   <FormControl>
                     <RadioGroup
@@ -74,11 +85,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                     >
                       <label className='flex cursor-pointer items-center space-x-2 text-sm leading-none font-medium'>
                         <RadioGroupItem value='admin' id='target-admin' />
-                        <span>Admin Portal</span>
+                        <span>
+                          {t('whiteLabels.form.targetAdmin', 'Admin Portal')}
+                        </span>
                       </label>
                       <label className='flex cursor-pointer items-center space-x-2 text-sm leading-none font-medium'>
                         <RadioGroupItem value='client' id='target-client' />
-                        <span>Client App</span>
+                        <span>
+                          {t('whiteLabels.form.targetClient', 'Client App')}
+                        </span>
                       </label>
                     </RadioGroup>
                   </FormControl>
@@ -93,11 +108,16 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             name='description'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.show.description', 'Description')}
+                </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={2}
-                    placeholder='Brief description of this white label profile'
+                    placeholder={t(
+                      'whiteLabels.form.descriptionPlaceholder',
+                      'Brief description of this white label profile'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -117,11 +137,13 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                     htmlFor='target-is-active-switch'
                     className='cursor-pointer text-sm font-medium'
                   >
-                    Set as Active Profile
+                    {t('whiteLabels.form.isDefault', 'Set as Active Profile')}
                   </FormLabel>
                   <FormDescription className='text-xs'>
-                    When active, this profile immediately drives the branding
-                    and theme across the selected target.
+                    {t(
+                      'whiteLabels.form.isDefaultDesc',
+                      'When active, this profile immediately drives the branding and theme across the selected target.'
+                    )}
                   </FormDescription>
                 </div>
                 <FormControl>
@@ -141,11 +163,13 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
       <Card>
         <CardHeader>
           <CardTitle className='text-base font-semibold'>
-            Brand Identity & Copy
+            {t('whiteLabels.show.brandIdentity', 'Brand Identity & Copy')}
           </CardTitle>
           <CardDescription>
-            Brand names and slogans displayed in headers, footers, and auth
-            screens.
+            {t(
+              'whiteLabels.show.brandIdentityDesc',
+              'Brand names and slogans displayed in headers, footers, and auth screens.'
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className='grid gap-4 sm:grid-cols-2'>
@@ -154,10 +178,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             name='brandName'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Brand Name</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.form.brandName', 'Brand Name')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., Visel Art'
+                    placeholder={t(
+                      'whiteLabels.form.brandNamePlaceholder',
+                      'e.g., Visel Art'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -172,10 +201,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             name='siteTitle'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Site Title</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.form.siteTitle', 'Site Title')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., Visel Art Admin Portal'
+                    placeholder={t(
+                      'whiteLabels.form.siteTitlePlaceholder',
+                      'e.g., Visel Art Admin Portal'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -190,10 +224,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             name='siteTagline'
             render={({ field }) => (
               <FormItem className='sm:col-span-2'>
-                <FormLabel>Tagline / Slogan</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.form.tagline', 'Tagline / Slogan')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., Creative Art & Modern Management Platform'
+                    placeholder={t(
+                      'whiteLabels.form.taglinePlaceholder',
+                      'e.g., Creative Art & Modern Management Platform'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -208,10 +247,15 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             name='copyrightText'
             render={({ field }) => (
               <FormItem className='sm:col-span-2'>
-                <FormLabel>Copyright Text</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.show.copyright', 'Copyright Text')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., © 2026 Visel Art. All rights reserved.'
+                    placeholder={t(
+                      'whiteLabels.form.copyrightPlaceholder',
+                      'e.g., © 2026 Visel Art. All rights reserved.'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -226,10 +270,13 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
       <Card>
         <CardHeader>
           <CardTitle className='text-base font-semibold'>
-            Media & Logo Assets
+            {t('whiteLabels.show.uploadedMediaAssets', 'Media & Logo Assets')}
           </CardTitle>
           <CardDescription>
-            Upload custom logos and icons (PNG, WebP, SVG, ICO max 5MB).
+            {t(
+              'whiteLabels.show.uploadedMediaAssetsDesc',
+              'Upload custom logos and icons (PNG, WebP, SVG, ICO max 5MB).'
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -237,24 +284,33 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
             form={form}
             name='site_logo'
             removeName='remove_site_logo'
-            label='Light Mode Logo'
-            description='Used in sidebar and light themes'
+            label={t('whiteLabels.form.lightLogo', 'Light Mode Logo')}
+            description={t(
+              'whiteLabels.form.lightLogoDesc',
+              'Used in sidebar and light themes'
+            )}
             previewUrl={initialData?.siteLogo}
           />
           <WhiteLabelAssetField
             form={form}
             name='site_dark_logo'
             removeName='remove_site_dark_logo'
-            label='Dark Mode Logo'
-            description='Used in dark mode themes'
+            label={t('whiteLabels.form.darkLogo', 'Dark Mode Logo')}
+            description={t(
+              'whiteLabels.form.darkLogoDesc',
+              'Used in dark mode themes'
+            )}
             previewUrl={initialData?.siteDarkLogo}
           />
           <WhiteLabelAssetField
             form={form}
             name='site_favicon'
             removeName='remove_site_favicon'
-            label='Favicon Icon'
-            description='Browser tab icon (PNG or ICO)'
+            label={t('whiteLabels.form.favicon', 'Favicon Icon')}
+            description={t(
+              'whiteLabels.form.faviconDesc',
+              'Browser tab icon (PNG or ICO)'
+            )}
             previewUrl={initialData?.siteFavicon}
           />
         </CardContent>

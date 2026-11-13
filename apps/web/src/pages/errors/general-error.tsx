@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useRouteError } from 'react-router'
-import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -63,15 +62,6 @@ export function GeneralError({
             </Button>
             <Button onClick={() => navigate('/')}>
               {t('errors.common.backHome')}
-            </Button>
-            <Button
-              variant='secondary'
-              onClick={() => {
-                useAuthStore.getState().logout()
-                navigate('/sign-in')
-              }}
-            >
-              {t('auth.signIn.messageSignIn')}
             </Button>
           </div>
         )}

@@ -53,12 +53,12 @@ export function PageDevPlayground() {
           onValueChange={handleTabChange}
           className='w-full space-y-6'
         >
-          <TabsList className='bg-muted/70 h-10 p-1'>
-            <TabsTrigger value='forms' className='gap-2 px-4'>
+          <TabsList>
+            <TabsTrigger value='forms' className='gap-2'>
               <Layers className='size-4' />
               <span>{t('dev.playground.tabForms')}</span>
             </TabsTrigger>
-            <TabsTrigger value='table' className='gap-2 px-4'>
+            <TabsTrigger value='table' className='gap-2'>
               <TableProperties className='size-4' />
               <span>{t('dev.playground.tabTable')}</span>
             </TabsTrigger>

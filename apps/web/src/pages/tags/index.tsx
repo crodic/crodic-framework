@@ -365,10 +365,10 @@ export function PageTagOverview() {
           className='flex flex-1 flex-col gap-4'
         >
           <div className='flex flex-wrap items-center justify-between gap-3 border-b pb-3'>
-            <TabsList className='bg-muted/50 border-border/60 rounded-xl border p-1'>
+            <TabsList>
               <TabsTrigger
                 value='directory'
-                className='cursor-pointer gap-2 rounded-lg text-xs font-semibold'
+                className='gap-2 text-xs sm:text-sm'
               >
                 <TagsIcon className='size-4' aria-hidden='true' />
                 <span>{t('tags.tabs.directory', 'Tag Directory')}</span>
@@ -379,10 +379,7 @@ export function PageTagOverview() {
                   {stats.totalTags.toLocaleString()}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger
-                value='audit'
-                className='cursor-pointer gap-2 rounded-lg text-xs font-semibold'
-              >
+              <TabsTrigger value='audit' className='gap-2 text-xs sm:text-sm'>
                 <ActivityIcon className='size-4' aria-hidden='true' />
                 <span>
                   {t('tags.tabs.auditLogs', 'Audit & Moderation Logs')}

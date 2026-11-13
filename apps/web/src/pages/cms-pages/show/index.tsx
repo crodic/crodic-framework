@@ -339,10 +339,10 @@ export function PageCmsPageShow() {
           {/* Right Column: Content & SEO Preview Tabs */}
           <Tabs defaultValue='content' className='w-full'>
             <div className='flex items-center pb-3'>
-              <TabsList className='grid h-auto w-full grid-cols-1 gap-1.5 p-1 min-[480px]:grid-cols-2 sm:inline-flex sm:h-9 sm:w-auto sm:gap-0'>
+              <TabsList className='grid h-auto w-full grid-cols-1 gap-1 min-[480px]:grid-cols-2 sm:inline-flex sm:h-9 sm:w-auto sm:gap-0'>
                 <TabsTrigger
                   value='content'
-                  className='h-9 min-w-0 justify-center gap-2 px-3 text-xs font-medium sm:text-sm'
+                  className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
                 >
                   <FileTextIcon className='size-4 shrink-0' />
                   <span className='truncate'>
@@ -351,7 +351,7 @@ export function PageCmsPageShow() {
                 </TabsTrigger>
                 <TabsTrigger
                   value='seo'
-                  className='h-9 min-w-0 justify-center gap-2 px-3 text-xs font-medium sm:text-sm'
+                  className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
                 >
                   <SparklesIcon className='text-primary size-4 shrink-0' />
                   <span className='truncate'>

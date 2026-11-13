@@ -383,11 +383,8 @@ export function PageTagShow() {
           }}
           className='flex flex-1 flex-col gap-5'
         >
-          <TabsList className='bg-muted/40 border-border/70 w-fit rounded-xl border p-1'>
-            <TabsTrigger
-              value='hierarchy'
-              className='cursor-pointer gap-2 rounded-lg text-xs font-semibold'
-            >
+          <TabsList>
+            <TabsTrigger value='hierarchy' className='gap-2 text-xs sm:text-sm'>
               <GitBranchIcon className='size-4' aria-hidden='true' />
               <span>
                 {t('tags.studio.tabHierarchy', 'Semantic DAG Hierarchy')}
@@ -402,7 +399,7 @@ export function PageTagShow() {
 
             <TabsTrigger
               value='encyclopedia'
-              className='cursor-pointer gap-2 rounded-lg text-xs font-semibold'
+              className='gap-2 text-xs sm:text-sm'
             >
               <BookMarkedIcon className='size-4' aria-hidden='true' />
               <span>
@@ -413,10 +410,7 @@ export function PageTagShow() {
               </span>
             </TabsTrigger>
 
-            <TabsTrigger
-              value='metadata'
-              className='cursor-pointer gap-2 rounded-lg text-xs font-semibold'
-            >
+            <TabsTrigger value='metadata' className='gap-2 text-xs sm:text-sm'>
               <LanguagesIcon className='size-4' aria-hidden='true' />
               <span>
                 {t('tags.studio.tabMetadata', 'Translations & Aliases')}

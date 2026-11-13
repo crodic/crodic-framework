@@ -240,10 +240,10 @@ export function WhiteLabelForm({
             onValueChange={(v) => setActiveTab(v as TabType)}
             className='w-full sm:w-auto'
           >
-            <TabsList className='grid h-auto w-full grid-cols-2 gap-1.5 p-1 sm:flex sm:h-9 sm:w-auto'>
+            <TabsList className='grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:h-9 sm:w-auto sm:gap-0'>
               <TabsTrigger
                 value='brand'
-                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+                className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
                 <Sparkles className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
@@ -252,7 +252,7 @@ export function WhiteLabelForm({
               </TabsTrigger>
               <TabsTrigger
                 value='colors'
-                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+                className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
                 <Paintbrush className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
@@ -261,7 +261,7 @@ export function WhiteLabelForm({
               </TabsTrigger>
               <TabsTrigger
                 value='seo'
-                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+                className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
                 <Search className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
@@ -270,7 +270,7 @@ export function WhiteLabelForm({
               </TabsTrigger>
               <TabsTrigger
                 value='preview'
-                className='h-9 min-w-0 justify-center gap-1.5 px-2 py-1 text-xs sm:text-sm'
+                className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
                 <Eye className='text-primary size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>

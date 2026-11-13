@@ -760,45 +760,30 @@ export function PageHelpCenter() {
           onValueChange={(v) => setSelectedCategory(v as HelpCategory)}
           className='w-full'
         >
-          <TabsList className='bg-muted/40 h-auto flex-wrap rounded-xl border p-1'>
-            <TabsTrigger
-              value='all'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
-            >
+          <TabsList className='h-auto flex-wrap gap-1'>
+            <TabsTrigger value='all' className='gap-1.5 text-xs sm:text-sm'>
               {t('helpCenter.categoryAll', 'Tất cả chuyên mục')}
             </TabsTrigger>
-            <TabsTrigger
-              value='tags'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
-            >
+            <TabsTrigger value='tags' className='gap-1.5 text-xs sm:text-sm'>
               <GitBranchIcon className='mr-1.5 size-3.5' />
               {t('helpCenter.categoryTags', 'Thẻ & Bách khoa (DAG)')}
             </TabsTrigger>
-            <TabsTrigger
-              value='files'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
-            >
+            <TabsTrigger value='files' className='gap-1.5 text-xs sm:text-sm'>
               <FolderSearchIcon className='mr-1.5 size-3.5' />
               {t('helpCenter.categoryFiles', 'Tệp tin & Media')}
             </TabsTrigger>
             <TabsTrigger
               value='security'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
+              className='gap-1.5 text-xs sm:text-sm'
             >
               <ShieldCheckIcon className='mr-1.5 size-3.5' />
               {t('helpCenter.categorySecurity', 'Bảo mật & Phân quyền')}
             </TabsTrigger>
-            <TabsTrigger
-              value='cms'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
-            >
+            <TabsTrigger value='cms' className='gap-1.5 text-xs sm:text-sm'>
               <FileTextIcon className='mr-1.5 size-3.5' />
               {t('helpCenter.categoryCms', 'CMS & Thương hiệu')}
             </TabsTrigger>
-            <TabsTrigger
-              value='audit'
-              className='cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold'
-            >
+            <TabsTrigger value='audit' className='gap-1.5 text-xs sm:text-sm'>
               <LayersIcon className='mr-1.5 size-3.5' />
               {t('helpCenter.categoryAudit', 'Kiểm toán & Hệ thống')}
             </TabsTrigger>

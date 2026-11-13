@@ -43,10 +43,10 @@ export function PageLocationOverview() {
           onValueChange={handleTabChange}
           className='w-full space-y-4'
         >
-          <TabsList className='grid h-auto w-full grid-cols-2 gap-1.5 p-1 sm:inline-flex sm:h-9 sm:w-auto'>
+          <TabsList className='grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:h-9 sm:w-auto sm:gap-0'>
             <TabsTrigger
               value='countries'
-              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+              className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
             >
               <Flag className='size-4 shrink-0' />
               <span className='truncate'>
@@ -55,7 +55,7 @@ export function PageLocationOverview() {
             </TabsTrigger>
             <TabsTrigger
               value='states'
-              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+              className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
             >
               <Building2 className='size-4 shrink-0' />
               <span className='truncate'>
@@ -64,7 +64,7 @@ export function PageLocationOverview() {
             </TabsTrigger>
             <TabsTrigger
               value='cities'
-              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+              className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
             >
               <Globe className='size-4 shrink-0' />
               <span className='truncate'>
@@ -73,7 +73,7 @@ export function PageLocationOverview() {
             </TabsTrigger>
             <TabsTrigger
               value='regions'
-              className='h-9 min-w-0 justify-center gap-2 px-2 text-xs sm:text-sm'
+              className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
             >
               <Compass className='size-4 shrink-0' />
               <span className='truncate'>

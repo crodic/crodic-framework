@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useWatch, type UseFormReturn } from 'react-hook-form'
 import { ImageIcon, RotateCcw, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   FormControl,
@@ -40,6 +41,7 @@ export function WhiteLabelAssetField({
   description,
   previewUrl,
 }: WhiteLabelAssetFieldProps) {
+  const { t } = useTranslation()
   const selectedFile = useWatch({ control: form.control, name })
   const isRemoved = useWatch({ control: form.control, name: removeName })
 
@@ -87,12 +89,12 @@ export function WhiteLabelAssetField({
                   {isRemoved ? (
                     <>
                       <RotateCcw className='me-1 size-3' />
-                      Undo
+                      {t('common.actions.undo', 'Undo')}
                     </>
                   ) : (
                     <>
                       <Trash2 className='me-1 size-3' />
-                      Remove
+                      {t('common.actions.remove', 'Remove')}
                     </>
                   )}
                 </Button>
@@ -109,7 +111,7 @@ export function WhiteLabelAssetField({
               ) : (
                 <div className='text-muted-foreground flex flex-col items-center gap-1 text-xs'>
                   <ImageIcon className='size-5' />
-                  <span>No file</span>
+                  <span>{t('whiteLabels.form.noFile', 'No file')}</span>
                 </div>
               )}
             </div>

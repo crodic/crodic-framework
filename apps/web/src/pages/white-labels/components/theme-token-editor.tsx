@@ -150,6 +150,7 @@ function SliderWithInput({
           id={inputId}
           name={inputId}
           type='number'
+          placeholder={String(min)}
           value={Number(value.toFixed(3))}
           min={min}
           max={max}
@@ -463,6 +464,7 @@ function LetterSpacingControl({
             id='theme-letter-spacing-input'
             name='theme-letter-spacing-input'
             type='number'
+            placeholder='0'
             min={-0.1}
             max={0.2}
             step={0.005}
@@ -745,6 +747,7 @@ function TokenInput({
         <Input
           id={inputId}
           name={inputId}
+          placeholder='oklch(...) or #hex'
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className='font-mono text-xs'

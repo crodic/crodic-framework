@@ -1,4 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -24,15 +25,19 @@ type TabSeoMetaProps = {
 }
 
 export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
+  const { t } = useTranslation()
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className='text-base font-semibold'>
-          Search Engine Optimization (SEO)
+          {t('whiteLabels.form.seoTitle', 'Search Engine Optimization (SEO)')}
         </CardTitle>
         <CardDescription>
-          Custom meta tags for browser title, search engine snippets, and social
-          cards.
+          {t(
+            'whiteLabels.form.seoDesc',
+            'Custom meta tags for browser title, search engine snippets, and social cards.'
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>
@@ -42,10 +47,15 @@ export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
             name='metaTitle'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Meta Title</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.form.metaTitle', 'Meta Title')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., Visel Art - Modern Admin'
+                    placeholder={t(
+                      'whiteLabels.form.metaTitlePlaceholder',
+                      'e.g., Visel Art - Modern Admin'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -60,10 +70,15 @@ export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
             name='canonicalUrl'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Canonical URL</FormLabel>
+                <FormLabel>
+                  {t('whiteLabels.form.canonicalUrl', 'Canonical URL')}
+                </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder='e.g., https://admin.viselart.com'
+                    placeholder={t(
+                      'whiteLabels.form.canonicalUrlPlaceholder',
+                      'e.g., https://admin.viselart.com'
+                    )}
                     {...field}
                     value={field.value ?? ''}
                   />
@@ -79,11 +94,16 @@ export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
           name='metaDescription'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Meta Description</FormLabel>
+              <FormLabel>
+                {t('whiteLabels.form.metaDescription', 'Meta Description')}
+              </FormLabel>
               <FormControl>
                 <Textarea
                   rows={3}
-                  placeholder='Search engine summary snippet...'
+                  placeholder={t(
+                    'whiteLabels.form.metaDescriptionPlaceholder',
+                    'Search engine summary snippet...'
+                  )}
                   {...field}
                   value={field.value ?? ''}
                 />
@@ -98,16 +118,22 @@ export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
             form={form}
             name='og_image'
             removeName='remove_og_image'
-            label='OpenGraph Image'
-            description='Social media share card preview'
+            label={t('whiteLabels.form.ogImage', 'OpenGraph Image')}
+            description={t(
+              'whiteLabels.form.ogImageDesc',
+              'Social media share card preview'
+            )}
             previewUrl={initialData?.ogImage}
           />
           <WhiteLabelAssetField
             form={form}
             name='twitter_image'
             removeName='remove_twitter_image'
-            label='Twitter Card Image'
-            description='Twitter/X summary card preview'
+            label={t('whiteLabels.form.twitterImage', 'Twitter Card Image')}
+            description={t(
+              'whiteLabels.form.twitterImageDesc',
+              'Twitter/X summary card preview'
+            )}
             previewUrl={initialData?.twitterImage}
           />
         </div>
