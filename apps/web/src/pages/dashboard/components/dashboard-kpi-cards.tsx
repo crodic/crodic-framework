@@ -78,12 +78,8 @@ export function DashboardKpiCards({
             {isHealthy ? 'Operational' : 'Attention'}
           </span>
           <Badge
-            variant={isHealthy ? 'secondary' : 'destructive'}
-            className={cn(
-              'text-[10px] font-semibold',
-              isHealthy &&
-                'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-            )}
+            variant={isHealthy ? 'outline-success' : 'destructive'}
+            className='text-[10px] font-semibold'
           >
             99.9% Uptime
           </Badge>

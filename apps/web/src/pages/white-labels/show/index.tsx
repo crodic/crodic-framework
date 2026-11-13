@@ -235,7 +235,7 @@ export default function PageWhiteLabelShow() {
                   {item.target}
                 </Badge>
                 {item.isActive ? (
-                  <Badge className='gap-1 bg-emerald-600 text-white'>
+                  <Badge variant='solid-success' className='gap-1'>
                     <Sparkles className='size-3' />
                     {t('whiteLabels.show.activeBadge')}
                   </Badge>

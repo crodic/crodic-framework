@@ -13,7 +13,7 @@ export function Footer() {
 
   const copyrightText =
     (isEnabled && whiteLabel?.copyrightText) ||
-    `© ${new Date().getFullYear()} Visel Art. ${t("allRightsReserved")}`;
+    `© ${new Date().getFullYear()} Kosume. ${t("allRightsReserved")}`;
 
   return (
     <footer className="bg-card/40 border-t">
@@ -25,7 +25,7 @@ export function Footer() {
               <WhiteLabelLogo
                 fallback={
                   <span className="text-primary dancing-script-font text-2xl font-bold">
-                    Visel Art
+                    Kosume
                   </span>
                 }
               />

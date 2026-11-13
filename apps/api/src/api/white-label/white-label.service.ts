@@ -586,12 +586,12 @@ export class WhiteLabelService {
               slug: customSlug,
               name: customName,
               description: 'User customized theme generated from Setup Wizard',
-              brandName: brand || 'Visel Art',
+              brandName: brand || 'Kosume',
               siteTitle: isClient
-                ? `${brand || 'Visel Art'} - Creative Platform`
-                : `${brand || 'Visel Art'} Admin Portal`,
+                ? `${brand || 'Kosume'} - Creative Platform`
+                : `${brand || 'Kosume'} Admin Portal`,
               siteTagline: 'Creative Design & Modern Management Platform',
-              copyrightText: `© ${new Date().getFullYear()} ${brand || 'Visel Art'}. All rights reserved.`,
+              copyrightText: `© ${new Date().getFullYear()} ${brand || 'Kosume'}. All rights reserved.`,
               target,
               styles: customStyles,
               isActive: false,

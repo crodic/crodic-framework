@@ -27,7 +27,7 @@ export function Header() {
             <WhiteLabelLogo
               fallback={
                 <span className="text-primary dancing-script-font text-2xl font-bold">
-                  Visel Art
+                  Kosume
                 </span>
               }
             />

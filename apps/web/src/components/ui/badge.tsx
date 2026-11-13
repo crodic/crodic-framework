@@ -16,6 +16,25 @@ const badgeVariants = cva(
           'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline:
           'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+        success:
+          'border-transparent bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 [a&]:hover:bg-emerald-500/25',
+        warning:
+          'border-transparent bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 [a&]:hover:bg-amber-500/25',
+        info: 'border-transparent bg-sky-500/15 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 [a&]:hover:bg-sky-500/25',
+        purple:
+          'border-transparent bg-purple-500/15 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 [a&]:hover:bg-purple-500/25',
+        'outline-success':
+          'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 [a&]:hover:bg-emerald-500/20',
+        'outline-warning':
+          'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 [a&]:hover:bg-amber-500/20',
+        'outline-destructive':
+          'border-destructive/30 bg-destructive/10 text-destructive [a&]:hover:bg-destructive/20',
+        'outline-info':
+          'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400 [a&]:hover:bg-sky-500/20',
+        'solid-success':
+          'border-transparent bg-emerald-600 text-white [a&]:hover:bg-emerald-700 dark:bg-emerald-600',
+        'solid-warning':
+          'border-transparent bg-amber-500 text-white [a&]:hover:bg-amber-600 dark:bg-amber-500',
       },
     },
     defaultVariants: {

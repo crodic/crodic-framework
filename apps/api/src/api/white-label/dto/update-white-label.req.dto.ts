@@ -34,13 +34,13 @@ export class UpdateWhiteLabelReqDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ example: 'Visel Art' })
+  @ApiPropertyOptional({ example: 'Kosume' })
   @IsOptional()
   @IsString()
   @MaxLength(120)
   brandName?: string;
 
-  @ApiPropertyOptional({ example: 'Visel Art Portal' })
+  @ApiPropertyOptional({ example: 'Kosume Portal' })
   @IsOptional()
   @IsString()
   @MaxLength(255)
@@ -52,13 +52,13 @@ export class UpdateWhiteLabelReqDto {
   @MaxLength(255)
   siteTagline?: string;
 
-  @ApiPropertyOptional({ example: '© 2026 Visel Art. All rights reserved.' })
+  @ApiPropertyOptional({ example: '© 2026 Kosume. All rights reserved.' })
   @IsOptional()
   @IsString()
   @MaxLength(255)
   copyrightText?: string;
 
-  @ApiPropertyOptional({ example: 'Visel Art - Modern Admin' })
+  @ApiPropertyOptional({ example: 'Kosume - Modern Admin' })
   @IsOptional()
   @IsString()
   metaTitle?: string;

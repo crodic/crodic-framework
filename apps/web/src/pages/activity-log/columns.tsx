@@ -11,7 +11,7 @@ export function getActionBadge(action: string) {
     case 'INSERT':
     case 'CREATE':
       return (
-        <Badge className='border-emerald-500/30 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-300'>
+        <Badge variant='success'>
           {i18n.t(`activityLogs.table.action_${action.toLowerCase()}`, {
             defaultValue: action,
           })}
@@ -19,7 +19,7 @@ export function getActionBadge(action: string) {
       )
     case 'UPDATE':
       return (
-        <Badge className='border-blue-500/30 bg-blue-500/15 text-blue-700 hover:bg-blue-500/20 dark:bg-blue-500/20 dark:text-blue-300'>
+        <Badge variant='info'>
           {i18n.t(`activityLogs.table.action_${action.toLowerCase()}`, {
             defaultValue: action,
           })}
@@ -36,7 +36,7 @@ export function getActionBadge(action: string) {
       )
     case 'RESTORE':
       return (
-        <Badge className='border-purple-500/30 bg-purple-500/15 text-purple-700 hover:bg-purple-500/20 dark:bg-purple-500/20 dark:text-purple-300'>
+        <Badge variant='purple'>
           {i18n.t(`activityLogs.table.action_${action.toLowerCase()}`, {
             defaultValue: action,
           })}

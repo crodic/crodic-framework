@@ -227,7 +227,7 @@ export function WhiteLabelPreview({
 
           <div className='border-sidebar-border border-t pt-2'>
             <div className='text-sidebar-foreground/60 truncate text-[10px]'>
-              {siteTitle || 'Visel Art Admin'}
+              {siteTitle || 'Kosume Admin'}
             </div>
           </div>
         </div>
@@ -347,7 +347,7 @@ export function WhiteLabelPreview({
                     <div className='flex justify-between border-b pb-1'>
                       <span className='text-muted-foreground'>Site Title:</span>
                       <span className='max-w-37.5 truncate font-medium'>
-                        {siteTitle || 'Visel Art Admin'}
+                        {siteTitle || 'Kosume Admin'}
                       </span>
                     </div>
                     <div className='flex justify-between'>

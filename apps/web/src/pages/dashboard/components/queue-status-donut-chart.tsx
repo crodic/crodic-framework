@@ -2,6 +2,7 @@ import * as React from 'react'
 import { PieChartIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Label, Pie, PieChart } from 'recharts'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -120,9 +121,9 @@ export function QueueStatusDonutChart({ queues }: QueueStatusDonutChartProps) {
             {t('dashboard.queues.statusDistribution', 'Job Distribution')}
           </CardTitle>
           {totalJobs > 0 && (
-            <span className='rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400'>
+            <Badge variant='outline-success' className='text-xs font-semibold'>
               {successRate}% Success
-            </span>
+            </Badge>
           )}
         </div>
         <CardDescription>

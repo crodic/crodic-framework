@@ -36,8 +36,8 @@ export function PageDevPlayground() {
                 {t('dev.playground.title')}
               </h1>
               <Badge
-                variant='outline'
-                className='border-amber-500/40 bg-amber-500/10 font-mono text-xs font-semibold text-amber-600 dark:text-amber-400'
+                variant='outline-warning'
+                className='font-mono text-xs font-semibold'
               >
                 {t('dev.playground.badge')}
               </Badge>

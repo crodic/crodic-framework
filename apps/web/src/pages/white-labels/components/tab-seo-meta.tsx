@@ -54,7 +54,7 @@ export function TabSeoMeta({ form, initialData }: TabSeoMetaProps) {
                   <Input
                     placeholder={t(
                       'whiteLabels.form.metaTitlePlaceholder',
-                      'e.g., Visel Art - Modern Admin'
+                      'e.g., Kosume - Modern Admin'
                     )}
                     {...field}
                     value={field.value ?? ''}

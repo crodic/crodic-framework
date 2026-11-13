@@ -224,7 +224,7 @@ function SystemHealthSection({
   onRefresh: () => void
 }) {
   const { t } = useTranslation()
-  const overall = getHealthOverall(health, isError)
+  const overall = getHealthOverall(health, isError, t)
   const indicators = getHealthIndicators(health)
 
   const renderIndicatorsContent = () => {
@@ -247,7 +247,7 @@ function SystemHealthSection({
     }
 
     return (
-      <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3'>
         {indicators.map((indicator) => (
           <HealthIndicatorCard key={indicator.name} indicator={indicator} />
         ))}
@@ -268,7 +268,7 @@ function SystemHealthSection({
           </CardDescription>
         </div>
         <div className='flex flex-wrap items-center gap-2'>
-          <Badge variant={overall.variant} className={overall.className}>
+          <Badge variant={overall.variant}>
             <overall.icon className='size-3.5' />
             {overall.label}
           </Badge>
@@ -303,7 +303,7 @@ function SystemHealthSection({
             value={
               updatedAt
                 ? formatDistanceToNow(new Date(updatedAt), { addSuffix: true })
-                : 'Not checked yet'
+                : t('dashboard.systemHealth.notCheckedYet', 'Not checked yet')
             }
             tone='neutral'
           />
@@ -334,27 +334,6 @@ function HealthSummaryItem({
   )
 }
 
-function getBadgeStyles(variant: 'healthy' | 'warning' | 'critical') {
-  if (variant === 'healthy') {
-    return {
-      badge:
-        'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-      dot: 'bg-emerald-500',
-    }
-  }
-  if (variant === 'warning') {
-    return {
-      badge:
-        'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-      dot: 'bg-amber-500',
-    }
-  }
-  return {
-    badge: 'border-destructive/30 bg-destructive/10 text-destructive',
-    dot: 'bg-destructive',
-  }
-}
-
 function getIndicatorDetails(
   indicator: { name: string; status: string; detail: HealthIndicator },
   t: TFunction
@@ -376,7 +355,10 @@ function getIndicatorDetails(
       badgeText: healthy
         ? t('dashboard.indicators.operational', 'Operational')
         : t('dashboard.indicators.down', 'Down'),
-      badgeVariant: healthy ? ('healthy' as const) : ('critical' as const),
+      badgeVariant: healthy
+        ? ('outline-success' as const)
+        : ('outline-destructive' as const),
+      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-destructive',
       metrics: [
         {
           label: t('dashboard.indicators.responseTime', 'Response'),
@@ -403,7 +385,10 @@ function getIndicatorDetails(
       badgeText: healthy
         ? t('dashboard.indicators.operational', 'Operational')
         : t('dashboard.indicators.down', 'Down'),
-      badgeVariant: healthy ? ('healthy' as const) : ('critical' as const),
+      badgeVariant: healthy
+        ? ('outline-success' as const)
+        : ('outline-destructive' as const),
+      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-destructive',
       metrics: [
         {
           label: t('dashboard.indicators.latency', 'Latency'),
@@ -430,7 +415,10 @@ function getIndicatorDetails(
       badgeText: healthy
         ? t('dashboard.indicators.normal', 'Normal')
         : t('dashboard.indicators.degraded', 'High'),
-      badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+      badgeVariant: healthy
+        ? ('outline-success' as const)
+        : ('outline-warning' as const),
+      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
       metrics: [
         {
           label: t('dashboard.indicators.limit', 'Limit'),
@@ -459,7 +447,10 @@ function getIndicatorDetails(
       badgeText: healthy
         ? t('dashboard.indicators.ready', 'Ready')
         : t('dashboard.indicators.degraded', 'Low Space'),
-      badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+      badgeVariant: healthy
+        ? ('outline-success' as const)
+        : ('outline-warning' as const),
+      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
       metrics: [
         {
           label: t('dashboard.indicators.threshold', 'Threshold'),
@@ -490,10 +481,15 @@ function getIndicatorDetails(
         ? t('dashboard.queues.hasFailed', 'Có job cần xử lý')
         : t('dashboard.indicators.operational', 'Operational'),
       badgeVariant: hasFailed
-        ? ('warning' as const)
+        ? ('outline-warning' as const)
         : healthy
-          ? ('healthy' as const)
-          : ('critical' as const),
+          ? ('outline-success' as const)
+          : ('outline-destructive' as const),
+      pulseDotClass: hasFailed
+        ? 'bg-amber-500'
+        : healthy
+          ? 'bg-emerald-500'
+          : 'bg-destructive',
       metrics: [
         {
           label: 'Queues',
@@ -523,7 +519,8 @@ function getIndicatorDetails(
       accent:
         'text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20',
       badgeText: uptime.startsWith('0d') ? uptime : `Uptime ${uptime}`,
-      badgeVariant: 'healthy' as const,
+      badgeVariant: 'outline-success' as const,
+      pulseDotClass: 'bg-emerald-500',
       metrics: [
         ...(nodeVer ? [{ label: 'Node', value: nodeVer }] : []),
         ...(platform ? [{ label: 'OS', value: platform }] : []),
@@ -539,7 +536,10 @@ function getIndicatorDetails(
       ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
       : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
     badgeText: indicator.status,
-    badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+    badgeVariant: healthy
+      ? ('outline-success' as const)
+      : ('outline-warning' as const),
+    pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
     metrics: Object.entries(detail)
       .filter(([k]) => k !== 'status')
       .slice(0, 2)
@@ -555,56 +555,53 @@ function HealthIndicatorCard({
   const { t } = useTranslation()
   const info = getIndicatorDetails(indicator, t)
   const Icon = info.icon
-  const badgeStyle = getBadgeStyles(info.badgeVariant)
 
   return (
-    <div className='bg-card hover:border-foreground/20 flex flex-col justify-between rounded-xl border p-4 shadow-2xs transition-all duration-200 hover:shadow-sm'>
-      <div className='flex items-start justify-between gap-3'>
-        <div className='flex min-w-0 items-center gap-3'>
+    <div className='bg-card hover:border-foreground/20 flex flex-col justify-between rounded-xl border p-3.5 shadow-2xs transition-all duration-200 hover:shadow-sm sm:p-4'>
+      <div className='flex items-start justify-between gap-2.5'>
+        <div className='flex min-w-0 items-center gap-2.5 sm:gap-3'>
           <div
             className={cn(
-              'flex size-10 shrink-0 items-center justify-center rounded-lg border',
+              'flex size-9 shrink-0 items-center justify-center rounded-lg border sm:size-10',
               info.accent
             )}
           >
-            <Icon className='size-5' />
+            <Icon className='size-4 sm:size-5' />
           </div>
           <div className='min-w-0 flex-1'>
-            <p className='text-foreground truncate text-sm font-semibold'>
+            <p className='text-foreground truncate text-xs font-semibold sm:text-sm'>
               {info.title}
             </p>
-            <p className='text-muted-foreground mt-0.5 truncate text-xs'>
+            <p className='text-muted-foreground mt-0.5 truncate text-[11px] sm:text-xs'>
               {info.subtitle}
             </p>
           </div>
         </div>
-        <span
-          className={cn(
-            'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
-            badgeStyle.badge
-          )}
+        <Badge
+          variant={info.badgeVariant}
+          className='shrink-0 gap-1.5 px-2 py-0.5 text-[11px] font-medium sm:text-xs'
         >
           <span
             className={cn(
               'size-1.5 animate-pulse rounded-full',
-              badgeStyle.dot
+              info.pulseDotClass
             )}
           />
           {info.badgeText}
-        </span>
+        </Badge>
       </div>
 
       {info.metrics.length > 0 && (
-        <div className='border-border/60 mt-3.5 flex flex-wrap items-center gap-2 border-t pt-3 text-xs'>
+        <div className='border-border/60 mt-3.5 grid grid-cols-2 gap-2 border-t pt-3 text-xs'>
           {info.metrics.map((m, idx) => (
             <div
               key={idx}
-              className='bg-muted/60 dark:bg-muted/40 flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs'
+              className='bg-muted/50 dark:bg-muted/30 flex min-w-0 flex-col justify-center rounded-lg px-2.5 py-1.5'
             >
-              <span className='text-muted-foreground text-[11px] font-normal'>
-                {m.label}:
+              <span className='text-muted-foreground truncate text-[10px] font-normal sm:text-[11px]'>
+                {m.label}
               </span>
-              <span className='text-foreground font-semibold tabular-nums'>
+              <span className='text-foreground mt-0.5 truncate text-xs font-semibold tabular-nums sm:text-sm'>
                 {m.value}
               </span>
             </div>
@@ -640,12 +637,7 @@ function QueueMonitoringSection({
         </div>
         <div className='flex flex-wrap items-center gap-2'>
           <Badge
-            variant='outline'
-            className={
-              hasFailedJobs
-                ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-            }
+            variant={hasFailedJobs ? 'outline-warning' : 'outline-success'}
           >
             {hasFailedJobs
               ? t('dashboard.queues.hasFailed')
@@ -686,7 +678,7 @@ function QueueMonitoringSection({
               : t('dashboard.queues.noQueues')}
           </div>
         ) : (
-          <div className='grid gap-4 md:grid-cols-2'>
+          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             {queues.map((queue) => {
               const counts = queue.counts || {
                 waiting: 0,
@@ -719,12 +711,8 @@ function QueueMonitoringSection({
                       </span>
                     </div>
                     <Badge
-                      variant='outline'
-                      className={
-                        queueHasError
-                          ? 'border-amber-500/30 bg-amber-500/10 text-xs text-amber-700 dark:text-amber-400'
-                          : 'text-xs'
-                      }
+                      variant={queueHasError ? 'outline-warning' : 'outline'}
+                      className='text-xs'
                     >
                       {getQueueStatusText()}
                     </Badge>
@@ -785,54 +773,49 @@ function QueueMonitoringSection({
 
 function getHealthOverall(
   health: HealthCheckResponse | undefined,
-  isError: boolean
+  isError: boolean,
+  t: TFunction
 ) {
   if (isError) {
     return {
-      label: 'Unreachable',
+      label: t('dashboard.indicators.unreachable', 'Unreachable'),
       tone: 'critical' as const,
-      variant: 'outline' as const,
-      className: 'border-destructive/30 bg-destructive/10 text-destructive',
+      variant: 'outline-destructive' as const,
       icon: XCircleIcon,
     }
   }
 
   if (!health) {
     return {
-      label: 'Checking',
+      label: t('dashboard.indicators.checking', 'Checking'),
       tone: 'neutral' as const,
       variant: 'outline' as const,
-      className: '',
       icon: RefreshCwIcon,
     }
   }
 
   if (health.status === 'ok') {
     return {
-      label: 'Operational',
+      label: t('dashboard.indicators.operational', 'Operational'),
       tone: 'healthy' as const,
-      variant: 'secondary' as const,
-      className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+      variant: 'outline-success' as const,
       icon: CheckCircle2Icon,
     }
   }
 
   if (health.status === 'shutting_down') {
     return {
-      label: 'Shutting down',
+      label: t('dashboard.indicators.shuttingDown', 'Shutting down'),
       tone: 'warning' as const,
-      variant: 'outline' as const,
-      className: 'border-amber-500/40 text-amber-700 dark:text-amber-400',
+      variant: 'outline-warning' as const,
       icon: AlertTriangleIcon,
     }
   }
 
   return {
-    label: 'Degraded',
+    label: t('dashboard.indicators.degraded', 'Degraded'),
     tone: 'warning' as const,
-    variant: 'outline' as const,
-    className:
-      'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    variant: 'outline-warning' as const,
     icon: AlertTriangleIcon,
   }
 }

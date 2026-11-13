@@ -143,7 +143,7 @@ export const columns: ColumnDef<WhiteLabelSchema>[] = [
       const isActive = row.original.isActive
 
       return isActive ? (
-        <Badge className='gap-1 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600'>
+        <Badge variant='solid-success' className='gap-1'>
           <SparklesIcon className='size-3' />
           Active
         </Badge>

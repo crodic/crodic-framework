@@ -203,16 +203,16 @@ export function ProfileSidebar({
             </span>
             {isVerified ? (
               <Badge
-                variant="outline"
-                className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+                variant="outline-success"
+                className="gap-1 text-[11px] font-medium"
               >
                 <CheckCircle2 className="size-3" />
                 <span>Verified</span>
               </Badge>
             ) : (
               <Badge
-                variant="outline"
-                className="gap-1 border-amber-500/30 bg-amber-500/10 text-[11px] font-medium text-amber-600 dark:text-amber-400"
+                variant="outline-warning"
+                className="gap-1 text-[11px] font-medium"
               >
                 <ShieldAlert className="size-3" />
                 <span>Unverified</span>

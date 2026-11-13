@@ -232,11 +232,10 @@ export function PageAdminShow() {
                   <TooltipTrigger asChild>
                     {canRestore ? (
                       <Button
-                        variant='outline'
+                        variant='outline-success'
                         type='button'
                         onClick={() => setIsShowRestoreDialog(true)}
                         disabled={restoreAdminMutation.isPending}
-                        className='border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-400 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-300'
                       >
                         {restoreAdminMutation.isPending ? (
                           <Loader2
@@ -275,11 +274,10 @@ export function PageAdminShow() {
                 <>
                   {!data?.verifiedAt && (
                     <Button
-                      variant='outline'
+                      variant='outline-warning'
                       type='button'
                       onClick={() => resendMutation.mutate()}
                       disabled={resendMutation.isPending || cooldown > 0}
-                      className='border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
                     >
                       {renderResendButtonContent()}
                     </Button>
@@ -371,10 +369,7 @@ export function PageAdminShow() {
                         {t('common.status.deleted', 'Deleted')}
                       </Badge>
                     ) : (
-                      <Badge
-                        variant='outline'
-                        className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
-                      >
+                      <Badge variant='outline-success' className='text-xs'>
                         {t('common.status.active', 'Active')}
                       </Badge>
                     )}

@@ -221,8 +221,8 @@ export function PageTagShow() {
 
                   {tag.isSystem && (
                     <Badge
-                      variant='outline'
-                      className='gap-1 border-amber-500/30 bg-amber-500/10 text-[11px] font-semibold text-amber-600 dark:text-amber-400'
+                      variant='outline-warning'
+                      className='gap-1 text-[11px] font-semibold'
                     >
                       <LockIcon className='size-3' aria-hidden='true' />
                       {t('tags.flags.system', 'System Protected')}

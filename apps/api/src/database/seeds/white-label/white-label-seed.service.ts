@@ -187,7 +187,7 @@ export class WhiteLabelSeedService {
     vm.runInContext(`${script}\nthis.themeColors = themeColors;`, sandbox);
 
     const isClient = target === EWhiteLabelTarget.CLIENT;
-    const brand = customBrand?.trim() || 'Visel Art';
+    const brand = customBrand?.trim() || 'Kosume';
     const year = new Date().getFullYear();
 
     return Object.entries(sandbox.themeColors ?? {}).map(([key, value]) => {

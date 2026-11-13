@@ -337,8 +337,8 @@ function SessionItem({
             </span>
             {session.isCurrent ? (
               <Badge
-                variant="outline"
-                className="border-emerald-500/30 bg-emerald-500/10 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+                variant="outline-success"
+                className="text-[11px] font-medium"
               >
                 {t("currentDevice")} • {t("activeNow")}
               </Badge>

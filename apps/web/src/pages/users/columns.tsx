@@ -126,10 +126,7 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
             {i18n.t('common.status.deleted', 'Deleted')}
           </Badge>
         ) : (
-          <Badge
-            variant='outline'
-            className='border-emerald-300 text-xs text-emerald-600 dark:border-emerald-800 dark:text-emerald-400'
-          >
+          <Badge variant='outline-success' className='text-xs'>
             {i18n.t('common.status.active', 'Active')}
           </Badge>
         )

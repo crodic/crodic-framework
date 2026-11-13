@@ -106,11 +106,11 @@ export function UnverifiedEmailBanner({ email }: UnverifiedEmailBannerProps) {
       <div className="w-full shrink-0 sm:w-auto">
         <Button
           type="button"
-          variant="outline"
+          variant="outline-warning"
           size="sm"
           disabled={isPending || isCooldownActive}
           onClick={handleResend}
-          className="bg-background/80 text-foreground w-full gap-2 rounded-xl border-amber-500/40 text-xs font-semibold shadow-2xs transition-all hover:bg-amber-500/10 sm:w-auto"
+          className="w-full gap-2 rounded-xl text-xs font-semibold sm:w-auto"
         >
           {isPending ? (
             <>

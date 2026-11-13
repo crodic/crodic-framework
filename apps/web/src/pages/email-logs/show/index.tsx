@@ -37,25 +37,13 @@ export default function PageEmailLogShow() {
     switch (status) {
       case 'DELIVERED':
       case 'SENT':
-        return (
-          <Badge className='bg-green-500 text-white hover:bg-green-600'>
-            {status}
-          </Badge>
-        )
+        return <Badge variant='solid-success'>{status}</Badge>
       case 'FAILED':
       case 'BOUNCED':
-        return (
-          <Badge className='bg-destructive hover:bg-destructive/90 text-white'>
-            {status}
-          </Badge>
-        )
+        return <Badge variant='destructive'>{status}</Badge>
       case 'QUEUED':
       case 'PENDING':
-        return (
-          <Badge className='bg-yellow-500 text-white hover:bg-yellow-600'>
-            {status}
-          </Badge>
-        )
+        return <Badge variant='solid-warning'>{status}</Badge>
       default:
         return <Badge variant='secondary'>{status}</Badge>
     }

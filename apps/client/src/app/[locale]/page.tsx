@@ -90,8 +90,7 @@ export default async function RootPage({ params }: RootPageProps) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
 
-  const siteName =
-    whiteLabel?.brandName || whiteLabel?.siteTitle || "Visel Art";
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
 
   const description = whiteLabel?.metaDescription || t("metaDescription");
 

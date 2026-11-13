@@ -141,16 +141,16 @@ export function ProfileHeader({ profile, isLoading }: ProfileHeaderProps) {
 
                 {profile.verifiedAt ? (
                   <Badge
-                    variant="outline"
-                    className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                    variant="outline-success"
+                    className="gap-1 text-xs font-medium"
                   >
                     <CheckCircle2 className="size-3" />
                     <span>{t("verified")}</span>
                   </Badge>
                 ) : (
                   <Badge
-                    variant="outline"
-                    className="gap-1 border-amber-500/30 bg-amber-500/10 text-xs font-medium text-amber-600 dark:text-amber-400"
+                    variant="outline-warning"
+                    className="gap-1 text-xs font-medium"
                   >
                     <ShieldAlert className="size-3" />
                     <span>{t("unverified")}</span>

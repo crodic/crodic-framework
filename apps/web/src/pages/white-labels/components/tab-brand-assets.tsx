@@ -185,7 +185,7 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                   <Input
                     placeholder={t(
                       'whiteLabels.form.brandNamePlaceholder',
-                      'e.g., Visel Art'
+                      'e.g., Kosume'
                     )}
                     {...field}
                     value={field.value ?? ''}
@@ -208,7 +208,7 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                   <Input
                     placeholder={t(
                       'whiteLabels.form.siteTitlePlaceholder',
-                      'e.g., Visel Art Admin Portal'
+                      'e.g., Kosume Admin Portal'
                     )}
                     {...field}
                     value={field.value ?? ''}
@@ -254,7 +254,7 @@ export function TabBrandAssets({ form, initialData }: TabBrandAssetsProps) {
                   <Input
                     placeholder={t(
                       'whiteLabels.form.copyrightPlaceholder',
-                      'e.g., © 2026 Visel Art. All rights reserved.'
+                      'e.g., © 2026 Kosume. All rights reserved.'
                     )}
                     {...field}
                     value={field.value ?? ''}

@@ -112,8 +112,8 @@ export function SocialAccountsCard() {
                 </span>
                 {hasGoogleLinked ? (
                   <Badge
-                    variant="outline"
-                    className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                    variant="outline-success"
+                    className="gap-1 text-xs font-medium"
                   >
                     <CheckCircle2 className="size-3" />
                     {t("linked")}
