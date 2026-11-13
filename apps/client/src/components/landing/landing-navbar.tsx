@@ -1,0 +1,158 @@
+"use client";
+
+import React, { useState } from "react";
+import { Link } from "@/i18n/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { LANDING_NAV_LINKS } from "./landing-data";
+import { Menu, Sparkles } from "lucide-react";
+import { useScroll } from "@/hooks/use-scroll";
+import { cn } from "@/lib/utils";
+
+export function LandingNavbar() {
+  const scrolled = useScroll(10);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b transition-all duration-200",
+        scrolled
+          ? "border-border/60 bg-background/85 shadow-xs backdrop-blur-md"
+          : "bg-background/40 border-transparent backdrop-blur-xs"
+      )}
+    >
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Brand Logo */}
+        <Link
+          href="/landing"
+          className="group focus-visible:ring-ring flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
+          aria-label="CosSpace Trang chủ"
+        >
+          <span className="text-2xl font-black tracking-tight transition-transform duration-200 group-hover:scale-[1.02]">
+            <span className="text-primary">Cos</span>
+            <span className="text-foreground">Space</span>
+          </span>
+          <span className="bg-primary size-1.5 animate-pulse rounded-full" />
+        </Link>
+
+        {/* Desktop Navigation Links */}
+        <nav
+          className="hidden items-center gap-1 md:flex lg:gap-2"
+          aria-label="Điều hướng chính"
+        >
+          {LANDING_NAV_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Action Buttons */}
+        <div className="hidden items-center gap-3 sm:flex">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="border-border/70 bg-card/40 hover:bg-muted/60 text-foreground h-9 cursor-pointer rounded-full border px-4 font-medium transition-colors"
+          >
+            <Link href="/auth/sign-in">Đăng nhập</Link>
+          </Button>
+
+          <Button
+            asChild
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-full px-5 font-medium shadow-sm transition-all hover:scale-[1.02]"
+          >
+            <Link href="/auth/sign-up">Tham gia ngay</Link>
+          </Button>
+        </div>
+
+        {/* Mobile Navigation Trigger */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <Button
+            asChild
+            size="sm"
+            className="bg-primary text-primary-foreground h-8 rounded-full px-3 text-xs"
+          >
+            <Link href="/auth/sign-up">Tham gia</Link>
+          </Button>
+
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-border/80 bg-card/60 size-9 rounded-lg"
+                aria-label="Mở menu"
+              >
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="bg-card w-[300px] p-6 sm:w-[360px]"
+            >
+              <SheetHeader className="border-border/40 border-b pb-4 text-left">
+                <SheetTitle className="flex items-center gap-1.5 text-xl font-bold">
+                  <span className="text-primary">Cos</span>
+                  <span className="text-foreground">Space</span>
+                </SheetTitle>
+              </SheetHeader>
+
+              <div className="flex flex-col gap-2 py-6">
+                {LANDING_NAV_LINKS.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-foreground hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium transition-colors"
+                  >
+                    <span>{link.label}</span>
+                    <Sparkles className="text-primary/60 size-4" />
+                  </a>
+                ))}
+              </div>
+
+              <div className="border-border/40 flex flex-col gap-3 border-t pt-4">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-border bg-background w-full rounded-full"
+                >
+                  <Link
+                    href="/auth/sign-in"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Đăng nhập
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 w-full rounded-full shadow-md"
+                >
+                  <Link
+                    href="/auth/sign-up"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Tham gia ngay
+                  </Link>
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
