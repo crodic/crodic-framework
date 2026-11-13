@@ -95,6 +95,17 @@ describe('HealthController', () => {
             }),
           },
         },
+        {
+          provide: getQueueToken(QueueName.TAG),
+          useValue: {
+            getJobCounts: jest.fn().mockResolvedValue({
+              waiting: 0,
+              active: 0,
+              completed: 0,
+              failed: 0,
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -136,9 +147,10 @@ describe('HealthController', () => {
     it('should return queue statistics and bullBoardUrl', async () => {
       const stats = await controller.getQueueStats();
       expect(stats.bullBoardUrl).toContain('/queues');
-      expect(stats.queues).toHaveLength(2);
+      expect(stats.queues).toHaveLength(3);
       expect(stats.queues[0].name).toBe(QueueName.EMAIL);
       expect(stats.queues[1].name).toBe(QueueName.FILE);
+      expect(stats.queues[2].name).toBe(QueueName.TAG);
     });
   });
 });

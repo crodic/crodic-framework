@@ -1,7 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
-import { QueueName, QueuePrefix } from '../common/constants/job.constant';
+import { QueueName } from '../common/constants/job.constant';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -10,11 +10,12 @@ import { HealthController } from './health.controller';
     BullModule.registerQueue(
       {
         name: QueueName.EMAIL,
-        prefix: QueuePrefix.AUTH,
       },
       {
         name: QueueName.FILE,
-        prefix: QueuePrefix.FILE,
+      },
+      {
+        name: QueueName.TAG,
       },
     ),
   ],

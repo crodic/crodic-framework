@@ -29,6 +29,7 @@ export class HealthController {
     private readonly redisService: RedisService,
     @InjectQueue(QueueName.EMAIL) private readonly emailQueue: Queue,
     @InjectQueue(QueueName.FILE) private readonly fileQueue: Queue,
+    @InjectQueue(QueueName.TAG) private readonly tagQueue: Queue,
   ) {}
 
   @Public()
@@ -63,7 +64,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Queue statistics and Bull-Board url' })
   @Get('queues')
   async getQueueStats() {
-    const [emailCounts, fileCounts] = await Promise.all([
+    const [emailCounts, fileCounts, tagCounts] = await Promise.all([
       this.emailQueue.getJobCounts(
         'waiting',
         'active',
@@ -73,6 +74,14 @@ export class HealthController {
         'paused',
       ),
       this.fileQueue.getJobCounts(
+        'waiting',
+        'active',
+        'completed',
+        'failed',
+        'delayed',
+        'paused',
+      ),
+      this.tagQueue.getJobCounts(
         'waiting',
         'active',
         'completed',
@@ -101,6 +110,10 @@ export class HealthController {
         {
           name: QueueName.FILE,
           counts: fileCounts,
+        },
+        {
+          name: QueueName.TAG,
+          counts: tagCounts,
         },
       ],
       updatedAt: new Date().toISOString(),
@@ -154,7 +167,7 @@ export class HealthController {
 
   private async checkQueues(): Promise<HealthIndicatorResult> {
     try {
-      const [emailCounts, fileCounts] = await Promise.all([
+      const [emailCounts, fileCounts, tagCounts] = await Promise.all([
         this.emailQueue.getJobCounts(
           'waiting',
           'active',
@@ -162,10 +175,13 @@ export class HealthController {
           'completed',
         ),
         this.fileQueue.getJobCounts('waiting', 'active', 'failed', 'completed'),
+        this.tagQueue.getJobCounts('waiting', 'active', 'failed', 'completed'),
       ]);
 
       const hasFailed =
-        (emailCounts.failed ?? 0) > 0 || (fileCounts.failed ?? 0) > 0;
+        (emailCounts.failed ?? 0) > 0 ||
+        (fileCounts.failed ?? 0) > 0 ||
+        (tagCounts.failed ?? 0) > 0;
 
       return {
         queues: {
@@ -173,6 +189,7 @@ export class HealthController {
           hasFailedJobs: hasFailed,
           emailJobs: `wait: ${emailCounts.waiting} · act: ${emailCounts.active} · fail: ${emailCounts.failed}`,
           fileJobs: `wait: ${fileCounts.waiting} · act: ${fileCounts.active} · fail: ${fileCounts.failed}`,
+          tagJobs: `wait: ${tagCounts.waiting} · act: ${tagCounts.active} · fail: ${tagCounts.failed}`,
         },
       };
     } catch (error) {
