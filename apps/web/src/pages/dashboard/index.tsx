@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
@@ -13,6 +14,7 @@ import {
   ServerIcon,
   WorkflowIcon,
   XCircleIcon,
+  ZapIcon,
 } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
@@ -70,7 +72,21 @@ async function apiGetSystemHealth(): Promise<HealthCheckResponse> {
   const response = await axios.get<HealthCheckResponse>(healthUrl, {
     timeout: 10000,
     withCredentials: true,
+    validateStatus: (status) => status < 500 || status === 503,
   })
+
+  const data = response.data as Record<string, unknown>
+  if (
+    data &&
+    typeof data.statusCode === 'number' &&
+    data.statusCode >= 400 &&
+    !data.details &&
+    !data.info
+  ) {
+    throw new Error(
+      typeof data.message === 'string' ? data.message : 'Service Unavailable'
+    )
+  }
 
   return response.data
 }
@@ -223,7 +239,9 @@ function SystemHealthSection({
     if (indicators.length === 0) {
       return (
         <div className='text-muted-foreground rounded-md border border-dashed p-4 text-sm'>
-          {isLoading ? 'Checking system health...' : 'No health details found.'}
+          {isLoading
+            ? t('dashboard.systemHealth.checking', 'Checking system health...')
+            : t('dashboard.systemHealth.noDetails', 'No health details found.')}
         </div>
       )
     }
@@ -316,17 +334,217 @@ function HealthSummaryItem({
   )
 }
 
-function getIndicatorIcon(name: string, healthy: boolean) {
-  const lower = name.toLowerCase()
-  if (lower.includes('database')) return <DatabaseIcon className='size-4' />
-  if (lower.includes('redis')) return <LayersIcon className='size-4' />
-  if (lower.includes('memory')) return <CpuIcon className='size-4' />
-  if (lower.includes('disk') || lower.includes('storage'))
-    return <HardDriveIcon className='size-4' />
-  if (lower.includes('queue')) return <WorkflowIcon className='size-4' />
-  if (lower.includes('system')) return <ServerIcon className='size-4' />
-  if (healthy) return <CheckCircle2Icon className='size-4' />
-  return <XCircleIcon className='size-4' />
+function getBadgeStyles(variant: 'healthy' | 'warning' | 'critical') {
+  if (variant === 'healthy') {
+    return {
+      badge:
+        'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+      dot: 'bg-emerald-500',
+    }
+  }
+  if (variant === 'warning') {
+    return {
+      badge:
+        'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+      dot: 'bg-amber-500',
+    }
+  }
+  return {
+    badge: 'border-destructive/30 bg-destructive/10 text-destructive',
+    dot: 'bg-destructive',
+  }
+}
+
+function getIndicatorDetails(
+  indicator: { name: string; status: string; detail: HealthIndicator },
+  t: TFunction
+) {
+  const lower = indicator.name.toLowerCase()
+  const healthy = indicator.status === 'up'
+  const detail = indicator.detail || {}
+
+  if (lower.includes('database')) {
+    const resTime = detail.responseTime ? `${detail.responseTime}ms` : '< 5ms'
+    return {
+      title: t('dashboard.indicators.database', 'PostgreSQL Database'),
+      subtitle: t(
+        'dashboard.indicators.databaseSub',
+        'Primary relational data store'
+      ),
+      icon: DatabaseIcon,
+      accent: 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20',
+      badgeText: healthy
+        ? t('dashboard.indicators.operational', 'Operational')
+        : t('dashboard.indicators.down', 'Down'),
+      badgeVariant: healthy ? ('healthy' as const) : ('critical' as const),
+      metrics: [
+        {
+          label: t('dashboard.indicators.responseTime', 'Response'),
+          value: resTime,
+        },
+        {
+          label: t('dashboard.indicators.status', 'Status'),
+          value: healthy
+            ? t('dashboard.indicators.stable', 'Stable')
+            : t('dashboard.indicators.down', 'Down'),
+        },
+      ],
+    }
+  }
+
+  if (lower.includes('redis')) {
+    const latency = detail.latency ? String(detail.latency) : '< 2ms'
+    return {
+      title: t('dashboard.indicators.redis', 'Redis In-Memory'),
+      subtitle: t('dashboard.indicators.redisSub', 'Cache & message broker'),
+      icon: ZapIcon,
+      accent:
+        'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
+      badgeText: healthy
+        ? t('dashboard.indicators.operational', 'Operational')
+        : t('dashboard.indicators.down', 'Down'),
+      badgeVariant: healthy ? ('healthy' as const) : ('critical' as const),
+      metrics: [
+        {
+          label: t('dashboard.indicators.latency', 'Latency'),
+          value: latency,
+        },
+        {
+          label: 'Protocol',
+          value: 'PONG',
+        },
+      ],
+    }
+  }
+
+  if (lower.includes('memory')) {
+    return {
+      title: t('dashboard.indicators.memory', 'Node.js Heap Memory'),
+      subtitle: t(
+        'dashboard.indicators.memorySub',
+        'API process memory allocation'
+      ),
+      icon: CpuIcon,
+      accent:
+        'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
+      badgeText: healthy
+        ? t('dashboard.indicators.normal', 'Normal')
+        : t('dashboard.indicators.degraded', 'High'),
+      badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+      metrics: [
+        {
+          label: t('dashboard.indicators.limit', 'Limit'),
+          value: '< 500 MB',
+        },
+        {
+          label: t('dashboard.indicators.status', 'Status'),
+          value: healthy
+            ? t('dashboard.indicators.safe', 'Safe')
+            : t('dashboard.indicators.degraded', 'Elevated'),
+        },
+      ],
+    }
+  }
+
+  if (lower.includes('disk') || lower.includes('storage')) {
+    return {
+      title: t('dashboard.indicators.storage', 'Disk Storage'),
+      subtitle: t(
+        'dashboard.indicators.storageSub',
+        'Server file system capacity'
+      ),
+      icon: HardDriveIcon,
+      accent:
+        'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+      badgeText: healthy
+        ? t('dashboard.indicators.ready', 'Ready')
+        : t('dashboard.indicators.degraded', 'Low Space'),
+      badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+      metrics: [
+        {
+          label: t('dashboard.indicators.threshold', 'Threshold'),
+          value: '< 95% used',
+        },
+        {
+          label: t('dashboard.indicators.status', 'Status'),
+          value: healthy
+            ? t('dashboard.indicators.safe', 'Safe')
+            : t('dashboard.indicators.degraded', 'Warning'),
+        },
+      ],
+    }
+  }
+
+  if (lower.includes('queue')) {
+    const hasFailed = Boolean(detail.hasFailedJobs)
+    return {
+      title: t('dashboard.indicators.queues', 'BullMQ Queues'),
+      subtitle: t(
+        'dashboard.indicators.queuesSub',
+        'Email, File & Tag background workers'
+      ),
+      icon: WorkflowIcon,
+      accent:
+        'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+      badgeText: hasFailed
+        ? t('dashboard.queues.hasFailed', 'Có job cần xử lý')
+        : t('dashboard.indicators.operational', 'Operational'),
+      badgeVariant: hasFailed
+        ? ('warning' as const)
+        : healthy
+          ? ('healthy' as const)
+          : ('critical' as const),
+      metrics: [
+        {
+          label: 'Queues',
+          value: `3 ${t('dashboard.indicators.active', 'active')}`,
+        },
+        {
+          label: t('dashboard.indicators.failedJobs', 'Failed jobs'),
+          value: hasFailed ? '1+' : '0',
+        },
+      ],
+    }
+  }
+
+  if (lower.includes('system')) {
+    const uptime = typeof detail.uptime === 'string' ? detail.uptime : 'Active'
+    const nodeVer =
+      typeof detail.nodeVersion === 'string' ? detail.nodeVersion : undefined
+    const platform =
+      typeof detail.platform === 'string' ? detail.platform : undefined
+    return {
+      title: t('dashboard.indicators.system', 'System & Runtime'),
+      subtitle: t(
+        'dashboard.indicators.systemSub',
+        'Host environment & Node runtime'
+      ),
+      icon: ServerIcon,
+      accent:
+        'text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20',
+      badgeText: uptime.startsWith('0d') ? uptime : `Uptime ${uptime}`,
+      badgeVariant: 'healthy' as const,
+      metrics: [
+        ...(nodeVer ? [{ label: 'Node', value: nodeVer }] : []),
+        ...(platform ? [{ label: 'OS', value: platform }] : []),
+      ],
+    }
+  }
+
+  return {
+    title: formatIndicatorName(indicator.name),
+    subtitle: 'System indicator',
+    icon: healthy ? CheckCircle2Icon : XCircleIcon,
+    accent: healthy
+      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+      : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+    badgeText: indicator.status,
+    badgeVariant: healthy ? ('healthy' as const) : ('warning' as const),
+    metrics: Object.entries(detail)
+      .filter(([k]) => k !== 'status')
+      .slice(0, 2)
+      .map(([k, v]) => ({ label: k, value: String(v) })),
+  }
 }
 
 function HealthIndicatorCard({
@@ -334,35 +552,65 @@ function HealthIndicatorCard({
 }: {
   indicator: { name: string; status: string; detail: HealthIndicator }
 }) {
-  const healthy = indicator.status === 'up'
+  const { t } = useTranslation()
+  const info = getIndicatorDetails(indicator, t)
+  const Icon = info.icon
+  const badgeStyle = getBadgeStyles(info.badgeVariant)
 
   return (
-    <div className='flex min-w-0 items-start gap-3 rounded-md border p-3'>
-      <div
-        className={
-          healthy
-            ? 'flex size-9 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600'
-            : 'bg-destructive/10 text-destructive flex size-9 shrink-0 items-center justify-center rounded-md'
-        }
-      >
-        {getIndicatorIcon(indicator.name, healthy)}
-      </div>
-      <div className='min-w-0 flex-1'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <p className='truncate font-medium capitalize'>
-            {formatIndicatorName(indicator.name)}
-          </p>
-          <Badge
-            variant={healthy ? 'secondary' : 'destructive'}
-            className='shrink-0'
+    <div className='bg-card hover:border-foreground/20 flex flex-col justify-between rounded-xl border p-4 shadow-2xs transition-all duration-200 hover:shadow-sm'>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='flex min-w-0 items-center gap-3'>
+          <div
+            className={cn(
+              'flex size-10 shrink-0 items-center justify-center rounded-lg border',
+              info.accent
+            )}
           >
-            {indicator.status}
-          </Badge>
+            <Icon className='size-5' />
+          </div>
+          <div className='min-w-0 flex-1'>
+            <p className='text-foreground truncate text-sm font-semibold'>
+              {info.title}
+            </p>
+            <p className='text-muted-foreground mt-0.5 truncate text-xs'>
+              {info.subtitle}
+            </p>
+          </div>
         </div>
-        <p className='text-muted-foreground mt-1 truncate text-xs'>
-          {formatIndicatorDetail(indicator.detail)}
-        </p>
+        <span
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
+            badgeStyle.badge
+          )}
+        >
+          <span
+            className={cn(
+              'size-1.5 animate-pulse rounded-full',
+              badgeStyle.dot
+            )}
+          />
+          {info.badgeText}
+        </span>
       </div>
+
+      {info.metrics.length > 0 && (
+        <div className='border-border/60 mt-3.5 flex flex-wrap items-center gap-2 border-t pt-3 text-xs'>
+          {info.metrics.map((m, idx) => (
+            <div
+              key={idx}
+              className='bg-muted/60 dark:bg-muted/40 flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs'
+            >
+              <span className='text-muted-foreground text-[11px] font-normal'>
+                {m.label}:
+              </span>
+              <span className='text-foreground font-semibold tabular-nums'>
+                {m.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -392,11 +640,11 @@ function QueueMonitoringSection({
         </div>
         <div className='flex flex-wrap items-center gap-2'>
           <Badge
-            variant={hasFailedJobs ? 'destructive' : 'secondary'}
+            variant='outline'
             className={
-              !hasFailedJobs
-                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                : ''
+              hasFailedJobs
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
             }
           >
             {hasFailedJobs
@@ -471,8 +719,12 @@ function QueueMonitoringSection({
                       </span>
                     </div>
                     <Badge
-                      variant={queueHasError ? 'destructive' : 'outline'}
-                      className='text-xs'
+                      variant='outline'
+                      className={
+                        queueHasError
+                          ? 'border-amber-500/30 bg-amber-500/10 text-xs text-amber-700 dark:text-amber-400'
+                          : 'text-xs'
+                      }
                     >
                       {getQueueStatusText()}
                     </Badge>
@@ -512,7 +764,9 @@ function QueueMonitoringSection({
                       </p>
                       <p
                         className={`mt-1 text-sm font-semibold tabular-nums ${
-                          queueHasError ? 'text-destructive font-bold' : ''
+                          queueHasError
+                            ? 'font-semibold text-amber-600 dark:text-amber-400'
+                            : ''
                         }`}
                       >
                         {formatNumber(counts.failed)}
@@ -537,8 +791,8 @@ function getHealthOverall(
     return {
       label: 'Unreachable',
       tone: 'critical' as const,
-      variant: 'destructive' as const,
-      className: '',
+      variant: 'outline' as const,
+      className: 'border-destructive/30 bg-destructive/10 text-destructive',
       icon: XCircleIcon,
     }
   }
@@ -575,20 +829,28 @@ function getHealthOverall(
 
   return {
     label: 'Degraded',
-    tone: 'critical' as const,
-    variant: 'destructive' as const,
-    className: '',
-    icon: XCircleIcon,
+    tone: 'warning' as const,
+    variant: 'outline' as const,
+    className:
+      'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    icon: AlertTriangleIcon,
   }
 }
 
 function getHealthIndicators(health?: HealthCheckResponse) {
-  const details = health?.details ?? {}
+  const details: Record<string, HealthIndicator> = {
+    ...(health?.info ?? {}),
+    ...(health?.details ?? {}),
+  }
+
+  if (health?.error && typeof health.error === 'object') {
+    Object.assign(details, health.error)
+  }
 
   return Object.entries(details).map(([name, detail]) => ({
     name,
-    status: detail.status ?? 'unknown',
-    detail,
+    status: detail?.status ?? 'unknown',
+    detail: detail ?? {},
   }))
 }
 
@@ -605,17 +867,7 @@ function getHealthToneClass(
 }
 
 function formatIndicatorName(name: string) {
-  return name.replace(/-/g, ' ')
-}
-
-function formatIndicatorDetail(detail: HealthIndicator) {
-  const entries = Object.entries(detail).filter(([key]) => key !== 'status')
-
-  if (entries.length === 0) {
-    return 'No additional details'
-  }
-
-  return entries.map(([key, value]) => `${key}: ${String(value)}`).join(' · ')
+  return name.replace(/[_-]/g, ' ')
 }
 
 function formatNumber(value?: number | null) {

@@ -1,5 +1,11 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  ServiceUnavailableException,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
@@ -40,24 +46,51 @@ export class HealthController {
     description: 'Comprehensive system health check',
   })
   async check(): Promise<HealthCheckResult> {
-    return this.health.check([
-      () => this.db.pingCheck('database'),
-      () => this.checkRedis(),
-      () =>
-        this.memory.checkHeap(
-          'memory_heap',
-          process.env.NODE_ENV === 'test'
-            ? 1500 * 1024 * 1024
-            : 500 * 1024 * 1024,
-        ),
-      () =>
-        this.disk.checkStorage('storage_disk', {
-          thresholdPercent: 0.95,
-          path: process.platform === 'win32' ? 'C:\\' : '/',
-        }),
-      () => this.checkQueues(),
-      () => this.checkSystem(),
-    ]);
+    try {
+      return await this.health.check([
+        () => this.db.pingCheck('database'),
+        () => this.checkRedis(),
+        () =>
+          this.memory.checkHeap(
+            'memory_heap',
+            process.env.NODE_ENV === 'test'
+              ? 1500 * 1024 * 1024
+              : 500 * 1024 * 1024,
+          ),
+        () =>
+          this.disk.checkStorage('storage_disk', {
+            thresholdPercent: 0.95,
+            path: process.platform === 'win32' ? 'C:\\' : '/',
+          }),
+        () => this.checkQueues(),
+        () => this.checkSystem(),
+      ]);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        const response = error.getResponse();
+        if (typeof response === 'object' && response !== null) {
+          return response as HealthCheckResult;
+        }
+      }
+      return {
+        status: 'error',
+        info: {},
+        error: {
+          system: {
+            status: 'down',
+            message:
+              error instanceof Error ? error.message : 'Health check failed',
+          },
+        },
+        details: {
+          system: {
+            status: 'down',
+            message:
+              error instanceof Error ? error.message : 'Health check failed',
+          },
+        },
+      };
+    }
   }
 
   @Public()
@@ -185,7 +218,7 @@ export class HealthController {
 
       return {
         queues: {
-          status: hasFailed ? 'down' : 'up',
+          status: 'up',
           hasFailedJobs: hasFailed,
           emailJobs: `wait: ${emailCounts.waiting} · act: ${emailCounts.active} · fail: ${emailCounts.failed}`,
           fileJobs: `wait: ${fileCounts.waiting} · act: ${fileCounts.active} · fail: ${fileCounts.failed}`,

@@ -1,4 +1,5 @@
 import { getQueueToken } from '@nestjs/bullmq';
+import { ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   DiskHealthIndicator,
@@ -140,6 +141,23 @@ describe('HealthController', () => {
 
       expect(result).toEqual(healthCheckResult);
       expect(healthCheckServiceValue.check).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return health check result with 200 when ServiceUnavailableException is thrown', async () => {
+      const errorResult = {
+        status: 'error',
+        info: { db: { status: 'up' } },
+        error: { queues: { status: 'down' } },
+        details: { queues: { status: 'down' } },
+      };
+
+      healthCheckServiceValue.check!.mockRejectedValue(
+        new ServiceUnavailableException(errorResult),
+      );
+
+      const result = await controller.check();
+
+      expect(result).toEqual(errorResult);
     });
   });
 
