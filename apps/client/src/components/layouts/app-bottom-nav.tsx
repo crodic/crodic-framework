@@ -3,7 +3,7 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
-import { Bell, Compass, Home, User } from "lucide-react";
+import { Bell, Compass, Home, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AppBottomNav() {
@@ -11,6 +11,7 @@ export function AppBottomNav() {
 
   const navItems = [
     { label: "Trang chủ", href: "/", icon: Home },
+    { label: "Bảng tin", href: "/feed", icon: Users },
     { label: "Khám phá", href: "/explore", icon: Compass },
     { label: "Cá nhân", href: "/profile", icon: User },
     { label: "Thông báo", href: "/notifications", icon: Bell, hasBadge: true },

@@ -162,13 +162,8 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
     title: "Khám phá",
     items: [
       { label: "Trang chủ", href: "/", icon: "home" },
+      { label: "Bảng tin (Feed)", href: "/feed", icon: "users" },
       { label: "Khám phá", href: "/explore", icon: "sparkles" },
-      {
-        label: "Sàn diễn / Tác phẩm mới",
-        href: "#new-works",
-        icon: "sparkles",
-      },
-      { label: "Cosplayers tiêu biểu", href: "#cosplayers", icon: "star" },
       { label: "Bộ sưu tập", href: "#collections", icon: "folder" },
       { label: "Sự kiện & Festival", href: "#events", icon: "calendar" },
     ],

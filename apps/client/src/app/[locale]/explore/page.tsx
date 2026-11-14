@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -88,7 +89,23 @@ export default async function ExplorePage({ params }: ExplorePageProps) {
       />
 
       <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
-        <ExploreFeed />
+        <Suspense
+          fallback={
+            <div className="space-y-6">
+              <div className="bg-muted/40 h-12 w-full animate-pulse rounded-2xl" />
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-muted/30 aspect-[4/5] animate-pulse rounded-xl"
+                  />
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <ExploreFeed />
+        </Suspense>
       </div>
     </Layout>
   );

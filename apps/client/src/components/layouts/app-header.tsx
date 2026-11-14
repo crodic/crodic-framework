@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Link } from "@/i18n/navigation";
+import React, { useState } from "react";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Bell,
   ChevronDown,
@@ -11,6 +11,7 @@ import {
   Search,
   Settings,
   User,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +27,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
+import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
 
 export function AppHeader() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const handleDesktopSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <header className="border-border/60 bg-background/85 sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b px-4 backdrop-blur-md sm:px-6">
       {/* Left Area: Unified Sidebar Trigger (same PanelLeft icon on mobile & desktop) + Mobile Logo or Desktop Search */}
@@ -55,18 +68,43 @@ export function AppHeader() {
         </Link>
 
         {/* Desktop Search Bar (hidden on mobile) */}
-        <div className="relative hidden w-full max-w-xs sm:max-w-md md:block">
+        <form
+          onSubmit={handleDesktopSearch}
+          className="relative hidden w-full max-w-xs sm:max-w-md md:block"
+        >
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm cosplayer, dự án, series..."
-            className="border-border/70 bg-card/60 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-9 w-full rounded-xl pr-4 pl-9 text-xs transition-colors sm:text-sm"
+            className="border-border/70 bg-card/60 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-9 w-full rounded-xl pr-8 pl-9 text-xs transition-colors sm:text-sm"
           />
-        </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-full p-0.5"
+            >
+              <X className="size-3" />
+            </button>
+          )}
+        </form>
       </div>
 
       {/* Right Area: Actions + User Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Mobile Search Button (visible only on mobile) */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setMobileSearchOpen(true)}
+          className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground size-8.5 cursor-pointer rounded-lg sm:size-9 md:hidden"
+          aria-label="Tìm kiếm"
+        >
+          <Search className="size-4" />
+        </Button>
+
         {/* "+ Đăng album" Action Button - Desktop */}
         <CreateAlbumModal
           trigger={
@@ -161,6 +199,12 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Mobile Search Dialog */}
+      <MobileSearchDialog
+        open={mobileSearchOpen}
+        onOpenChange={setMobileSearchOpen}
+      />
     </header>
   );
 }
