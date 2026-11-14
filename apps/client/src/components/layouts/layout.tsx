@@ -1,5 +1,6 @@
 import React from "react";
+import { AppShell } from "./app-shell";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-dvh flex-col">{children}</div>;
+  return <AppShell>{children}</AppShell>;
 }
