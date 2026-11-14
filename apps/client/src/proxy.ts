@@ -7,6 +7,7 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { AUTH_CODE, AUTH_QUERY_PARAM, AuthCode } from "./constants/auth";
 import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "./lib/cookies";
+import { isAuthRoute, isProtectedRoute } from "./config/routes";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -25,12 +26,8 @@ export async function proxy(request: NextRequest) {
     refreshToken
   );
 
-  const PROTECTED_PREFIXES = ["/profile", "/settings", "/upload"];
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-
-  if (isProtected && !refreshToken) {
+  // 1. Chặn truy cập trái phép vào Strictly Protected routes
+  if (isProtectedRoute(pathname) && !refreshToken) {
     return unauthorizedResponse(
       request,
       intlResponse,
@@ -38,6 +35,17 @@ export async function proxy(request: NextRequest) {
       pathname,
       accessToken ? AUTH_CODE.SESSION_EXPIRED : AUTH_CODE.UNAUTHORIZED
     );
+  }
+
+  // 2. Chuyển hướng người dùng đã đăng nhập nếu truy cập vào trang Auth (login/register)
+  if (isAuthRoute(pathname) && refreshToken) {
+    const payload = decodeToken(refreshToken);
+    if (payload?.exp && payload.exp * 1000 > Date.now()) {
+      const profileUrl = new URL(`/${locale}/profile`, request.url);
+      return NextResponse.redirect(profileUrl, {
+        headers: intlResponse.headers,
+      });
+    }
   }
 
   if (isCorrupt) {
