@@ -2,6 +2,17 @@
 
 import React, { useState } from "react";
 import { Check, KeyRound, Laptop, ShieldCheck, Smartphone } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,32 +24,35 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
+    newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
+    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
+
+type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
 export function SecuritySettings() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const form = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
-    if (newPassword.length < 6) {
-      setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp.");
-      return;
-    }
-
+  const onSubmit = (values: ChangePasswordFormValues) => {
     setIsSaved(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    form.reset();
     setTimeout(() => setIsSaved(false), 3000);
   };
 
@@ -57,67 +71,89 @@ export function SecuritySettings() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-muted-foreground text-xs font-semibold">
-                Mật khẩu hiện tại
-              </label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Nhập mật khẩu hiện tại"
-                className="h-10 rounded-xl text-sm"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-muted-foreground text-xs font-semibold">
-                Mật khẩu mới
-              </label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Tối thiểu 6 ký tự"
-                className="h-10 rounded-xl text-sm"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-muted-foreground text-xs font-semibold">
-                Xác nhận mật khẩu mới
-              </label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Nhập lại mật khẩu mới"
-                className="h-10 rounded-xl text-sm"
-                required
-              />
-            </div>
-
-            {error && (
-              <p className="text-destructive text-xs font-medium">{error}</p>
-            )}
-
-            {isSaved && (
-              <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-xs font-semibold text-emerald-500">
-                <Check className="size-4" />
-                <span>Mật khẩu đã được thay đổi thành công!</span>
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              className="bg-primary text-primary-foreground h-10 rounded-xl px-5 text-xs font-semibold"
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="max-w-md space-y-4"
             >
-              Cập nhật mật khẩu
-            </Button>
-          </form>
+              <FormField
+                control={form.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                      Mật khẩu hiện tại
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Nhập mật khẩu hiện tại"
+                        className="h-10 rounded-xl text-sm"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                      Mật khẩu mới
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Tối thiểu 6 ký tự"
+                        className="h-10 rounded-xl text-sm"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                      Xác nhận mật khẩu mới
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Nhập lại mật khẩu mới"
+                        className="h-10 rounded-xl text-sm"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              {isSaved && (
+                <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-xs font-semibold text-emerald-500">
+                  <Check className="size-4" />
+                  <span>Mật khẩu đã được thay đổi thành công!</span>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="bg-primary text-primary-foreground h-10 cursor-pointer rounded-xl px-5 text-xs font-semibold"
+              >
+                Cập nhật mật khẩu
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
 

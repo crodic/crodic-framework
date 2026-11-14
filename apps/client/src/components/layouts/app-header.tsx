@@ -25,6 +25,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 
 export function AppHeader() {
   return (
@@ -66,14 +67,18 @@ export function AppHeader() {
 
       {/* Right Area: Actions + User Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* "+ Thêm dự án" Action Button - Desktop only */}
-        <Button
-          size="sm"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
-        >
-          <Plus className="size-4 shrink-0" />
-          <span>Thêm dự án</span>
-        </Button>
+        {/* "+ Đăng album" Action Button - Desktop */}
+        <CreateAlbumModal
+          trigger={
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
+            >
+              <Plus className="size-4 shrink-0" />
+              <span>Đăng album</span>
+            </Button>
+          }
+        />
 
         {/* Theme mode toggle - Desktop only */}
         <div className="hidden md:block">
