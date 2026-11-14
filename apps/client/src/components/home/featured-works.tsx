@@ -72,8 +72,11 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
             {work.title}
           </h3>
 
-          {/* Author Row */}
-          <div className="flex items-center gap-2">
+          {/* Author Row (Links to public cosplayer profile) */}
+          <Link
+            href={`/cosplayer/${work.author.name.toLowerCase() === "soriko" ? "soriko" : "kiriko"}`}
+            className="group/author flex items-center gap-2 transition-opacity hover:opacity-85"
+          >
             <div className="border-border/80 bg-muted relative size-6 shrink-0 overflow-hidden rounded-full border">
               <Image
                 src={work.author.avatarUrl}
@@ -85,7 +88,7 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1">
-                <span className="text-foreground truncate text-xs font-semibold">
+                <span className="text-foreground group-hover/author:text-primary truncate text-xs font-semibold transition-colors">
                   {work.author.name}
                 </span>
                 {work.author.isVerified && (
@@ -99,7 +102,7 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
                 {work.author.role}
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Action Buttons */}

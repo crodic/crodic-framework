@@ -12,7 +12,7 @@ export const HOME_SPOTLIGHT: SpotlightCosplayer = {
   badge: "Cosplayer Tiêu Điểm Tuần Này",
   tagline: "Vinh danh thành thương hiệu chuyên nghiệp",
   bannerImage: "/landing/hero-banner.png",
-  portfolioHref: "/profile",
+  portfolioHref: "/cosplayer/kiriko",
   bookingHref: "#booking",
 };
 
@@ -24,7 +24,7 @@ export const HOME_SPOTLIGHT_SLIDES: SpotlightCosplayer[] = [
     badge: "Cosplayer Nổi Bật Tháng Này",
     tagline: "Khởi nguyên lôi thần - Thần thái và phục trang đỉnh cao",
     bannerImage: "/landing/art-acheron.jpg",
-    portfolioHref: "/profile",
+    portfolioHref: "/cosplayer/kiriko",
     bookingHref: "#booking-acheron",
   },
   {
@@ -33,7 +33,7 @@ export const HOME_SPOTLIGHT_SLIDES: SpotlightCosplayer[] = [
     badge: "Siêu Phẩm Hóa Thân 2026",
     tagline: "Sát thủ thợ săn Stellaron - Quyến rũ và bí ẩn",
     bannerImage: "/landing/art-kafka.jpg",
-    portfolioHref: "/profile",
+    portfolioHref: "/cosplayer/kiriko",
     bookingHref: "#booking-kafka",
   },
 ];
@@ -161,7 +161,8 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
   {
     title: "Khám phá",
     items: [
-      { label: "Trang chủ", href: "/", icon: "home", isActive: true },
+      { label: "Trang chủ", href: "/", icon: "home" },
+      { label: "Khám phá", href: "/explore", icon: "sparkles" },
       {
         label: "Sàn diễn / Tác phẩm mới",
         href: "#new-works",
@@ -187,7 +188,7 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
   {
     title: "Cá nhân",
     items: [
-      { label: "Portfolio của tôi", href: "/profile", icon: "user-circle" },
+      { label: "Hồ sơ của tôi", href: "/profile", icon: "user-circle" },
       { label: "Cài đặt & Studio", href: "/settings", icon: "settings" },
     ],
   },
