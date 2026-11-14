@@ -22,8 +22,23 @@ export async function proxy(request: NextRequest) {
 
   const { isCorrupt, shouldRefresh } = evaluateTokenState(
     accessToken,
-    refreshToken,
+    refreshToken
   );
+
+  const PROTECTED_PREFIXES = ["/profile", "/settings", "/upload"];
+  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
+
+  if (isProtected && !refreshToken) {
+    return unauthorizedResponse(
+      request,
+      intlResponse,
+      locale,
+      pathname,
+      accessToken ? AUTH_CODE.SESSION_EXPIRED : AUTH_CODE.UNAUTHORIZED
+    );
+  }
 
   if (isCorrupt) {
     const unauthRes = unauthorizedResponse(
@@ -31,7 +46,7 @@ export async function proxy(request: NextRequest) {
       intlResponse,
       locale,
       pathname,
-      AUTH_CODE.INVALID_TOKEN,
+      AUTH_CODE.INVALID_TOKEN
     );
     if (unauthRes !== intlResponse) {
       return unauthRes;
@@ -43,7 +58,7 @@ export async function proxy(request: NextRequest) {
       request,
       intlResponse,
       locale,
-      pathname,
+      pathname
     );
     if (refreshRes !== intlResponse) {
       return refreshRes;
@@ -55,10 +70,10 @@ export async function proxy(request: NextRequest) {
 
 function extractLocaleAndPathname(
   request: NextRequest,
-  intlResponse: NextResponse,
+  intlResponse: NextResponse
 ) {
   const [, rawLocale, ...rest] = new URL(
-    intlResponse.headers.get("x-middleware-rewrite") || request.url,
+    intlResponse.headers.get("x-middleware-rewrite") || request.url
   ).pathname.split("/");
 
   return {
@@ -90,7 +105,7 @@ function evaluateTokenState(accessToken: string, refreshToken: string) {
 function finalizeResponse(
   request: NextRequest,
   intlResponse: NextResponse,
-  pathname: string,
+  pathname: string
 ) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
@@ -119,7 +134,7 @@ const refreshTokenMiddleware = async (
   request: NextRequest,
   intlResponse: NextResponse,
   locale: string,
-  pathname: string,
+  pathname: string
 ) => {
   const refreshToken = request.cookies.get(COOKIE_REFRESH_TOKEN)?.value || "";
   try {
@@ -139,7 +154,7 @@ const refreshTokenMiddleware = async (
         intlResponse,
         locale,
         pathname,
-        AUTH_CODE.SESSION_EXPIRED,
+        AUTH_CODE.SESSION_EXPIRED
       );
     }
 
@@ -168,7 +183,7 @@ const refreshTokenMiddleware = async (
         intlResponse,
         locale,
         pathname,
-        AUTH_CODE.SESSION_EXPIRED,
+        AUTH_CODE.SESSION_EXPIRED
       );
     }
     // Network error or transient 5xx error: do not wipe cookies, proceed with request
@@ -181,7 +196,7 @@ const unauthorizedResponse = (
   intlResponse: NextResponse,
   locale: string,
   pathname: string,
-  code: AuthCode = AUTH_CODE.SESSION_EXPIRED,
+  code: AuthCode = AUTH_CODE.SESSION_EXPIRED
 ) => {
   intlResponse.cookies.delete(COOKIE_ACCESS_TOKEN);
   intlResponse.cookies.delete(COOKIE_REFRESH_TOKEN);

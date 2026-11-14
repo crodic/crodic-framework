@@ -5,7 +5,6 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   Bell,
   ChevronDown,
-  LogIn,
   LogOut,
   MessageSquare,
   Plus,
@@ -253,24 +252,14 @@ export function AppHeader() {
               variant="ghost"
               size="sm"
               asChild
-              className="text-muted-foreground hover:text-foreground hidden h-9 cursor-pointer rounded-lg text-xs font-semibold sm:inline-flex sm:text-sm"
+              className="text-muted-foreground hover:text-foreground h-9 cursor-pointer rounded-lg text-xs font-semibold sm:text-sm"
             >
               <Link href="/auth/login">Đăng nhập</Link>
             </Button>
             <Button
               size="sm"
               asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs sm:h-9 sm:px-4 sm:text-sm"
-            >
-              <Link href="/auth/login" className="flex items-center gap-1.5">
-                <LogIn className="size-3.5 sm:hidden" />
-                <span>Đăng nhập</span>
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              asChild
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 hidden h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold sm:inline-flex sm:text-sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs sm:px-4 sm:text-sm"
             >
               <Link href="/auth/sign-up">Đăng ký</Link>
             </Button>

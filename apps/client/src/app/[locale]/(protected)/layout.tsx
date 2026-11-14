@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { AUTH_CODE, AUTH_QUERY_PARAM } from "@/constants/auth";
@@ -20,19 +20,9 @@ export default async function ProtectedLayout({
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-  const fromParam =
-    pathname && pathname !== "/" && !pathname.startsWith("/auth")
-      ? `&${AUTH_QUERY_PARAM.FROM}=${encodeURIComponent(pathname)}`
-      : "";
-
   if (!refreshToken) {
-    const code = accessToken
-      ? AUTH_CODE.SESSION_EXPIRED
-      : AUTH_CODE.UNAUTHORIZED;
     redirect(
-      `/${locale}/auth/login?${AUTH_QUERY_PARAM.CODE}=${code}${fromParam}`,
+      `/${locale}/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.UNAUTHORIZED}`
     );
   }
 
@@ -40,7 +30,7 @@ export default async function ProtectedLayout({
     const payload = decodeToken(accessToken);
     if (payload === null) {
       redirect(
-        `/${locale}/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.INVALID_TOKEN}${fromParam}`,
+        `/${locale}/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.INVALID_TOKEN}`
       );
     }
   }
