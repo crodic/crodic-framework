@@ -37,7 +37,10 @@ export function ExploreCard({ item }: ExploreCardProps) {
   return (
     <div className="group flex cursor-pointer flex-col">
       {/* Top Image Thumbnail */}
-      <div className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/5 relative aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-all duration-300 group-hover:shadow-md">
+      <Link
+        href={`/post/${item.id}`}
+        className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/5 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-all duration-300 group-hover:shadow-md"
+      >
         <Image
           src={item.image}
           alt={item.character}
@@ -48,12 +51,14 @@ export function ExploreCard({ item }: ExploreCardProps) {
 
         {/* Subtle hover gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      </div>
+      </Link>
 
       {/* Line 1: Character Title */}
-      <h3 className="text-foreground group-hover:text-primary mt-2 truncate text-sm font-bold transition-colors">
-        {item.character}
-      </h3>
+      <Link href={`/post/${item.id}`} className="block">
+        <h3 className="text-foreground group-hover:text-primary mt-2 truncate text-sm font-bold transition-colors">
+          {item.character}
+        </h3>
+      </Link>
 
       {/* Line 2: Author info on left, Like & Bookmark on right */}
       <div className="text-muted-foreground mt-1 flex items-center justify-between gap-2 text-xs">

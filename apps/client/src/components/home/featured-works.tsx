@@ -30,8 +30,11 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
 
   return (
     <Card className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/5 flex flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
-      {/* Top Image Showcase - Full Bleed (Zero card padding around image) */}
-      <div className="bg-muted relative aspect-[4/3.6] w-full overflow-hidden">
+      {/* Top Image Showcase - Full Bleed (Click to open Post Detail Modal) */}
+      <Link
+        href={`/post/${work.id}`}
+        className="bg-muted relative block aspect-[4/3.6] w-full cursor-pointer overflow-hidden"
+      >
         <Image
           src={work.coverImage}
           alt={work.title}
@@ -53,7 +56,7 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
           type="button"
           onClick={handleLike}
           className={cn(
-            "absolute right-2.5 bottom-2.5 inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold backdrop-blur-md transition-all select-none",
+            "absolute right-2.5 bottom-2.5 z-10 inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold backdrop-blur-md transition-all select-none",
             isLiked
               ? "border-rose-500/50 bg-rose-500/25 text-rose-300"
               : "border-white/10 bg-black/60 text-white hover:bg-black/80"
@@ -63,14 +66,16 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
           <Heart className="size-3 fill-rose-500 text-rose-500" />
           <span>{likes}</span>
         </button>
-      </div>
+      </Link>
 
       {/* Info & Actions below image */}
       <CardContent className="flex flex-1 flex-col justify-between space-y-2.5 p-3 sm:p-3.5">
         <div className="space-y-1.5">
-          <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
-            {work.title}
-          </h3>
+          <Link href={`/post/${work.id}`} className="block">
+            <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
+              {work.title}
+            </h3>
+          </Link>
 
           {/* Author Row (Links to public cosplayer profile) */}
           <Link
@@ -113,7 +118,7 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
             variant="outline"
             className="border-border/80 bg-background/50 hover:bg-muted h-8 cursor-pointer rounded-lg px-2 text-xs font-medium transition-colors"
           >
-            <Link href={work.projectHref}>Xem dự án</Link>
+            <Link href={`/post/${work.id}`}>Xem dự án</Link>
           </Button>
 
           <Button

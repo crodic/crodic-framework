@@ -105,9 +105,11 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
+  modal,
   params,
 }: {
   children: React.ReactNode;
+  modal?: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   // Ensure that the incoming `locale` is valid
@@ -144,6 +146,7 @@ export default async function LocaleLayout({
                 storageKey={`${process.env.APP_NAME}-theme`}
               >
                 {children}
+                {modal}
               </ThemeProvider>
             </WhiteLabelProvider>
           </Provider>

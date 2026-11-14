@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import { Images, Eye, Calendar, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -56,9 +57,9 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
       <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
         {filteredAlbums.map((album) => {
           return (
-            <div
+            <Link
               key={album.id}
-              onClick={() => setSelectedAlbum(album)}
+              href={`/post/${album.id}`}
               className="group flex cursor-pointer flex-col space-y-2 rounded-2xl transition-all duration-300"
             >
               {/* Card Thumbnail Container */}
@@ -127,7 +128,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                   </span>
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
