@@ -4,7 +4,7 @@ import Layout from "@/components/layouts/layout";
 import { FeedView } from "@/components/feed/feed-view";
 
 export const metadata: Metadata = {
-  title: "Bảng tin Hoạt động (Feed) | CosSpace",
+  title: "Bảng tin Hoạt động",
   description:
     "Cập nhật những hoạt động, tác phẩm và nhật ký mới nhất từ các cosplayer bạn đang theo dõi.",
 };

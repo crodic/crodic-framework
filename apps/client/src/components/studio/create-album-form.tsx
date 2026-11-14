@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, Sparkles, Loader2 } from "lucide-react";
+import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const createAlbumSchema = z.object({
@@ -320,7 +320,7 @@ export function CreateAlbumForm({
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 size-4" />
+                <Upload className="mr-2 size-4" />
                 Đăng album
               </>
             )}

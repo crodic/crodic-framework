@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BadgeCheck, BookOpenText, Lock, Sparkles } from "lucide-react";
+import { BadgeCheck, BookOpenText, Lock, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { TagCategory } from "@/services/tags";
@@ -70,7 +70,10 @@ export const TagChip = React.forwardRef<HTMLDivElement, TagChipProps>(
               title="Creator Tag"
               aria-label="Creator tag"
             >
-              <Sparkles className="size-2.5" aria-hidden="true" />
+              <Star
+                className="size-2.5 fill-amber-400 text-amber-400"
+                aria-hidden="true"
+              />
             </span>
           )}
           <span className="text-foreground group-hover/chip:text-primary max-w-48 truncate font-medium transition-colors">

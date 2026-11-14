@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Images, Sparkles } from "lucide-react";
+import { Images, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CosplayerCharacter } from "./profile-types";
 
@@ -56,7 +56,7 @@ export function ProfileCharacters({ characters }: ProfileCharactersProps) {
               {/* Character & Series Info over bottom of image */}
               <div className="absolute inset-x-3 bottom-3 space-y-0.5 text-white">
                 <span className="text-primary-foreground/90 bg-primary/70 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold backdrop-blur-xs sm:text-xs">
-                  <Sparkles className="size-2.5" />
+                  <Star className="size-2.5" />
                   {char.series}
                 </span>
                 <h3 className="truncate text-sm font-bold text-white drop-shadow-sm sm:text-base">

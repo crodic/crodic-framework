@@ -6,7 +6,6 @@ import {
   CornerDownLeft,
   HelpCircle,
   Search,
-  Sparkles,
   Tag as TagIcon,
   X,
 } from "lucide-react";
@@ -264,7 +263,7 @@ export function BooleanTagSearchBar({
                 className="w-72 space-y-2 rounded-xl p-3 text-xs shadow-xl"
               >
                 <div className="text-foreground flex items-center gap-1.5 font-bold">
-                  <Sparkles className="text-primary size-3.5" />
+                  <HelpCircle className="text-primary size-3.5" />
                   <span>
                     {locale === "vi" ? "Mẹo tìm kiếm thẻ" : "Tag Search Tips"}
                   </span>
@@ -329,10 +328,7 @@ export function BooleanTagSearchBar({
             {/* Header info */}
             <div className="text-muted-foreground bg-muted/40 border-border/60 flex items-center justify-between border-b px-3.5 py-1.5 text-[11px]">
               <span className="flex items-center gap-1.5 font-medium">
-                <Sparkles
-                  className="text-primary size-3.5"
-                  aria-hidden="true"
-                />
+                <Search className="text-primary size-3.5" aria-hidden="true" />
                 {locale === "vi" ? "Gợi ý thẻ phù hợp" : "Matching tags"}
               </span>
               <span className="font-mono text-[10px]">

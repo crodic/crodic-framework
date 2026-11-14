@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { Images, Eye, Calendar, Sparkles } from "lucide-react";
+import { Images, Eye, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -135,7 +135,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
 
       {filteredAlbums.length === 0 && (
         <div className="text-muted-foreground py-16 text-center">
-          <Sparkles className="mx-auto mb-2 size-8 opacity-40" />
+          <Images className="mx-auto mb-2 size-8 opacity-40" />
           <p className="text-sm font-medium">Chưa có album nào trong mục này</p>
         </div>
       )}

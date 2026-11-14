@@ -162,22 +162,15 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
     title: "Khám phá",
     items: [
       { label: "Trang chủ", href: "/", icon: "home" },
-      { label: "Bảng tin (Feed)", href: "/feed", icon: "users" },
-      { label: "Khám phá", href: "/explore", icon: "sparkles" },
-      { label: "Bộ sưu tập", href: "#collections", icon: "folder" },
-      { label: "Sự kiện & Festival", href: "#events", icon: "calendar" },
-    ],
-  },
-  {
-    title: "Thương hiệu",
-    items: [
       {
         label: "Bản tin Booking / Tuyển dụng",
-        href: "#booking-feed",
+        href: "/jobs",
         icon: "newspaper",
       },
-      { label: "Nhật ký chuẩn bị WIP", href: "#wip-diary", icon: "book-open" },
-      { label: "Cộng tác", href: "#collaborations", icon: "users" },
+      { label: "Bảng tin", href: "/feed", icon: "users" },
+      { label: "Khám phá", href: "/explore", icon: "compass" },
+      { label: "Bảng xếp hạng", href: "/ranking", icon: "trophy" },
+      { label: "Sự kiện & Festival", href: "/events", icon: "calendar" },
     ],
   },
   {

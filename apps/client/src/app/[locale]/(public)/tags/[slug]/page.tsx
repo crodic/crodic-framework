@@ -13,7 +13,7 @@ import {
   GitBranch,
   Layers,
   Link2,
-  Sparkles,
+  Compass,
   Split,
   Tag as TagIcon,
 } from "lucide-react";
@@ -303,7 +303,7 @@ export default async function TagDetailsPage({
                   className="gap-1.5 rounded-xl font-semibold shadow-xs"
                 >
                   <a href="#tagged-works-section">
-                    <Sparkles className="size-4" aria-hidden="true" />
+                    <Compass className="size-4" aria-hidden="true" />
                     {t("exploreWorks")}
                   </a>
                 </Button>

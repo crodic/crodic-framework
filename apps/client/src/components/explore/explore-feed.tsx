@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { Check, Flame, SearchX, Sparkles, Users } from "lucide-react";
+import { Check, Flame, Search, SearchX, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EXPLORE_ITEMS, EXPLORE_TAGS } from "./explore-data";
 import { ExploreCard } from "./explore-card";
@@ -141,7 +141,7 @@ export function ExploreFeed() {
       {searchQuery && (
         <div className="border-border/60 bg-muted/20 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-xs">
           <div className="flex items-center gap-2">
-            <Sparkles className="text-primary size-4" />
+            <Search className="text-primary size-4" />
             <span>
               Kết quả tìm kiếm cho:{" "}
               <strong className="text-foreground font-bold">

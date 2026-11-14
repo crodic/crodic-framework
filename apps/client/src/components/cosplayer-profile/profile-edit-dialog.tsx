@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Camera, Check, Link as LinkIcon, Sparkles } from "lucide-react";
+import { Camera, Check, Link as LinkIcon, User } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -129,7 +129,7 @@ export function ProfileEditDialog({
       <DialogContent className="max-h-[92vh] max-w-[calc(100%-1rem)] overflow-y-auto rounded-2xl p-4 sm:max-w-2xl sm:rounded-3xl sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <Sparkles className="text-primary size-5" />
+            <User className="text-primary size-5" />
             Chỉnh sửa trang cá nhân
           </DialogTitle>
         </DialogHeader>

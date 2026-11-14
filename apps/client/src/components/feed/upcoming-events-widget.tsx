@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, MapPin, Sparkles } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { MOCK_UPCOMING_EVENTS } from "./feed-data";
 

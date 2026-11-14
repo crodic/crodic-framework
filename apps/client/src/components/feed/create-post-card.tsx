@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ImageIcon, Tag, Video, Sparkles } from "lucide-react";
+import { ImageIcon, Tag, Video, Send } from "lucide-react";
 import { CURRENT_USER } from "./feed-data";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 
@@ -73,7 +73,7 @@ export function CreatePostCard() {
           onClick={() => setModalOpen(true)}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02]"
         >
-          <Sparkles className="mr-1 size-3.5" />
+          <Send className="mr-1 size-3.5" />
           Đăng
         </Button>
       </div>

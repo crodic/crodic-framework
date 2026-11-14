@@ -10,7 +10,7 @@ import {
   Layers,
   Paintbrush,
   Search,
-  Sparkles,
+  Compass,
   Tag as TagIcon,
   Tags,
   User,
@@ -59,7 +59,7 @@ const CATEGORY_ITEMS: {
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { key: "all", labelKey: "categoryAll", icon: Sparkles },
+  { key: "all", labelKey: "categoryAll", icon: Compass },
   { key: "copyright", labelKey: "categoryCopyright", icon: Clapperboard },
   { key: "character", labelKey: "categoryCharacter", icon: User },
   { key: "artist", labelKey: "categoryArtist", icon: Paintbrush },

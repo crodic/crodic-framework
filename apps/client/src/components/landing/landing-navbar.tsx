@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { LANDING_NAV_LINKS } from "./landing-data";
-import { Menu, Sparkles } from "lucide-react";
+import { ChevronRight, Menu } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 
@@ -119,7 +119,7 @@ export function LandingNavbar() {
                     className="text-foreground hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium transition-colors"
                   >
                     <span>{link.label}</span>
-                    <Sparkles className="text-primary/60 size-4" />
+                    <ChevronRight className="text-muted-foreground/60 size-4" />
                   </a>
                 ))}
               </div>

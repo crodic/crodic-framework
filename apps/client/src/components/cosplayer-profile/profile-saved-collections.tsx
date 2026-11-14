@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { FolderHeart, Plus, Sparkles } from "lucide-react";
+import { FolderHeart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

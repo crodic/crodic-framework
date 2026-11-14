@@ -8,7 +8,7 @@ import {
   MapPin,
   Phone,
   Ruler,
-  Sparkles,
+  User,
   ExternalLink,
   ShieldCheck,
   CheckCircle2,
@@ -31,7 +31,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
         <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold sm:text-lg">
-              <Sparkles className="text-primary size-4" />
+              <User className="text-primary size-4" />
               Tiểu sử nghệ thuật
             </CardTitle>
           </CardHeader>
@@ -100,7 +100,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
             <CardHeader className="pb-2">
               <CardTitle className="text-muted-foreground flex items-center gap-2 text-sm font-bold">
-                <Sparkles className="text-primary size-4" />
+                <User className="text-primary size-4" />
                 Kỹ năng chuyên môn
               </CardTitle>
             </CardHeader>

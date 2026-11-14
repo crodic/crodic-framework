@@ -19,13 +19,14 @@ import { APP_SIDEBAR_NAV } from "@/components/home/home-data";
 import {
   BookOpen,
   Calendar,
+  Compass,
   Folder,
   FolderHeart,
   Home,
   Newspaper,
   Settings,
-  Sparkles,
   Star,
+  Trophy,
   Users,
 } from "lucide-react";
 
@@ -43,14 +44,17 @@ export function AppSidebar() {
     switch (iconName) {
       case "home":
         return <Home className="size-4 shrink-0" />;
+      case "compass":
       case "sparkles":
-        return <Sparkles className="size-4 shrink-0" />;
+        return <Compass className="size-4 shrink-0" />;
       case "star":
         return <Star className="size-4 shrink-0" />;
       case "folder":
         return <Folder className="size-4 shrink-0" />;
       case "calendar":
         return <Calendar className="size-4 shrink-0" />;
+      case "trophy":
+        return <Trophy className="size-4 shrink-0" />;
       case "newspaper":
         return <Newspaper className="size-4 shrink-0" />;
       case "book-open":
@@ -62,7 +66,7 @@ export function AppSidebar() {
       case "settings":
         return <Settings className="size-4 shrink-0" />;
       default:
-        return <Sparkles className="size-4 shrink-0" />;
+        return <Compass className="size-4 shrink-0" />;
     }
   };
 

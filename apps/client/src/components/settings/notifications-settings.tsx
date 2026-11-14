@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, Mail, Sparkles } from "lucide-react";
+import { Bell, Mail } from "lucide-react";
 import {
   Card,
   CardContent,

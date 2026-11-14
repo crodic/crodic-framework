@@ -11,7 +11,6 @@ import {
   MoreHorizontal,
   SendHorizontal,
   Share2,
-  Sparkles,
 } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";

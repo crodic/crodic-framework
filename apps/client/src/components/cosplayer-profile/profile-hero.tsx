@@ -17,8 +17,8 @@ import {
   Pencil,
   Plus,
   Settings,
+  Award,
   Share2,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -233,7 +233,7 @@ export function ProfileHero({
                     variant="outline"
                     className="bg-primary/10 text-primary border-primary/25 rounded-lg px-2 py-0.5 text-xs font-semibold"
                   >
-                    <Sparkles className="mr-1 size-3" />
+                    <Award className="mr-1 size-3" />
                     {profile.roleBadge}
                   </Badge>
                 )}

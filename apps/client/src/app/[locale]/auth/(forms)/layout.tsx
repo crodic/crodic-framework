@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { cn, decodeToken } from "@/lib/utils";
 import { WhiteLabelLogo } from "@/lib/white-label";
-import { Layers, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { Layers, ShieldCheck, Star, Workflow } from "lucide-react";
 import React from "react";
 
 interface AuthFormsLayoutProps {
@@ -87,7 +87,7 @@ export default async function AuthLayout({
           <div className="relative z-10 my-auto space-y-8 py-8 xl:py-12">
             <div className="max-w-xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold tracking-wider text-blue-400 uppercase">
-                <Sparkles className="size-3.5" />
+                <Star className="size-3.5 fill-blue-400 text-blue-400" />
                 <span>{t("welcome")}</span>
               </div>
               <h1 className="bg-linear-to-br from-white via-slate-100 to-slate-300 bg-clip-text text-3xl font-extrabold tracking-tight text-balance text-transparent xl:text-4xl">

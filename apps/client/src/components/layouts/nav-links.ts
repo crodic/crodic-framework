@@ -6,7 +6,7 @@ import {
   Layers,
   LockKeyhole,
   ShieldCheck,
-  Sparkles,
+  Palette,
   Tags,
   User,
 } from "lucide-react";
@@ -68,7 +68,7 @@ export const platformLinks: LinkItemType[] = [
     label: "Design System",
     href: "/#tech-stack",
     description: "TailwindCSS v4 & Radix UI primitives",
-    icon: Sparkles,
+    icon: Palette,
   },
   {
     label: "NestJS Backend API",

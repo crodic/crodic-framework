@@ -13,7 +13,7 @@ import {
   Layers,
   Paintbrush,
   Search,
-  Sparkles,
+  Compass,
   Tag as TagIcon,
   User,
 } from "lucide-react";
@@ -135,7 +135,7 @@ const CATEGORY_ITEMS: {
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { key: "all", labelKey: "categoryAll", icon: Sparkles },
+  { key: "all", labelKey: "categoryAll", icon: Compass },
   { key: "copyright", labelKey: "categoryCopyright", icon: Clapperboard },
   { key: "character", labelKey: "categoryCharacter", icon: User },
   { key: "artist", labelKey: "categoryArtist", icon: Paintbrush },
@@ -271,7 +271,7 @@ export default async function TagsDiscoveryHubPage({
               variant="outline"
               className="border-primary/20 bg-primary/5 text-foreground gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold shadow-2xs"
             >
-              <Sparkles className="text-primary size-3.5" aria-hidden="true" />
+              <Compass className="text-primary size-3.5" aria-hidden="true" />
               {t("hubBadge")}
             </Badge>
 

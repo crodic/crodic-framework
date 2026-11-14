@@ -1,0 +1,238 @@
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
+import {
+  Calendar,
+  Check,
+  Clock,
+  Flame,
+  MapPin,
+  Send,
+  Share2,
+  Ticket,
+  Users,
+  X,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { EventItem } from "./events-types";
+
+export interface EventDetailDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  event: EventItem | null;
+  onApply: (event: EventItem) => void;
+}
+
+export function EventDetailDialog({
+  open,
+  onOpenChange,
+  event,
+  onApply,
+}: EventDetailDialogProps) {
+  if (!event) return null;
+
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard?.writeText(window.location.href);
+      toast.success("Đã sao chép liên kết sự kiện!");
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1rem)] overflow-y-auto rounded-2xl p-0 shadow-2xl sm:max-w-2xl sm:rounded-3xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{event.title}</DialogTitle>
+        </DialogHeader>
+
+        {/* 1. Header Poster Image */}
+        <div className="relative h-48 w-full overflow-hidden sm:h-64">
+          <Image
+            src={event.image}
+            alt={event.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 700px"
+            className="object-cover"
+          />
+          <div className="from-background via-background/40 absolute inset-0 bg-gradient-to-t to-transparent" />
+
+          {/* Date Badge */}
+          <div className="absolute top-4 left-4 z-10 flex flex-col items-center justify-center rounded-xl bg-black/85 px-3 py-1.5 text-center text-white shadow-xl backdrop-blur-md">
+            <span className="text-xl leading-none font-black">{event.day}</span>
+            <span className="text-muted-foreground text-[10px] font-bold uppercase">
+              {event.month}
+            </span>
+          </div>
+
+          {/* Location Badge */}
+          <div className="bg-primary/90 text-primary-foreground absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-xs">
+            {event.location}
+          </div>
+
+          {/* Title on bottom of image */}
+          <div className="absolute right-4 bottom-4 left-4 z-10">
+            <h2 className="text-foreground text-xl font-extrabold drop-shadow-sm sm:text-2xl">
+              {event.title}
+            </h2>
+            <p className="text-foreground/90 mt-1 flex items-center gap-1.5 text-xs">
+              <MapPin className="text-primary size-3.5 shrink-0" />
+              <span>{event.venue}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Body Info */}
+        <div className="space-y-5 p-5 sm:p-6">
+          {/* Quick info badges row */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-xl border p-3">
+              <Calendar className="text-primary size-4 shrink-0" />
+              <div>
+                <p className="text-muted-foreground text-[10px]">Thời gian</p>
+                <p className="text-foreground text-xs font-bold">
+                  {event.dateString}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-xl border p-3">
+              <Ticket className="size-4 shrink-0 text-emerald-400" />
+              <div>
+                <p className="text-muted-foreground text-[10px]">
+                  Giá vé vào cổng
+                </p>
+                <p className="text-foreground text-xs font-bold">
+                  {event.ticketPrice || "Miễn phí"}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-border/60 bg-muted/20 col-span-2 flex items-center gap-2.5 rounded-xl border p-3 sm:col-span-1">
+              <Flame className="size-4 shrink-0 text-amber-400" />
+              <div>
+                <p className="text-muted-foreground text-[10px]">Trạng thái</p>
+                <p className="text-primary text-xs font-bold">
+                  {event.isRecruiting
+                    ? "Đang tuyển Cosplayer"
+                    : "Đã chốt danh sách"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1.5">
+            <h3 className="text-foreground text-sm font-bold">
+              Giới thiệu sự kiện
+            </h3>
+            <p className="text-foreground/80 text-xs leading-relaxed sm:text-sm">
+              {event.description}
+            </p>
+          </div>
+
+          {/* Participants cosplayers */}
+          <div className="space-y-2">
+            <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
+              <Users className="text-primary size-4" />
+              <span>Cosplayers & Khách mời tham gia</span>
+            </h3>
+            <div className="flex flex-wrap items-center gap-3">
+              {event.participants.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/cosplayer/${p.name.toLowerCase()}`}
+                  className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
+                >
+                  <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
+                    <Image
+                      src={p.avatarUrl}
+                      alt={p.name}
+                      fill
+                      sizes="24px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <span className="text-foreground text-xs font-semibold">
+                    {p.name}
+                  </span>
+                  {p.isVerified && (
+                    <Check className="text-primary size-3 stroke-[3]" />
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Schedule Timeline */}
+          {event.schedule && event.schedule.length > 0 && (
+            <div className="space-y-2.5">
+              <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
+                <Clock className="text-primary size-4" />
+                <span>Lịch trình hoạt động</span>
+              </h3>
+              <div className="border-border/60 bg-muted/10 space-y-2 rounded-2xl border p-3.5">
+                {event.schedule.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-xs">
+                    <span className="bg-primary/20 text-primary shrink-0 rounded-md px-2 py-0.5 font-bold">
+                      {item.time}
+                    </span>
+                    <span className="text-foreground/90 pt-0.5">
+                      {item.activity}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Actions */}
+          <div className="border-border/60 flex items-center justify-between gap-3 border-t pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              className="border-border/70 rounded-xl text-xs font-semibold"
+            >
+              <Share2 className="mr-1.5 size-3.5" />
+              <span>Chia sẻ</span>
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+                className="rounded-xl text-xs"
+              >
+                Đóng
+              </Button>
+              {event.isRecruiting && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onApply(event);
+                  }}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md"
+                >
+                  <Send className="mr-1.5 size-3.5" />
+                  <span>Ứng tuyển tham gia</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

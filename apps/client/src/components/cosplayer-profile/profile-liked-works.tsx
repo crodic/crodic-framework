@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart } from "lucide-react";
 import { LikedWork } from "./profile-types";
 
 interface ProfileLikedWorksProps {
@@ -77,7 +77,7 @@ export function ProfileLikedWorks({
 
       {likedList.length === 0 && (
         <div className="text-muted-foreground py-16 text-center">
-          <Sparkles className="mx-auto mb-2 size-8 opacity-40" />
+          <Heart className="mx-auto mb-2 size-8 opacity-40" />
           <p className="text-sm font-medium">Bạn chưa yêu thích tác phẩm nào</p>
         </div>
       )}
