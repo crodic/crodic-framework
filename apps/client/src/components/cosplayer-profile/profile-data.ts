@@ -2,6 +2,9 @@ import {
   CosplayerAlbum,
   CosplayerCharacter,
   CosplayerProfileData,
+  FollowedCosplayer,
+  LikedWork,
+  SavedCollection,
 } from "./profile-types";
 
 export const KIRIKO_PROFILE: CosplayerProfileData = {
@@ -11,6 +14,7 @@ export const KIRIKO_PROFILE: CosplayerProfileData = {
   handle: "@kirikocos",
   location: "HÀ NỘI, VN",
   isVerified: true,
+  roleBadge: "Cosplayer Pro",
   avatarUrl: "/landing/avatar-kiriko.jpg",
   coverUrl: "/landing/hero-banner.png",
   bio: "Tiểu sử ngắn nhân viên, xuất sắc, khoa vẽ cosplay nhóm.",
@@ -19,6 +23,8 @@ export const KIRIKO_PROFILE: CosplayerProfileData = {
     likesCount: "85.2K",
     albumsCount: 24,
     charactersCount: 12,
+    followingCount: 18,
+    collectionsCount: 6,
   },
   contact: {
     email: "kiriko.cosplay@gmail.com",
@@ -26,6 +32,7 @@ export const KIRIKO_PROFILE: CosplayerProfileData = {
     facebook: "https://facebook.com/kiriko.cosplay",
     instagram: "https://instagram.com/kirikocos",
     tiktok: "https://tiktok.com/@kirikocos",
+    twitter: "https://x.com/kirikocos",
   },
   details: {
     height: "1m65",
@@ -44,6 +51,158 @@ export const KIRIKO_PROFILE: CosplayerProfileData = {
     ],
   },
 };
+
+export const CURRENT_USER_PROFILE: CosplayerProfileData = {
+  id: "haianh",
+  slug: "haianh_fan",
+  name: "Hải Anh",
+  handle: "@haianh_fan",
+  location: "Hà Nội, VN",
+  isVerified: false,
+  roleBadge: "Thành viên (Fan)",
+  avatarUrl: "/landing/cosplay-work-6.jpg",
+  coverUrl: "/landing/hero-banner.png",
+  bio: "Đam mê ngắm và sưu tầm ảnh cosplay ✨ / Fandom yêu thích: Genshin Impact, Honkai: Star Rail.",
+  stats: {
+    followersCount: "240",
+    likesCount: "2.4K",
+    albumsCount: 0,
+    charactersCount: 0,
+    followingCount: 135,
+    collectionsCount: 14,
+  },
+  contact: {
+    email: "haianh.fan@gmail.com",
+    facebook: "https://facebook.com/haianh.cosfan",
+    instagram: "https://instagram.com/haianh_fan",
+    tiktok: "https://tiktok.com/@haianh_fan",
+    twitter: "https://x.com/haianh_fan",
+  },
+  details: {
+    height: "1m60",
+    experienceYears: "Fan cosplay 3 năm",
+    skills: ["Chụp ảnh Fan-cam", "Sưu tầm Merchandise", "Hỗ trợ Hậu trường"],
+    specialties: ["Genshin Impact", "Honkai: Star Rail"],
+  },
+  isOwner: true,
+};
+
+export const MOCK_FOLLOWED_COSPLAYERS: FollowedCosplayer[] = [
+  {
+    id: "f-kiriko",
+    name: "KIRIKO",
+    handle: "@kirikocos",
+    avatarUrl: "/landing/avatar-kiriko.jpg",
+    isVerified: true,
+    previewPhoto: "/landing/art-raiden-1.jpg",
+    followersCount: "12.5K",
+    isFollowing: true,
+  },
+  {
+    id: "f-soriko",
+    name: "Soriko",
+    handle: "@sorikocos",
+    avatarUrl: "/landing/avatar-soriko.jpg",
+    isVerified: true,
+    previewPhoto: "/landing/art-kafka.jpg",
+    followersCount: "8.9K",
+    isFollowing: true,
+  },
+  {
+    id: "f-kumiko",
+    name: "Kumiko",
+    handle: "@kumikos",
+    avatarUrl: "/landing/avatar-raiden.jpg",
+    isVerified: false,
+    previewPhoto: "/landing/cosplay-work-1.jpg",
+    followersCount: "4.3K",
+    isFollowing: true,
+  },
+  {
+    id: "f-soriko-2",
+    name: "Soriko Studio",
+    handle: "@sorikocos",
+    avatarUrl: "/landing/avatar-kafka.jpg",
+    isVerified: true,
+    previewPhoto: "/landing/cosplay-work-2.jpg",
+    followersCount: "15.1K",
+    isFollowing: true,
+  },
+];
+
+export const MOCK_SAVED_COLLECTIONS: SavedCollection[] = [
+  {
+    id: "col-idol",
+    title: 'Thư mục "Idol"',
+    count: 18,
+    thumbnails: [
+      "/landing/art-raiden-1.jpg",
+      "/landing/art-kafka.jpg",
+      "/landing/art-acheron.jpg",
+      "/landing/cosplay-work-1.jpg",
+    ],
+    updatedAt: "2 ngày trước",
+  },
+  {
+    id: "col-genshin",
+    title: '"Genshin Favs"',
+    count: 24,
+    thumbnails: [
+      "/landing/cosplay-work-2.jpg",
+      "/landing/cosplay-work-3.jpg",
+      "/landing/cosplay-work-4.jpg",
+      "/landing/art-raiden-2.jpg",
+    ],
+    updatedAt: "1 tuần trước",
+  },
+  {
+    id: "col-honkai",
+    title: '"Honkai Star Rail"',
+    count: 12,
+    thumbnails: [
+      "/landing/art-acheron.jpg",
+      "/landing/art-kafka.jpg",
+      "/landing/cosplay-work-5.jpg",
+      "/landing/avatar-soriko.jpg",
+    ],
+    updatedAt: "2 tuần trước",
+  },
+];
+
+export const MOCK_LIKED_WORKS: LikedWork[] = [
+  {
+    id: "work-acheron",
+    title: "Acheron - Lôi Thần Khởi Nguyên",
+    image: "/landing/art-acheron.jpg",
+    authorName: "KIRIKO",
+    authorAvatar: "/landing/avatar-kiriko.jpg",
+    likesCount: "3.4K",
+  },
+  {
+    id: "work-kafka",
+    title: "Kafka - Hunter Stellaron",
+    image: "/landing/art-kafka.jpg",
+    authorName: "Soriko",
+    authorAvatar: "/landing/avatar-soriko.jpg",
+    likesCount: "2.4K",
+  },
+  {
+    id: "work-raiden",
+    title: "Raiden Shogun - Vĩnh Hằng",
+    image: "/landing/art-raiden-1.jpg",
+    authorName: "KIRIKO",
+    authorAvatar: "/landing/avatar-kiriko.jpg",
+    likesCount: "2.6K",
+  },
+  {
+    id: "work-frieren",
+    title: "Frieren - Pháp sư ngàn năm",
+    image: "/landing/cosplay-work-5.jpg",
+    authorName: "Soriko",
+    authorAvatar: "/landing/avatar-soriko.jpg",
+    likesCount: "1.9K",
+  },
+];
 
 export const PROFILE_ALBUM_FILTERS = [
   { id: "all", label: "All" },

@@ -1,3 +1,32 @@
+export interface FollowedCosplayer {
+  id: string;
+  name: string;
+  handle: string;
+  avatarUrl: string;
+  isVerified: boolean;
+  previewPhoto: string;
+  followersCount?: string;
+  isFollowing: boolean;
+}
+
+export interface SavedCollection {
+  id: string;
+  title: string;
+  count: number;
+  thumbnails: string[];
+  updatedAt?: string;
+}
+
+export interface LikedWork {
+  id: string;
+  title: string;
+  image: string;
+  authorName: string;
+  authorAvatar: string;
+  authorHandle?: string;
+  likesCount: string;
+}
+
 export interface CosplayerProfileData {
   id: string;
   slug: string;
@@ -5,6 +34,7 @@ export interface CosplayerProfileData {
   handle: string;
   location: string;
   isVerified: boolean;
+  roleBadge?: string;
   avatarUrl: string;
   coverUrl: string;
   bio: string;
@@ -13,6 +43,8 @@ export interface CosplayerProfileData {
     likesCount: string;
     albumsCount: number;
     charactersCount: number;
+    followingCount?: number;
+    collectionsCount?: number;
   };
   contact: {
     email: string;
@@ -20,6 +52,7 @@ export interface CosplayerProfileData {
     facebook?: string;
     instagram?: string;
     tiktok?: string;
+    twitter?: string;
   };
   details: {
     height: string;
@@ -27,6 +60,7 @@ export interface CosplayerProfileData {
     skills: string[];
     specialties: string[];
   };
+  isOwner?: boolean;
 }
 
 export interface CosplayerAlbum {
