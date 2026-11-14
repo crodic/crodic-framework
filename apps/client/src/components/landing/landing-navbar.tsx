@@ -33,7 +33,7 @@ export function LandingNavbar() {
         <Link
           href="/landing"
           className="group focus-visible:ring-ring flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
-          aria-label="CosSpace Trang chủ"
+          aria-label="Kosume Trang chủ"
         >
           <span className="text-2xl font-black tracking-tight transition-transform duration-200 group-hover:scale-[1.02]">
             <span className="text-primary">Cos</span>

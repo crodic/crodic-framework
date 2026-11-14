@@ -25,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Briefcase, Loader2, PlusCircle } from "lucide-react";
 import { JobItem } from "./jobs-types";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
 
 const postJobSchema = z.object({
   brandName: z
@@ -61,6 +63,17 @@ export function PostJobDialog({
   onJobCreated,
 }: PostJobDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để đăng tin tuyển dụng!");
+      router.push("/auth/login?from=/jobs");
+      return;
+    }
+    onOpenChange(val);
+  };
 
   const form = useForm<PostJobFormValues>({
     resolver: zodResolver(postJobSchema),
@@ -79,6 +92,11 @@ export function PostJobDialog({
   });
 
   const onSubmit = async (values: PostJobFormValues) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để đăng tin tuyển dụng!");
+      router.push("/auth/login?from=/jobs");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -108,7 +126,7 @@ export function PostJobDialog({
       onJobCreated?.(newJob);
       toast.success("Đăng tin tuyển dụng thành công!", {
         description:
-          "Tin tuyển dụng của bạn đã được xuất bản lên bảng tin tuyển dụng CosSpace.",
+          "Tin tuyển dụng của bạn đã được xuất bản lên bảng tin tuyển dụng Kosume.",
       });
       onOpenChange(false);
       form.reset();
@@ -120,7 +138,7 @@ export function PostJobDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-xl sm:rounded-3xl sm:p-6">
         <DialogHeader className="space-y-1.5 text-left">
           <div className="text-primary flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
@@ -132,7 +150,7 @@ export function PostJobDialog({
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">
             Tiếp cận hơn 10.000+ Cosplayer, Model và Crafting Creator chất lượng
-            cao trên CosSpace.
+            cao trên Kosume.
           </DialogDescription>
         </DialogHeader>
 

@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Calendar, Check, Loader2, Send, User } from "lucide-react";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
 
 const bookingSchema = z.object({
   bookingType: z.string().min(1, "Vui lòng chọn loại hình booking"),
@@ -66,6 +68,17 @@ export function RankingBookingDialog({
   target,
 }: RankingBookingDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để gửi yêu cầu Booking!");
+      router.push("/auth/login?from=/ranking");
+      return;
+    }
+    onOpenChange(val);
+  };
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -81,6 +94,11 @@ export function RankingBookingDialog({
   });
 
   const onSubmit = async (values: BookingFormValues) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để gửi yêu cầu Booking!");
+      router.push("/auth/login?from=/ranking");
+      return;
+    }
     setIsSubmitting(true);
     try {
       // Simulate API dispatch
@@ -104,7 +122,7 @@ export function RankingBookingDialog({
   if (!target) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6">
         <DialogHeader className="space-y-1.5 text-left">
           <div className="bg-muted/50 border-border/60 flex items-center gap-3 rounded-2xl border p-3">
@@ -137,7 +155,7 @@ export function RankingBookingDialog({
             Gửi yêu cầu hợp tác & Booking
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">
-            Điền thông tin dự án để CosSpace kết nối bạn với {target.name} một
+            Điền thông tin dự án để Kosume kết nối bạn với {target.name} một
             cách bảo mật và nhanh chóng.
           </DialogDescription>
         </DialogHeader>

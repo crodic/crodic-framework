@@ -66,17 +66,22 @@ export default function ForgotPasswordForm() {
       {/* Mobile Brand Logo */}
       <div className="mb-6 flex justify-center lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2">
-          <WhiteLabelLogo
-            fallback={
-              <span className="text-primary text-2xl font-bold tracking-tight">
-                Crodic Framework
-              </span>
-            }
-          />
+          <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-xl shadow-md shadow-purple-500/20">
+            <svg
+              className="size-4 fill-current"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span className="text-foreground text-xl font-black tracking-tight">
+            Kosume
+          </span>
         </Link>
       </div>
 
-      <Card className="border-border/70 bg-card/95 w-full gap-6 rounded-2xl py-8 shadow-xl backdrop-blur-md sm:py-10">
+      <Card className="border-border/70 bg-card/90 w-full gap-6 rounded-2xl py-8 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-10">
         <CardHeader className="space-y-2 px-6 sm:px-8">
           <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
             {t("title")}

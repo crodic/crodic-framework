@@ -71,7 +71,7 @@ export function BooleanTagSearchBar({
     if (serialized) params.set("q", serialized);
     if (!expandHierarchy) params.set("expand", "false");
     const qs = params.toString();
-    router.push(qs ? `/tags?${qs}` : "/tags");
+    router.push(qs ? `/explore?${qs}` : "/explore");
   };
 
   const pushToken = (rawVal: string) => {
@@ -238,7 +238,7 @@ export function BooleanTagSearchBar({
                 type="button"
                 onClick={() => {
                   setTokens([]);
-                  router.push("/tags");
+                  router.push("/explore");
                 }}
                 className="text-muted-foreground cursor-pointer rounded-md px-1.5 py-1 text-[11px] transition-colors hover:text-rose-600"
               >

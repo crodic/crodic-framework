@@ -25,7 +25,7 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   // For now using KIRIKO_PROFILE as primary showcase; slug can be dynamic
   const profile = KIRIKO_PROFILE;
@@ -82,7 +82,7 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   const profile = KIRIKO_PROFILE;
 

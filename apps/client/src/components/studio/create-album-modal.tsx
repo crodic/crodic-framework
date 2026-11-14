@@ -23,6 +23,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { CreateAlbumForm } from "./create-album-form";
 import { INITIAL_MOCK_ALBUM_IMAGES } from "./album-types";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
+import { toast } from "sonner";
 
 export interface CreateAlbumModalProps {
   open?: boolean;
@@ -37,12 +40,26 @@ export function CreateAlbumModal({
 }: CreateAlbumModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const isControlled = typeof controlledOpen === "boolean";
   const isOpen = isControlled ? controlledOpen : internalOpen;
-  const setIsOpen = isControlled
-    ? (val: boolean) => controlledOnOpenChange?.(val)
-    : setInternalOpen;
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để đăng tải album tác phẩm!");
+      router.push("/auth/login?from=/upload");
+      return;
+    }
+    if (isControlled) {
+      controlledOnOpenChange?.(val);
+    } else {
+      setInternalOpen(val);
+    }
+  };
+
+  const setIsOpen = handleOpenChange;
 
   const [imagesPayload, setImagesPayload] = useState<ImagePayload[]>([]);
   const [coverIndex, setCoverIndex] = useState<number | null>(0);

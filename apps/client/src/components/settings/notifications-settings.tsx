@@ -26,7 +26,7 @@ export function NotificationsSettings() {
             <span>Thông báo trên hệ thống</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Tùy chọn nhận thông báo đẩy khi có hoạt động mới trên CosSpace.
+            Tùy chọn nhận thông báo đẩy khi có hoạt động mới trên Kosume.
           </CardDescription>
         </CardHeader>
 

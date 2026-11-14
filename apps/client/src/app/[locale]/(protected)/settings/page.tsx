@@ -14,11 +14,11 @@ export async function generateMetadata({
   const { locale } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   const title = `Cài đặt & Thiết lập tài khoản | ${siteName}`;
   const description =
-    "Quản lý bảo mật tài khoản, thông báo, giao diện sáng tối và quyền riêng tư trên CosSpace.";
+    "Quản lý bảo mật tài khoản, thông báo, giao diện sáng tối và quyền riêng tư trên Kosume.";
 
   return {
     title: {

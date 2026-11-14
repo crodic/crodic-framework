@@ -54,7 +54,7 @@ export const TagChip = React.forwardRef<HTMLDivElement, TagChipProps>(
         )}
       >
         <Link
-          href={`/tags/${slug}`}
+          href={`/explore?q=${encodeURIComponent(slug)}`}
           className="focus-visible:ring-primary inline-flex min-w-0 items-center gap-1.5 rounded-full focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
         >
           <span
@@ -105,8 +105,8 @@ export const TagChip = React.forwardRef<HTMLDivElement, TagChipProps>(
 
         {showWikiLink && (
           <Link
-            href={`/dic/${slug}`}
-            aria-label={`Open encyclopedia entry for ${primaryLabel}`}
+            href={`/explore?q=${encodeURIComponent(slug)}`}
+            aria-label={`Khám phá tác phẩm gắn thẻ ${primaryLabel}`}
             className="text-muted-foreground hover:text-primary border-border/70 focus-visible:ring-primary ml-0.5 rounded-sm border-l pl-1.5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <BookOpenText className="size-3.5" aria-hidden="true" />

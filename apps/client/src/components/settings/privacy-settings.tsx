@@ -43,7 +43,7 @@ export function PrivacySettings() {
             <span>Quyền riêng tư & Tương tác</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Kiểm soát thông tin hiển thị với cộng đồng CosSpace.
+            Kiểm soát thông tin hiển thị với cộng đồng Kosume.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

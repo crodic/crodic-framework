@@ -22,11 +22,11 @@ export async function generateMetadata({
   const { locale } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   const title = `Hồ sơ của tôi (${CURRENT_USER_PROFILE.name}) | ${siteName}`;
   const description =
-    "Quản lý hồ sơ cá nhân, các cosplayer đang theo dõi và bộ sưu tập ảnh đã lưu trên CosSpace.";
+    "Quản lý hồ sơ cá nhân, các cosplayer đang theo dõi và bộ sưu tập ảnh đã lưu trên Kosume.";
 
   return {
     title: {

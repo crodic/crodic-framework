@@ -59,7 +59,7 @@ export function FeedView() {
           {/* Mini Footer / Disclaimer */}
           <div className="text-muted-foreground/60 px-2 text-[11px] leading-relaxed">
             <p>
-              © 2026 CosSpace Platform. Dành riêng cho cộng đồng cosplay & nghệ
+              © 2026 Kosume Platform. Dành riêng cho cộng đồng cosplay & nghệ
               thuật số.
             </p>
           </div>

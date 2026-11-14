@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Ticket, Calendar, Check, Loader2 } from "lucide-react";
 import { EventItem } from "./events-types";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
 
 const applyEventSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
@@ -53,6 +55,17 @@ export function EventApplyDialog({
   event,
 }: EventApplyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
+      router.push("/auth/login?from=/events");
+      return;
+    }
+    onOpenChange(val);
+  };
 
   const form = useForm<ApplyEventFormValues>({
     resolver: zodResolver(applyEventSchema),
@@ -62,12 +75,17 @@ export function EventApplyDialog({
       category: "Guest Cosplayer / Khách mời",
       phone: "0987654321",
       characterPlanned: "Acheron (Honkai: Star Rail)",
-      portfolioUrl: "https://cosspace.com/cosplayer/haianh",
+      portfolioUrl: "https://kosume.com/cosplayer/haianh",
       notes: "Đã có sẵn trang phục và vũ khí đạo cụ hoàn thiện.",
     },
   });
 
   const onSubmit = (values: ApplyEventFormValues) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
+      router.push("/auth/login?from=/events");
+      return;
+    }
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
@@ -83,7 +101,7 @@ export function EventApplyDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-xl sm:rounded-3xl sm:p-6">
         <DialogHeader className="border-border/60 border-b pb-2">
           <div className="text-primary flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
@@ -232,11 +250,11 @@ export function EventApplyDialog({
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
                   <FormLabel className="text-muted-foreground text-xs font-semibold">
-                    Link Portfolio / Trang cá nhân CosSpace
+                    Link Portfolio / Trang cá nhân Kosume
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="https://cosspace.com/cosplayer/..."
+                      placeholder="https://kosume.com/cosplayer/..."
                       className="h-10 rounded-xl text-xs sm:text-sm"
                       {...field}
                     />

@@ -56,7 +56,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
               </Badge>
               <Badge variant="secondary" className="gap-1 rounded-lg py-1">
                 <ShieldCheck className="size-3 text-sky-500" />
-                CosSpace Verified Creator
+                Kosume Verified Creator
               </Badge>
             </div>
           </CardContent>

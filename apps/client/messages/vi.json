@@ -306,19 +306,19 @@
   },
   "Auth": {
     "layout": {
-      "welcome": "Chào mừng đến với Crodic Framework",
-      "tagline": "Nền tảng full-stack monorepo hiện đại để xây dựng và mở rộng ứng dụng",
-      "description": "Kiến trúc mô-đun hiệu năng cao với bảo mật phân quyền RBAC, xử lý hàng đợi tự động và khả năng tùy biến White-label mạnh mẽ.",
-      "operational": "Hoạt động ổn định 99.9%",
-      "feature1Title": "Bảo mật Doanh nghiệp",
-      "feature1Desc": "Phân quyền RBAC đa cấp, Google OAuth 2.0 & phiên đăng nhập JWT bảo mật.",
-      "feature2Title": "Kiến trúc Hiệu năng cao",
-      "feature2Desc": "Monorepo Turborepo, Next.js 16 App Router & backend NestJS vi dịch vụ.",
-      "feature3Title": "Tùy biến White-Label",
-      "feature3Desc": "Đa thương hiệu tenant động, token giao diện linh hoạt & tên miền riêng.",
-      "statUptime": "99.9% Uptime",
-      "statLatency": "< 50ms Phản hồi",
-      "statScale": "Quy mô Doanh nghiệp"
+      "welcome": "Chào mừng đến với Kosume",
+      "tagline": "Không gian sáng tạo & Nền tảng Booking Cosplay Chuyên nghiệp",
+      "description": "Kết nối hơn 50.000+ Cosplayers, Photographers, Prop-crafters và các Nhà phát hành Game hàng đầu (HoYoverse, VNG, Garena) trên toàn quốc.",
+      "operational": "Hệ thống hoạt động 99.9%",
+      "feature1Title": "Hồ sơ & Visual Portfolio",
+      "feature1Desc": "Quản lý visual shoots, character tags và showcase album chuẩn độ phân giải cao.",
+      "feature2Title": "Booking & Hợp đồng Bảo đảm",
+      "feature2Desc": "Nhận job sự kiện, lookbook và đại sứ thương hiệu với thanh toán minh bạch, bảo vệ quyền lợi.",
+      "feature3Title": "Bảng xếp hạng & Festival",
+      "feature3Desc": "Vinh danh cống hiến nghệ thuật, vé mời festival cosplay và cơ hội hợp tác độc quyền.",
+      "statUptime": "50K+ Cosplayers",
+      "statLatency": "1.2K+ Job hoàn tất",
+      "statScale": "100% Uy tín & Bảo đảm"
     },
     "login": {
       "metaTitle": "Đăng nhập",

@@ -7,7 +7,7 @@ import { INITIAL_MOCK_ALBUM_IMAGES } from "@/components/studio/album-types";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tải lên Album mới | CosSpace Studio",
+  title: "Tải lên Album mới | Kosume Studio",
   description: "Xuất bản và quản lý bộ ảnh cosplay nghệ thuật",
 };
 

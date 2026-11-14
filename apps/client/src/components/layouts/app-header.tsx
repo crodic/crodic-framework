@@ -5,12 +5,13 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   Bell,
   ChevronDown,
+  LogIn,
   LogOut,
   MessageSquare,
   Plus,
   Search,
   Settings,
-  User,
+  User as UserIcon,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,11 +29,47 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useProfile, useSignOut } from "@/hooks/use-profile";
+import { toast } from "sonner";
 
 export function AppHeader() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  // Authentication State
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const { data: profile } = useProfile();
+  const signOutMutation = useSignOut();
+
+  const displayName =
+    profile?.fullName ||
+    (profile?.firstName
+      ? `${profile.firstName} ${profile.lastName || ""}`.trim()
+      : "Hải Anh");
+  const displayEmail = profile?.email || "haianh.cos@visel.click";
+  const displayAvatar = profile?.avatar || "/landing/avatar-acheron.jpg";
+  const initials =
+    displayName
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "CS";
+
+  const handleLogout = () => {
+    signOutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Đã đăng xuất thành công");
+      },
+      onError: () => {
+        toast.error("Đăng xuất thất bại, vui lòng thử lại");
+      },
+    });
+  };
 
   const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,10 +98,7 @@ export function AppHeader() {
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
-          <span className="flex items-center text-base font-bold">
-            <span className="text-primary font-bold">Cos</span>
-            <span className="text-foreground font-bold">Space</span>
-          </span>
+          <span className="text-foreground text-base font-bold">Kosume</span>
         </Link>
 
         {/* Desktop Search Bar (hidden on mobile) */}
@@ -92,7 +126,7 @@ export function AppHeader() {
         </form>
       </div>
 
-      {/* Right Area: Actions + User Profile */}
+      {/* Right Area: Actions + User Profile or Guest Auth */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Mobile Search Button (visible only on mobile) */}
         <Button
@@ -123,81 +157,125 @@ export function AppHeader() {
           <ModeToggle className="border-border/70 bg-card/60 size-9 rounded-lg" />
         </div>
 
-        {/* Notification Bell - Both Mobile & Desktop */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground relative size-8.5 cursor-pointer rounded-lg sm:size-9"
-          aria-label="Thông báo"
-        >
-          <Bell className="size-4" />
-          <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
-        </Button>
+        {isHydrating ? (
+          // Hydrating Skeleton
+          <div className="bg-muted/60 h-9 w-24 animate-pulse rounded-full" />
+        ) : isAuthenticated ? (
+          <>
+            {/* Notification Bell - Both Mobile & Desktop */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground relative size-8.5 cursor-pointer rounded-lg sm:size-9"
+              aria-label="Thông báo"
+            >
+              <Bell className="size-4" />
+              <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
+            </Button>
 
-        {/* Chat / Messages - Desktop only */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hidden size-9 cursor-pointer rounded-lg md:inline-flex"
-          aria-label="Tin nhắn"
-        >
-          <MessageSquare className="size-4" />
-        </Button>
+            {/* Chat / Messages - Desktop only */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hidden size-9 cursor-pointer rounded-lg md:inline-flex"
+              aria-label="Tin nhắn"
+            >
+              <MessageSquare className="size-4" />
+            </Button>
 
-        {/* User Account Profile Pill */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+            {/* User Account Profile Pill */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="border-border/70 bg-card/60 hover:bg-muted flex h-8.5 cursor-pointer items-center gap-2 rounded-full border px-1 sm:h-9 sm:px-2.5"
+                >
+                  <Avatar className="border-primary/30 size-7 border">
+                    <AvatarImage src={displayAvatar} alt={displayName} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-foreground hidden max-w-[120px] truncate text-xs font-semibold md:inline">
+                    {displayName}
+                  </span>
+                  <ChevronDown className="text-muted-foreground hidden size-3.5 sm:inline" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 rounded-xl p-1.5"
+              >
+                <DropdownMenuLabel className="px-2.5 py-2 font-normal">
+                  <div className="flex flex-col space-y-0.5">
+                    <p className="text-foreground truncate text-sm font-bold">
+                      {displayName}
+                    </p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {displayEmail}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  asChild
+                  className="cursor-pointer rounded-lg text-xs"
+                >
+                  <Link href="/profile" className="flex items-center gap-2">
+                    <UserIcon className="text-primary size-4" />
+                    <span>Portfolio của tôi</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  asChild
+                  className="cursor-pointer rounded-lg text-xs"
+                >
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Settings className="text-primary size-4" />
+                    <span>Cài đặt & Studio</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive focus:text-destructive cursor-pointer rounded-lg text-xs"
+                >
+                  <LogOut className="mr-2 size-4" />
+                  <span>Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : (
+          /* Guest Buttons: Login & Sign-up */
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              className="border-border/70 bg-card/60 hover:bg-muted flex h-8.5 cursor-pointer items-center gap-2 rounded-full border px-1 sm:h-9 sm:px-2.5"
+              size="sm"
+              asChild
+              className="text-muted-foreground hover:text-foreground hidden h-9 cursor-pointer rounded-lg text-xs font-semibold sm:inline-flex sm:text-sm"
             >
-              <Avatar className="border-primary/30 size-7 border">
-                <AvatarImage src="/landing/avatar-acheron.jpg" alt="Hải Anh" />
-                <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
-                  HA
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-foreground hidden text-xs font-semibold md:inline">
-                Hải Anh
-              </span>
-              <ChevronDown className="text-muted-foreground hidden size-3.5 sm:inline" />
+              <Link href="/auth/login">Đăng nhập</Link>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5">
-            <DropdownMenuLabel className="px-2.5 py-2 font-normal">
-              <div className="flex flex-col space-y-0.5">
-                <p className="text-foreground text-sm font-bold">Hải Anh</p>
-                <p className="text-muted-foreground text-xs">
-                  haianh.cos@visel.click
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
+            <Button
+              size="sm"
               asChild
-              className="cursor-pointer rounded-lg text-xs"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs sm:h-9 sm:px-4 sm:text-sm"
             >
-              <Link href="/profile" className="flex items-center gap-2">
-                <User className="text-primary size-4" />
-                <span>Portfolio của tôi</span>
+              <Link href="/auth/login" className="flex items-center gap-1.5">
+                <LogIn className="size-3.5 sm:hidden" />
+                <span>Đăng nhập</span>
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
+            </Button>
+            <Button
+              size="sm"
               asChild
-              className="cursor-pointer rounded-lg text-xs"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 hidden h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold sm:inline-flex sm:text-sm"
             >
-              <Link href="/settings" className="flex items-center gap-2">
-                <Settings className="text-primary size-4" />
-                <span>Cài đặt & Studio</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer rounded-lg text-xs">
-              <LogOut className="mr-2 size-4" />
-              <span>Đăng xuất</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <Link href="/auth/sign-up">Đăng ký</Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Mobile Search Dialog */}

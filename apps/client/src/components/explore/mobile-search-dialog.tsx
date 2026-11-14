@@ -57,7 +57,7 @@ export function MobileSearchDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-border/80 bg-background/95 fixed top-0 right-0 left-0 z-50 m-0 max-h-none w-full max-w-full translate-x-0 translate-y-0 rounded-none border-b p-4 shadow-2xl backdrop-blur-md sm:hidden">
         <DialogHeader className="sr-only">
-          <DialogTitle>Tìm kiếm trên CosSpace</DialogTitle>
+          <DialogTitle>Tìm kiếm trên Kosume</DialogTitle>
         </DialogHeader>
 
         {/* Search input form */}

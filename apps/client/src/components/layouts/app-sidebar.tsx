@@ -82,7 +82,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               size="lg"
               asChild
-              tooltip="CosSpace"
+              tooltip="Kosume"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors"
             >
               <Link href="/" onClick={handleLinkClick}>
@@ -97,11 +97,8 @@ export function AppSidebar() {
                   </svg>
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="flex items-center truncate text-base font-bold">
-                    <span className="text-primary font-bold">Cos</span>
-                    <span className="text-sidebar-foreground font-bold">
-                      Space
-                    </span>
+                  <span className="text-sidebar-foreground truncate text-base font-bold">
+                    Kosume
                   </span>
                   <span className="text-muted-foreground truncate text-[11px] font-medium">
                     Portfolio Hub

@@ -26,6 +26,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { LeaderboardItem } from "./ranking-types";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
 
 export interface RankingTableProps {
   items: LeaderboardItem[];
@@ -34,8 +36,16 @@ export interface RankingTableProps {
 
 export function RankingTable({ items, onBooking }: RankingTableProps) {
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
 
   const handleToggleFollow = (item: LeaderboardItem) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để theo dõi cosplayer!");
+      router.push("/auth/login?from=/ranking");
+      return;
+    }
+
     const isNowFollowing = !followingMap[item.id];
     setFollowingMap((prev) => ({ ...prev, [item.id]: isNowFollowing }));
 
@@ -47,6 +57,15 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
     } else {
       toast.info(`Đã bỏ theo dõi ${item.handle}`);
     }
+  };
+
+  const handleBooking = (item: LeaderboardItem) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để gửi yêu cầu Booking!");
+      router.push("/auth/login?from=/ranking");
+      return;
+    }
+    onBooking(item);
   };
 
   return (
@@ -184,7 +203,7 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                       <Button
                         type="button"
                         size="sm"
-                        onClick={() => onBooking(item)}
+                        onClick={() => handleBooking(item)}
                         className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-3 text-xs font-bold shadow-2xs transition-transform active:scale-95"
                       >
                         Booking
@@ -297,7 +316,7 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                       {/* Booking Button */}
                       <button
                         type="button"
-                        onClick={() => onBooking(item)}
+                        onClick={() => handleBooking(item)}
                         className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer rounded-lg p-1.5 transition-all"
                         title="Booking cosplayer"
                         aria-label="Booking"

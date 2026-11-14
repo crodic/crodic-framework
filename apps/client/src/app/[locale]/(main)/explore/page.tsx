@@ -22,12 +22,12 @@ export async function generateMetadata({
     routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/explore`])
   );
 
-  const title = "Khám phá tác phẩm Cosplay nổi bật & Xu hướng | CosSpace";
+  const title = "Khám phá tác phẩm Cosplay nổi bật & Xu hướng | Kosume";
   const description =
-    "Khám phá các bộ ảnh cosplay, nhân vật yêu thích từ Genshin Impact, Honkai Star Rail, Fate Series, Frieren và nhiều hơn nữa trên CosSpace.";
+    "Khám phá các bộ ảnh cosplay, nhân vật yêu thích từ Genshin Impact, Honkai Star Rail, Fate Series, Frieren và nhiều hơn nữa trên Kosume.";
 
   const canonicalUrl = `${baseUrl}/${locale}/explore`;
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   return {
     title: {
@@ -68,7 +68,7 @@ export default async function ExplorePage({ params }: ExplorePageProps) {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
-  const siteName = whiteLabel?.brandName || "CosSpace";
+  const siteName = whiteLabel?.brandName || "Kosume";
 
   const jsonLd: WithContext<WebSite> = {
     "@context": "https://schema.org",

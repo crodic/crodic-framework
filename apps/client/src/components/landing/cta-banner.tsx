@@ -16,11 +16,11 @@ export function CtaBanner() {
 
           <div className="relative z-10 mx-auto max-w-2xl">
             <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight sm:text-3xl lg:text-4xl">
-              Bạn đã sẵn sàng tham gia thế giới CosSpace?
+              Bạn đã sẵn sàng tham gia thế giới Kosume?
             </h2>
 
             <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed sm:mt-4 sm:text-base">
-              Bạn đã sẵn sàng tham gia thế giới CosSpace? Vũ kịch mở ngàn kích
+              Bạn đã sẵn sàng tham gia thế giới Kosume? Vũ kịch mở ngàn kích
               thích thị giác. Nơi từng khung hình là một tuyệt tác nghệ thuật.
             </p>
 

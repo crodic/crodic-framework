@@ -306,19 +306,19 @@
   },
   "Auth": {
     "layout": {
-      "welcome": "Welcome to Crodic Framework",
-      "tagline": "Enterprise full-stack monorepo platform to build & scale modern applications",
-      "description": "High-performance modular architecture with role-based security, background worker queues, and deep white-label customization.",
-      "operational": "Operational 99.9%",
-      "feature1Title": "Enterprise Security",
-      "feature1Desc": "Multi-tier RBAC permissions, Google OAuth 2.0 & secure JWT sessions.",
-      "feature2Title": "High-Performance Architecture",
-      "feature2Desc": "Turborepo monorepo, Next.js 16 App Router & NestJS microservices.",
-      "feature3Title": "Modular White-Label",
-      "feature3Desc": "Multi-tenant dynamic branding, tokenized theming & custom domains.",
-      "statUptime": "99.9% Uptime",
-      "statLatency": "< 50ms Latency",
-      "statScale": "Enterprise Scale"
+      "welcome": "Welcome to Kosume",
+      "tagline": "The Premier Cosplay Showcase & Professional Booking Platform",
+      "description": "Connecting 50,000+ cosplayers, photographers, crafters and top game studios (HoYoverse, VNG, Garena) nationwide.",
+      "operational": "Platform Online 99.9%",
+      "feature1Title": "Visual Portfolio & Showcase",
+      "feature1Desc": "Curate character shoots, tagging, and high-definition cosplay albums.",
+      "feature2Title": "Verified Booking & Contracts",
+      "feature2Desc": "Apply to official brand jobs, convention guest appearances with escrow protection.",
+      "feature3Title": "Leaderboard & Festivals",
+      "feature3Desc": "Gain recognition, climb leaderboards and get invites to major ACG conventions.",
+      "statUptime": "50K+ Cosplayers",
+      "statLatency": "1.2K+ Bookings Completed",
+      "statScale": "100% Escrow Protected"
     },
     "login": {
       "metaTitle": "Sign In",

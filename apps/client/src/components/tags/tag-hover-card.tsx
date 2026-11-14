@@ -86,7 +86,7 @@ export function TagHoverCard({
           <>
             {previewImageUrl && (
               <Link
-                href={`/dic/${chipProps.slug}`}
+                href={`/explore?q=${encodeURIComponent(chipProps.slug)}`}
                 className="bg-muted/20 border-border/60 relative block overflow-hidden rounded-xl border transition-transform duration-200 hover:scale-[1.01]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -159,7 +159,7 @@ export function TagHoverCard({
                   {t("parentLabel")}
                 </span>
                 <Link
-                  href={`/tags/${tooltip.parentTag.slug}`}
+                  href={`/explore?q=${encodeURIComponent(tooltip.parentTag.slug)}`}
                   className="text-foreground truncate font-semibold hover:underline"
                 >
                   #{tooltip.parentTag.translatedName || tooltip.parentTag.name}
@@ -173,17 +173,17 @@ export function TagHoverCard({
 
             <div className="border-border/60 flex items-center justify-between gap-2 border-t pt-2.5 text-xs font-medium">
               <Link
-                href={`/dic/${chipProps.slug}`}
+                href={`/explore?q=${encodeURIComponent(chipProps.slug)}`}
                 className="text-primary hover:text-primary/80 inline-flex items-center gap-1 transition-colors"
               >
                 <BookOpenText className="size-3.5" aria-hidden="true" />
-                <span>{t("readEncyclopedia")}</span>
+                <span>Khám phá thêm</span>
               </Link>
               <Link
-                href={`/tags/${chipProps.slug}`}
+                href={`/explore?q=${encodeURIComponent(chipProps.slug)}`}
                 className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
               >
-                <span>{t("viewTaggedWorks")}</span>
+                <span>Xem tác phẩm</span>
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>

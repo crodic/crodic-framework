@@ -23,7 +23,7 @@ export const FEATURED_FESTIVALS: FeaturedFestival[] = [
   },
   {
     id: "fest-crafting-market",
-    title: "CosSpace Crafting & Artist Market",
+    title: "Kosume Crafting & Artist Market",
     city: "TP.HCM",
     date: "28/12/2026",
     description:

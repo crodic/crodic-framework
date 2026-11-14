@@ -33,11 +33,11 @@ export default async function MutedTagsSettingsPage({ params }: PageProps) {
       <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-10 sm:px-6 md:py-14">
         <div className="flex items-center justify-between">
           <Link
-            href="/tags"
+            href="/explore"
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
             <ArrowLeft className="size-3.5" aria-hidden="true" />
-            {t("allCanonicalTags") || "Back to Tags Discovery Hub"}
+            Quay lại Khám phá
           </Link>
         </div>
 

@@ -225,7 +225,7 @@ export function SecuritySettings() {
               </div>
               <div>
                 <p className="text-foreground font-semibold">
-                  CosSpace App trên iPhone 15 Pro
+                  Kosume App trên iPhone 15 Pro
                 </p>
                 <p className="text-muted-foreground text-[11px]">
                   Hà Nội, Việt Nam • 2 giờ trước

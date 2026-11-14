@@ -19,11 +19,11 @@ export async function generateMetadata({
   const { locale: _locale } = await params;
 
   return {
-    title: "CosSpace - Nơi Đam Mê Cosplay Tỏa Sáng",
+    title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
     description:
       "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
     openGraph: {
-      title: "CosSpace - Nơi Đam Mê Cosplay Tỏa Sáng",
+      title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
       description:
         "Nền tảng mạng xã hội và Portfolio chất lượng cao dành cho cộng đồng Cosplayer và Fandom.",
       type: "website",
@@ -32,13 +32,13 @@ export async function generateMetadata({
           url: "/landing/hero-banner.png",
           width: 1200,
           height: 630,
-          alt: "CosSpace Cosplay Showcase",
+          alt: "Kosume Cosplay Showcase",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "CosSpace - Nơi Đam Mê Cosplay Tỏa Sáng",
+      title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
       description:
         "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm.",
       images: ["/landing/hero-banner.png"],

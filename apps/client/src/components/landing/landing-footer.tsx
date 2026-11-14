@@ -130,7 +130,7 @@ export function LandingFooter() {
         {/* Bottom Copyright */}
         <div className="border-border/30 border-t pt-8 text-center">
           <p className="text-muted-foreground text-xs">
-            © 2026 CosSpace, All rights reserved.
+            © 2026 Kosume, All rights reserved.
           </p>
         </div>
       </div>

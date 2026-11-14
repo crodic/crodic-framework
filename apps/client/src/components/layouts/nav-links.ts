@@ -41,9 +41,9 @@ export const featureLinks: LinkItemType[] = [
 
 export const platformLinks: LinkItemType[] = [
   {
-    label: "Tags & Encyclopedia (dic)",
-    href: "/tags",
-    description: "Boolean search, semantic DAG hierarchy & community wiki",
+    label: "Explore & Tags",
+    href: "/explore",
+    description: "Search cosplayers, series, characters and anime tags",
     icon: Tags,
   },
   {

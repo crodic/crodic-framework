@@ -120,7 +120,7 @@ export function AppearanceSettings() {
             <span>Ngôn ngữ hiển thị</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Chọn ngôn ngữ ưu tiên trên toàn bộ nền tảng CosSpace.
+            Chọn ngôn ngữ ưu tiên trên toàn bộ nền tảng Kosume.
           </CardDescription>
         </CardHeader>
         <CardContent>

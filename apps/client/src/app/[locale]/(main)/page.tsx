@@ -28,7 +28,7 @@ export async function generateMetadata({
     whiteLabel?.metaTitle ||
     whiteLabel?.siteTitle ||
     whiteLabel?.brandName ||
-    "CosSpace - Trang chủ Portfolio Hub & Showcase";
+    "Kosume - Trang chủ Portfolio Hub & Showcase";
 
   const description =
     whiteLabel?.metaDescription ||
@@ -36,7 +36,7 @@ export async function generateMetadata({
     "Tập trung xây dựng thương hiệu cho Cosplayer - Nơi phô diễn tác phẩm và kết nối booking chuyên nghiệp.";
 
   const canonicalUrl = whiteLabel?.canonicalUrl || `${baseUrl}/${locale}`;
-  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "CosSpace";
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
 
   return {
     title: {
@@ -79,7 +79,7 @@ export default async function RootPage({ params }: RootPageProps) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
 
-  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "CosSpace";
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
   const description = whiteLabel?.metaDescription || t("metaDescription");
 
   const jsonLd: WithContext<WebSite> = {

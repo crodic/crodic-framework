@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Check, Loader2, Send } from "lucide-react";
 import { JobItem } from "./jobs-types";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
 
 const applyJobSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
@@ -57,6 +59,17 @@ export function JobApplyDialog({
   job,
 }: JobApplyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
+
+  const handleOpenChange = (val: boolean) => {
+    if (val && !isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển Job này!");
+      router.push("/auth/login?from=/jobs");
+      return;
+    }
+    onOpenChange(val);
+  };
 
   const form = useForm<ApplyJobFormValues>({
     resolver: zodResolver(applyJobSchema),
@@ -64,7 +77,7 @@ export function JobApplyDialog({
       fullName: "Hải Anh",
       stageName: "Hải Anh",
       contact: "0901234567",
-      portfolioUrl: "https://cosspace.vn/cosplayer/haianh",
+      portfolioUrl: "https://kosume.vn/cosplayer/haianh",
       experience:
         "Hơn 3 năm kinh nghiệm cosplay các nhân vật Honkai & Genshin, từng làm model sự kiện và chụp lookbook.",
       message:
@@ -73,6 +86,11 @@ export function JobApplyDialog({
   });
 
   const onSubmit = async (values: ApplyJobFormValues) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển Job này!");
+      router.push("/auth/login?from=/jobs");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -91,7 +109,7 @@ export function JobApplyDialog({
   if (!job) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6">
         <DialogHeader className="space-y-1.5 text-left">
           {/* Target Job Info Card */}
@@ -224,7 +242,7 @@ export function JobApplyDialog({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="https://cosspace.vn/..."
+                        placeholder="https://kosume.vn/..."
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />

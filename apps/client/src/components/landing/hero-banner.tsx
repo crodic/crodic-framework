@@ -14,7 +14,7 @@ export function HeroBanner() {
       >
         <Image
           src="/landing/hero-banner.png"
-          alt="CosSpace Cosplay Champions"
+          alt="Kosume Cosplay Champions"
           fill
           priority
           sizes="(min-width: 1024px) 70vw, 100vw"
