@@ -1,6 +1,5 @@
 # Bản Phân Tích & Thiết Kế Database Chi Tiết — Hệ Thống Kosume Cosplay Platform
 
-> [!IMPORTANT]
 > Tài liệu này phân tích toàn bộ hiện trạng (`As-Is`) của Backend PostgreSQL/TypeORM trong `apps/api`, đối chiếu 1-1 với toàn bộ màn hình/form/mock data trong Frontend `apps/client`, từ đó đề xuất kiến trúc Database chuẩn hóa (`To-Be`) gồm **23 bảng nghiệp vụ mới** + **2 phần mở rộng Core** gắn kết chặt chẽ trên nền **34 bảng hạ tầng có sẵn** (tổng cộng **57 bảng**).
 
 ---
@@ -55,8 +54,7 @@ Hệ thống hiện tại đã xây dựng hoàn chỉnh **32 `@Entity` + 2 bả
 | **3. Hệ thống Đa hình Tag & Từ điển (11 bảng)**     | `tags`, `tag_translations`, `tag_aliases`, `tag_relations`, `tag_closure`, `tag_encyclopedias`, `tag_encyclopedia_revisions`, `entity_tags`, `entity_tag_configs`, `entity_tag_logs`, `user_muted_tags`    | [tag.constant.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/constants/tag.constant.ts), [tag.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/entities/tag.entity.ts), [tag-closure.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/entities/tag-closure.entity.ts), [entity-tag.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/entities/entity-tag.entity.ts), [user-muted-tag.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/entities/user-muted-tag.entity.ts), [tag-query-filter.helper.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/tag/helpers/tag-query-filter.helper.ts) | Gắn thẻ nhân vật (`CHARACTER`), tác phẩm (`COPYRIGHT`), kỹ thuật/general (`GENERAL`) đa ngôn ngữ (`vi`/`en`/`jp`), cây phân cấp DAG, tìm kiếm Boolean (`AND`/`OR`/`-NOT`) và **tự động ẩn bài chứa Muted Tags** của User.                     |
 | **4. CMS, White-Label, Địa giới & Audit (10 bảng)** | `cms_pages`, `cms_page_translations`, `white_labels`, `settings`, `regions`, `countries`, `states`, `cities`, `activity_logs`, `email_logs`                                                                | [cms-page.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/cms-page/entities/cms-page.entity.ts), [city.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/location/entities/city.entity.ts), [activity-log.entity.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/api/audit-log/entities/activity-log.entity.ts)                                                                                                                                                                                                                                                                                                                                                                         | Chuẩn hóa Tỉnh/Thành phố cho Cosplayer, Events, Jobs (`cities.id`, `countries.id`), ghi log hoạt động & email thông báo.                                                                                                                      |
 
-> [!TIP]
-> **Nhờ tái sử dụng `user_muted_tags`, `entity_tags`, `files`, `cities`**, ta **không cần** tạo dư thừa bảng `muted_tags` hay `fandoms`/`characters` rời rạc mà tận dụng ngay hệ thống Tag + Từ điển sẵn có để hỗ trợ tìm kiếm đa ngôn ngữ, alias đồng nghĩa (vd: `HSR` -> `Honkai: Star Rail`) và mở rộng cây phân cấp DAG!
+> **Lưu ý kiến trúc**: Nhờ tái sử dụng `user_muted_tags`, `entity_tags`, `files`, `cities`, ta **không cần** tạo dư thừa bảng `muted_tags` hay `fandoms`/`characters` rời rạc mà tận dụng ngay hệ thống Tag + Từ điển sẵn có để hỗ trợ tìm kiếm đa ngôn ngữ, alias đồng nghĩa (vd: `HSR` -> `Honkai: Star Rail`) và mở rộng cây phân cấp DAG!
 
 ### 1.3. Đối chiếu Khoảng trống (`Gap Analysis`: Frontend `apps/client` vs Backend `apps/api`)
 
@@ -89,18 +87,21 @@ erDiagram
     USERS ||--o{ POST_COMMENTS : "writes"
     USERS ||--o{ POST_COMMENT_LIKES : "likes"
     USERS ||--o{ COLLECTIONS : "owns"
-    USERS ||--o{ JOBS : "posts job"
+    USERS ||--o{ BRANDS : "owns / creates"
+    USERS ||--o{ BRAND_MEMBERS : "member of"
+    BRANDS ||--o{ BRAND_MEMBERS : "has staff"
+    BRANDS ||--o{ JOBS : "posts job"
+    JOBS ||--o{ JOB_APPLICATIONS : "receives"
     USERS ||--o{ JOB_APPLICATIONS : "applies"
     USERS ||--o{ EVENT_APPLICATIONS : "applies"
     USERS ||--o{ EVENT_INTERESTS : "interested in"
-    USERS ||--o{ BOOKING_REQUESTS : "requests / receives"
-    USERS ||--o{ DIRECT_MESSAGES : "sends / receives"
     USERS ||--o{ NOTIFICATIONS : "receives / acts"
     USERS ||--o{ CONTENT_REPORTS : "reports"
     USERS ||--o{ SPOTLIGHT_BANNERS : "featured in"
     USERS ||--o{ LEADERBOARD_SNAPSHOTS : "ranked in"
 
     CITIES ||--o{ COSPLAYER_PROFILES : "city"
+    CITIES ||--o{ BRANDS : "headquarter city"
     CITIES ||--o{ JOBS : "job city"
     CITIES ||--o{ EVENTS : "event city"
 
@@ -115,7 +116,6 @@ erDiagram
     COLLECTIONS ||--o{ COLLECTION_ITEMS : "contains"
     POST_MEDIA ||--o{ COLLECTION_ITEMS : "optional specific photo"
 
-    JOBS ||--o{ JOB_APPLICATIONS : "receives"
     EVENTS ||--o{ EVENT_PARTICIPANTS : "features guests"
     EVENTS ||--o{ EVENT_APPLICATIONS : "receives"
     EVENTS ||--o{ EVENT_INTERESTS : "tracked by"
@@ -129,6 +129,7 @@ erDiagram
         bigint id PK
         varchar username UK
         varchar email UK
+        varchar role "fan | cosplayer | recruiter"
         boolean show_online_status
         timestamptz last_active_at
         jsonb notifications
@@ -143,6 +144,21 @@ erDiagram
         boolean is_accepting_booking
         int followers_count
         double ranking_score
+    }
+    BRANDS {
+        bigint id PK
+        bigint owner_user_id FK
+        varchar name
+        varchar slug UK
+        varchar logo_url
+        boolean is_verified
+        int jobs_count
+    }
+    BRAND_MEMBERS {
+        bigint id PK
+        bigint brand_id FK
+        bigint user_id FK
+        varchar role "owner | recruiter | member"
     }
     POSTS {
         bigint id PK
@@ -173,6 +189,7 @@ erDiagram
     }
     JOBS {
         bigint id PK
+        bigint brand_id FK
         bigint poster_user_id FK
         varchar slug UK
         varchar category_code
@@ -187,12 +204,6 @@ erDiagram
         jsonb schedule
         int interested_count
     }
-    BOOKING_REQUESTS {
-        bigint id PK
-        bigint target_cosplayer_id FK
-        bigint requester_user_id FK
-        varchar status
-    }
     NOTIFICATIONS {
         bigint id PK
         bigint recipient_user_id FK
@@ -206,12 +217,11 @@ erDiagram
 
 ## 3. Thiết kế Chi tiết Schema (2 Mở rộng Core + 23 Bảng Mới)
 
-> [!NOTE]
-> **Quy ước chung cho mọi bảng mới**:
->
-> - Toàn bộ bảng nghiệp vụ kế thừa `AbstractEntity` (`created_at`, `updated_at` kiểu `timestamptz`).
-> - Các bảng nội dung chính có `deleted_at` (`timestamptz`, nullable) để hỗ trợ xóa mềm và dùng **Partial Unique Index (`WHERE deleted_at IS NULL`)** cho các cột `slug`, `handle`, `username`.
-> - Toàn bộ tên khóa chính, khóa ngoại, index đặt theo chuẩn đặt tên có sẵn của repo: `PK_<tên>`, `FK_<bảng>_<cột>`, `UQ_<bảng>_<cột>`, `IDX_<bảng>_<cột>`.
+**Quy ước chung cho mọi bảng mới**:
+
+- Toàn bộ bảng nghiệp vụ kế thừa `AbstractEntity` (`created_at`, `updated_at` kiểu `timestamptz`).
+- Các bảng nội dung chính có `deleted_at` (`timestamptz`, nullable) để hỗ trợ xóa mềm và dùng **Partial Unique Index (`WHERE deleted_at IS NULL`)** cho các cột `slug`, `handle`, `username`.
+- Toàn bộ tên khóa chính, khóa ngoại, index đặt theo chuẩn đặt tên có sẵn của repo: `PK_<tên>`, `FK_<bảng>_<cột>`, `UQ_<bảng>_<cột>`, `IDX_<bảng>_<cột>`.
 
 ---
 
@@ -224,6 +234,7 @@ Bổ sung các cột cần thiết cho URL `/cosplayer/[username]`, trạng thá
 | Tên cột                              | Kiểu PostgreSQL | Nullable / Default                                                                                                                                                | Ràng buộc / Ghi chú                                                                                                                                            |
 | :----------------------------------- | :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `username`                           | `varchar(60)`   | `NULL` (giai đoạn chuyển đổi) / khuyến nghị `NOT NULL` sau backfill                                                                                               | `@Index('UQ_user_username', { unique: true, where: '"deleted_at" IS NULL' })`. Định danh duy nhất phục vụ route `/cosplayer/[username]` và đồng bộ với handle. |
+| `user_type`                          | `varchar(30)`   | `NOT NULL DEFAULT 'fan'`                                                                                                                                          | Enum vai trò tài khoản: `'fan' \| 'cosplayer' \| 'recruiter'`. Mặc định khi đăng ký là `'fan'`, có thể nâng cấp thành `'cosplayer'` hoặc `'recruiter'`.        |
 | `show_online_status`                 | `boolean`       | `NOT NULL DEFAULT true`                                                                                                                                           | Tương ứng switch **"Hiển thị trạng thái hoạt động (Online Status)"** trong `PrivacySettings`.                                                                  |
 | `last_active_at`                     | `timestamptz`   | `NULL`                                                                                                                                                            | Cập nhật định kỳ từ middleware / session / WebSocket heartbeat để xác định chấm xanh online khi `show_online_status = true`.                                   |
 | `notifications` _(cập nhật default)_ | `jsonb`         | `DEFAULT '{"email": true, "system": true, "security": true, "notifyNewPost": true, "notifyInteractions": true, "notifyFestivals": false, "notifyBooking": true}'` | Mở rộng JSONB có sẵn trên `UserEntity` để lưu đủ 4 toggle của `NotificationsSettings` mà không phải tạo thêm bảng 1-1 dư thừa.                                 |
@@ -358,13 +369,12 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 
 ### 3.2. Phân hệ 2 — Studio Albums & Bài đăng Thống nhất
 
-> [!IMPORTANT]
-> **Quyết định Kiến trúc: Hợp nhất `Album` và `FeedPost` thành một Thực thể `posts` duy nhất**
-> Quan sát trực tiếp từ mã nguồn Client:
->
-> 1. Trên tab Album ở trang Profile ([profile-albums.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/cosplayer-profile/profile-albums.tsx#L60-L63)), click vào một Album sẽ điều hướng trực tiếp tới `/post/${album.id}`.
-> 2. Trên trang Feed ([create-post-card.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/feed/create-post-card.tsx#L104)), nút tạo bài viết mở chính `CreateAlbumModal` ([create-album-form.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/studio/create-album-form.tsx#L23-L31)).
-> 3. Do đó Album (nhiều ảnh) và Bài đăng Feed/Explore/Showcase/Post Detail thực chất là **cùng một thực thể lõi (`posts`)** kết hợp danh sách media có thứ tự (`post_media`). Thiết kế hợp nhất giúp triệt tiêu 100% việc nhân bản bảng, thống nhất ID `/post/:id`, lượt tim, bình luận, bookmark và gắn thẻ `entity_tags (entity_type = 'post')`.
+**Quyết định Kiến trúc: Hợp nhất `Album` và `FeedPost` thành một Thực thể `posts` duy nhất**
+Quan sát trực tiếp từ mã nguồn Client:
+
+1. Trên tab Album ở trang Profile ([profile-albums.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/cosplayer-profile/profile-albums.tsx#L60-L63)), click vào một Album sẽ điều hướng trực tiếp tới `/post/${album.id}`.
+2. Trên trang Feed ([create-post-card.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/feed/create-post-card.tsx#L104)), nút tạo bài viết mở chính `CreateAlbumModal` ([create-album-form.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/studio/create-album-form.tsx#L23-L31)).
+3. Do đó Album (nhiều ảnh) và Bài đăng Feed/Explore/Showcase/Post Detail thực chất là **cùng một thực thể lõi (`posts`)** kết hợp danh sách media có thứ tự (`post_media`). Thiết kế hợp nhất giúp triệt tiêu 100% việc nhân bản bảng, thống nhất ID `/post/:id`, lượt tim, bình luận, bookmark và gắn thẻ `entity_tags (entity_type = 'post')`.
 
 #### Bảng 4: `posts`
 
@@ -561,7 +571,61 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 
 ### 3.4. Phân hệ 4 — Tuyển dụng & Việc làm Cosplay
 
-#### Bảng 12: `jobs`
+#### Bảng 12: `brands` (Hồ sơ Nhà tuyển dụng / Thương hiệu / Studio)
+
+> **Nguồn đối chiếu UI**: Thông tin Thương hiệu / Studio đối tác trên tin tuyển dụng & hồ sơ doanh nghiệp ([jobs-types.ts](file:///home/crodic/personal/crodic-framework/apps/client/src/components/jobs/jobs-types.ts), [post-job-dialog.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/jobs/post-job-dialog.tsx)).
+
+| Tên cột                                    | Kiểu PostgreSQL | Nullable / Default           | Ràng buộc / FK / Mô tả                                                          |
+| :----------------------------------------- | :-------------- | :--------------------------- | :------------------------------------------------------------------------------ |
+| `id`                                       | `bigint`        | `NOT NULL`                   | `PK_brand_id` (AutoIncrement)                                                   |
+| `owner_user_id`                            | `bigint`        | `NOT NULL`                   | FK -> `users.id` (`ON DELETE CASCADE`) — tài khoản người tạo/sở hữu thương hiệu |
+| `name`                                     | `varchar(160)`  | `NOT NULL`                   | Tên Thương hiệu / Studio (`Aetheria Production`, `Hoyoverse`, `VNG Games`)      |
+| `slug`                                     | `varchar(180)`  | `NOT NULL`                   | Slug URL công khai (`/brand/aetheria-production`)                               |
+| `initials`                                 | `varchar(10)`   | `NULL`                       | Ký tự viết tắt hiển thị avatar fallback (`AP`)                                  |
+| `color`                                    | `varchar(50)`   | `NULL`                       | Class màu nền đại diện (`bg-primary`)                                           |
+| `logo_file_id`                             | `bigint`        | `NULL`                       | FK -> `files.id` (`ON DELETE SET NULL`)                                         |
+| `logo_url`                                 | `varchar(500)`  | `NULL`                       | URL logo thương hiệu                                                            |
+| `cover_file_id`                            | `bigint`        | `NULL`                       | FK -> `files.id` (`ON DELETE SET NULL`)                                         |
+| `cover_url`                                | `varchar(500)`  | `NULL`                       | Ảnh bìa thương hiệu                                                             |
+| `tagline`                                  | `varchar(255)`  | `NULL`                       | Khẩu hiệu ngắn                                                                  |
+| `description`                              | `text`          | `NULL`                       | Giới thiệu chi tiết về studio / doanh nghiệp                                    |
+| `website_url`                              | `varchar(300)`  | `NULL`                       | Website chính thức                                                              |
+| `contact_email`                            | `varchar(255)`  | `NOT NULL`                   | Email công vụ nhận hồ sơ ứng tuyển                                              |
+| `contact_phone`                            | `varchar(40)`   | `NULL`                       | SĐT / Hotline liên hệ                                                           |
+| `location_label`                           | `varchar(120)`  | `NULL`                       | Địa chỉ trụ sở (`TP.HCM`, `Hà Nội`)                                             |
+| `city_id`                                  | `bigint`        | `NULL`                       | FK -> `cities.id` (`ON DELETE SET NULL`)                                        |
+| `is_verified`                              | `boolean`       | `NOT NULL DEFAULT false`     | Tick xanh Doanh nghiệp / Studio đã xác minh (Admin cấp duyệt 1 lần)             |
+| `jobs_count`                               | `integer`       | `NOT NULL DEFAULT 0`         | Tổng số tin tuyển dụng đã đăng (denormalized counter)                           |
+| `created_at` / `updated_at` / `deleted_at` | `timestamptz`   | `CURRENT_TIMESTAMP` / `NULL` | Audit & Soft delete                                                             |
+
+**Indexes (`brands`)**:
+
+- `UQ_brands_slug`: UNIQUE `(slug) WHERE deleted_at IS NULL`
+- `IDX_brands_owner`: `(owner_user_id) WHERE deleted_at IS NULL`
+- `IDX_brands_verified`: `(is_verified, name) WHERE deleted_at IS NULL`
+
+---
+
+#### Bảng 13: `brand_members` (Phân quyền Quản trị Thương hiệu)
+
+> **Vai trò kiến trúc**: Cho phép một Thương hiệu / Studio có thể có nhiều nhân sự (`UserEntity`) cùng tham gia quản trị, đăng job hoặc xem xét hồ sơ ứng viên (ví dụ: Chủ studio và HR/Tuyển dụng).
+
+| Tên cột                     | Kiểu PostgreSQL | Nullable / Default          | Ràng buộc / FK / Mô tả                                    |
+| :-------------------------- | :-------------- | :-------------------------- | :-------------------------------------------------------- |
+| `id`                        | `bigint`        | `NOT NULL`                  | `PK_brand_member_id`                                      |
+| `brand_id`                  | `bigint`        | `NOT NULL`                  | FK -> `brands.id` (`ON DELETE CASCADE`)                   |
+| `user_id`                   | `bigint`        | `NOT NULL`                  | FK -> `users.id` (`ON DELETE CASCADE`)                    |
+| `role`                      | `varchar(30)`   | `NOT NULL DEFAULT 'member'` | Vai trò trong Brand: `'owner' \| 'recruiter' \| 'member'` |
+| `created_at` / `updated_at` | `timestamptz`   | `CURRENT_TIMESTAMP`         | Audit                                                     |
+
+**Indexes (`brand_members`)**:
+
+- `UQ_brand_members_pair`: UNIQUE `(brand_id, user_id)`
+- `IDX_brand_members_user`: `(user_id)`
+
+---
+
+#### Bảng 14: `jobs`
 
 > **Nguồn đối chiếu UI**: [jobs-types.ts](file:///home/crodic/personal/crodic-framework/apps/client/src/components/jobs/jobs-types.ts#L1-L26), [post-job-dialog.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/jobs/post-job-dialog.tsx#L31-L58), `RecruitmentProject` trong [home-types.ts](file:///home/crodic/personal/crodic-framework/apps/client/src/components/home/home-types.ts#L35-L41).
 
@@ -569,14 +633,9 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 | :----------------------------------------- | :-------------- | :------------------------------------ | :--------------------------------------------------------------------------------------------------- |
 | `id`                                       | `bigint`        | `NOT NULL`                            | `PK_job_id`                                                                                          |
 | `slug`                                     | `varchar(200)`  | `NOT NULL`                            | Slug duy nhất của tin tuyển dụng                                                                     |
-| `poster_user_id`                           | `bigint`        | `NULL`                                | FK -> `users.id` (`ON DELETE SET NULL`) — người đăng tin phía Client                                 |
+| `brand_id`                                 | `bigint`        | `NOT NULL`                            | FK -> `brands.id` (`ON DELETE CASCADE`) — tham chiếu tới Thương hiệu / Studio                        |
+| `poster_user_id`                           | `bigint`        | `NULL`                                | FK -> `users.id` (`ON DELETE SET NULL`) — tài khoản người đăng tin phía Client                       |
 | `created_by_admin_id`                      | `bigint`        | `NULL`                                | FK -> `admin_users.id` (`ON DELETE SET NULL`) — nếu do Admin đăng/tạo giúp đối tác                   |
-| `brand_name`                               | `varchar(160)`  | `NOT NULL`                            | Tên Thương hiệu / Studio (`Aetheria Production`)                                                     |
-| `brand_logo_file_id`                       | `bigint`        | `NULL`                                | FK -> `files.id` (`ON DELETE SET NULL`)                                                              |
-| `brand_logo_url`                           | `varchar(500)`  | `NULL`                                | URL logo thương hiệu                                                                                 |
-| `brand_initials`                           | `varchar(10)`   | `NULL`                                | Chữ viết tắt hiển thị fallback avatar (`AP`)                                                         |
-| `brand_color`                              | `varchar(50)`   | `NULL`                                | Class màu nền fallback avatar                                                                        |
-| `is_verified`                              | `boolean`       | `NOT NULL DEFAULT false`              | Thương hiệu đã xác minh                                                                              |
 | `title`                                    | `varchar(220)`  | `NOT NULL`                            | Tiêu đề job                                                                                          |
 | `category_code`                            | `varchar(40)`   | `NOT NULL`                            | `'lookbook' \| 'event' \| 'crafting' \| 'game_ads'`                                                  |
 | `category_label`                           | `varchar(80)`   | `NOT NULL`                            | Nhãn hiển thị (`Mẫu ảnh / Lookbook`, `Guest Sự kiện`, `Làm trang phục / Crafting`, `Quảng cáo Game`) |
@@ -602,13 +661,14 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 **Indexes (`jobs`)**:
 
 - `UQ_jobs_slug`: UNIQUE `(slug) WHERE deleted_at IS NULL`
+- `IDX_jobs_brand_id`: `(brand_id)`
 - `IDX_jobs_listing`: `(status, category_code, location_filter_code, created_at DESC) WHERE deleted_at IS NULL`
 - `IDX_jobs_featured`: `(status, is_featured, created_at DESC) WHERE deleted_at IS NULL`
 - `IDX_jobs_deadline`: `(status, deadline_at) WHERE deleted_at IS NULL`
 
 ---
 
-#### Bảng 13: `job_applications`
+#### Bảng 15: `job_applications`
 
 > **Nguồn đối chiếu UI**: Form ứng tuyển trong [job-apply-dialog.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/jobs/job-apply-dialog.tsx#L32-L46).
 
@@ -751,9 +811,15 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 
 ---
 
-### 3.6. Phân hệ 6 — Đặt lịch Booking & Tin nhắn Trực tiếp
+### 3.6. Phân hệ 6 — Đặt lịch Booking & Tin nhắn Trực tiếp _(Tạm hoãn - Deferred)_
 
-#### Bảng 18: `booking_requests`
+> [!NOTE]
+> **Trạng thái**: Toàn bộ Phân hệ 6 gồm **Đặt lịch Booking (`booking_requests`)** và **Tin nhắn trực tiếp (`direct_messages`)** đã được thống nhất **tạm hoãn (Deferred)** khỏi phạm vi triển khai của đợt này.
+>
+> - **Đặt lịch Booking**: Tạm thời không tạo bảng lưu trữ giao dịch; widget trên Home và nút liên hệ trên Profile sẽ đóng vai trò hiển thị thông tin liên hệ công khai (SĐT, Email, Zalo/Facebook) để các bên tự kết nối bên ngoài.
+> - **Tin nhắn trực tiếp**: Sẽ thiết kế chuẩn hóa theo mô hình `conversations` + `messages` khi có nhu cầu phát triển Chat trong tương lai.
+
+#### Bảng 18: `booking_requests` _(Tạm hoãn - Deferred)_
 
 > **Nguồn đối chiếu UI**: [ranking-booking-dialog.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/ranking/ranking-booking-dialog.tsx#L31-L63) và [booking-widget.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/home/booking-widget.tsx).
 
@@ -780,7 +846,10 @@ Mọi người dùng đăng nhập (`UserEntity`) đều có thể đóng vai **
 
 ---
 
-#### Bảng 19: `direct_messages`
+#### Bảng 19: `direct_messages` _(Tạm hoãn - Deferred)_
+
+> [!NOTE]
+> **Trạng thái**: Tạm hoãn (Deferred) — Theo quyết định chốt ngày 15/11/2026, tính năng Tin nhắn trực tiếp (Direct Messages) sẽ **chưa triển khai** trong giai đoạn hiện tại để tối ưu phạm vi dự án. Bảng này được lưu lại phục vụ tham chiếu thiết kế cho giai đoạn sau.
 
 > **Nguồn đối chiếu UI**: Nút **"Nhắn tin"** trong [profile-hero.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/cosplayer-profile/profile-hero.tsx) & nút **"Liên hệ"** trong [booking-widget.tsx](file:///home/crodic/personal/crodic-framework/apps/client/src/components/home/booking-widget.tsx).
 
@@ -953,27 +1022,67 @@ Khi xây dựng API danh sách Feed / Explore / Events / Jobs / Cosplayers:
 
 Trên các bảng `cosplayer_profiles` (`display_name`, `handle`), `posts` (`title`, `character_name`, `fandom_name`), `jobs` (`title`, `brand_name`), `events` (`title`, `venue`):
 
-- Sử dụng extension `pg_trgm` kết hợp index `GIN (column gin_trgm_ops)` (tạo trong migration sau bước `migration:generate` hoặc bằng decorator `@Index` tương thích) để gõ tìm tiếng Việt không dấu/có dấu ở thanh Search header & `MobileSearchDialog` nhanh và chính xác.
+- Sử dụng extension `pg_trgm` kết hợp index `GIN (column gin_trgm_ops)` để gõ tìm tiếng Việt không dấu/có dấu ở thanh Search header & `MobileSearchDialog` nhanh và chính xác.
 
 ---
 
 ## 5. Lộ trình Triển khai 5 Phase & Quy trình Verification
 
-| Phase                                                       | Phạm vi Bảng & Module NestJS                                                                                                                                                     | Quyền RBAC Admin bổ sung ([permissions.constant.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/utils/permissions.constant.ts))   | Verification & Seeder                                                                                                   |
-| :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| **Phase 1: Core Extension & Cosplayer Portfolio**           | Sửa `UserEntity`, mở rộng `ETaggableEntityType`; Tạo `CosplayerProfileEntity`, `CosplayerServiceEntity`, `CosplayerCharacterEntity` + Module `cosplayer`                         | `CosplayerProfile` (`read`, `update`, `publish` để duyệt tick xanh Verified)                                                                     | Chạy `migration:generate` kiểm tra diff sạch; `migration:run`; Seed dữ liệu từ `profile-data.ts` & `entity_tag_configs` |
-| **Phase 2: Unified Studio Posts & Media**                   | Tạo `PostEntity`, `PostMediaEntity` + Module `post` tích hợp `SortableImageUploadService` & `EntityTaggingService`                                                               | `Post` (`read`, `update`, `delete`, `publish`)                                                                                                   | Test upload album mới + reorder ảnh + filter tag + mute tag via `TagQueryFilterHelper`                                  |
-| **Phase 3: Social Interactions & Collections**              | Tạo `UserFollowEntity`, `PostLikeEntity`, `PostCommentEntity`, `PostCommentLikeEntity`, `CollectionEntity`, `CollectionItemEntity` + Modules `social`, `collection`              | _(Không cần quyền Admin riêng, kiểm duyệt qua Report)_                                                                                           | Test atomic counter consistency (`likes_count`, `followers_count`, `items_count`) và mosaic `preview_thumbnails`        |
-| **Phase 4: Jobs, Events & Direct Booking/DM**               | Tạo `JobEntity`, `JobApplicationEntity`, `EventEntity`, `EventParticipantEntity`, `EventApplicationEntity`, `EventInterestEntity`, `BookingRequestEntity`, `DirectMessageEntity` | `Job` (`create`, `read`, `update`, `delete`, `publish`), `Event` (`create`, `read`, `update`, `delete`, `publish`), `Booking` (`read`, `update`) | Seed từ `jobs-data.ts` & `events-data.ts`; Test unique apply constraint & cron expiration                               |
-| **Phase 5: Ranking, Spotlight, Notifications & Moderation** | Tạo `LeaderboardSnapshotEntity`, `SpotlightBannerEntity`, `NotificationEntity`, `ContentReportEntity` + BullMQ Ranking Worker                                                    | `Spotlight` (`manage`), `ContentReport` (`read`, `update`)                                                                                       | Test BullMQ snapshot worker cho 5 filter tab + API Admin xử lý báo cáo + WebSocket/inbox notifications                  |
+| Phase                                                       | Phạm vi Bảng & Module NestJS                                                                                                                                                                                | Quyền RBAC Admin bổ sung ([permissions.constant.ts](file:///home/crodic/personal/crodic-framework/apps/api/src/utils/permissions.constant.ts))                                         | Verification & Seeder                                                                                                   |
+| :---------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| **Phase 1: Core Extension & Cosplayer Portfolio**           | Sửa `UserEntity`, mở rộng `ETaggableEntityType`; Tạo `CosplayerProfileEntity`, `CosplayerServiceEntity`, `CosplayerCharacterEntity` + Module `cosplayer`                                                    | `CosplayerProfile` (`read`, `update`, `publish` để duyệt tick xanh Verified)                                                                                                           | Chạy `migration:generate` kiểm tra diff sạch; `migration:run`; Seed dữ liệu từ `profile-data.ts` & `entity_tag_configs` |
+| **Phase 2: Unified Studio Posts & Media**                   | Tạo `PostEntity`, `PostMediaEntity` + Module `post` tích hợp `SortableImageUploadService` & `EntityTaggingService`                                                                                          | `Post` (`read`, `update`, `delete`, `publish`)                                                                                                                                         | Test upload album mới + reorder ảnh + filter tag + mute tag via `TagQueryFilterHelper`                                  |
+| **Phase 3: Social Interactions & Collections**              | Tạo `UserFollowEntity`, `PostLikeEntity`, `PostCommentEntity`, `PostCommentLikeEntity`, `CollectionEntity`, `CollectionItemEntity` + Modules `social`, `collection`                                         | _(Không cần quyền Admin riêng, kiểm duyệt qua Report)_                                                                                                                                 | Test atomic counter consistency (`likes_count`, `followers_count`, `items_count`) và mosaic `preview_thumbnails`        |
+| **Phase 4: Tuyển dụng Jobs & Sự kiện Events**               | Tạo `BrandEntity`, `BrandMemberEntity`, `JobEntity`, `JobApplicationEntity`, `EventEntity`, `EventParticipantEntity`, `EventApplicationEntity`, `EventInterestEntity` _(Booking và DirectMessage tạm hoãn)_ | `Brand` (`create`, `read`, `update`, `publish` để duyệt tick xanh), `Job` (`create`, `read`, `update`, `delete`, `publish`), `Event` (`create`, `read`, `update`, `delete`, `publish`) | Seed từ `jobs-data.ts` & `events-data.ts`; Test unique apply constraint & cron expiration                               |
+| **Phase 5: Ranking, Spotlight, Notifications & Moderation** | Tạo `LeaderboardSnapshotEntity`, `SpotlightBannerEntity`, `NotificationEntity`, `ContentReportEntity` + BullMQ Ranking Worker                                                                               | `Spotlight` (`manage`), `ContentReport` (`read`, `update`)                                                                                                                             | Test BullMQ snapshot worker cho 5 filter tab + API Admin xử lý báo cáo + WebSocket/inbox notifications                  |
 
 ---
 
-## 6. Các Điểm Cần Chốt Trước Khi Code (`Open Decisions`)
+## 6. Quyết Định Thiết Kế Đã Chốt Theo Các Phase (`Decisions Log`)
 
-Mời bạn review bản thiết kế trên và xác nhận giúp 4 quyết định nghiệp vụ sau trước khi bắt đầu Phase 1:
+Dưới đây là toàn bộ các quyết định nghiệp vụ và kiến trúc đã được người dùng chốt chính thức (ngày 15/11/2026) làm cơ sở thực thi chi tiết cho toàn bộ 5 Phase:
 
-1. **Quy trình duyệt Tin tuyển dụng (`jobs.status`)**: Khi Brand/User đăng tin qua `PostJobDialog`, tin sẽ vào trạng thái `'pending_approval'` chờ Admin duyệt trước khi hiển thị công khai hay xuất bản thẳng `'open'` (hậu kiểm qua `content_reports`)?
-2. **Đơn vị & Công thức điểm Ranking (`leaderboard_snapshots`)**: Trong hệ thống thực tế, trọng số giữa `Lượt thích mới trong kỳ`, `Lượt theo dõi mới`, và `Lượt lưu Collection` để tính `score` trên Podium nên cấu hình mặc định ra sao (hay cần thêm cấu hình trong bảng `settings` để Admin chỉnh được)?
-3. **Tin nhắn trực tiếp (`direct_messages`)**: Giai đoạn đầu lưu trực tiếp cặp `(sender_id, recipient_id)` gọn nhẹ như thiết kế bảng 19, hay cần tách ngay bảng `conversations` + `conversation_participants` để chuẩn bị cho chat nhóm (Group Cosplay)?
-4. **Duyệt `cosplayer_profiles`**: Tài khoản mới đăng ký mặc định đã tự có record `cosplayer_profiles` rỗng hay chỉ khởi tạo khi User kích hoạt chế độ Creator / chỉnh sửa hồ sơ công khai?
+### Phase 1: Mở rộng Core & Hồ sơ Cosplayer Portfolio
+
+1. **Khởi tạo Hồ sơ Cosplayer (`cosplayer_profiles`)**:
+   - **Quyết định**: **Tự động tạo hồ sơ cơ bản ngay khi đăng ký tài khoản**.
+   - **Cơ chế**: Mọi người dùng đều sở hữu profile và URL cá nhân, mặc định ở vai trò thành viên/fan. Người dùng chỉ cần bật toggle **"Nhận Booking / Creator"** (`is_accepting_booking = true` / cập nhật vai trò nghệ danh) khi muốn hoạt động như một Cosplayer chuyên nghiệp và xuất hiện trong các bộ lọc tuyển dụng.
+2. **Định danh `username` (URL Slug) và `@handle`**:
+   - **Quyết định**: **Đồng bộ 1-1** giữa `username` và `handle`.
+   - **Cơ chế**: `username` làm slug duy nhất trên route (vd: `/cosplayer/kiriko`) đồng thời chính là `@handle` hiển thị (`@kiriko`). Khi người dùng đổi một bên, hệ thống tự động cập nhật bên còn lại để đảm bảo tính nhất quán định danh, chống mạo danh và tối ưu SEO.
+3. **Phân quyền và Vai trò người dùng qua cột `role` trong `users`**:
+   - **Quyết định**: Bổ sung cột `role: enum EUserRole ('fan', 'cosplayer', 'recruiter')` trong bảng `users` (mặc định `'fan'`).
+   - **Cơ chế**: Cho phép nạp trực tiếp vai trò vào JWT Payload và dùng NestJS `@Roles()` Guard kiểm tra quyền 0ms mà không phải chạy truy vấn SQL JOIN bảng con ở mỗi request; đồng thời giúp Frontend phân luồng điều hướng UI tức thì.
+
+### Phase 2: Unified Studio Posts & Quản lý Media
+
+4. **Lưu trữ Ảnh gốc và Đóng dấu bản quyền (Watermark)**:
+   - **Quyết định**: Lưu song song **cả 2 bản ảnh**:
+     - **Bản gốc (`original_url`)**: Lưu trữ private an toàn, chỉ cấp quyền tải về cho chính tác giả/chủ sở hữu tác phẩm.
+     - **Bản đóng dấu (`url`)**: Tự động đóng watermark Kosume mờ nhẹ ở góc ảnh (khi `enable_watermark = true`), lưu trữ public để phân phát hiển thị trên Feed, Explore và Lightbox.
+
+### Phase 3: Tương tác Mạng Xã Hội & Bộ Sưu Tập
+
+5. **Cấp độ Lưu Bộ sưu tập (Saved Collections)**:
+   - **Quyết định**: **Hỗ trợ linh hoạt cả 2 cấp độ**:
+     - Người dùng có thể bấm bookmark nhanh để lưu nguyên cả bộ Album/Post (`post_id`).
+     - Người dùng cũng có thể mở album và chọn lưu riêng từng tấm ảnh cụ thể (`post_id` + `post_media_id`) vào các bộ sưu tập theo chủ đề chuyên sâu (vd: sưu tầm riêng các ảnh cận cảnh makeup, đạo cụ vũ khí...).
+
+### Phase 4: Tuyển dụng Jobs & Sự kiện Events
+
+6. **Chuẩn hóa Hồ sơ Thương hiệu (`brands` & `brand_members`)**:
+   - **Quyết định**: **Tách 2 bảng riêng cho Nhà tuyển dụng/Doanh nghiệp**:
+     - `brands`: Lưu thông tin pháp nhân/studio (tên, logo, bio, website, tick xanh doanh nghiệp). Bảng `jobs` liên kết qua `brand_id` thay vì lặp lại dữ liệu thương hiệu.
+     - `brand_members`: Cho phép nhiều nhân sự (User) cùng tham gia quản trị, đăng job và duyệt CV ứng viên cho một Brand.
+   - **Quy trình kiểm duyệt tin (`jobs.status`)**: Phân tầng uy tín — Brand đối tác đã có tick xanh (`is_verified = true`) được đăng tin xuất bản `'open'` ngay; tài khoản thông thường ở trạng thái `'pending_approval'` chờ Admin duyệt.
+7. **Tạm hoãn Tính năng Tin nhắn (`direct_messages`) & Đặt lịch Booking (`booking_requests`)**:
+   - **Quyết định**: **Tạm hoãn (Deferred) cả 2 tính năng khỏi đợt triển khai này**:
+     - Bảng `booking_requests` và `direct_messages` tạm thời không tạo trong database để tối giản hạ tầng, tập trung hoàn thiện Portfolio, Đăng tải tác phẩm Studio, Việc làm và Sự kiện.
+     - Các nút liên hệ / booking trên UI sẽ đóng vai trò hiển thị thông tin liên hệ công khai (SĐT, Email, Zalo/Facebook) để các bên tự kết nối bên ngoài.
+     - Tính năng Chat sẽ được thiết kế theo mô hình chuẩn `conversations` + `messages` khi có kế hoạch phát triển sau này.
+
+### Phase 5: Bảng Xếp Hạng Ranking, Spotlight & Moderation
+
+8. **Công thức Điểm & Cấu hình Bảng xếp hạng (`leaderboard_snapshots`)**:
+   - **Quyết định**: Lưu công thức và hệ số trọng số **động trong bảng `settings`**.
+   - **Cơ chế**: Admin có thể linh hoạt điều chỉnh trọng số tính điểm (ví dụ: `weights: { likes: 3, followers: 5, saves: 4, views: 0.1 }`) và lịch trình chạy BullMQ cron snapshot trực tiếp trên trang quản trị Admin mà không cần can thiệp hay sửa đổi mã nguồn worker.
