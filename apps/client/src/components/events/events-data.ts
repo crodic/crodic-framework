@@ -295,3 +295,14 @@ export const MOCK_EVENTS: EventItem[] = [
     categories: ["Comic Con", "Quốc tế", "Grand Contest"],
   },
 ];
+
+export function getEventById(id: string): EventItem {
+  const normalized = id.toLowerCase();
+  const found = MOCK_EVENTS.find(
+    (e) =>
+      e.id.toLowerCase() === normalized ||
+      e.id.toLowerCase().includes(normalized) ||
+      normalized.includes(e.id.toLowerCase())
+  );
+  return found || MOCK_EVENTS[0]!;
+}

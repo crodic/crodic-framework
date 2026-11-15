@@ -2,21 +2,26 @@
 
 import React from "react";
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventItem } from "./events-types";
 
 export interface EventCardProps {
   event: EventItem;
-  onViewDetails: (event: EventItem) => void;
+  onViewDetails?: (event: EventItem) => void;
   onApply: (event: EventItem) => void;
 }
 
 export function EventCard({ event, onViewDetails, onApply }: EventCardProps) {
   return (
     <article className="group border-border/70 bg-card hover:border-primary/40 relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:flex-col sm:p-3">
-      {/* 1. Poster Image */}
-      <div className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-xl sm:aspect-[16/10] sm:w-full">
+      {/* 1. Poster Image (Links to Intercepting Route) */}
+      <Link
+        href={`/events/${event.id}`}
+        scroll={false}
+        className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-xl sm:aspect-[16/10] sm:w-full"
+      >
         <Image
           src={event.image}
           alt={event.title}
@@ -40,7 +45,7 @@ export function EventCard({ event, onViewDetails, onApply }: EventCardProps) {
         <div className="absolute right-2 bottom-2 hidden rounded-md border border-white/15 bg-black/75 px-2 py-0.5 text-[11px] font-semibold text-white/95 backdrop-blur-xs sm:inline-flex">
           {event.location}
         </div>
-      </div>
+      </Link>
 
       {/* 2. Content Info */}
       <div className="flex flex-1 flex-col justify-between pl-3 sm:pt-3 sm:pl-0">
@@ -81,26 +86,32 @@ export function EventCard({ event, onViewDetails, onApply }: EventCardProps) {
             </span>
           </div>
 
-          {/* Event Title */}
-          <h3
-            onClick={() => onViewDetails(event)}
-            className="text-foreground hover:text-primary mt-1.5 line-clamp-1 cursor-pointer text-sm font-bold transition-colors sm:text-base"
-            title={event.title}
+          {/* Event Title (Links to Intercepting Route) */}
+          <Link
+            href={`/events/${event.id}`}
+            scroll={false}
+            className="mt-1.5 block"
           >
-            {event.title}
-          </h3>
+            <h3
+              className="text-foreground hover:text-primary line-clamp-1 cursor-pointer text-sm font-bold transition-colors sm:text-base"
+              title={event.title}
+            >
+              {event.title}
+            </h3>
+          </Link>
         </div>
 
         {/* 3. Action Buttons */}
         <div className="mt-2.5 grid grid-cols-2 gap-1.5 sm:gap-2">
           <Button
-            type="button"
+            asChild
             variant="outline"
             size="sm"
-            onClick={() => onViewDetails(event)}
             className="border-border/80 hover:bg-muted/70 h-8 cursor-pointer rounded-xl px-2 text-[11px] font-medium sm:text-xs"
           >
-            Xem chi tiết
+            <Link href={`/events/${event.id}`} scroll={false}>
+              Xem chi tiết
+            </Link>
           </Button>
 
           <Button

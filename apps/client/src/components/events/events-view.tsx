@@ -10,6 +10,9 @@ import { EventsFilterBar } from "./events-filter-bar";
 import { EventCard } from "./event-card";
 import { EventDetailDialog } from "./event-detail-dialog";
 import { EventApplyDialog } from "./event-apply-dialog";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useRouter } from "@/i18n/navigation";
+import { toast } from "sonner";
 
 export function EventsView() {
   const [selectedTagId, setSelectedTagId] = useState<string>("all");
@@ -17,6 +20,9 @@ export function EventsView() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [applyEvent, setApplyEvent] = useState<EventItem | null>(null);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const router = useRouter();
 
   // Filter events based on active tag
   const filteredEvents = useMemo(() => {
@@ -30,11 +36,21 @@ export function EventsView() {
   };
 
   const handleApply = (event: EventItem) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
+      router.push(`/auth/login?from=/events/${event.id}`);
+      return;
+    }
     setApplyEvent(event);
     setIsApplyOpen(true);
   };
 
   const handleBannerRegister = (festival: FeaturedFestival) => {
+    if (!isAuthenticated) {
+      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
+      router.push("/auth/login?from=/events");
+      return;
+    }
     // Find or craft event item for dialog
     const matched = MOCK_EVENTS.find((e) =>
       e.title.includes(festival.title.slice(0, 10))

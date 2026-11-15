@@ -10,13 +10,9 @@ import { PodiumItem } from "./ranking-types";
 
 export interface RankingPodiumProps {
   podiumItems: PodiumItem[];
-  onSelectCosplayer?: (item: PodiumItem) => void;
 }
 
-export function RankingPodium({
-  podiumItems,
-  onSelectCosplayer,
-}: RankingPodiumProps) {
+export function RankingPodium({ podiumItems }: RankingPodiumProps) {
   const rank1 = podiumItems.find((p) => p.rank === 1);
   const rank2 = podiumItems.find((p) => p.rank === 2);
   const rank3 = podiumItems.find((p) => p.rank === 3);
@@ -100,7 +96,10 @@ export function RankingPodium({
               </div>
 
               {/* Avatar with Ring & Verified Tick */}
-              <div className="relative mt-4 sm:mt-2">
+              <Link
+                href={item.portfolioHref}
+                className="group/avatar relative mt-4 block transition-transform hover:scale-105 sm:mt-2"
+              >
                 <div
                   className={cn(
                     "relative size-12 overflow-hidden rounded-full sm:size-16 md:size-20",
@@ -123,12 +122,15 @@ export function RankingPodium({
                     <Check className="size-2.5 stroke-[3] sm:size-3" />
                   </span>
                 )}
-              </div>
+              </Link>
 
               {/* Info: Name, Role, Stats */}
               <div className="mt-2 w-full text-center sm:mt-3">
-                <div className="flex items-center justify-center gap-1">
-                  <h3 className="text-foreground max-w-[90px] truncate text-xs font-bold sm:max-w-[140px] sm:text-base md:max-w-none md:text-lg">
+                <Link
+                  href={item.portfolioHref}
+                  className="group/name inline-flex items-center justify-center gap-1"
+                >
+                  <h3 className="text-foreground group-hover/name:text-primary max-w-[90px] truncate text-xs font-bold transition-colors sm:max-w-[140px] sm:text-base md:max-w-none md:text-lg">
                     {item.name}
                   </h3>
                   {item.isVerified && (
@@ -136,7 +138,7 @@ export function RankingPodium({
                       <Check className="size-2 stroke-[3]" />
                     </span>
                   )}
-                </div>
+                </Link>
 
                 <p className="text-muted-foreground mt-0.5 truncate text-[10px] font-medium sm:text-xs">
                   {item.role}
@@ -174,7 +176,6 @@ export function RankingPodium({
                       ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md"
                       : "bg-primary/90 text-primary-foreground hover:bg-primary"
                   )}
-                  onClick={() => onSelectCosplayer?.(item)}
                 >
                   <Link href={item.portfolioHref}>
                     <span className="sm:hidden">Xem</span>

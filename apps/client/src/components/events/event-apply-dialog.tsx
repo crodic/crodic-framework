@@ -23,6 +23,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Ticket, Calendar, Check, Loader2 } from "lucide-react";
 import { EventItem } from "./events-types";
@@ -176,25 +183,30 @@ export function EventApplyDialog({
                     <FormLabel className="text-muted-foreground text-xs font-semibold">
                       Hạng mục ứng tuyển
                     </FormLabel>
-                    <FormControl>
-                      <select
-                        className="border-border/70 bg-background/50 focus:border-primary focus:ring-primary/40 h-10 w-full rounded-xl border px-3 text-xs transition-colors outline-none sm:text-sm"
-                        {...field}
-                      >
-                        <option value="Guest Cosplayer / Khách mời">
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="border-border/70 bg-background/50 focus:border-primary focus:ring-primary/40 h-10 w-full rounded-xl text-xs sm:text-sm">
+                          <SelectValue placeholder="Chọn hạng mục ứng tuyển" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="border-border/80 bg-card/95 rounded-xl backdrop-blur-xl">
+                        <SelectItem value="Guest Cosplayer / Khách mời">
                           Guest Cosplayer / Khách mời
-                        </option>
-                        <option value="Biểu diễn sân khấu / Catwalk">
+                        </SelectItem>
+                        <SelectItem value="Biểu diễn sân khấu / Catwalk">
                           Biểu diễn sân khấu / Catwalk
-                        </option>
-                        <option value="Gian hàng Artist / Handmade">
+                        </SelectItem>
+                        <SelectItem value="Gian hàng Artist / Handmade">
                           Gian hàng Artist / Handmade
-                        </option>
-                        <option value="Cộng tác viên hỗ trợ sự kiện">
+                        </SelectItem>
+                        <SelectItem value="Cộng tác viên hỗ trợ sự kiện">
                           Cộng tác viên hỗ trợ sự kiện
-                        </option>
-                      </select>
-                    </FormControl>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-xs" />
                   </FormItem>
                 )}

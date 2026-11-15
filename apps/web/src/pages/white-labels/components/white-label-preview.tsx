@@ -175,27 +175,29 @@ export function WhiteLabelPreview({
         >
           <div className='space-y-4'>
             {/* Sidebar Brand Logo */}
-            <div className='flex items-center gap-2 px-1 py-1'>
+            <div className='flex min-w-0 items-center gap-2 px-1 py-1'>
               {activeLogo ? (
                 <img
                   src={activeLogo}
-                  alt='Logo'
-                  className='max-h-7 max-w-[130px] object-contain'
+                  alt={brandName || 'Logo'}
+                  className='max-h-7 max-w-[145px] object-contain'
                 />
               ) : (
-                <div
-                  className='flex size-7 items-center justify-center rounded font-bold'
-                  style={{
-                    backgroundColor: 'var(--sidebar-primary)',
-                    color: 'var(--sidebar-primary-foreground)',
-                  }}
-                >
-                  {(brandName || 'WL').slice(0, 2).toUpperCase()}
-                </div>
+                <>
+                  <div
+                    className='flex size-7 shrink-0 items-center justify-center rounded font-bold'
+                    style={{
+                      backgroundColor: 'var(--sidebar-primary)',
+                      color: 'var(--sidebar-primary-foreground)',
+                    }}
+                  >
+                    {(brandName || 'WL').slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className='truncate text-xs font-semibold'>
+                    {brandName || 'Brand'}
+                  </span>
+                </>
               )}
-              <span className='truncate text-xs font-semibold'>
-                {brandName || 'Brand'}
-              </span>
             </div>
 
             {/* Sidebar Nav Items */}

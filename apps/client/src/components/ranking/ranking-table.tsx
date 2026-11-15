@@ -4,14 +4,9 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
-  Calendar,
-  Check,
   ChevronDown,
   ChevronUp,
   Heart,
-  ShoppingBag,
-  TrendingDown,
-  TrendingUp,
   UserCheck,
   UserPlus,
 } from "lucide-react";
@@ -31,10 +26,9 @@ import { useRouter } from "@/i18n/navigation";
 
 export interface RankingTableProps {
   items: LeaderboardItem[];
-  onBooking: (item: LeaderboardItem) => void;
 }
 
-export function RankingTable({ items, onBooking }: RankingTableProps) {
+export function RankingTable({ items }: RankingTableProps) {
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
@@ -59,15 +53,6 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
     }
   };
 
-  const handleBooking = (item: LeaderboardItem) => {
-    if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để gửi yêu cầu Booking!");
-      router.push("/auth/login?from=/ranking");
-      return;
-    }
-    onBooking(item);
-  };
-
   return (
     <div className="border-border/70 bg-card overflow-hidden rounded-2xl border shadow-sm sm:rounded-3xl">
       {/* ===== DESKTOP TABLE (Hidden on Mobile) ===== */}
@@ -87,7 +72,7 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
               <TableHead className="text-muted-foreground w-28 text-center text-xs font-bold tracking-wider uppercase">
                 Lượt thích
               </TableHead>
-              <TableHead className="text-muted-foreground w-56 pr-6 text-right text-xs font-bold tracking-wider uppercase">
+              <TableHead className="text-muted-foreground w-36 pr-6 text-right text-xs font-bold tracking-wider uppercase">
                 Thao tác
               </TableHead>
             </TableRow>
@@ -177,7 +162,7 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                     {item.likes}
                   </TableCell>
 
-                  {/* 5. Thao tác (Theo dõi + Booking) */}
+                  {/* 5. Thao tác (Theo dõi) */}
                   <TableCell className="pr-6 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button
@@ -185,28 +170,19 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                         variant={isFollowing ? "secondary" : "outline"}
                         size="sm"
                         onClick={() => handleToggleFollow(item)}
-                        className="h-8 cursor-pointer rounded-xl px-3 text-xs font-medium transition-all"
+                        className="h-8 cursor-pointer rounded-xl px-3.5 text-xs font-semibold transition-all"
                       >
                         {isFollowing ? (
                           <>
-                            <UserCheck className="text-primary mr-1 size-3.5" />
+                            <UserCheck className="text-primary mr-1.5 size-3.5" />
                             Đã theo dõi
                           </>
                         ) : (
                           <>
-                            <UserPlus className="mr-1 size-3.5" />
+                            <UserPlus className="mr-1.5 size-3.5" />
                             Theo dõi
                           </>
                         )}
-                      </Button>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleBooking(item)}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-3 text-xs font-bold shadow-2xs transition-transform active:scale-95"
-                      >
-                        Booking
                       </Button>
                     </div>
                   </TableCell>
@@ -289,9 +265,9 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                     {item.likes}
                   </TableCell>
 
-                  {/* 4. Thao tác (Heart + Booking Icon Button) */}
+                  {/* 4. Thao tác (Theo dõi) */}
                   <TableCell className="px-3 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end">
                       {/* Heart Follow Button */}
                       <button
                         type="button"
@@ -311,17 +287,6 @@ export function RankingTable({ items, onBooking }: RankingTableProps) {
                             isFollowing ? "fill-rose-500 text-rose-500" : ""
                           }`}
                         />
-                      </button>
-
-                      {/* Booking Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleBooking(item)}
-                        className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer rounded-lg p-1.5 transition-all"
-                        title="Booking cosplayer"
-                        aria-label="Booking"
-                      >
-                        <Calendar className="size-4" />
                       </button>
                     </div>
                   </TableCell>
