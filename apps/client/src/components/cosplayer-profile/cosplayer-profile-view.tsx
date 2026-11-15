@@ -146,63 +146,53 @@ export function CosplayerProfileView({
           </TabsList>
         </div>
 
-        {/* OWNER VIEW: 2 Columns layout on desktop with Saved Collections Widget */}
+        {/* OWNER VIEW: Clean full-width tabs layout without redundant sidebar widget */}
         {effectiveOwnerMode ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Left 8-9 cols: Active Tab Content */}
-            <div className="space-y-6 lg:col-span-8">
-              {/* Tab: Following */}
-              <TabsContent
-                value="following"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <ProfileFollowed initialFollowed={initialFollowed} />
-              </TabsContent>
+          <div className="space-y-6">
+            {/* Tab: Following */}
+            <TabsContent
+              value="following"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <ProfileFollowed initialFollowed={initialFollowed} />
+            </TabsContent>
 
-              {/* Tab: Liked Works */}
-              <TabsContent
-                value="liked"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <ProfileLikedWorks initialLikedWorks={initialLikedWorks} />
-              </TabsContent>
+            {/* Tab: Liked Works */}
+            <TabsContent
+              value="liked"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <ProfileLikedWorks initialLikedWorks={initialLikedWorks} />
+            </TabsContent>
 
-              {/* Tab: Collections (Mobile or explicit tab view) */}
-              <TabsContent
-                value="collections"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <ProfileSavedCollections
-                  initialCollections={initialCollections}
-                />
-              </TabsContent>
-
-              {/* Tab: Albums */}
-              <TabsContent
-                value="albums"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <ProfileAlbums
-                  albums={initialAlbums}
-                  cosplayerName={profile.name}
-                />
-              </TabsContent>
-
-              {/* Tab: About */}
-              <TabsContent
-                value="about"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <ProfileAbout profile={profile} />
-              </TabsContent>
-            </div>
-
-            {/* Right 4 cols: Saved Collections Widget (Matching Mockup 2) */}
-            <div className="hidden space-y-6 lg:col-span-4 lg:block">
+            {/* Tab: Collections */}
+            <TabsContent
+              value="collections"
+              className="mt-0 focus-visible:outline-none"
+            >
               <ProfileSavedCollections
                 initialCollections={initialCollections}
               />
-            </div>
+            </TabsContent>
+
+            {/* Tab: Albums */}
+            <TabsContent
+              value="albums"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <ProfileAlbums
+                albums={initialAlbums}
+                cosplayerName={profile.name}
+              />
+            </TabsContent>
+
+            {/* Tab: About */}
+            <TabsContent
+              value="about"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <ProfileAbout profile={profile} />
+            </TabsContent>
           </div>
         ) : (
           /* VISITOR VIEW */

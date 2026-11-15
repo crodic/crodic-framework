@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +12,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { PhotoLightbox } from "@/components/feed/photo-lightbox";
 
 interface PostCarouselProps {
   photos: string[];
@@ -21,6 +22,7 @@ interface PostCarouselProps {
 export function PostCarousel({ photos, title }: PostCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const thumbsContainerRef = useRef<HTMLDivElement>(null);
 
   const onSelect = useCallback(() => {
@@ -90,15 +92,24 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
             {photos.map((photo, index) => (
               <CarouselItem key={index} className="basis-full pl-0">
                 {/* Explicit responsive pixel height ensures <Image fill /> renders properly without height 0 collapse */}
-                <div className="relative flex h-[360px] w-full items-center justify-center sm:h-[440px] md:h-[490px] lg:h-[540px]">
+                <div
+                  onClick={() => setIsLightboxOpen(true)}
+                  className="group relative flex h-[360px] w-full cursor-pointer items-center justify-center sm:h-[440px] md:h-[490px] lg:h-[540px]"
+                >
                   <Image
                     src={photo}
                     alt={`${title} - ảnh ${index + 1}`}
                     fill
                     priority={index === 0}
                     sizes="(max-width: 768px) 100vw, 65vw"
-                    className="object-contain object-center select-none"
+                    className="object-contain object-center transition-transform duration-300 select-none group-hover:scale-[1.01]"
                   />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    <span className="flex items-center gap-1.5 rounded-xl bg-black/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                      <Maximize2 className="size-3.5" />
+                      Phóng to toàn màn hình
+                    </span>
+                  </div>
                 </div>
               </CarouselItem>
             ))}
@@ -186,6 +197,16 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
           </button>
         </div>
       )}
+
+      {/* Fullscreen Photo Lightbox Modal */}
+      <PhotoLightbox
+        images={photos}
+        currentIndex={current}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        onChangeIndex={(idx) => handleThumbClick(idx)}
+        caption={title}
+      />
     </div>
   );
 }

@@ -57,7 +57,78 @@ export const DEFAULT_POST: PostDetail = {
 
 export const POST_ITEMS: Record<string, PostDetail> = {
   acheron: DEFAULT_POST,
+  "post-acheron-1": DEFAULT_POST,
   "work-acheron": DEFAULT_POST,
+  "post-soriko-wip": {
+    id: "post-soriko-wip",
+    slug: "soriko-wip",
+    title: "Chế tác Kiếm Lôi Thần (WIP)",
+    caption:
+      "Cập nhật WIP (Work in progress) chế tạo đạo cụ kiếm Lôi Thần và găng tay giáp. Mài dũa EVA foam và sơn bóng ánh kim loại 3 lớp. Hẹn gặp mọi người tại fes tuần này!",
+    author: {
+      name: "Soriko",
+      handle: "@sorikocos",
+      avatarUrl: "/landing/avatar-soriko.jpg",
+      isVerified: true,
+    },
+    photos: [
+      "/landing/cosplay-work-2.jpg",
+      "/landing/cosplay-work-6.jpg",
+      "/landing/art-raiden-2.jpg",
+    ],
+    tags: ["WIP", "Crafting", "CosplayProp", "FestivalPrep"],
+    likesCount: "1.8K",
+    savesCount: "640",
+    sharesCount: "128",
+    commentsCount: 15,
+    comments: [
+      {
+        id: "c-sw1",
+        authorName: "KIRIKO",
+        authorAvatar: "/landing/avatar-kiriko.jpg",
+        content: "Kiếm làm tỉ mỉ ghê, nhìn chất kim loại siêu thật luôn em ơi!",
+        createdAt: "4 giờ trước",
+        likesCount: 8,
+      },
+    ],
+    createdAt: "5 giờ trước",
+  },
+  "post-kafka-hunter": {
+    id: "post-kafka-hunter",
+    slug: "kafka",
+    title: "Kafka - Hunter",
+    caption:
+      "Boom! 🕸️ Sát thủ thợ săn Stellaron đã có mặt tại phố đêm. Concept mưa nhân tạo kết hợp đèn neon tím hồng huyền bí.",
+    author: {
+      name: "Kafka Hunter",
+      handle: "@kafka_cos",
+      avatarUrl: "/landing/avatar-kafka.jpg",
+      isVerified: true,
+    },
+    photos: [
+      "/landing/art-kafka.jpg",
+      "/landing/cosplay-work-4.jpg",
+      "/landing/cosplay-work-7.jpg",
+      "/landing/cosplay-work-3.jpg",
+    ],
+    tags: ["Kafka", "HonkaiStarRail", "StellaronHunter", "NightPhotoshoot"],
+    likesCount: "2.8K",
+    savesCount: "1.1K",
+    sharesCount: "340",
+    commentsCount: 47,
+    comments: [
+      {
+        id: "c-k1",
+        authorName: "Minh Thư",
+        authorAvatar: "/landing/avatar-raiden.jpg",
+        content:
+          "Mẹ Kafka quyến rũ chết người! Trang phục ôm dáng chuẩn không cần chỉnh.",
+        createdAt: "18 giờ trước",
+        likesCount: 12,
+      },
+    ],
+    createdAt: "1 ngày trước",
+  },
   "work-kafka": {
     id: "work-kafka",
     slug: "kafka",

@@ -9,11 +9,21 @@ export interface FollowedCosplayer {
   isFollowing: boolean;
 }
 
+export interface CollectionPhoto {
+  id: string;
+  src: string;
+  title: string;
+  authorName: string;
+  authorAvatar?: string;
+  likesCount?: string;
+}
+
 export interface SavedCollection {
   id: string;
   title: string;
   count: number;
   thumbnails: string[];
+  photos?: CollectionPhoto[];
   updatedAt?: string;
 }
 
