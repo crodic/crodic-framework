@@ -1,11 +1,16 @@
-import { Footer } from "@/components/layouts/footer";
-import { Header } from "@/components/layouts/header";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Suspense } from "react";
-import { ProfileHeader } from "./components/profile-header";
-import { ProfileView } from "./components/profile-view";
+import { setRequestLocale } from "next-intl/server";
+import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
+import Layout from "@/components/layouts/layout";
+import { CosplayerProfileView } from "@/components/cosplayer-profile/cosplayer-profile-view";
+import {
+  CURRENT_USER_PROFILE,
+  KIRIKO_ALBUMS,
+  KIRIKO_CHARACTERS,
+  MOCK_FOLLOWED_COSPLAYERS,
+  MOCK_LIKED_WORKS,
+  MOCK_SAVED_COLLECTIONS,
+} from "@/components/cosplayer-profile/profile-data";
 
 interface ProfilePageProps {
   params: Promise<{ locale: string }>;
@@ -15,39 +20,39 @@ export async function generateMetadata({
   params,
 }: ProfilePageProps): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Profile" });
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const whiteLabel = await fetchActiveClientWhiteLabel();
+  const siteName = whiteLabel?.brandName || "Kosume";
+
+  const title = `Hồ sơ của tôi (${CURRENT_USER_PROFILE.name}) | ${siteName}`;
+  const description =
+    "Quản lý hồ sơ cá nhân, các cosplayer đang theo dõi và bộ sưu tập ảnh đã lưu trên Kosume.";
 
   return {
-    title: t("pageTitle"),
-    description: t("pageDescription"),
+    title: {
+      absolute: title,
+    },
+    description,
   };
 }
 
-function ProfileLoadingFallback() {
-  return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6">
-      <ProfileHeader profile={undefined} isLoading={true} />
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-72 rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-xl" />
-      </div>
-    </div>
-  );
-}
-
-export default async function ProfilePage({ params }: ProfilePageProps) {
+export default async function MyProfilePage({ params }: ProfilePageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   return (
-    <div className="bg-muted/20 flex min-h-dvh flex-col">
-      <Header />
-      <main className="flex-1 py-6 sm:py-10">
-        <Suspense fallback={<ProfileLoadingFallback />}>
-          <ProfileView />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <Layout>
+      <div className="mx-auto max-w-[1440px] p-3.5 sm:p-6 lg:p-8">
+        <CosplayerProfileView
+          initialProfile={CURRENT_USER_PROFILE}
+          initialAlbums={KIRIKO_ALBUMS}
+          initialCharacters={KIRIKO_CHARACTERS}
+          initialFollowed={MOCK_FOLLOWED_COSPLAYERS}
+          initialLikedWorks={MOCK_LIKED_WORKS}
+          initialCollections={MOCK_SAVED_COLLECTIONS}
+          isOwner={true}
+        />
+      </div>
+    </Layout>
   );
 }

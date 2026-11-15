@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getCmsPageBySlug } from "@/services/cms-pages";
-import { Footer } from "@/components/layouts/footer";
-import { Header } from "@/components/layouts/header";
 import Layout from "@/components/layouts/layout";
 
 export const revalidate = 60; // Revalidate every 60 seconds
@@ -49,13 +47,11 @@ export default async function CmsPage({ params }: PageProps) {
 
   return (
     <Layout>
-      <Header />
       {/* nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml */}
       <div
         className="prose dark:prose-invert mx-auto w-full max-w-none px-6 py-12 md:px-12 md:py-20"
         dangerouslySetInnerHTML={{ __html: page.content || "" }}
       />
-      <Footer />
     </Layout>
   );
 }

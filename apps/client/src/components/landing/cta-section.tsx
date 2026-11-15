@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Github, Sparkles } from "lucide-react";
+import { ArrowRight, Github, Star } from "lucide-react";
 import React from "react";
 
 export function CtaSection() {
@@ -21,7 +21,7 @@ export function CtaSection() {
             variant="outline"
             className="border-primary/30 bg-primary/10 text-primary mb-4 gap-1.5 px-3 py-1 text-xs"
           >
-            <Sparkles className="size-3.5" />
+            <Star className="size-3.5 fill-amber-400 text-amber-400" />
             <span>{t("badge")}</span>
           </Badge>
 

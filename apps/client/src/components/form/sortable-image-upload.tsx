@@ -67,6 +67,11 @@ export interface SortableImageUploadProps {
   loading?: boolean;
   coverIndex?: number | null;
   onCoverIndexChange?: (index: number | null) => void;
+  variant?: "default" | "studio";
+  showInlineAddSlot?: boolean;
+  hideHeader?: boolean;
+  headerTitle?: React.ReactNode;
+  headerExtra?: React.ReactNode;
 }
 
 function resolveNextCoverIndexAfterRemoval(
@@ -131,6 +136,11 @@ export default function SortableImageUpload({
   loading = false,
   coverIndex,
   onCoverIndexChange,
+  variant = "default",
+  showInlineAddSlot = false,
+  hideHeader = false,
+  headerTitle,
+  headerExtra,
 }: SortableImageUploadProps) {
   // UI state for display and drag/drop - contains ALL visible images
   const [uiImages, setUiImages] = useState<UIImage[]>([]);
@@ -664,6 +674,7 @@ export default function SortableImageUpload({
         isCover={canSelectCover && index === normalizedCoverIndex}
         canSelectCover={canSelectCover}
         disabled={isDisabled}
+        variant={variant}
         onOpenLightbox={openLightbox}
         onSelectCover={onCoverIndexChange}
         onRemove={removeImage}
@@ -677,6 +688,7 @@ export default function SortableImageUpload({
       openLightbox,
       overlaySize,
       removeImage,
+      variant,
     ]
   );
 
@@ -702,26 +714,50 @@ export default function SortableImageUpload({
         </div>
       )}
 
-      {!loading && (
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-muted-foreground text-sm">
-            {uiImages.length > 0
-              ? `${uiImages.length}/${maxFiles} images. Drag images to reorder.`
-              : `Upload up to ${maxFiles} images (JPG, PNG, GIF, WebP, max ${formatBytes(maxSize)} each).`}
-          </p>
+      {!loading && !hideHeader && (
+        <div className="mb-4 flex items-center justify-between gap-3">
+          {headerTitle ? (
+            typeof headerTitle === "string" ? (
+              <h3 className="text-foreground text-base font-bold sm:text-lg">
+                {headerTitle}
+              </h3>
+            ) : (
+              headerTitle
+            )
+          ) : variant === "studio" ? (
+            <h3 className="text-foreground text-base font-bold sm:text-lg">
+              Lưới tải ảnh
+            </h3>
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              {uiImages.length > 0
+                ? `${uiImages.length}/${maxFiles} images. Drag images to reorder.`
+                : `Upload up to ${maxFiles} images (JPG, PNG, GIF, WebP, max ${formatBytes(maxSize)} each).`}
+            </p>
+          )}
 
-          {uiImages.length > 0 && canAddMore && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={openFileDialog}
-              disabled={isDisabled}
-              type="button"
-              className="w-full sm:w-auto"
-            >
-              <Plus className="size-4" />
-              Add image
-            </Button>
+          {headerExtra ? (
+            headerExtra
+          ) : variant === "studio" ? (
+            <span className="border-border/60 bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-xs font-semibold">
+              {uiImages.length}/{maxFiles} ảnh
+            </span>
+          ) : (
+            uiImages.length > 0 &&
+            canAddMore &&
+            !showInlineAddSlot && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={openFileDialog}
+                disabled={isDisabled}
+                type="button"
+                className="w-full sm:w-auto"
+              >
+                <Plus className="size-4" />
+                Add image
+              </Button>
+            )
           )}
         </div>
       )}
@@ -760,6 +796,24 @@ export default function SortableImageUpload({
                   </SortableItem>
                 );
               })}
+
+              {/* Inline Add Photo Slot */}
+              {canAddMore && (showInlineAddSlot || variant === "studio") && (
+                <button
+                  type="button"
+                  onClick={openFileDialog}
+                  disabled={isDisabled}
+                  className="border-border/70 hover:border-primary/80 hover:bg-primary/5 group flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed transition-all select-none"
+                  aria-label="Thêm ảnh"
+                >
+                  <div className="bg-muted group-hover:bg-primary group-hover:text-primary-foreground text-muted-foreground flex size-8 items-center justify-center rounded-full transition-colors">
+                    <Plus className="size-4" />
+                  </div>
+                  <span className="text-muted-foreground group-hover:text-foreground text-xs font-medium">
+                    + Thêm ảnh
+                  </span>
+                </button>
+              )}
             </SortableContent>
             <SortableOverlay>
               {({ value }) => {
@@ -774,18 +828,39 @@ export default function SortableImageUpload({
       )}
 
       {/* Upload Area */}
-      {!loading && uiImages.length === 0 && (
-        <UploadDropzone
-          isDragging={isDragging}
-          disabled={isDisabled}
-          maxSize={maxSize}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onBrowseClick={openFileDialog}
-        />
-      )}
+      {!loading &&
+        uiImages.length === 0 &&
+        (variant === "studio" || showInlineAddSlot ? (
+          <div className="border-border/70 hover:border-primary/60 hover:bg-primary/5 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition-colors">
+            <button
+              type="button"
+              onClick={openFileDialog}
+              disabled={isDisabled}
+              className="flex cursor-pointer flex-col items-center gap-2"
+            >
+              <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+                <Plus className="size-6" />
+              </div>
+              <span className="text-foreground text-sm font-semibold">
+                + Thêm ảnh vào album
+              </span>
+              <span className="text-muted-foreground text-xs">
+                Hỗ trợ JPG, PNG, WebP (Tối đa {maxFiles} ảnh)
+              </span>
+            </button>
+          </div>
+        ) : (
+          <UploadDropzone
+            isDragging={isDragging}
+            disabled={isDisabled}
+            maxSize={maxSize}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onBrowseClick={openFileDialog}
+          />
+        ))}
 
       {/* Upload Progress Cards */}
       <UploadProgressList
@@ -823,3 +898,5 @@ export default function SortableImageUpload({
     </div>
   );
 }
+
+export { SortableImageUpload };

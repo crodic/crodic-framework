@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowRight, CheckCircle2, Github, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Github, Lock, Star } from "lucide-react";
 import React from "react";
 
 export function HeroSection() {
@@ -22,7 +22,7 @@ export function HeroSection() {
             variant="outline"
             className="border-primary/20 bg-primary/5 text-primary gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-2xs"
           >
-            <Sparkles className="size-3.5" />
+            <Star className="size-3.5 fill-amber-400 text-amber-400" />
             <span>{t("badge")}</span>
           </Badge>
 

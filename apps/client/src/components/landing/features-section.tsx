@@ -7,7 +7,7 @@ import {
   Layers,
   Lock,
   Palette,
-  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import React from "react";
 
@@ -95,7 +95,7 @@ export function FeaturesSection() {
               </div>
 
               <div className="text-primary mt-6 flex items-center gap-1.5 text-xs font-medium">
-                <Sparkles className="size-3.5" />
+                <CheckCircle2 className="size-3.5" />
                 <span>Production Ready</span>
               </div>
             </div>
