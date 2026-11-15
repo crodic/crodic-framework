@@ -1,55 +1,110 @@
 export type RoutePattern = string | RegExp;
 
 /**
- * Route Matcher Factory (Chuẩn Clerk / Next.js Architecture)
- * Nhận danh sách RegExp hoặc String wildcard pattern (ví dụ: '/profile(.*)', '/auth/(.*)')
- * Trả về một hàm kiểm tra pathname có khớp hay không.
+ * Compiles an array of string or RegExp patterns into a reusable route matcher function.
+ * Patterns are pre-compiled into regular expressions once at initialization time to ensure optimal request performance.
+ *
+ * Supports:
+ * - RegExp objects: e.g. `/^\/profile(\/.*)?$/`
+ * - Wildcard strings: e.g. `"/settings/*"` (matches `/settings` and `/settings/anything`), `"/profile(.*)"`
+ * - Exact string paths: e.g. `"/auth"`
+ *
+ * @param patterns - List of route patterns (RegExp or wildcard string like `/settings/*`).
+ * @returns A matcher function testing whether a given pathname matches any configured pattern.
  */
 export function createRouteMatcher(patterns: RoutePattern[]) {
+  const regexPatterns = patterns.map((pattern) => {
+    if (pattern instanceof RegExp) {
+      return pattern;
+    }
+
+    if (pattern.endsWith("/*")) {
+      const base = pattern.slice(0, -2).replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`^${base}(?:/.*)?$`);
+    }
+
+    // Clerk standard wildcard: "/profile(.*)" or "/profile/(.*)"
+    if (pattern.endsWith("(.*)")) {
+      const rawBase = pattern.slice(0, -4).replace(/\/$/, "");
+      const base = rawBase.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`^${base}(?:/.*)?$`);
+    }
+
+    // Next.js path-to-regexp style wildcard: "/profile/:path*"
+    if (pattern.endsWith(":path*")) {
+      const rawBase = pattern.slice(0, -7).replace(/\/$/, "");
+      const base = rawBase.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`^${base}(?:/.*)?$`);
+    }
+
+    const cleanPattern = pattern
+      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\\\*/g, ".*");
+
+    return new RegExp(`^${cleanPattern}$`);
+  });
+
   return (pathname: string): boolean => {
-    // Chuẩn hóa loại bỏ trailing slash (trừ root '/')
     const normalizedPath =
       pathname.length > 1 && pathname.endsWith("/")
         ? pathname.slice(0, -1)
         : pathname;
 
-    return patterns.some((pattern) => {
-      if (pattern instanceof RegExp) {
-        return pattern.test(normalizedPath);
-      }
-      if (typeof pattern === "string") {
-        // Hỗ trợ string wildcard dạng: '/profile(.*)' hoặc '/profile/*'
-        const regexPattern = new RegExp(
-          `^${pattern.replace(/\(\.\*\)/g, ".*").replace(/\/\*/g, "(?:/.*)?")}$`
-        );
-        return regexPattern.test(normalizedPath);
-      }
-      return false;
-    });
+    return regexPatterns.some((regex) => regex.test(normalizedPath));
   };
 }
 
 /**
- * 1. STRICTLY PROTECTED ROUTES (Bắt buộc đăng nhập):
- * Nếu khách chưa có session cố tình truy cập, Middleware lập tức chuyển hướng về /auth/login.
+ * Matches explicit public routes and subpaths.
+ * Acts as an exception list to allow public access even within otherwise protected sections.
  */
-export const isProtectedRoute = createRouteMatcher([
+export const isPublicRoute = createRouteMatcher([/^\/pages(\/.*)?$/]);
+
+/**
+ * Internal route matcher for base protected endpoints.
+ * All subpaths under these roots strictly require user authentication.
+ */
+const protectedMatcher = createRouteMatcher([
+  /^\/feed(\/.*)?$/,
+  /^\/notifications(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/settings(\/.*)?$/,
   /^\/upload(\/.*)?$/,
 ]);
 
 /**
- * 2. GUEST-ONLY AUTH ROUTES (Dành riêng cho khách chưa login):
- * Nếu người dùng đã đăng nhập hợp lệ truy cập vào đây, Middleware sẽ chuyển hướng về /profile.
+ * Determines whether a route strictly requires user authentication.
+ * Evaluates against base protected routes while automatically exempting any matching `isPublicRoute` exceptions.
+ *
+ * @param pathname - The normalized route pathname without locale prefix.
+ * @returns `true` if authentication is strictly required, `false` otherwise.
  */
-export const isAuthRoute = createRouteMatcher([/^\/auth(\/.*)?$/]);
+export const isProtectedRoute = (pathname: string): boolean => {
+  if (isPublicRoute(pathname)) {
+    return false;
+  }
+  return protectedMatcher(pathname);
+};
 
 /**
- * LƯU Ý VỀ CÁC TRANG CÒN LẠI (AUTH OPTIONAL / HYBRID):
- * Mọi route không nằm trong `isProtectedRoute` và `isAuthRoute`
- * (như `/`, `/feed`, `/explore`, `/ranking`, `/events`, `/jobs`, `/cosplayer/[slug]`, `/post/[id]`)
- * mặc nhiên là AUTH OPTIONAL.
- * Middleware cho phép cả khách và người dùng đăng nhập truy cập tự nhiên,
- * đồng thời vẫn âm thầm duy trì và refresh token nếu có session.
+ * Internal route matcher for guest-facing authentication forms.
  */
+const authPagesMatcher = createRouteMatcher([
+  /^\/auth\/?$/,
+  /^\/auth\/(login|sign-up|forgot-password|reset-password|restore)(\/.*)?$/,
+]);
+
+/**
+ * Identifies guest-only authentication pages (sign-in, registration, password recovery).
+ * Authenticated visitors to these routes are redirected to their profile.
+ * Automatically excludes `/auth/oauth/callback` to prevent interrupting social login token exchanges.
+ *
+ * @param pathname - The normalized route pathname without locale prefix.
+ * @returns `true` if the route is a guest-only auth page, `false` otherwise.
+ */
+export const isAuthRoute = (pathname: string): boolean => {
+  if (pathname.startsWith("/auth/oauth/callback")) {
+    return false;
+  }
+  return authPagesMatcher(pathname);
+};

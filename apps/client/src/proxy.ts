@@ -26,7 +26,6 @@ export async function proxy(request: NextRequest) {
     refreshToken
   );
 
-  // 1. Chặn truy cập trái phép vào Strictly Protected routes
   if (isProtectedRoute(pathname) && !refreshToken) {
     return unauthorizedResponse(
       request,
@@ -37,7 +36,6 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  // 2. Chuyển hướng người dùng đã đăng nhập nếu truy cập vào trang Auth (login/register)
   if (isAuthRoute(pathname) && refreshToken) {
     const payload = decodeToken(refreshToken);
     if (payload?.exp && payload.exp * 1000 > Date.now()) {

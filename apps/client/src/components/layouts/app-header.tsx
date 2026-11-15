@@ -138,18 +138,20 @@ export function AppHeader() {
           <Search className="size-4" />
         </Button>
 
-        {/* "+ Đăng album" Action Button - Desktop */}
-        <CreateAlbumModal
-          trigger={
-            <Button
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
-            >
-              <Plus className="size-4 shrink-0" />
-              <span>Đăng album</span>
-            </Button>
-          }
-        />
+        {/* "+ Đăng album" Action Button - Desktop (Only visible for authenticated users) */}
+        {isAuthenticated && (
+          <CreateAlbumModal
+            trigger={
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
+              >
+                <Plus className="size-4 shrink-0" />
+                <span>Đăng album</span>
+              </Button>
+            }
+          />
+        )}
 
         {/* Theme mode toggle - Desktop only */}
         <div className="hidden md:block">
@@ -161,15 +163,18 @@ export function AppHeader() {
           <div className="bg-muted/60 h-9 w-24 animate-pulse rounded-full" />
         ) : isAuthenticated ? (
           <>
-            {/* Notification Bell - Both Mobile & Desktop */}
+            {/* Notification Bell - Both Mobile & Desktop (Direct link to /notifications) */}
             <Button
               variant="outline"
               size="icon"
+              asChild
               className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground relative size-8.5 cursor-pointer rounded-lg sm:size-9"
               aria-label="Thông báo"
             >
-              <Bell className="size-4" />
-              <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
+              <Link href="/notifications">
+                <Bell className="size-4" />
+                <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
+              </Link>
             </Button>
 
             {/* Chat / Messages - Desktop only */}

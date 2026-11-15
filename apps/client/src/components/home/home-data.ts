@@ -167,7 +167,12 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
         href: "/jobs",
         icon: "newspaper",
       },
-      { label: "Bảng tin", href: "/feed", icon: "users" },
+      {
+        label: "Bảng tin",
+        href: "/feed",
+        icon: "users",
+        requireAuth: true,
+      },
       { label: "Khám phá", href: "/explore", icon: "compass" },
       { label: "Bảng xếp hạng", href: "/ranking", icon: "trophy" },
       { label: "Sự kiện & Festival", href: "/events", icon: "calendar" },
@@ -176,8 +181,18 @@ export const APP_SIDEBAR_NAV: SidebarNavGroup[] = [
   {
     title: "Cá nhân",
     items: [
-      { label: "Hồ sơ của tôi", href: "/profile", icon: "user-circle" },
-      { label: "Cài đặt & Studio", href: "/settings", icon: "settings" },
+      {
+        label: "Hồ sơ của tôi",
+        href: "/profile",
+        icon: "user-circle",
+        requireAuth: true,
+      },
+      {
+        label: "Cài đặt & Studio",
+        href: "/settings",
+        icon: "settings",
+        requireAuth: true,
+      },
     ],
   },
 ];

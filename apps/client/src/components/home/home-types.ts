@@ -48,5 +48,6 @@ export interface SidebarNavGroup {
     icon: string;
     badge?: string;
     isActive?: boolean;
+    requireAuth?: boolean;
   }[];
 }

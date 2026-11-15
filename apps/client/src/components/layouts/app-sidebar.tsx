@@ -16,6 +16,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { APP_SIDEBAR_NAV } from "@/components/home/home-data";
+import { useAuthStore } from "@/store/use-auth-store";
+import { isProtectedRoute } from "@/config/routes";
 import {
   BookOpen,
   Calendar,
@@ -33,6 +35,15 @@ import {
 export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const visibleNavGroups = APP_SIDEBAR_NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      const needsAuth = item.requireAuth || isProtectedRoute(item.href);
+      return !needsAuth || isAuthenticated;
+    }),
+  })).filter((group) => group.items.length > 0);
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -112,7 +123,7 @@ export function AppSidebar() {
 
       {/* Nav Content */}
       <SidebarContent className="space-y-2 p-2">
-        {APP_SIDEBAR_NAV.map((group) => (
+        {visibleNavGroups.map((group) => (
           <SidebarGroup key={group.title} className="p-0">
             <SidebarGroupLabel className="text-sidebar-foreground/50 px-2 text-[11px] font-semibold tracking-wider uppercase">
               {group.title}
