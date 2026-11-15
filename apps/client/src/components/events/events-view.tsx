@@ -22,6 +22,7 @@ export function EventsView() {
   const [isApplyOpen, setIsApplyOpen] = useState(false);
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
   const router = useRouter();
 
   // Filter events based on active tag
@@ -36,6 +37,7 @@ export function EventsView() {
   };
 
   const handleApply = (event: EventItem) => {
+    if (isHydrating) return;
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
       router.push(`/auth/login?from=/events/${event.id}`);
@@ -46,6 +48,7 @@ export function EventsView() {
   };
 
   const handleBannerRegister = (festival: FeaturedFestival) => {
+    if (isHydrating) return;
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
       router.push("/auth/login?from=/events");

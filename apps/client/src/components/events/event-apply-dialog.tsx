@@ -63,13 +63,17 @@ export function EventApplyDialog({
 }: EventApplyDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
   const router = useRouter();
 
   const handleOpenChange = (val: boolean) => {
-    if (val && !isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
-      router.push("/auth/login?from=/events");
-      return;
+    if (val) {
+      if (isHydrating) return;
+      if (!isAuthenticated) {
+        toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
+        router.push("/auth/login?from=/events");
+        return;
+      }
     }
     onOpenChange(val);
   };
@@ -88,6 +92,7 @@ export function EventApplyDialog({
   });
 
   const onSubmit = (values: ApplyEventFormValues) => {
+    if (isHydrating) return;
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
       router.push("/auth/login?from=/events");

@@ -34,6 +34,7 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
   const router = useRouter();
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -51,6 +52,7 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
   };
 
   const handleApplyClick = () => {
+    if (isHydrating) return;
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
       router.push(`/auth/login?from=/events/${event.id}`);
@@ -433,10 +435,15 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                 <Button
                   type="button"
                   onClick={handleApplyClick}
-                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl text-sm font-bold shadow-lg transition-transform active:scale-95"
+                  disabled={isHydrating}
+                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl text-sm font-bold shadow-lg transition-transform active:scale-95 disabled:opacity-50"
                 >
                   <Send className="mr-2 size-4" />
-                  <span>Ứng tuyển tham gia sự kiện</span>
+                  <span>
+                    {isHydrating
+                      ? "Đang tải dữ liệu phiên..."
+                      : "Ứng tuyển tham gia sự kiện"}
+                  </span>
                 </Button>
               ) : (
                 <Button

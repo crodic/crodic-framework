@@ -31,6 +31,7 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -45,6 +46,7 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
   };
 
   const handleApplyClick = () => {
+    if (isHydrating) return;
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
       router.push(`/auth/login?from=/events/${event.id}`);
@@ -249,10 +251,13 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
                 <Button
                   type="button"
                   onClick={handleApplyClick}
-                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md"
+                  disabled={isHydrating}
+                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md disabled:opacity-50"
                 >
                   <Send className="mr-1.5 size-3.5" />
-                  <span>Ứng tuyển tham gia</span>
+                  <span>
+                    {isHydrating ? "Đang tải..." : "Ứng tuyển tham gia"}
+                  </span>
                 </Button>
               )}
             </div>
