@@ -7,6 +7,7 @@ import { SettingSeedService } from './setting/setting-seed.service';
 import { TagSeedService } from './tag/tag-seed.service';
 import { UserSeedService } from './user/user-seed.service';
 import { WhiteLabelSeedService } from './white-label/white-label-seed.service';
+import { KosumeSeedService } from './kosume/kosume-seed.service';
 
 const runSeed = async () => {
   const app = await NestFactory.create(SeedModule);
@@ -18,6 +19,7 @@ const runSeed = async () => {
   await app.get(AdminSeedService).run();
   await app.get(CmsPageSeedService).run();
   await app.get(TagSeedService).run();
+  await app.get(KosumeSeedService).run();
 
   await app.close();
 };

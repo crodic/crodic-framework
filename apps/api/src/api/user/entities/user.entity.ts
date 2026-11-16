@@ -6,12 +6,15 @@ import {
   Entity,
   Index,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
 import { UserAccountEntity } from './user-account.entity';
 import { UserSessionEntity } from '../../auth/entities/user-session.entity';
 import { IAuthUser } from '../../auth/interfaces/auth-entity.interface';
+import { EUserRole } from '../constants/user.constant';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 
 @Entity('users')
 export class UserEntity extends AbstractEntity implements IAuthUser {
@@ -20,6 +23,9 @@ export class UserEntity extends AbstractEntity implements IAuthUser {
 
   @OneToMany(() => UserSessionEntity, (session) => session.user)
   sessions?: Relation<UserSessionEntity>[];
+
+  @OneToOne(() => CosplayerProfileEntity, (profile) => profile.user)
+  cosplayerProfile?: Relation<CosplayerProfileEntity>;
 
   constructor(data?: Partial<UserEntity>) {
     super();
@@ -31,6 +37,18 @@ export class UserEntity extends AbstractEntity implements IAuthUser {
     type: 'bigint',
   })
   id!: AutoIncrementID;
+
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  @Index('UQ_user_username', { where: '"deleted_at" IS NULL', unique: true })
+  username?: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: EUserRole,
+    default: EUserRole.FAN,
+    enumName: 'user_role_enum',
+  })
+  role!: EUserRole;
 
   @Column({ length: 100, name: 'first_name', nullable: false })
   firstName!: string;
@@ -54,8 +72,19 @@ export class UserEntity extends AbstractEntity implements IAuthUser {
   avatar?: string;
 
   @Column({
+    type: 'boolean',
+    default: true,
+    name: 'show_online_status',
+  })
+  showOnlineStatus!: boolean;
+
+  @Column({ type: 'timestamptz', name: 'last_active_at', nullable: true })
+  lastActiveAt?: Date | null;
+
+  @Column({
     type: 'jsonb',
-    default: () => `'{"email": true, "system": true, "security": true}'`,
+    default: () =>
+      `'{"email": true, "system": true, "security": true, "notifyBooking": true, "notifyNewPost": true, "notifyFestivals": false, "notifyInteractions": true}'`,
   })
   notifications!: Record<string, boolean>;
 

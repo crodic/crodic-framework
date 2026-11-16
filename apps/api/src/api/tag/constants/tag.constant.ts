@@ -39,6 +39,9 @@ export enum ETaggableEntityType {
   ARTWORK = 'artwork',
   FILE = 'file',
   POST = 'post',
+  EVENT = 'event',
+  JOB = 'job',
+  COSPLAYER_PROFILE = 'cosplayer_profile',
 }
 
 export enum EEntityTagLogAction {

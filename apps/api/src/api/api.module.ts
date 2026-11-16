@@ -13,6 +13,18 @@ import { SettingsModule } from './settings/settings.module';
 import { TagModule } from './tag/tag.module';
 import { UserModule } from './user/user.module';
 import { WhiteLabelModule } from './white-label/white-label.module';
+import { CosplayerModule } from './cosplayer/cosplayer.module';
+import { PostModule } from './post/post.module';
+import { SocialModule } from './social/social.module';
+import { CollectionModule } from './collection/collection.module';
+import { BrandModule } from './brand/brand.module';
+import { JobModule } from './job/job.module';
+import { EventModule } from './event/event.module';
+import { BookingModule } from './booking/booking.module';
+import { RankingModule } from './ranking/ranking.module';
+import { SpotlightModule } from './spotlight/spotlight.module';
+import { NotificationModule } from './notification/notification.module';
+import { ContentReportModule } from './content-report/content-report.module';
 
 @Module({
   imports: [
@@ -30,6 +42,18 @@ import { WhiteLabelModule } from './white-label/white-label.module';
     LocationModule,
     HomeModule,
     TagModule,
+    CosplayerModule,
+    PostModule,
+    SocialModule,
+    CollectionModule,
+    BrandModule,
+    JobModule,
+    EventModule,
+    BookingModule,
+    RankingModule,
+    SpotlightModule,
+    NotificationModule,
+    ContentReportModule,
   ],
   exports: [
     UserModule,
@@ -46,6 +70,18 @@ import { WhiteLabelModule } from './white-label/white-label.module';
     LocationModule,
     HomeModule,
     TagModule,
+    CosplayerModule,
+    PostModule,
+    SocialModule,
+    CollectionModule,
+    BrandModule,
+    JobModule,
+    EventModule,
+    BookingModule,
+    RankingModule,
+    SpotlightModule,
+    NotificationModule,
+    ContentReportModule,
   ],
 })
 export class ApiModule {}
