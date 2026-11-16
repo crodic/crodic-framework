@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostEntity } from './entities/post.entity';
-import { PostMediaEntity } from './entities/post-media.entity';
-import { PostLikeEntity } from './entities/post-like.entity';
-import { PostCommentEntity } from './entities/post-comment.entity';
+import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../user/entities/user.entity';
+import { PostPublicController } from './controllers/post-public.controller';
+import { PostUserController } from './controllers/post-user.controller';
 import { PostCommentLikeEntity } from './entities/post-comment-like.entity';
+import { PostCommentEntity } from './entities/post-comment.entity';
+import { PostLikeEntity } from './entities/post-like.entity';
+import { PostMediaEntity } from './entities/post-media.entity';
+import { PostEntity } from './entities/post.entity';
+import { PostService } from './services/post.service';
 
 @Module({
   imports: [
@@ -14,8 +19,12 @@ import { PostCommentLikeEntity } from './entities/post-comment-like.entity';
       PostLikeEntity,
       PostCommentEntity,
       PostCommentLikeEntity,
+      UserEntity,
+      CosplayerProfileEntity,
     ]),
   ],
-  exports: [TypeOrmModule],
+  controllers: [PostPublicController, PostUserController],
+  providers: [PostService],
+  exports: [TypeOrmModule, PostService],
 })
 export class PostModule {}
