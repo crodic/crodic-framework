@@ -24,9 +24,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Briefcase, Loader2, PlusCircle } from "lucide-react";
-import { JobItem } from "./jobs-types";
+import { JobFilterId } from "./jobs-types";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { createJob, type JobDetailResDto } from "@/services/jobs";
 
 const postJobSchema = z.object({
   brandName: z
@@ -47,7 +49,7 @@ type PostJobFormValues = z.infer<typeof postJobSchema>;
 export interface PostJobDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onJobCreated?: (job: JobItem) => void;
+  onJobCreated?: (job: JobDetailResDto) => void;
 }
 
 const CATEGORY_OPTIONS = [
@@ -57,6 +59,16 @@ const CATEGORY_OPTIONS = [
   "Quảng cáo Game",
 ];
 
+const CATEGORY_MAP: Record<
+  string,
+  "lookbook" | "event" | "crafting" | "game_ads"
+> = {
+  "Mẫu ảnh / Lookbook": "lookbook",
+  "Guest Sự kiện": "event",
+  "Làm trang phục / Crafting": "crafting",
+  "Quảng cáo Game": "game_ads",
+};
+
 export function PostJobDialog({
   open,
   onOpenChange,
@@ -65,6 +77,7 @@ export function PostJobDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
+  const t = useTranslations("Jobs.postDialog");
 
   const handleOpenChange = (val: boolean) => {
     if (val && !isAuthenticated) {
@@ -78,16 +91,15 @@ export function PostJobDialog({
   const form = useForm<PostJobFormValues>({
     resolver: zodResolver(postJobSchema),
     defaultValues: {
-      brandName: "Aetheria Production",
-      title: "Tuyển Cosplayer tham gia quay TVC Game Mùa Xuân",
-      category: "Quảng cáo Game",
-      budget: "4.500.000đ - 7.000.000đ / ngày",
-      location: "TP.HCM",
-      deadline: "25/12/2026",
-      requirements: "Ngoại hình sáng, khả năng diễn xuất và biểu cảm linh hoạt",
-      description:
-        "Thực hiện các cảnh quay ngắn và chụp ảnh poster quảng bá sự kiện Tết 2027.",
-      contactEmail: "contact@aetheriaprod.vn",
+      brandName: "",
+      title: "",
+      category: "Mẫu ảnh / Lookbook",
+      budget: "",
+      location: "",
+      deadline: "",
+      requirements: "",
+      description: "",
+      contactEmail: "",
     },
   });
 
@@ -99,34 +111,33 @@ export function PostJobDialog({
     }
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const categoryCode = CATEGORY_MAP[values.category] || "event";
+      const tags: JobFilterId[] = [
+        "all",
+        categoryCode,
+        values.location.toLowerCase().includes("hcm") ? "hcm" : "hanoi",
+      ];
 
-      const newJob: JobItem = {
-        id: `job-${Date.now()}`,
+      const created = await createJob({
+        title: values.title,
         brandName: values.brandName,
-        brandLogo: "/landing/cosplay-work-1.jpg",
         brandInitials: values.brandName.slice(0, 3).toUpperCase(),
         brandColor: "bg-primary",
         isVerified: true,
-        title: values.title,
-        budget: values.budget,
-        location: values.location,
-        deadline: values.deadline,
+        categoryCode,
+        categoryLabel: values.category,
+        budgetLabel: values.budget,
+        locationLabel: values.location,
+        deadlineLabel: values.deadline,
         requirements: values.requirements,
-        category: values.category,
-        tags: [
-          "all",
-          values.category.includes("Lookbook") ? "lookbook" : "event",
-          values.location.toLowerCase().includes("hcm") ? "hcm" : "hanoi",
-        ],
         description: values.description,
         contactEmail: values.contactEmail,
-      };
+        filterTags: tags,
+      });
 
-      onJobCreated?.(newJob);
-      toast.success("Đăng tin tuyển dụng thành công!", {
-        description:
-          "Tin tuyển dụng của bạn đã được xuất bản lên bảng tin tuyển dụng Kosume.",
+      onJobCreated?.(created);
+      toast.success(t("successTitle"), {
+        description: t("successDesc"),
       });
       onOpenChange(false);
       form.reset();
@@ -143,14 +154,13 @@ export function PostJobDialog({
         <DialogHeader className="space-y-1.5 text-left">
           <div className="text-primary flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
             <Briefcase className="size-4" />
-            <span>Dành cho Thương hiệu & Studio</span>
+            <span>{t("title")}</span>
           </div>
           <DialogTitle className="text-foreground text-lg font-bold sm:text-xl">
-            Đăng tin tuyển dụng Cosplayer
+            {t("title")}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">
-            Tiếp cận hơn 10.000+ Cosplayer, Model và Crafting Creator chất lượng
-            cao trên Kosume.
+            {t("desc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,11 +177,11 @@ export function PostJobDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Tên Thương hiệu / Doanh nghiệp
+                      {t("brandName")}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="VD: HoYoverse VN / Studio A"
+                        placeholder="VD: Studio A / Production"
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -187,7 +197,7 @@ export function PostJobDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Email nhận hồ sơ
+                      {t("contactEmail")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -209,11 +219,11 @@ export function PostJobDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Tiêu đề tin tuyển dụng
+                    {t("jobTitle")}
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="VD: Tuyển 5 Cosplayer biểu diễn sự kiện ra mắt game..."
+                      placeholder="VD: Tuyển Cosplayer biểu diễn sự kiện..."
                       className="h-9 rounded-xl text-xs"
                       {...field}
                     />
@@ -230,7 +240,7 @@ export function PostJobDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Hạng mục công việc
+                    {t("category")}
                   </FormLabel>
                   <FormControl>
                     <div className="flex flex-wrap gap-2">
@@ -266,11 +276,11 @@ export function PostJobDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Thù lao / Ngân sách
+                      {t("budget")}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="VD: 5.000.000đ / ngày"
+                        placeholder="VD: 5.000.000đ"
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -286,7 +296,7 @@ export function PostJobDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Địa điểm
+                      {t("location")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -306,7 +316,7 @@ export function PostJobDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Hạn chót
+                      {t("deadline")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -328,11 +338,11 @@ export function PostJobDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Yêu cầu đối với ứng viên
+                    {t("requirements")}
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="VD: Chiều cao từ 1m62, diễn xuất tự nhiên, có trang phục sẵn..."
+                      placeholder="VD: Ngoại hình phù hợp, có trang phục..."
                       className="h-9 rounded-xl text-xs"
                       {...field}
                     />
@@ -349,12 +359,12 @@ export function PostJobDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Mô tả công việc chi tiết & Quyền lợi
+                    {t("description")}
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       rows={3}
-                      placeholder="Mô tả cụ thể thời gian, kịch bản, phúc lợi đi kèm (makeup, ăn uống, hợp đồng)..."
+                      placeholder="Mô tả cụ thể thời gian, kịch bản, phúc lợi..."
                       className="resize-none rounded-xl text-xs"
                       {...field}
                     />
@@ -385,12 +395,12 @@ export function PostJobDialog({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                    Đang xuất bản...
+                    {t("submitting")}
                   </>
                 ) : (
                   <>
                     <PlusCircle className="mr-1.5 size-3.5" />
-                    Đăng tin tuyển dụng
+                    {t("submit")}
                   </>
                 )}
               </Button>

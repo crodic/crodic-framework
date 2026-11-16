@@ -3,41 +3,45 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { BadgeCheck, Heart } from "lucide-react";
+import { BadgeCheck, Heart, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { HOME_FEATURED_WORKS } from "./home-data";
-import { ShowcaseWork } from "./home-types";
+import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import {
+  getPosts,
+  toggleLikePost,
+  type PostSummaryResDto,
+} from "@/services/posts";
 import { cn } from "@/lib/utils";
 
-function WorkCard({ work }: { work: ShowcaseWork }) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likes, setLikes] = useState(work.likesCount);
+function WorkCard({ post }: { post: PostSummaryResDto }) {
+  const t = useTranslations("Home.featuredWorks");
+  const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser ?? false);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsLiked((prev) => !prev);
-    if (!isLiked) {
-      setLikes((current) => {
-        const num = parseFloat(current);
-        return isNaN(num) ? "3.5K" : `${(num + 0.1).toFixed(1)}K`;
-      });
-    } else {
-      setLikes(work.likesCount);
-    }
+    setLikesCount((prev) => (isLiked ? Math.max(0, prev - 1) : prev + 1));
+    await toggleLikePost(post.id).catch(() => undefined);
   };
+
+  const coverUrl = post.coverImageUrl || "/logo.png";
+  const likesDisplay =
+    likesCount >= 1000 ? `${(likesCount / 1000).toFixed(1)}K` : `${likesCount}`;
 
   return (
     <Card className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/5 flex flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
-      {/* Top Image Showcase - Full Bleed (Click to open Post Detail Modal) */}
+      {/* Top Image Showcase */}
       <Link
-        href={`/post/${work.id}`}
+        href={`/post/${post.slug || post.id}`}
         className="bg-muted relative block aspect-[4/3.6] w-full cursor-pointer overflow-hidden"
       >
         <Image
-          src={work.coverImage}
-          alt={work.title}
+          src={coverUrl}
+          alt={post.title}
           fill
           priority
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -45,11 +49,9 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
         />
 
         {/* Top-Right Tag Badge */}
-        {work.categoryBadge && (
-          <span className="absolute top-2.5 right-2.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md select-none">
-            {work.categoryBadge}
-          </span>
-        )}
+        <span className="absolute top-2.5 right-2.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md select-none">
+          {post.albumCategoryLabel || post.albumCategory || t("photoset")}
+        </span>
 
         {/* Bottom-Right Heart Like Badge */}
         <button
@@ -61,72 +63,65 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
               ? "border-rose-500/50 bg-rose-500/25 text-rose-300"
               : "border-white/10 bg-black/60 text-white hover:bg-black/80"
           )}
-          aria-label={`Thích ${work.title}`}
+          aria-label={`Like ${post.title}`}
         >
           <Heart className="size-3 fill-rose-500 text-rose-500" />
-          <span>{likes}</span>
+          <span>{likesDisplay}</span>
         </button>
       </Link>
 
-      {/* Info & Actions below image */}
+      {/* Info & Actions */}
       <CardContent className="flex flex-1 flex-col justify-between space-y-2.5 p-3 sm:p-3.5">
         <div className="space-y-1.5">
-          <Link href={`/post/${work.id}`} className="block">
+          <Link href={`/post/${post.slug || post.id}`} className="block">
             <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
-              {work.title}
+              {post.title}
             </h3>
           </Link>
 
-          {/* Author Row (Links to public cosplayer profile) */}
+          {/* Author Row */}
           <Link
-            href={`/cosplayer/${work.author.name.toLowerCase() === "soriko" ? "soriko" : "kiriko"}`}
-            className="group/author flex items-center gap-2 transition-opacity hover:opacity-85"
+            href={`/cosplayer/${post.author.handle.replace("@", "") || post.author.id}`}
+            className="group/author flex cursor-pointer items-center gap-2"
           >
             <div className="border-border/80 bg-muted relative size-6 shrink-0 overflow-hidden rounded-full border">
-              <Image
-                src={work.author.avatarUrl}
-                alt={work.author.name}
-                fill
-                sizes="24px"
-                className="object-cover"
+              {post.author.avatarUrl ? (
+                <Image
+                  src={post.author.avatarUrl}
+                  alt={post.author.displayName}
+                  fill
+                  sizes="24px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[10px] font-bold">
+                  {post.author.displayName.slice(0, 1)}
+                </div>
+              )}
+            </div>
+            <span className="text-muted-foreground group-hover/author:text-primary truncate text-xs font-medium transition-colors">
+              {post.author.displayName}
+            </span>
+            {post.author.isVerified && (
+              <BadgeCheck
+                className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400"
+                aria-label="Verified"
               />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                <span className="text-foreground group-hover/author:text-primary truncate text-xs font-semibold transition-colors">
-                  {work.author.name}
-                </span>
-                {work.author.isVerified && (
-                  <BadgeCheck
-                    className="size-3 shrink-0 fill-sky-400/20 text-sky-400"
-                    aria-label="Đã xác minh"
-                  />
-                )}
-              </div>
-              <p className="text-muted-foreground truncate text-[10px]">
-                {work.author.role}
-              </p>
-            </div>
+            )}
           </Link>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        {/* Card CTA */}
+        <div className="border-border/30 border-t pt-1">
           <Button
             asChild
+            variant="ghost"
             size="sm"
-            variant="outline"
-            className="border-border/80 bg-background/50 hover:bg-muted h-8 cursor-pointer rounded-lg px-2 text-xs font-medium transition-colors"
+            className="hover:bg-primary/10 hover:text-primary h-7.5 w-full cursor-pointer rounded-lg text-xs font-semibold"
           >
-            <Link href={`/post/${work.id}`}>Xem dự án</Link>
-          </Button>
-
-          <Button
-            asChild
-            size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8 cursor-pointer rounded-lg px-2 text-xs font-semibold shadow-xs transition-colors"
-          >
-            <a href={work.bookingHref}>Booking</a>
+            <Link href={`/post/${post.slug || post.id}`}>
+              {t("viewProject")}
+            </Link>
           </Button>
         </div>
       </CardContent>
@@ -135,19 +130,45 @@ function WorkCard({ work }: { work: ShowcaseWork }) {
 }
 
 export function FeaturedWorks() {
+  const t = useTranslations("Home.featuredWorks");
+  const { data: postsRes, isLoading } = useQuery({
+    queryKey: ["public-featured-works"],
+    queryFn: () => getPosts({ limit: 6, sort: "-likesCount" }),
+    staleTime: 60 * 1000,
+  });
+
+  const posts = postsRes?.data || [];
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">
-          Tác phẩm mới nổi bật
+          {t("title")}
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-        {HOME_FEATURED_WORKS.map((work) => (
-          <WorkCard key={work.id} work={work} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="border-border/70 bg-card/40 flex aspect-[4/3.6] animate-pulse items-center justify-center rounded-2xl border"
+            >
+              <Sparkles className="text-muted-foreground size-5 animate-spin" />
+            </div>
+          ))}
+        </div>
+      ) : posts.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          {posts.map((post) => (
+            <WorkCard key={post.id} post={post} />
+          ))}
+        </div>
+      ) : (
+        <div className="border-border/60 bg-card/30 flex flex-col items-center justify-center rounded-2xl border border-dashed py-12 text-center">
+          <p className="text-muted-foreground text-sm">{t("noWorks")}</p>
+        </div>
+      )}
     </section>
   );
 }

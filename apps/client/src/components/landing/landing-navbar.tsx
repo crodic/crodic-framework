@@ -10,14 +10,26 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { LANDING_NAV_LINKS } from "./landing-data";
+import { LANDING_NAV_LINKS } from "@/config/landing";
 import { ChevronRight, Menu } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export function LandingNavbar() {
+  const t = useTranslations("Landing.nav");
   const scrolled = useScroll(10);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navKeys: Record<
+    string,
+    "explore" | "community" | "events" | "ranking"
+  > = {
+    explore: "explore",
+    community: "community",
+    events: "events",
+    ranking: "ranking",
+  };
 
   return (
     <header
@@ -49,11 +61,11 @@ export function LandingNavbar() {
         >
           {LANDING_NAV_LINKS.map((link) => (
             <a
-              key={link.label}
+              key={link.key}
               href={link.href}
               className="text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
             >
-              {link.label}
+              {t(navKeys[link.key] || "explore")}
             </a>
           ))}
         </nav>
@@ -66,7 +78,7 @@ export function LandingNavbar() {
             size="sm"
             className="border-border/70 bg-card/40 hover:bg-muted/60 text-foreground h-9 cursor-pointer rounded-full border px-4 font-medium transition-colors"
           >
-            <Link href="/auth/sign-in">Đăng nhập</Link>
+            <Link href="/auth/sign-in">{t("signIn")}</Link>
           </Button>
 
           <Button
@@ -74,7 +86,7 @@ export function LandingNavbar() {
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-full px-5 font-medium shadow-sm transition-all hover:scale-[1.02]"
           >
-            <Link href="/auth/sign-up">Tham gia ngay</Link>
+            <Link href="/auth/sign-up">{t("signUp")}</Link>
           </Button>
         </div>
 
@@ -85,7 +97,7 @@ export function LandingNavbar() {
             size="sm"
             className="bg-primary text-primary-foreground h-8 rounded-full px-3 text-xs"
           >
-            <Link href="/auth/sign-up">Tham gia</Link>
+            <Link href="/auth/sign-up">{t("signUp")}</Link>
           </Button>
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -113,12 +125,12 @@ export function LandingNavbar() {
               <div className="flex flex-col gap-2 py-6">
                 {LANDING_NAV_LINKS.map((link) => (
                   <a
-                    key={link.label}
+                    key={link.key}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className="text-foreground hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium transition-colors"
                   >
-                    <span>{link.label}</span>
+                    <span>{t(navKeys[link.key] || "explore")}</span>
                     <ChevronRight className="text-muted-foreground/60 size-4" />
                   </a>
                 ))}
@@ -134,7 +146,7 @@ export function LandingNavbar() {
                     href="/auth/sign-in"
                     onClick={() => setMobileOpen(false)}
                   >
-                    Đăng nhập
+                    {t("signIn")}
                   </Link>
                 </Button>
                 <Button
@@ -145,7 +157,7 @@ export function LandingNavbar() {
                     href="/auth/sign-up"
                     onClick={() => setMobileOpen(false)}
                   >
-                    Tham gia ngay
+                    {t("signUp")}
                   </Link>
                 </Button>
               </div>

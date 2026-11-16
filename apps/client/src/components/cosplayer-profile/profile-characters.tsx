@@ -4,10 +4,10 @@ import React from "react";
 import Image from "next/image";
 import { Images, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { CosplayerCharacter } from "./profile-types";
+import type { CosplayerCharacterResDto } from "@/services/cosplayer";
 
 interface ProfileCharactersProps {
-  characters: CosplayerCharacter[];
+  characters: CosplayerCharacterResDto[];
 }
 
 export function ProfileCharacters({ characters }: ProfileCharactersProps) {
@@ -32,7 +32,7 @@ export function ProfileCharacters({ characters }: ProfileCharactersProps) {
             {/* Character Thumbnail Container */}
             <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
               <Image
-                src={char.coverImage}
+                src={char.coverImageUrl}
                 alt={char.characterName}
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -57,7 +57,7 @@ export function ProfileCharacters({ characters }: ProfileCharactersProps) {
               <div className="absolute inset-x-3 bottom-3 space-y-0.5 text-white">
                 <span className="text-primary-foreground/90 bg-primary/70 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold backdrop-blur-xs sm:text-xs">
                   <Star className="size-2.5" />
-                  {char.series}
+                  {char.seriesName}
                 </span>
                 <h3 className="truncate text-sm font-bold text-white drop-shadow-sm sm:text-base">
                   {char.characterName}

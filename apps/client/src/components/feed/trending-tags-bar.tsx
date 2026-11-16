@@ -2,18 +2,29 @@
 
 import React from "react";
 import { Flame } from "lucide-react";
-import { MOCK_TRENDING_TAGS } from "./feed-data";
+import { useTranslations } from "next-intl";
+
+const POPULAR_TAGS = [
+  { name: "HonkaiStarRail", count: "12.4K", isHot: true },
+  { name: "GenshinImpact", count: "28.5K", isHot: true },
+  { name: "Acheron", count: "8.2K", isHot: true },
+  { name: "Cyberpunk2077", count: "5.1K" },
+  { name: "CosplayFestival", count: "14.2K", isHot: true },
+  { name: "PropCrafting", count: "3.8K" },
+];
 
 export function TrendingTagsBar() {
+  const t = useTranslations("Feed");
+
   return (
     <div className="space-y-2">
       <div className="text-foreground flex items-center gap-1.5 text-xs font-bold">
-        <span>Thẻ xu hướng</span>
+        <span>{t("trendingTags")}</span>
         <Flame className="size-3.5 fill-amber-500 text-amber-500" />
       </div>
 
       <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
-        {MOCK_TRENDING_TAGS.map((tag) => (
+        {POPULAR_TAGS.map((tag) => (
           <button
             key={tag.name}
             type="button"

@@ -4,23 +4,30 @@ import React, { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PostDetail } from "./post-types";
+import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { PostCarousel } from "./post-carousel";
 import { PostInfo } from "./post-info";
 
 interface PostDetailModalProps {
-  post: PostDetail;
+  post: PostDetailResDto;
+  comments?: PostCommentResDto[];
 }
 
-export function PostDetailModal({ post }: PostDetailModalProps) {
+export function PostDetailModal({ post, comments = [] }: PostDetailModalProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
 
   const handleClose = () => {
     setIsOpen(false);
-    // Smoothly pop the intercepted route from history
     router.back();
   };
+
+  const photos =
+    post.media && post.media.length > 0
+      ? post.media.map((m) => m.mediaUrl)
+      : post.coverImageUrl
+        ? [post.coverImageUrl]
+        : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -30,7 +37,7 @@ export function PostDetailModal({ post }: PostDetailModalProps) {
       >
         <DialogTitle className="sr-only">{post.title}</DialogTitle>
 
-        {/* Floating Close Button (positioned in top-right with pr-12 margin on author header) */}
+        {/* Floating Close Button */}
         <button
           type="button"
           onClick={handleClose}
@@ -44,12 +51,12 @@ export function PostDetailModal({ post }: PostDetailModalProps) {
         <div className="grid min-h-[500px] flex-1 grid-cols-1 overflow-y-auto md:h-[620px] md:grid-cols-12 md:overflow-hidden lg:h-[680px]">
           {/* Left Column: Photo Carousel */}
           <div className="border-border/40 flex h-full flex-col justify-between border-b bg-black/40 p-3.5 sm:p-5 md:col-span-7 md:border-r md:border-b-0 lg:col-span-8">
-            <PostCarousel photos={post.photos} title={post.title} />
+            <PostCarousel photos={photos} title={post.title} />
           </div>
 
           {/* Right Column: Author, Caption, Tags & Comments */}
           <div className="bg-card/40 flex min-h-[380px] flex-col justify-between p-4 sm:p-5 md:col-span-5 md:min-h-0 lg:col-span-4">
-            <PostInfo post={post} />
+            <PostInfo post={post} comments={comments} />
           </div>
         </div>
       </DialogContent>

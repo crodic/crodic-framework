@@ -4,26 +4,26 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, Tag, Video, Send } from "lucide-react";
-import { CURRENT_USER } from "./feed-data";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export function CreatePostCard() {
+  const t = useTranslations("Feed");
   const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
 
-  const displayName =
-    profile?.fullName || profile?.firstName || CURRENT_USER.name;
-  const avatarUrl = profile?.avatar || CURRENT_USER.avatarUrl;
+  const displayName = profile?.fullName || profile?.firstName || "Cosplayer";
+  const avatarUrl = profile?.avatar || "/landing/avatar-kiriko.jpg";
 
   const handleAction = () => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để tạo bài viết hoặc đăng tải tác phẩm!");
+      toast.info(t("createPlaceholder"));
       router.push("/auth/login?from=/feed");
       return;
     }
@@ -52,8 +52,8 @@ export function CreatePostCard() {
         >
           <span>
             {isAuthenticated
-              ? `${displayName} ơi, hôm nay bạn có ảnh cosplay mới gì không?`
-              : "Bạn có tác phẩm cosplay mới? Đăng nhập ngay để chia sẻ cùng cộng đồng..."}
+              ? t("createPlaceholderAuth", { name: displayName })
+              : t("createPlaceholder")}
           </span>
         </button>
       </div>
@@ -67,7 +67,7 @@ export function CreatePostCard() {
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <ImageIcon className="size-4 shrink-0 text-purple-400" />
-            <span className="hidden sm:inline">Ảnh / Album</span>
+            <span className="hidden sm:inline">{t("photoAlbum")}</span>
           </button>
 
           <button
@@ -76,7 +76,7 @@ export function CreatePostCard() {
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <Video className="size-4 shrink-0 text-pink-400" />
-            <span className="hidden sm:inline">Video / Reel</span>
+            <span className="hidden sm:inline">{t("videoReel")}</span>
           </button>
 
           <button
@@ -85,7 +85,7 @@ export function CreatePostCard() {
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <Tag className="size-4 shrink-0 text-indigo-400" />
-            <span className="hidden sm:inline">Gắn thẻ</span>
+            <span className="hidden sm:inline">{t("tagCosplayer")}</span>
           </button>
         </div>
 
@@ -96,7 +96,7 @@ export function CreatePostCard() {
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02]"
         >
           <Send className="mr-1 size-3.5" />
-          Đăng
+          {t("postBtn")}
         </Button>
       </div>
 

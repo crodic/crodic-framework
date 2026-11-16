@@ -24,16 +24,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CosplayerProfileData } from "./profile-types";
+import type { CosplayerDetailResDto } from "@/services/cosplayer";
 
 const profileEditSchema = z.object({
-  name: z.string().min(1, "Vui lòng nhập tên hiển thị"),
+  displayName: z.string().min(1, "Vui lòng nhập tên hiển thị"),
   handle: z.string().min(1, "Vui lòng nhập tên người dùng (handle)"),
   bio: z.string().optional(),
-  facebook: z.string().optional(),
-  instagram: z.string().optional(),
-  tiktok: z.string().optional(),
-  twitter: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  instagramUrl: z.string().optional(),
+  tiktokUrl: z.string().optional(),
+  twitterUrl: z.string().optional(),
 });
 
 type ProfileEditFormValues = z.infer<typeof profileEditSchema>;
@@ -41,8 +41,8 @@ type ProfileEditFormValues = z.infer<typeof profileEditSchema>;
 interface ProfileEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  profile: CosplayerProfileData;
-  onSave: (updatedData: Partial<CosplayerProfileData>) => void;
+  profile: CosplayerDetailResDto;
+  onSave: (updatedData: Partial<CosplayerDetailResDto>) => void;
 }
 
 export function ProfileEditDialog({
@@ -51,8 +51,8 @@ export function ProfileEditDialog({
   profile,
   onSave,
 }: ProfileEditDialogProps) {
-  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
-  const [coverUrl, setCoverUrl] = useState(profile.coverUrl);
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || "");
+  const [coverUrl, setCoverUrl] = useState(profile.coverUrl || "");
   const [isSaved, setIsSaved] = useState(false);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -61,28 +61,28 @@ export function ProfileEditDialog({
   const form = useForm<ProfileEditFormValues>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
-      name: profile.name,
+      displayName: profile.displayName,
       handle: profile.handle,
       bio: profile.bio || "",
-      facebook: profile.contact.facebook || "",
-      instagram: profile.contact.instagram || "",
-      tiktok: profile.contact.tiktok || "",
-      twitter: profile.contact.twitter || "",
+      facebookUrl: profile.facebookUrl || "",
+      instagramUrl: profile.instagramUrl || "",
+      tiktokUrl: profile.tiktokUrl || "",
+      twitterUrl: profile.twitterUrl || "",
     },
   });
 
   useEffect(() => {
     form.reset({
-      name: profile.name,
+      displayName: profile.displayName,
       handle: profile.handle,
       bio: profile.bio || "",
-      facebook: profile.contact.facebook || "",
-      instagram: profile.contact.instagram || "",
-      tiktok: profile.contact.tiktok || "",
-      twitter: profile.contact.twitter || "",
+      facebookUrl: profile.facebookUrl || "",
+      instagramUrl: profile.instagramUrl || "",
+      tiktokUrl: profile.tiktokUrl || "",
+      twitterUrl: profile.twitterUrl || "",
     });
-    setAvatarUrl(profile.avatarUrl);
-    setCoverUrl(profile.coverUrl);
+    setAvatarUrl(profile.avatarUrl || "");
+    setCoverUrl(profile.coverUrl || "");
   }, [profile, form]);
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,18 +103,15 @@ export function ProfileEditDialog({
 
   const onSubmit = (values: ProfileEditFormValues) => {
     onSave({
-      name: values.name,
+      displayName: values.displayName,
       handle: values.handle,
       bio: values.bio,
       avatarUrl,
       coverUrl,
-      contact: {
-        ...profile.contact,
-        facebook: values.facebook,
-        instagram: values.instagram,
-        tiktok: values.tiktok,
-        twitter: values.twitter,
-      },
+      facebookUrl: values.facebookUrl,
+      instagramUrl: values.instagramUrl,
+      tiktokUrl: values.tiktokUrl,
+      twitterUrl: values.twitterUrl,
     });
 
     setIsSaved(true);
@@ -146,41 +143,58 @@ export function ProfileEditDialog({
                 onClick={() => coverInputRef.current?.click()}
                 className="group bg-muted/60 border-border/80 relative h-36 w-full cursor-pointer overflow-hidden rounded-2xl border sm:h-44"
               >
-                <Image
-                  src={coverUrl}
-                  alt="Cover photo preview"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 600px"
-                  className="object-cover transition-all group-hover:brightness-75"
-                />
-                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 text-xs font-semibold text-white opacity-0 backdrop-blur-xs transition-opacity group-hover:opacity-100">
-                  <Camera className="size-4" />
-                  <span>Thay đổi ảnh bìa (Cover photo)</span>
+                {coverUrl ? (
+                  <Image
+                    src={coverUrl}
+                    alt="Cover photo preview"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover transition-opacity group-hover:opacity-85"
+                  />
+                ) : (
+                  <div className="bg-muted text-muted-foreground flex size-full items-center justify-center text-xs">
+                    Chọn ảnh bìa
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="flex items-center gap-1.5 rounded-xl bg-black/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                    <Camera className="size-4" />
+                    Đổi ảnh bìa
+                  </span>
                 </div>
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCoverFileChange}
-                  className="hidden"
-                />
               </div>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverFileChange}
+                className="hidden"
+              />
 
-              {/* Avatar preview overlapping cover */}
-              <div className="border-background bg-background ring-primary/40 group relative -mt-12 ml-4 size-24 cursor-pointer overflow-hidden rounded-full border-4 shadow-xl ring-4 sm:ml-6 sm:size-28">
-                <Image
-                  src={avatarUrl}
-                  alt="Avatar preview"
-                  fill
-                  sizes="112px"
-                  className="object-cover transition-all group-hover:brightness-75"
-                />
+              {/* Avatar preview */}
+              <div className="absolute -bottom-8 left-6">
                 <div
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  className="group/avatar bg-background ring-background relative size-20 cursor-pointer overflow-hidden rounded-full border-2 border-white/20 p-0.5 shadow-xl ring-4 sm:size-24"
                 >
-                  <Camera className="mb-0.5 size-4" />
-                  <span>Đổi ảnh</span>
+                  <div className="relative size-full overflow-hidden rounded-full">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="Avatar preview"
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="bg-primary/20 text-primary flex size-full items-center justify-center font-bold">
+                        {form.getValues("displayName")?.slice(0, 1) || "C"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover/avatar:opacity-100">
+                    <Camera className="size-5 text-white" />
+                  </div>
                 </div>
                 <input
                   ref={avatarInputRef}
@@ -192,20 +206,22 @@ export function ProfileEditDialog({
               </div>
             </div>
 
-            {/* 2. Display Name & Username */}
-            <div className="grid grid-cols-1 gap-3.5 pt-1 sm:grid-cols-2">
+            <div className="h-6" />
+
+            {/* 2. Basic Info Fields */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="name"
+                name="displayName"
                 render={({ field }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-muted-foreground text-xs font-semibold">
-                      Tên hiển thị
+                      Tên hiển thị / Nghệ danh
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Ví dụ: Hải Anh"
-                        className="h-10 rounded-xl text-sm"
+                        placeholder="VD: KIRIKO / SORA..."
+                        className="h-10 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -220,12 +236,12 @@ export function ProfileEditDialog({
                 render={({ field }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-muted-foreground text-xs font-semibold">
-                      Tên người dùng (Handle)
+                      Tên người dùng (@handle)
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="@haianh_fan"
-                        className="h-10 rounded-xl text-sm"
+                        placeholder="@kirikocos"
+                        className="h-10 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -266,7 +282,7 @@ export function ProfileEditDialog({
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="facebook"
+                  name="facebookUrl"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -283,12 +299,12 @@ export function ProfileEditDialog({
 
                 <FormField
                   control={form.control}
-                  name="instagram"
+                  name="instagramUrl"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link Instagram (@username)"
+                          placeholder="Link Instagram"
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -300,12 +316,12 @@ export function ProfileEditDialog({
 
                 <FormField
                   control={form.control}
-                  name="tiktok"
+                  name="tiktokUrl"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link TikTok (@username)"
+                          placeholder="Link TikTok"
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -317,7 +333,7 @@ export function ProfileEditDialog({
 
                 <FormField
                   control={form.control}
-                  name="twitter"
+                  name="twitterUrl"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>

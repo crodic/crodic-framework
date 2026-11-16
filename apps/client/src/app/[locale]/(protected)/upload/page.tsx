@@ -3,7 +3,6 @@ import Layout from "@/components/layouts/layout";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { SortableImageUpload } from "@/components/form/sortable-image-upload";
 import { CreateAlbumForm } from "@/components/studio/create-album-form";
-import { INITIAL_MOCK_ALBUM_IMAGES } from "@/components/studio/album-types";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -31,7 +30,7 @@ export default function StudioUploadPage() {
             <SortableImageUpload
               variant="studio"
               showInlineAddSlot={true}
-              existingImages={INITIAL_MOCK_ALBUM_IMAGES}
+              existingImages={[]}
               maxFiles={20}
               gridClassName="grid-cols-2 sm:grid-cols-3 gap-3"
             />

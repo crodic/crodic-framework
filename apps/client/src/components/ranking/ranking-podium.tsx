@@ -6,19 +6,21 @@ import { Link } from "@/i18n/navigation";
 import { Check, Award, Trophy, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { PodiumItem } from "./ranking-types";
+import { useTranslations } from "next-intl";
+import type { LeaderboardItemResDto } from "@/services/ranking";
 
 export interface RankingPodiumProps {
-  podiumItems: PodiumItem[];
+  podiumItems: LeaderboardItemResDto[];
 }
 
 export function RankingPodium({ podiumItems }: RankingPodiumProps) {
+  const t = useTranslations("Ranking.podium");
   const rank1 = podiumItems.find((p) => p.rank === 1);
   const rank2 = podiumItems.find((p) => p.rank === 2);
   const rank3 = podiumItems.find((p) => p.rank === 3);
 
   const displayOrder: Array<{
-    item?: PodiumItem;
+    item?: LeaderboardItemResDto;
     tier: "gold" | "silver" | "bronze";
   }> = [
     { item: rank2, tier: "silver" },
@@ -69,6 +71,14 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
           if (!item) return null;
           const styles = getTierStyles(tier);
           const MedalIcon = styles.medalIcon;
+          const formattedLikes =
+            item.likesCount >= 1000
+              ? `${(item.likesCount / 1000).toFixed(1)}k`
+              : String(item.likesCount);
+          const formattedFollowers =
+            item.followersCount >= 1000
+              ? `${(item.followersCount / 1000).toFixed(1)}k`
+              : String(item.followersCount);
 
           return (
             <div
@@ -108,7 +118,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 >
                   <Image
                     src={item.avatarUrl}
-                    alt={item.name}
+                    alt={item.displayName}
                     fill
                     sizes="(max-width: 640px) 48px, (max-width: 768px) 64px, 80px"
                     className="object-cover"
@@ -117,7 +127,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 {item.isVerified && (
                   <span
                     className="ring-card absolute right-0 bottom-0 inline-flex size-4 items-center justify-center rounded-full bg-blue-500 text-white shadow-xs ring-2 sm:size-5"
-                    title="Đã xác minh"
+                    title={t("verified")}
                   >
                     <Check className="size-2.5 stroke-[3] sm:size-3" />
                   </span>
@@ -126,61 +136,54 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
 
               {/* Info: Name, Role, Stats */}
               <div className="mt-2 w-full text-center sm:mt-3">
-                <Link
-                  href={item.portfolioHref}
-                  className="group/name inline-flex items-center justify-center gap-1"
-                >
-                  <h3 className="text-foreground group-hover/name:text-primary max-w-[90px] truncate text-xs font-bold transition-colors sm:max-w-[140px] sm:text-base md:max-w-none md:text-lg">
-                    {item.name}
+                <Link href={item.portfolioHref}>
+                  <h3
+                    className="text-foreground hover:text-primary truncate text-xs font-extrabold transition-colors sm:text-base"
+                    title={item.displayName}
+                  >
+                    {item.displayName}
                   </h3>
-                  {item.isVerified && (
-                    <span className="hidden size-3.5 items-center justify-center rounded-full bg-blue-500 text-white sm:inline-flex">
-                      <Check className="size-2 stroke-[3]" />
-                    </span>
-                  )}
                 </Link>
-
-                <p className="text-muted-foreground mt-0.5 truncate text-[10px] font-medium sm:text-xs">
-                  {item.role}
+                <p className="text-muted-foreground truncate text-[10px] font-semibold sm:text-xs">
+                  {item.handle}
+                </p>
+                <p className="text-foreground/80 mt-1 line-clamp-1 hidden text-[11px] font-medium sm:block">
+                  {item.roleLabel}
                 </p>
 
-                {/* Stats */}
-                <div className="text-muted-foreground mt-1 text-[10px] font-semibold sm:mt-2 sm:text-xs">
-                  <span className="text-foreground font-bold">
-                    {item.likes}
-                  </span>{" "}
-                  <span className="hidden sm:inline">Yêu thích • </span>
-                  <span className="block sm:hidden">
+                {/* Likes & Followers Counters */}
+                <div className="mt-2.5 flex items-center justify-center gap-2 border-t border-white/10 pt-2 text-[10px] font-semibold sm:text-xs">
+                  <div>
                     <span className="text-foreground font-bold">
-                      {item.followers}
+                      {formattedLikes}
                     </span>{" "}
-                    Fol
-                  </span>
-                  <span className="hidden sm:inline">
+                    <span className="text-muted-foreground">{t("likes")}</span>
+                  </div>
+                  <span className="text-muted-foreground">•</span>
+                  <div>
                     <span className="text-foreground font-bold">
-                      {item.followers}
+                      {formattedFollowers}
                     </span>{" "}
-                    Followers
-                  </span>
+                    <span className="text-muted-foreground">
+                      {t("followers")}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* CTA Button */}
-              <div className="mt-3 w-full sm:mt-4">
+              {/* View Portfolio Button */}
+              <div className="mt-3 w-full pt-1 sm:mt-4">
                 <Button
                   asChild
                   size="sm"
                   className={cn(
-                    "h-7 w-full cursor-pointer rounded-xl text-[11px] font-bold transition-transform active:scale-95 sm:h-9 sm:text-xs",
+                    "w-full cursor-pointer rounded-xl text-[11px] font-bold shadow-xs sm:h-9 sm:text-xs",
                     tier === "gold"
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md"
-                      : "bg-primary/90 text-primary-foreground hover:bg-primary"
+                      ? "bg-amber-400 font-extrabold text-black hover:bg-amber-300"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
                   )}
                 >
-                  <Link href={item.portfolioHref}>
-                    <span className="sm:hidden">Xem</span>
-                    <span className="hidden sm:inline">Xem Portfolio</span>
-                  </Link>
+                  <Link href={item.portfolioHref}>{t("viewPortfolio")}</Link>
                 </Button>
               </div>
             </div>

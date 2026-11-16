@@ -4,15 +4,19 @@ import React from "react";
 import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PostDetail } from "./post-types";
+import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { PostCarousel } from "./post-carousel";
 import { PostInfo } from "./post-info";
 
 interface PostStandaloneViewProps {
-  post: PostDetail;
+  post: PostDetailResDto;
+  comments?: PostCommentResDto[];
 }
 
-export function PostStandaloneView({ post }: PostStandaloneViewProps) {
+export function PostStandaloneView({
+  post,
+  comments = [],
+}: PostStandaloneViewProps) {
   const router = useRouter();
 
   const handleBack = () => {
@@ -23,9 +27,16 @@ export function PostStandaloneView({ post }: PostStandaloneViewProps) {
     }
   };
 
+  const photos =
+    post.media && post.media.length > 0
+      ? post.media.map((m) => m.mediaUrl)
+      : post.coverImageUrl
+        ? [post.coverImageUrl]
+        : [];
+
   return (
     <div className="mx-auto max-w-[1440px] space-y-4 p-3.5 sm:p-6 lg:p-8">
-      {/* Back button: quay lại trang trước đó trong lịch sử */}
+      {/* Back button */}
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -43,12 +54,12 @@ export function PostStandaloneView({ post }: PostStandaloneViewProps) {
       <div className="border-border/70 bg-card/60 grid min-h-[550px] grid-cols-1 overflow-hidden rounded-2xl border shadow-xl sm:rounded-3xl md:h-[680px] md:grid-cols-12">
         {/* Left Column: Photo Carousel */}
         <div className="border-border/50 flex h-full flex-col justify-between border-b bg-black/40 p-3.5 sm:p-6 md:col-span-7 md:border-r md:border-b-0 lg:col-span-8">
-          <PostCarousel photos={post.photos} title={post.title} />
+          <PostCarousel photos={photos} title={post.title} />
         </div>
 
         {/* Right Column: Post Info & Comments */}
         <div className="bg-card/40 flex flex-col justify-between p-4 sm:p-6 md:col-span-5 lg:col-span-4">
-          <PostInfo post={post} />
+          <PostInfo post={post} comments={comments} />
         </div>
       </div>
     </div>

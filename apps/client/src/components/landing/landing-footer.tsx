@@ -1,7 +1,29 @@
+"use client";
+
 import React from "react";
-import { FOOTER_LINKS_COL_1, FOOTER_LINKS_COL_2 } from "./landing-data";
+import { FOOTER_LINKS_COL_1, FOOTER_LINKS_COL_2 } from "@/config/landing";
+import { useTranslations } from "next-intl";
 
 export function LandingFooter() {
+  const t = useTranslations("Landing.footer");
+
+  const footerLinkKeys: Record<
+    string,
+    | "links.about"
+    | "links.features"
+    | "links.events"
+    | "links.privacy"
+    | "links.contact"
+    | "links.ranking"
+  > = {
+    about: "links.about",
+    features: "links.features",
+    events: "links.events",
+    privacy: "links.privacy",
+    contact: "links.contact",
+    ranking: "links.ranking",
+  };
+
   return (
     <footer className="border-border/40 bg-card/30 border-t pt-14 pb-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -17,9 +39,7 @@ export function LandingFooter() {
             </div>
 
             <p className="text-muted-foreground max-w-sm text-xs leading-relaxed sm:text-sm">
-              Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các
-              cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm
-              waifu/fandom yêu thích.
+              {t("description")}
             </p>
           </div>
 
@@ -27,12 +47,12 @@ export function LandingFooter() {
           <div className="md:col-span-2">
             <ul className="space-y-3">
               {FOOTER_LINKS_COL_1.map((item) => (
-                <li key={item.label}>
+                <li key={item.key}>
                   <a
                     href={item.href}
                     className="text-muted-foreground hover:text-foreground cursor-pointer text-xs transition-colors sm:text-sm"
                   >
-                    {item.label}
+                    {t(footerLinkKeys[item.key] || "links.about")}
                   </a>
                 </li>
               ))}
@@ -43,12 +63,12 @@ export function LandingFooter() {
           <div className="md:col-span-3">
             <ul className="space-y-3">
               {FOOTER_LINKS_COL_2.map((item) => (
-                <li key={item.label}>
+                <li key={item.key}>
                   <a
                     href={item.href}
                     className="text-muted-foreground hover:text-foreground cursor-pointer text-xs transition-colors sm:text-sm"
                   >
-                    {item.label}
+                    {t(footerLinkKeys[item.key] || "links.privacy")}
                   </a>
                 </li>
               ))}

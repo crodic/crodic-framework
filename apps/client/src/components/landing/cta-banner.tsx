@@ -1,8 +1,13 @@
+"use client";
+
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export function CtaBanner() {
+  const t = useTranslations("Landing.cta");
+
   return (
     <section className="py-12 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -16,12 +21,11 @@ export function CtaBanner() {
 
           <div className="relative z-10 mx-auto max-w-2xl">
             <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight sm:text-3xl lg:text-4xl">
-              Bạn đã sẵn sàng tham gia thế giới Kosume?
+              {t("title")}
             </h2>
 
             <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed sm:mt-4 sm:text-base">
-              Bạn đã sẵn sàng tham gia thế giới Kosume? Vũ kịch mở ngàn kích
-              thích thị giác. Nơi từng khung hình là một tuyệt tác nghệ thuật.
+              {t("subtitle")}
             </p>
 
             {/* Action Buttons */}
@@ -31,7 +35,7 @@ export function CtaBanner() {
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-12 cursor-pointer rounded-lg px-8 text-sm font-semibold shadow-xl transition-all hover:scale-[1.02] sm:text-base"
               >
-                <Link href="/auth/sign-up">Tham gia ngay (Đăng ký)</Link>
+                <Link href="/auth/sign-up">{t("joinNow")}</Link>
               </Button>
 
               <Button
@@ -40,7 +44,7 @@ export function CtaBanner() {
                 variant="outline"
                 className="border-border/80 bg-background/50 hover:bg-muted text-foreground h-12 cursor-pointer rounded-lg px-8 text-sm font-medium transition-all hover:scale-[1.02] sm:text-base"
               >
-                <a href="#albums">Xem các tác phẩm</a>
+                <a href="#albums">{t("viewWorks")}</a>
               </Button>
             </div>
           </div>

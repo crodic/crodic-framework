@@ -38,13 +38,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { CosplayerProfileData } from "./profile-types";
+import type { CosplayerDetailResDto } from "@/services/cosplayer";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 
 interface ProfileHeroProps {
-  profile: CosplayerProfileData;
+  profile: CosplayerDetailResDto;
   isOwner?: boolean;
-  onProfileUpdate?: (data: Partial<CosplayerProfileData>) => void;
+  onProfileUpdate?: (data: Partial<CosplayerDetailResDto>) => void;
   onToggleViewMode?: () => void;
   viewMode?: "owner" | "visitor";
 }
@@ -57,8 +57,8 @@ export function ProfileHero({
   viewMode = "owner",
 }: ProfileHeroProps) {
   const [isFollowing, setIsFollowing] = useState(false);
-  const [likesCount, setLikesCount] = useState(85.2);
   const [hasLiked, setHasLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(profile.totalLikesCount || 0);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [messageSent, setMessageSent] = useState(false);
@@ -76,10 +76,10 @@ export function ProfileHero({
 
   const handleToggleLike = () => {
     if (hasLiked) {
-      setLikesCount((prev) => Number((prev - 0.1).toFixed(1)));
+      setLikesCount((prev) => prev - 1);
       setHasLiked(false);
     } else {
-      setLikesCount((prev) => Number((prev + 0.1).toFixed(1)));
+      setLikesCount((prev) => prev + 1);
       setHasLiked(true);
     }
   };
@@ -119,14 +119,24 @@ export function ProfileHero({
     }
   };
 
+  const formattedFollowers =
+    profile.followersCount >= 1000
+      ? `${(profile.followersCount / 1000).toFixed(1)}k`
+      : String(profile.followersCount || 0);
+
+  const formattedLikes =
+    likesCount >= 1000
+      ? `${(likesCount / 1000).toFixed(1)}k`
+      : String(likesCount);
+
   return (
-    <section className="relative w-full">
-      {/* Notice Banner when Owner is viewing as visitor */}
+    <div className="relative">
+      {/* Visitor Preview Banner (Visible when owner switches to visitor mode) */}
       {isOwner && viewMode === "visitor" && (
-        <div className="bg-primary/10 border-primary/20 text-primary mb-3 flex items-center justify-between rounded-xl border p-2.5 px-4 text-xs font-medium">
+        <div className="bg-primary/10 border-primary/20 mb-4 flex items-center justify-between rounded-2xl border px-4 py-2 text-xs">
           <div className="flex items-center gap-2">
-            <Eye className="size-4" />
-            <span>
+            <Eye className="text-primary size-4" />
+            <span className="text-foreground font-medium">
               Bạn đang xem trang cá nhân dưới dạng khách xem (View as visitor).
             </span>
           </div>
@@ -144,8 +154,8 @@ export function ProfileHero({
       {/* 1. Panoramic Cover Banner */}
       <div className="group/cover bg-muted/40 border-border/40 relative h-44 w-full overflow-hidden rounded-2xl border shadow-sm sm:h-56 sm:rounded-3xl md:h-72 lg:h-80">
         <Image
-          src={profile.coverUrl}
-          alt={`${profile.name} Cover Banner`}
+          src={profile.coverUrl || "/landing/hero-banner.png"}
+          alt={`${profile.displayName} Cover Banner`}
           fill
           priority
           sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
@@ -185,42 +195,45 @@ export function ProfileHero({
             {/* Avatar with Camera badge for owner */}
             <div className="group/avatar bg-background ring-primary/80 dark:ring-primary shadow-primary/20 relative size-28 shrink-0 rounded-full p-1 shadow-xl ring-4 sm:size-32 md:size-36">
               <div className="relative size-full overflow-hidden rounded-full">
-                <Image
-                  src={profile.avatarUrl}
-                  alt={profile.name}
-                  fill
-                  sizes="144px"
-                  className="object-cover"
-                />
+                {profile.avatarUrl ? (
+                  <Image
+                    src={profile.avatarUrl}
+                    alt={profile.displayName}
+                    fill
+                    sizes="144px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-3xl font-bold">
+                    {profile.displayName.slice(0, 1)}
+                  </div>
+                )}
               </div>
 
-              {/* Owner Action: Change Avatar Camera Button */}
               {isOwnerView && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => avatarFileRef.current?.click()}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground border-background absolute right-1 bottom-1 z-20 flex size-8 cursor-pointer items-center justify-center rounded-full border-2 shadow-lg transition-transform hover:scale-105 sm:size-9"
-                    aria-label="Đổi ảnh đại diện"
-                  >
-                    <Camera className="size-4" />
-                  </button>
-                  <input
-                    ref={avatarFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                  />
-                </>
+                <button
+                  type="button"
+                  onClick={() => avatarFileRef.current?.click()}
+                  className="absolute inset-1 flex cursor-pointer items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-xs transition-opacity group-hover/avatar:opacity-100 hover:bg-black/85"
+                  aria-label="Thay đổi ảnh đại diện"
+                >
+                  <Camera className="size-5" />
+                </button>
               )}
+              <input
+                ref={avatarFileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
             </div>
 
-            {/* Name, Badge, Handle, Location & Bio */}
+            {/* Name, Handle, Badge & Stats */}
             <div className="space-y-1 pt-1 sm:space-y-1.5 md:pt-0">
               <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
                 <h1 className="text-foreground text-2xl font-extrabold tracking-tight sm:text-3xl">
-                  {profile.name}
+                  {profile.displayName}
                 </h1>
                 {profile.isVerified && (
                   <BadgeCheck
@@ -242,88 +255,54 @@ export function ProfileHero({
               {/* Handle & Location */}
               <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs font-medium sm:text-sm md:justify-start">
                 <span>{profile.handle}</span>
-                <span className="text-muted-foreground/60">•</span>
-                <span>{profile.location}</span>
+                {profile.locationLabel && (
+                  <>
+                    <span className="text-muted-foreground/60">•</span>
+                    <span>{profile.locationLabel}</span>
+                  </>
+                )}
               </p>
 
               {/* Short Bio */}
-              <p className="text-foreground/80 line-clamp-2 max-w-xl text-xs sm:text-sm md:line-clamp-none">
-                {profile.bio}
-              </p>
+              {profile.bio && (
+                <p className="text-foreground/80 line-clamp-2 max-w-xl text-xs sm:text-sm md:line-clamp-none">
+                  {profile.bio}
+                </p>
+              )}
 
               {/* Stats Bar */}
               <div className="text-foreground/90 flex items-center justify-center gap-2 pt-1 text-xs font-medium sm:text-sm md:justify-start">
-                {profile.stats.followingCount !== undefined ? (
-                  <>
-                    <span>
-                      <strong className="text-foreground font-bold">
-                        {profile.stats.followingCount}
-                      </strong>{" "}
-                      <span className="text-muted-foreground">
-                        Đang theo dõi
-                      </span>
-                    </span>
-                    <span className="text-muted-foreground/40">•</span>
-                    <button
-                      type="button"
-                      onClick={handleToggleLike}
-                      className="inline-flex items-center gap-1 transition-colors hover:text-rose-500"
-                    >
-                      <Heart
-                        className={`size-3.5 ${
-                          hasLiked
-                            ? "fill-rose-500 text-rose-500"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                      <strong className="text-foreground font-bold">
-                        {profile.stats.likesCount}
-                      </strong>{" "}
-                      <span className="text-muted-foreground">Đã thích</span>
-                    </button>
-                    <span className="text-muted-foreground/40">•</span>
-                    <span>
-                      <strong className="text-foreground font-bold">
-                        {profile.stats.collectionsCount || 14}
-                      </strong>{" "}
-                      <span className="text-muted-foreground">Bộ sưu tập</span>
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span>
-                      <strong className="text-foreground font-bold">
-                        {profile.stats.followersCount}
-                      </strong>{" "}
-                      <span className="text-muted-foreground">Followers</span>
-                    </span>
-                    <span className="text-muted-foreground/40">•</span>
-                    <button
-                      type="button"
-                      onClick={handleToggleLike}
-                      className="inline-flex items-center gap-1 transition-colors hover:text-rose-500"
-                    >
-                      <Heart
-                        className={`size-3.5 ${
-                          hasLiked
-                            ? "fill-rose-500 text-rose-500"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                      <strong className="text-foreground font-bold">
-                        {likesCount}K
-                      </strong>{" "}
-                      <span className="text-muted-foreground">Likes</span>
-                    </button>
-                    <span className="text-muted-foreground/40">•</span>
-                    <span>
-                      <strong className="text-foreground font-bold">
-                        {profile.stats.albumsCount}
-                      </strong>{" "}
-                      <span className="text-muted-foreground">Albums</span>
-                    </span>
-                  </>
-                )}
+                <span>
+                  <strong className="text-foreground font-bold">
+                    {formattedFollowers}
+                  </strong>{" "}
+                  <span className="text-muted-foreground">Followers</span>
+                </span>
+                <span className="text-muted-foreground/40">•</span>
+                <button
+                  type="button"
+                  onClick={handleToggleLike}
+                  className="inline-flex items-center gap-1 transition-colors hover:text-rose-500"
+                >
+                  <Heart
+                    className={`size-3.5 ${
+                      hasLiked
+                        ? "fill-rose-500 text-rose-500"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                  <strong className="text-foreground font-bold">
+                    {formattedLikes}
+                  </strong>{" "}
+                  <span className="text-muted-foreground">Likes</span>
+                </button>
+                <span className="text-muted-foreground/40">•</span>
+                <span>
+                  <strong className="text-foreground font-bold">
+                    {profile.albumsCount}
+                  </strong>{" "}
+                  <span className="text-muted-foreground">Albums</span>
+                </span>
               </div>
             </div>
           </div>
@@ -333,7 +312,6 @@ export function ProfileHero({
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
-                {/* Edit Profile Button (Mockup 1) */}
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}
@@ -343,7 +321,6 @@ export function ProfileHero({
                   <span>Chỉnh sửa trang cá nhân</span>
                 </Button>
 
-                {/* View As Guest Mode Toggle */}
                 {onToggleViewMode && (
                   <Button
                     type="button"
@@ -357,7 +334,6 @@ export function ProfileHero({
                   </Button>
                 )}
 
-                {/* Settings Shortcut */}
                 <Button
                   asChild
                   variant="outline"
@@ -432,7 +408,7 @@ export function ProfileHero({
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
-                        title: `${profile.name} - Profile`,
+                        title: `${profile.displayName} - Profile`,
                         url: window.location.href,
                       });
                     } else {
@@ -444,11 +420,9 @@ export function ProfileHero({
                   <Share2 className="mr-2 size-4" />
                   Chia sẻ hồ sơ
                 </DropdownMenuItem>
-                {profile.contact.facebook && (
+                {profile.facebookUrl && (
                   <DropdownMenuItem
-                    onClick={() =>
-                      window.open(profile.contact.facebook, "_blank")
-                    }
+                    onClick={() => window.open(profile.facebookUrl!, "_blank")}
                     className="cursor-pointer"
                   >
                     <ExternalLink className="mr-2 size-4" />
@@ -488,7 +462,7 @@ export function ProfileHero({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="text-primary size-5" />
-              Gửi tin nhắn đến {profile.name}
+              Gửi tin nhắn đến {profile.displayName}
             </DialogTitle>
             <DialogDescription>
               Liên hệ trao đổi về dự án cosplay, booking sự kiện hoặc giao lưu
@@ -508,7 +482,7 @@ export function ProfileHero({
 
             {messageSent ? (
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-center text-sm font-medium text-emerald-500">
-                ✓ Tin nhắn đã được gửi thành công đến {profile.name}!
+                ✓ Tin nhắn đã được gửi thành công đến {profile.displayName}!
               </div>
             ) : null}
 
@@ -532,6 +506,6 @@ export function ProfileHero({
           </form>
         </DialogContent>
       </Dialog>
-    </section>
+    </div>
   );
 }

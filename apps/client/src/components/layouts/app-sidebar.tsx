@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +16,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { APP_SIDEBAR_NAV } from "@/components/home/home-data";
+import { APP_SIDEBAR_NAV } from "@/config/navigation";
 import { useAuthStore } from "@/store/use-auth-store";
 import { isProtectedRoute } from "@/config/routes";
 import {
@@ -36,6 +37,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const tNav = useTranslations("Navigation");
 
   const visibleNavGroups = APP_SIDEBAR_NAV.map((group) => ({
     ...group,
@@ -123,41 +125,50 @@ export function AppSidebar() {
 
       {/* Nav Content */}
       <SidebarContent className="space-y-2 p-2">
-        {visibleNavGroups.map((group) => (
-          <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="text-sidebar-foreground/50 px-2 text-[11px] font-semibold tracking-wider uppercase">
-              {group.title}
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="pt-1">
-              <SidebarMenu className="space-y-0.5">
-                {group.items.map((item) => {
-                  const isCurrent =
-                    item.href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.href);
+        {visibleNavGroups.map((group) => {
+          const groupTitle = tNav.has(group.titleKey as any)
+            ? tNav(group.titleKey as any)
+            : group.defaultTitle;
 
-                  return (
-                    <SidebarMenuItem key={item.label}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isCurrent || item.isActive}
-                        tooltip={item.label}
-                        className="data-[active=true]:bg-primary/15 data-[active=true]:text-primary data-[active=true]:hover:bg-primary/20 h-9 cursor-pointer rounded-xl px-2.5 text-xs font-medium transition-colors data-[active=true]:font-semibold"
-                      >
-                        <Link href={item.href} onClick={handleLinkClick}>
-                          {getNavIcon(item.icon)}
-                          <span className="truncate group-data-[collapsible=icon]:hidden">
-                            {item.label}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+          return (
+            <SidebarGroup key={group.titleKey} className="p-0">
+              <SidebarGroupLabel className="text-sidebar-foreground/50 px-2 text-[11px] font-semibold tracking-wider uppercase">
+                {groupTitle}
+              </SidebarGroupLabel>
+              <SidebarGroupContent className="pt-1">
+                <SidebarMenu className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const isCurrent =
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href);
+                    const itemLabel = tNav.has(item.labelKey as any)
+                      ? tNav(item.labelKey as any)
+                      : item.defaultLabel;
+
+                    return (
+                      <SidebarMenuItem key={item.labelKey}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isCurrent}
+                          tooltip={itemLabel}
+                          className="data-[active=true]:bg-primary/15 data-[active=true]:text-primary data-[active=true]:hover:bg-primary/20 h-9 cursor-pointer rounded-xl px-2.5 text-xs font-medium transition-colors data-[active=true]:font-semibold"
+                        >
+                          <Link href={item.href} onClick={handleLinkClick}>
+                            {getNavIcon(item.icon)}
+                            <span className="truncate group-data-[collapsible=icon]:hidden">
+                              {itemLabel}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
 
       {/* Subtle Sidebar Rail */}

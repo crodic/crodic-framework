@@ -3,16 +3,13 @@
 import React from "react";
 import Image from "next/image";
 import {
-  Calendar,
   Check,
   Clock,
   DollarSign,
   Gift,
-  Mail,
   MapPin,
   Send,
   Share2,
-  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,13 +19,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { JobItem } from "./jobs-types";
+import { useTranslations } from "next-intl";
+import type { JobSummaryResDto, JobDetailResDto } from "@/services/jobs";
 
 export interface JobDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  job: JobItem | null;
-  onApply: (job: JobItem) => void;
+  job: JobSummaryResDto | JobDetailResDto | null;
+  onApply: (job: JobSummaryResDto | JobDetailResDto) => void;
 }
 
 export function JobDetailDialog({
@@ -37,33 +35,36 @@ export function JobDetailDialog({
   job,
   onApply,
 }: JobDetailDialogProps) {
+  const t = useTranslations("Jobs.detail");
   if (!job) return null;
+
+  const detail = job as JobDetailResDto;
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(window.location.href);
-      toast.success("Đã sao chép liên kết tin tuyển dụng!");
+      toast.success(t("shareSuccess"));
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border/80 max-h-[90vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-xl sm:rounded-3xl sm:p-6">
-        <DialogHeader className="space-y-2 text-left">
-          {/* Brand Row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+      <DialogContent className="bg-card border-border/80 max-h-[90vh] max-w-[calc(100%-1rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-xl sm:rounded-3xl sm:p-6">
+        {/* Header with Brand info */}
+        <DialogHeader className="border-border/60 border-b pb-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
               <div
-                className={`ring-border relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ${
+                className={`relative flex size-10 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/10 ${
                   job.brandColor || "bg-muted"
                 }`}
               >
-                {job.brandLogo ? (
+                {job.brandLogoUrl ? (
                   <Image
-                    src={job.brandLogo}
+                    src={job.brandLogoUrl}
                     alt={job.brandName}
                     fill
-                    sizes="36px"
+                    sizes="40px"
                     className="object-cover"
                   />
                 ) : (
@@ -72,9 +73,10 @@ export function JobDetailDialog({
                   </span>
                 )}
               </div>
+
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-foreground text-sm font-bold">
+                  <span className="text-foreground text-sm font-bold sm:text-base">
                     {job.brandName}
                   </span>
                   {job.isVerified && (
@@ -84,7 +86,7 @@ export function JobDetailDialog({
                   )}
                 </div>
                 <span className="text-muted-foreground text-[11px] font-medium">
-                  {job.category}
+                  {job.categoryLabel}
                 </span>
               </div>
             </div>
@@ -95,7 +97,7 @@ export function JobDetailDialog({
               size="icon"
               onClick={handleShare}
               className="hover:bg-muted size-8 cursor-pointer rounded-full"
-              title="Chia sẻ tin tuyển dụng"
+              title={t("title")}
             >
               <Share2 className="size-3.5" />
             </Button>
@@ -111,61 +113,65 @@ export function JobDetailDialog({
           <div className="border-border/60 bg-muted/30 rounded-xl border p-2.5">
             <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
               <DollarSign className="size-3.5 text-emerald-400" />
-              <span>Ngân sách</span>
+              <span>{t("budget")}</span>
             </div>
             <p className="mt-1 text-xs font-bold text-emerald-400 sm:text-sm">
-              {job.budget}
+              {job.budgetLabel}
             </p>
           </div>
 
           <div className="border-border/60 bg-muted/30 rounded-xl border p-2.5">
             <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
               <MapPin className="text-primary size-3.5" />
-              <span>Địa điểm</span>
+              <span>{t("location")}</span>
             </div>
             <p className="text-foreground mt-1 text-xs font-bold sm:text-sm">
-              {job.location}
+              {job.locationLabel}
             </p>
           </div>
 
           <div className="border-border/60 bg-muted/30 rounded-xl border p-2.5">
             <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
               <Clock className="size-3.5 text-amber-400" />
-              <span>Hạn nộp hồ sơ</span>
+              <span>{t("deadline")}</span>
             </div>
             <p className="text-foreground mt-1 text-xs font-bold sm:text-sm">
-              {job.deadline}
+              {job.deadlineLabel}
             </p>
           </div>
         </div>
 
         {/* Job Description */}
         <div className="space-y-3 pt-2">
-          <div>
-            <h4 className="text-foreground text-xs font-bold tracking-wider uppercase">
-              Mô tả công việc
-            </h4>
-            <p className="text-foreground/80 mt-1.5 text-xs leading-relaxed sm:text-sm">
-              {job.description || job.requirements}
-            </p>
-          </div>
+          {detail.description && (
+            <div>
+              <h4 className="text-foreground text-xs font-bold tracking-wider uppercase">
+                {t("description")}
+              </h4>
+              <p className="text-foreground/80 mt-1.5 text-xs leading-relaxed whitespace-pre-line sm:text-sm">
+                {detail.description}
+              </p>
+            </div>
+          )}
 
           {/* Requirements */}
-          <div>
-            <h4 className="text-foreground text-xs font-bold tracking-wider uppercase">
-              Yêu cầu ứng viên
-            </h4>
-            <p className="text-foreground/80 mt-1.5 text-xs sm:text-sm">
-              {job.requirements}
-            </p>
-          </div>
+          {detail.requirements && (
+            <div>
+              <h4 className="text-foreground text-xs font-bold tracking-wider uppercase">
+                {t("requirements")}
+              </h4>
+              <p className="text-foreground/80 mt-1.5 text-xs whitespace-pre-line sm:text-sm">
+                {detail.requirements}
+              </p>
+            </div>
+          )}
 
           {/* Perks */}
           {job.perks && job.perks.length > 0 && (
             <div>
               <h4 className="text-foreground flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase">
                 <Gift className="text-primary size-3.5" />
-                Quyền lợi & Đãi ngộ
+                {t("perks")}
               </h4>
               <ul className="text-foreground/85 mt-2 space-y-1.5 text-xs sm:text-sm">
                 {job.perks.map((perk, idx) => (
@@ -190,7 +196,7 @@ export function JobDetailDialog({
             onClick={() => onOpenChange(false)}
             className="h-9 cursor-pointer rounded-xl text-xs"
           >
-            Đóng
+            {t("close")}
           </Button>
 
           <Button
@@ -203,7 +209,7 @@ export function JobDetailDialog({
             className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-xl text-xs font-bold shadow-sm"
           >
             <Send className="mr-1.5 size-3.5" />
-            Ứng tuyển ngay
+            {t("applyBtn")}
           </Button>
         </div>
       </DialogContent>

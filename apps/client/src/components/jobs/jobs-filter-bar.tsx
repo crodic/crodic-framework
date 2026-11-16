@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { JOB_FILTER_TAGS } from "./jobs-data";
-import { JobFilterId } from "./jobs-types";
+import { JobFilterId, JobFilterTag } from "./jobs-types";
 
 export interface JobsFilterBarProps {
   selectedTagId: JobFilterId;
@@ -14,10 +14,22 @@ export function JobsFilterBar({
   selectedTagId,
   onSelectTag,
 }: JobsFilterBarProps) {
+  const t = useTranslations("Jobs.filter");
+
+  const filterTags: JobFilterTag[] = [
+    { id: "all", label: t("all") },
+    { id: "lookbook", label: t("lookbook") },
+    { id: "event", label: t("event") },
+    { id: "crafting", label: t("crafting") },
+    { id: "game_ads", label: t("game_ads") },
+    { id: "hcm", label: t("hcm") },
+    { id: "hanoi", label: t("hanoi") },
+  ];
+
   return (
     <div className="relative w-full">
       <div className="flex [scrollbar-width:none] scrollbar-none items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] sm:pb-0">
-        {JOB_FILTER_TAGS.map((tag) => {
+        {filterTags.map((tag) => {
           const isSelected = selectedTagId === tag.id;
 
           return (

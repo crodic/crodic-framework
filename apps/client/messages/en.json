@@ -12,7 +12,7 @@
     "techStack": "Tech Stack",
     "tags": "Tags & Wiki",
     "mutedTags": "Muted Tags",
-    "profile": "Profile",
+    "profile": "My Profile",
     "accountSettings": "Account Settings",
     "signIn": "Sign In",
     "signUp": "Get Started",
@@ -20,100 +20,81 @@
     "docs": "Documentation",
     "github": "GitHub",
     "platform": "Platform",
-    "language": "Language"
+    "language": "Language",
+    "exploreGroup": "Explore",
+    "personalGroup": "Personal",
+    "jobs": "Booking & Jobs",
+    "feed": "Feed",
+    "explore": "Explore",
+    "ranking": "Leaderboard",
+    "events": "Events & Festivals",
+    "settings": "Settings & Studio"
   },
   "Landing": {
-    "metaTitle": "Next.js 15 & Turborepo Monorepo Boilerplate",
-    "metaDescription": "Enterprise-ready fullstack monorepo boilerplate built with Next.js 15 App Router, NestJS, TailwindCSS v4, TypeORM, and TanStack Query.",
-    "hero": {
-      "badge": "Full-Stack Monorepo Boilerplate",
-      "title": "Modern Enterprise Full-Stack Architecture",
-      "subtitle": "Production-ready monorepo template featuring Next.js 15 App Router, NestJS API, TypeORM PostgreSQL, TailwindCSS v4, TanStack Query, and robust authentication.",
-      "getStarted": "Get Started Free",
-      "exploreProfile": "Explore User Profile",
-      "viewGithub": "GitHub Repository"
+    "metaTitle": "Kosume - Where Cosplay Passion Shines",
+    "metaDescription": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
+    "nav": {
+      "explore": "Explore",
+      "community": "Community",
+      "events": "Events",
+      "ranking": "Leaderboard",
+      "signIn": "Sign In",
+      "signUp": "Join Now"
     },
-    "techStack": {
-      "badge": "Built with Modern Stack",
-      "title": "Industry-Standard Technologies",
-      "subtitle": "Every library and tool is carefully picked for performance, developer velocity, and maintainability."
+    "hero": {
+      "titleLead": "Where Passion",
+      "titleTrail": "Shines",
+      "subtitle": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
+      "exploreNow": "Explore Now",
+      "signUp": "Register",
+      "stats": {
+        "cosplayers": "Cosplayers",
+        "artworks": "Artworks",
+        "engagements": "Engagements"
+      }
     },
     "features": {
-      "badge": "Architectural Highlights",
-      "title": "Everything you need to ship faster",
-      "subtitle": "Clean architecture patterns, modular boundaries, and scalable design built directly into the core.",
+      "title": "Key Features",
       "items": {
-        "monorepo": {
-          "title": "Turborepo & pnpm Workspace",
-          "description": "High-performance monorepo orchestration with remote caching, unified lockfile, and shared configuration packages."
+        "portfolio": {
+          "title": "Professional Portfolio",
+          "description": "Upload high-resolution albums, customize cover photos freely, up to 20 photos."
         },
-        "auth": {
-          "title": "Smart Auth & Dynamic Route Guards",
-          "description": "Zero-config folder-based route protection with App Router Route Groups, proactive HTTP-only token refresh, Google OAuth, and graceful session-expired alerts."
+        "smart-search": {
+          "title": "Smart Search (Pixiv-style)",
+          "description": "Powerful tag filtering by fandom, waifu, and artistic style."
         },
-        "forms": {
-          "title": "Strict Form Validation",
-          "description": "Type-safe forms using React Hook Form coupled with Zod schemas and Sonner toast notifications."
-        },
-        "query": {
-          "title": "TanStack React Query",
-          "description": "Client-side query caching, background prefetching, optimistic mutations, and automated cache invalidation."
-        },
-        "i18n": {
-          "title": "Full Internationalization",
-          "description": "Built-in next-intl routing for multi-language support (English & Vietnamese) with zero layout shift."
-        },
-        "design": {
-          "title": "TailwindCSS v4 & Radix UI",
-          "description": "Composable, accessible UI primitives with responsive layouts, dark/light theme switching, and smooth animations."
+        "community": {
+          "title": "Community Connection",
+          "description": "Like, bookmark, interact with your idols, and participate in community events."
         }
       }
     },
-    "portal": {
-      "badge": "Admin Portal Included",
-      "title": "Turnkey Enterprise Administration",
-      "subtitle": "Ship with a dedicated Vite + React admin dashboard ready out-of-the-box. Manage users, permissions, audit trails, and branding without building from scratch.",
-      "openPortal": "Explore Admin Portal",
-      "features": {
-        "users": {
-          "title": "User & Admin Management",
-          "description": "Full lifecycle administration with email verification status, profile edits, and multi-admin hierarchy."
-        },
-        "rbac": {
-          "title": "CASL Role-Based Authorization",
-          "description": "Granular permission matrices and dynamic ability checks for secure operations across resources."
-        },
-        "whiteLabel": {
-          "title": "White-Label Brand Engine",
-          "description": "Multi-tenant logos, favicons, meta tags, and color schemes configured dynamically per environment."
-        },
-        "audit": {
-          "title": "Audit Logs & System Health",
-          "description": "Real-time activity logs, mail delivery status, and system event tracking for enterprise compliance."
-        }
-      },
-      "preview": {
-        "title": "Crodic Admin Control Center",
-        "systemOnline": "System Online",
-        "stats": {
-          "totalUsers": "Total Users",
-          "activeAdmins": "Active Admins",
-          "auditEvents": "Audit Events",
-          "systemHealth": "Health Score"
-        },
-        "recentUsersTitle": "Recent User Registrations",
-        "roleAdmin": "Admin",
-        "roleMember": "Member",
-        "statusActive": "Active",
-        "statusVerified": "Verified"
-      }
+    "cosplayers": {
+      "title": "Featured Cosplayers This Week",
+      "follow": "Follow",
+      "following": "Following"
+    },
+    "albums": {
+      "title": "Explore Albums",
+      "like": "Like"
     },
     "cta": {
-      "badge": "Start Building",
-      "title": "Ready to kickstart your next enterprise project?",
-      "subtitle": "Clone the repository, customize your domain models, and deploy with confidence in minutes.",
-      "button": "Get Started Now",
-      "github": "Star on GitHub"
+      "title": "Ready to enter the world of Kosume?",
+      "subtitle": "A visual spectacle where every frame is a masterpiece.",
+      "joinNow": "Join Now (Sign Up)",
+      "viewWorks": "View Artworks"
+    },
+    "footer": {
+      "description": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
+      "links": {
+        "about": "About Us",
+        "features": "Features",
+        "events": "Events",
+        "privacy": "Privacy & Terms",
+        "contact": "Contact",
+        "ranking": "Leaderboard"
+      }
     }
   },
   "Profile": {
@@ -570,5 +551,323 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "Home": {
+    "spotlight": {
+      "viewPortfolio": "View Portfolio",
+      "contactBooking": "Contact Booking",
+      "verified": "Verified",
+      "noBanners": "No spotlight banners available"
+    },
+    "featuredWorks": {
+      "title": "Featured New Works",
+      "viewProject": "View Project",
+      "booking": "Book Now",
+      "noWorks": "No featured works yet",
+      "album": "Album",
+      "photoset": "Photoset"
+    },
+    "bookingWidget": {
+      "title": "Cosplayers Open for Booking",
+      "booking": "Book",
+      "saved": "Saved",
+      "noCosplayers": "No cosplayers available"
+    },
+    "recruitmentWidget": {
+      "title": "Active Casting & Projects",
+      "searchPlaceholder": "Search casting calls, cosplayers...",
+      "noJobs": "No casting calls found"
+    }
+  },
+  "Jobs": {
+    "title": "Connect with Brands & Get Professional Gigs",
+    "postJobBtn": "Post a Job",
+    "filterTitle": "Job Filter Tags",
+    "listTitle": "Job Listings",
+    "filter": {
+      "all": "All",
+      "lookbook": "Lookbook Shoot",
+      "event": "Events & Festivals",
+      "crafting": "Props & Crafting",
+      "game_ads": "Game Commercials",
+      "hcm": "Ho Chi Minh City",
+      "hanoi": "Hanoi"
+    },
+    "emptyTitle": "No matching job postings",
+    "emptyDesc": "No job postings found for the selected filter. Try selecting a different category.",
+    "viewAllBtn": "View All Jobs",
+    "card": {
+      "budget": "Budget",
+      "deadline": "Deadline",
+      "requirements": "Requirements",
+      "viewDetails": "Details",
+      "applyNow": "Apply Now",
+      "applied": "Applied",
+      "verified": "Verified"
+    },
+    "detail": {
+      "title": "Job Details",
+      "organization": "Hiring Entity",
+      "location": "Location",
+      "deadline": "Application Deadline",
+      "budget": "Remuneration",
+      "description": "Job Description",
+      "requirements": "Applicant Requirements",
+      "perks": "Perks & Benefits",
+      "contact": "Contact Email",
+      "applyBtn": "Apply for this Gig",
+      "shareSuccess": "Job link copied to clipboard!",
+      "close": "Close"
+    },
+    "applyDialog": {
+      "title": "Apply: {jobTitle}",
+      "desc": "Send your info and cosplay portfolio directly to the casting department of {brandName}.",
+      "fullName": "Full Name",
+      "stageName": "Cosplay Stage Name",
+      "contact": "Phone Number / Zalo / Telegram",
+      "portfolioUrl": "Portfolio Link / Social Profile",
+      "experience": "Cosplay Experience & Featured Works",
+      "message": "Message to Brand",
+      "submit": "Submit Application",
+      "submitting": "Submitting...",
+      "successTitle": "Application Submitted Successfully!",
+      "successDesc": "Your application has been delivered to the hiring team at {brandName}.",
+      "loginRequired": "Please sign in to apply for this job!"
+    },
+    "postDialog": {
+      "title": "Post a Job / Casting Call",
+      "desc": "Publish a casting call for cosplay models or props makers on Kosume.",
+      "brandName": "Brand / Studio Name",
+      "jobTitle": "Job Title",
+      "category": "Category",
+      "budget": "Remuneration / Estimated Budget",
+      "location": "Work Location",
+      "deadline": "Application Deadline",
+      "requirements": "Applicant Requirements",
+      "description": "Job Description",
+      "contactEmail": "Application Email",
+      "submit": "Publish Job Posting",
+      "submitting": "Publishing...",
+      "successTitle": "Job Posted Successfully!",
+      "successDesc": "Your job opportunity is now live on Kosume."
+    }
+  },
+  "Events": {
+    "title": "Featured Cosplay Events & Festivals",
+    "desc": "Discover upcoming anime festivals, gaming expos, and cosplay contests nationwide.",
+    "filterAll": "All Events",
+    "filterFestival": "Festivals & Expos",
+    "filterPhotoshoot": "Offline Photoshoots",
+    "filterContest": "Cosplay Contests",
+    "filterWorkshop": "Crafting Workshops",
+    "emptyTitle": "No events found",
+    "emptyDesc": "There are currently no events listed in this category.",
+    "viewAllBtn": "View all events",
+    "interested": "Interested",
+    "interestedCount": "{count} interested",
+    "participantsCount": "{count} participants",
+    "viewDetails": "View Details",
+    "ticketPrice": "Ticket Price",
+    "freeTicket": "Free Admission",
+    "participateBtn": "Register to Attend",
+    "participated": "Registered",
+    "applyGuestBtn": "Apply as Guest Cosplayer",
+    "loginRequired": "Please log in to perform this action!",
+    "spotlightBadge": "Spotlight Event 2026",
+    "participatedBy": "Participants:",
+    "verified": "Verified",
+    "applyNow": "Apply Now",
+    "applyDialog": {
+      "badge": "Performer Registration / Casting Call",
+      "title": "Apply to Join Event",
+      "desc": "Fill in your profile information for the organizer to review and schedule your role.",
+      "fullName": "Full Name",
+      "stageName": "Cosplay Name (Stage Name)",
+      "category": "Application Category",
+      "categoryGuest": "Guest Cosplayer",
+      "categoryContest": "Cosplay Contest Participant",
+      "categoryArtist": "Artist / Merchandise Booth",
+      "categoryStaff": "Technical Staff",
+      "categoryStage": "Stage Performance / Catwalk",
+      "categoryWorkshop": "Speaker / Workshop Mentor",
+      "phone": "Contact Phone Number",
+      "character": "Planned Cosplay Character",
+      "portfolio": "Portfolio / Profile Link",
+      "notes": "Notes & Special Props",
+      "cancel": "Cancel",
+      "submit": "Submit Application",
+      "submitting": "Submitting...",
+      "successTitle": "Application for event submitted successfully!",
+      "successDesc": "The event organizers will contact you with further details."
+    },
+    "detail": {
+      "time": "Time",
+      "ticketPrice": "Ticket Price",
+      "freeTicket": "Free Admission",
+      "status": "Status",
+      "statusRecruiting": "Recruiting Cosplayers",
+      "statusClosed": "Registration Closed",
+      "about": "About the Event",
+      "guests": "Participating Cosplayers & Guests",
+      "schedule": "Activity Schedule",
+      "share": "Share",
+      "shareSuccess": "Event link copied to clipboard!",
+      "close": "Close",
+      "applyBtn": "Apply to Participate"
+    },
+    "standalone": {
+      "backBtn": "Back to Events",
+      "statusRecruitingLive": "Recruiting Now",
+      "highlights": "Event Highlights",
+      "guestCount": "{count} guests",
+      "specialGuest": "Special Guest",
+      "applyCardTitle": "Join this Event",
+      "applyCardDesc": "Want to be a guest cosplayer, stage performer, or artist booth at this event?",
+      "rules": "Event Rules & Safety",
+      "rulesDesc": "Please follow code of conduct, observe prop safety regulations (no sharp or metal weapons), and safeguard personal belongings."
+    }
+  },
+  "Ranking": {
+    "title": "Vietnam Cosplayer Leaderboard",
+    "desc": "Honoring top cosplayers with outstanding artistic contributions and community acclaim.",
+    "loginRequired": "Please log in to follow cosplayers!",
+    "filter": {
+      "week": "Top of the Week",
+      "month": "Top of the Month",
+      "all": "All Time",
+      "projects": "Featured Projects",
+      "crafting": "Props & Crafting"
+    },
+    "podium": {
+      "viewPortfolio": "View Portfolio",
+      "view": "View",
+      "likes": "Favorites",
+      "followers": "Followers",
+      "verified": "Verified"
+    },
+    "table": {
+      "rank": "Rank",
+      "cosplayer": "Cosplayer",
+      "stats": "Metrics",
+      "score": "Kosume Score",
+      "likesCol": "Likes",
+      "featuredProjects": "Top Characters",
+      "featured": "Top Characters",
+      "action": "Action",
+      "viewPortfolio": "View Portfolio",
+      "likes": "{count} likes",
+      "followers": "{count} followers",
+      "follow": "Follow",
+      "following": "Following",
+      "followSuccess": "Following",
+      "unfollowSuccess": "Unfollowed",
+      "trendUp": "Rank Up",
+      "trendDown": "Rank Down",
+      "trendSame": "Rank Unchanged",
+      "verified": "Verified"
+    },
+    "empty": "No leaderboard rankings available"
+  },
+  "Feed": {
+    "title": "Cosplay Community Feed",
+    "filterAll": "All",
+    "filterFollowing": "Following",
+    "filterTrending": "Trending",
+    "suggestedCosplayers": "Suggested Cosplayers",
+    "upcomingEvents": "Upcoming Events",
+    "trendingTags": "Trending Tags",
+    "follow": "Follow",
+    "following": "Following",
+    "like": "Like",
+    "comment": "Comment",
+    "share": "Share",
+    "viewAllComments": "View all {count} comments",
+    "writeCommentPlaceholder": "Write a comment...",
+    "sendComment": "Post",
+    "emptyFeed": "No feed posts available.",
+    "recentActivity": "Recent Activity",
+    "fromFollowing": "From people you follow",
+    "createPlaceholder": "Have new cosplay photos? Log in to share with the community...",
+    "createPlaceholderAuth": "Hey {name}, have new cosplay photos to share today?",
+    "photoAlbum": "Photo / Album",
+    "videoReel": "Video / Reel",
+    "tagCosplayer": "Tag",
+    "postBtn": "Post",
+    "viewAll": "View all",
+    "latest": "Latest",
+    "interested": "Interested",
+    "saved": "Saved"
+  },
+  "Explore": {
+    "title": "Explore the Cosplay Universe",
+    "searchPlaceholder": "Search works, cosplayers, characters...",
+    "allCategory": "All",
+    "featuredCosplayers": "Featured Cosplayers",
+    "hotEvents": "Hot Events",
+    "noResults": "No matching results found",
+    "clearSearch": "Clear search filter",
+    "tabs": {
+      "all": "All",
+      "works": "Works",
+      "cosplayers": "Cosplayers",
+      "characters": "Characters & Series"
+    }
+  },
+  "CosplayerProfile": {
+    "bio": "Biography",
+    "experience": "{years} years experience",
+    "rating": "Rating",
+    "reviews": "{count} reviews",
+    "followers": "{count} followers",
+    "following": "{count} following",
+    "views": "{count} views",
+    "availableForBooking": "Available for Booking",
+    "busy": "Temporarily Unavailable",
+    "tabs": {
+      "works": "Works",
+      "services": "Services & Rates",
+      "characters": "Characters",
+      "about": "About"
+    },
+    "services": {
+      "priceLabel": "Price",
+      "duration": "Duration",
+      "bookNow": "Book Service"
+    },
+    "characters": {
+      "photosCount": "{count} photos",
+      "series": "Series: {name}"
+    },
+    "followBtn": "Follow",
+    "followingBtn": "Following",
+    "bookBtn": "Book Cosplay"
+  },
+  "Notifications": {
+    "title": "Your Notifications",
+    "desc": "Stay updated with recent social interactions, booking requests, and system alerts.",
+    "markAllRead": "Mark all as read",
+    "markAllSuccess": "Marked all notifications as read",
+    "unreadFilter": "Unread ({count})",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread",
+      "social": "Social",
+      "booking": "Bookings",
+      "system": "System"
+    },
+    "emptyTitle": "No notifications yet",
+    "emptyDesc": "Social interactions, booking updates, and system news will appear here."
+  },
+  "Common": {
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again!",
+    "empty": "No data available",
+    "search": "Search",
+    "filter": "Filter",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close",
+    "back": "Back"
   }
 }

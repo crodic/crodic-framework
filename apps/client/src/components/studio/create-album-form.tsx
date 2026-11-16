@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { createPost } from "@/services/posts";
 
 const createAlbumSchema = z.object({
   title: z.string().min(1, "Vui lòng nhập tên Album"),
@@ -52,18 +53,17 @@ export function CreateAlbumForm({
   const form = useForm<CreateAlbumFormValues>({
     resolver: zodResolver(createAlbumSchema),
     defaultValues: {
-      title: "Acheron - Lôi Thần Khởi Nguyên",
-      character: "Acheron",
-      fandom: "Honkai: Star Rail",
-      tags: ["Acheron", "HonkaiStarRail", "Cosplay"],
-      description:
-        "Một chút ảnh cosplay Acheron từ chuyến đi vừa rồi... Bộ ảnh được thực hiện với sự hỗ trợ của team ánh sáng cyberpunk.",
+      title: "",
+      character: "",
+      fandom: "",
+      tags: [],
+      description: "",
       isPublic: true,
       enableWatermark: false,
     },
   });
 
-  const tags = form.watch("tags");
+  const tags = form.watch("tags") || [];
 
   const handleAddTag = () => {
     const trimmed = newTagInput.trim().replace(/^#/, "");
@@ -86,15 +86,24 @@ export function CreateAlbumForm({
     );
   };
 
-  const onSubmit = (values: CreateAlbumFormValues) => {
+  const onSubmit = async (values: CreateAlbumFormValues) => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await createPost({
+        title: values.title,
+        caption: values.description,
+        postType: "photoset",
+        tags: values.tags,
+      });
       toast.success(`Đã đăng album "${values.title}" thành công!`, {
-        description: `Tác phẩm với nhân vật ${values.character} (${values.fandom}) đã xuất bản lên trang cá nhân.`,
+        description: `Tác phẩm với nhân vật ${values.character} (${values.fandom}) đã xuất bản.`,
       });
       onSuccess?.(values);
-    }, 800);
+    } catch {
+      toast.error("Có lỗi xảy ra khi tạo album. Vui lòng thử lại!");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

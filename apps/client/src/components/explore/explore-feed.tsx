@@ -4,29 +4,39 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { Check, Flame, Search, SearchX, Users } from "lucide-react";
+import { Check, Flame, Loader2, Search, SearchX, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EXPLORE_ITEMS, EXPLORE_TAGS } from "./explore-data";
 import { ExploreCard } from "./explore-card";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import {
+  getCosplayers,
+  type CosplayerSummaryResDto,
+} from "@/services/cosplayer";
 
-const FILTER_TABS = [
+const EXPLORE_TAGS = [
   { id: "all", label: "Tất cả" },
-  { id: "works", label: "Tác phẩm" },
-  { id: "cosplayers", label: "Cosplayers" },
-  { id: "characters", label: "Nhân vật / Series" },
+  { id: "honkai", label: "Honkai: Star Rail" },
+  { id: "genshin", label: "Genshin Impact" },
+  { id: "wuthering", label: "Wuthering Waves" },
+  { id: "cyberpunk", label: "Cyberpunk 2077" },
+  { id: "frieren", label: "Frieren" },
 ];
 
 export function ExploreFeed() {
+  const t = useTranslations("Explore");
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
 
   const [searchQuery, setSearchQuery] = useState(queryParam);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState<
+    "all" | "works" | "cosplayers" | "characters"
+  >("all");
   const [selectedTag, setSelectedTag] = useState("all");
 
-  // Keep search input in sync if URL query changes
   useEffect(() => {
     setSearchQuery(queryParam);
   }, [queryParam]);
@@ -37,59 +47,51 @@ export function ExploreFeed() {
     router.replace("/explore");
   };
 
-  // Filter items based on activeTab, selectedTag, and searchQuery
+  const { data: postsResponse, isLoading: isLoadingPosts } = useQuery({
+    queryKey: ["explore-posts", searchQuery],
+    queryFn: () => getPosts({ search: searchQuery || undefined, limit: 50 }),
+  });
+
+  const { data: cosplayersResponse, isLoading: isLoadingCosplayers } = useQuery(
+    {
+      queryKey: ["explore-cosplayers", searchQuery],
+      queryFn: () =>
+        getCosplayers({ search: searchQuery || undefined, limit: 20 }),
+    }
+  );
+
+  const posts: PostSummaryResDto[] = useMemo(() => {
+    return postsResponse?.data || [];
+  }, [postsResponse]);
+
   const filteredItems = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    if (selectedTag === "all") return posts;
+    const lower = selectedTag.toLowerCase();
+    return posts.filter(
+      (item) =>
+        item.tagNamesCache?.some((t) => t.toLowerCase().includes(lower)) ||
+        item.albumCategory?.toLowerCase().includes(lower) ||
+        item.title.toLowerCase().includes(lower) ||
+        item.characterName?.toLowerCase().includes(lower)
+    );
+  }, [selectedTag, posts]);
 
-    return EXPLORE_ITEMS.filter((item) => {
-      // 1. Tag filter
-      if (selectedTag !== "all" && item.tag !== selectedTag) {
-        return false;
-      }
+  const cosplayers: CosplayerSummaryResDto[] = cosplayersResponse?.data || [];
 
-      // 2. Query filter
-      if (q) {
-        const matchCharacter = item.character.toLowerCase().includes(q);
-        const matchAuthor = item.author.name.toLowerCase().includes(q);
-        const matchTag = item.tag.toLowerCase().includes(q);
-        const matchTagLabel = item.tagLabel.toLowerCase().includes(q);
-
-        if (!matchCharacter && !matchAuthor && !matchTag && !matchTagLabel) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [searchQuery, selectedTag]);
-
-  // Extract unique cosplayers matching the search query
-  const matchingCosplayers = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    const seen = new Set<string>();
-    const list: (typeof EXPLORE_ITEMS)[0]["author"][] = [];
-
-    EXPLORE_ITEMS.forEach((item) => {
-      if (!seen.has(item.author.name)) {
-        seen.add(item.author.name);
-        if (!q || item.author.name.toLowerCase().includes(q)) {
-          list.push(item.author);
-        }
-      }
-    });
-
-    return list;
-  }, [searchQuery]);
+  const filterTabs = [
+    { id: "all" as const, label: t("tabs.all") },
+    { id: "works" as const, label: t("tabs.works") },
+    { id: "cosplayers" as const, label: t("tabs.cosplayers") },
+    { id: "characters" as const, label: t("tabs.characters") },
+  ];
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* ======================================================== */}
-      {/* 1. CATEGORY TABS & TRENDING TAGS                         */}
-      {/* ======================================================== */}
+      {/* 1. CATEGORY TABS & TRENDING TAGS */}
       <div className="space-y-4">
-        {/* Category Tabs (Tất cả, Tác phẩm, Cosplayers, Nhân vật) */}
+        {/* Category Tabs */}
         <div className="border-border/60 flex scrollbar-none items-center gap-2 overflow-x-auto border-b pb-2">
-          {FILTER_TABS.map((tab) => {
+          {filterTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -109,25 +111,25 @@ export function ExploreFeed() {
           })}
         </div>
 
-        {/* Trending Tags Section ("Thẻ xu hướng 🔥") */}
+        {/* Trending Tags Section */}
         <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
-          <div className="text-foreground mr-1 flex shrink-0 items-center gap-1 text-xs font-bold sm:text-sm">
-            <span>Xu hướng</span>
-            <Flame className="size-3.5 fill-amber-500 text-amber-500" />
+          <div className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs font-bold uppercase select-none">
+            <Flame className="size-3.5 fill-rose-500 text-rose-500" />
+            <span className="hidden sm:inline">Xu hướng:</span>
           </div>
 
           {EXPLORE_TAGS.map((tag) => {
-            const isActive = selectedTag === tag.id;
+            const isSelected = selectedTag === tag.id;
             return (
               <button
                 key={tag.id}
                 type="button"
                 onClick={() => setSelectedTag(tag.id)}
                 className={cn(
-                  "cursor-pointer rounded-full px-3.5 py-1 text-xs font-medium whitespace-nowrap transition-all select-none",
-                  isActive
-                    ? "bg-primary/20 text-primary border-primary/40 border font-semibold"
-                    : "bg-card/70 border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted border"
+                  "cursor-pointer rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all select-none",
+                  isSelected
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border/40 border"
                 )}
               >
                 {tag.label}
@@ -143,7 +145,7 @@ export function ExploreFeed() {
           <div className="flex items-center gap-2">
             <Search className="text-primary size-4" />
             <span>
-              Kết quả tìm kiếm cho:{" "}
+              Kết quả cho:{" "}
               <strong className="text-foreground font-bold">
                 &ldquo;{searchQuery}&rdquo;
               </strong>{" "}
@@ -155,66 +157,79 @@ export function ExploreFeed() {
             onClick={handleClearSearch}
             className="text-primary cursor-pointer font-semibold hover:underline"
           >
-            Xóa tìm kiếm / Xem tất cả
+            {t("clearSearch")}
           </button>
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* 3. MATCHING COSPLAYERS STRIP (if activeTab is cosplayers  */}
-      {/*    or query matches cosplayers)                         */}
-      {/* ======================================================== */}
+      {/* 2. MATCHING COSPLAYERS STRIP */}
       {(activeTab === "cosplayers" ||
-        (searchQuery && matchingCosplayers.length > 0)) && (
+        (searchQuery && cosplayers.length > 0)) && (
         <section className="space-y-3">
           <div className="text-foreground flex items-center gap-2 text-sm font-bold">
             <Users className="text-primary size-4" />
-            <span>Cosplayers phù hợp</span>
+            <span>{t("featuredCosplayers")}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {matchingCosplayers.map((cosplayer) => (
-              <Link
-                key={cosplayer.name}
-                href="/cosplayer/kiriko"
-                className="border-border/70 bg-card/60 hover:border-primary/50 group flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
-              >
-                <div className="border-border/70 relative size-10 shrink-0 overflow-hidden rounded-full border">
-                  <Image
-                    src={cosplayer.avatarUrl}
-                    alt={cosplayer.name}
-                    fill
-                    sizes="40px"
-                    className="object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="truncate">
-                  <div className="flex items-center gap-1">
-                    <span className="text-foreground group-hover:text-primary truncate text-xs font-bold transition-colors">
-                      {cosplayer.name}
-                    </span>
-                    {cosplayer.isVerified && (
-                      <span className="bg-primary/20 text-primary flex size-3 shrink-0 items-center justify-center rounded-full">
-                        <Check className="size-2 stroke-[3]" />
-                      </span>
+          {isLoadingCosplayers ? (
+            <div className="flex min-h-[100px] items-center justify-center">
+              <Loader2 className="text-primary size-6 animate-spin" />
+            </div>
+          ) : cosplayers.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {cosplayers.map((cosplayer) => (
+                <Link
+                  key={cosplayer.id}
+                  href={`/cosplayer/${cosplayer.slug || cosplayer.id}`}
+                  className="border-border/70 bg-card/60 hover:border-primary/50 group flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors"
+                >
+                  <div className="border-border/70 relative size-10 shrink-0 overflow-hidden rounded-full border">
+                    {cosplayer.avatarUrl ? (
+                      <Image
+                        src={cosplayer.avatarUrl}
+                        alt={cosplayer.displayName}
+                        fill
+                        sizes="40px"
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="bg-primary/20 text-primary flex size-full items-center justify-center font-bold">
+                        {cosplayer.displayName.slice(0, 1)}
+                      </div>
                     )}
                   </div>
-                  <span className="text-muted-foreground text-[10px]">
-                    Xem Portfolio
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div className="truncate">
+                    <div className="flex items-center gap-1">
+                      <span className="text-foreground group-hover:text-primary truncate text-xs font-bold transition-colors">
+                        {cosplayer.displayName}
+                      </span>
+                      {cosplayer.isVerified && (
+                        <span className="bg-primary/20 text-primary flex size-3 shrink-0 items-center justify-center rounded-full">
+                          <Check className="size-2 stroke-[3]" />
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground text-[10px]">
+                      {cosplayer.handle}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-xs">{t("noResults")}</p>
+          )}
         </section>
       )}
 
-      {/* ======================================================== */}
-      {/* 4. MAIN EXPLORE GRID (Tác phẩm)                         */}
-      {/* ======================================================== */}
+      {/* 3. MAIN EXPLORE GRID */}
       {activeTab !== "cosplayers" && (
         <section>
-          {filteredItems.length > 0 ? (
+          {isLoadingPosts ? (
+            <div className="flex min-h-[300px] items-center justify-center">
+              <Loader2 className="text-primary size-8 animate-spin" />
+            </div>
+          ) : filteredItems.length > 0 ? (
             <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
               {filteredItems.map((item) => (
                 <ExploreCard key={item.id} item={item} />
@@ -226,20 +241,15 @@ export function ExploreFeed() {
                 <SearchX className="size-6" />
               </div>
               <h3 className="text-foreground text-base font-bold">
-                Không tìm thấy tác phẩm nào
+                {t("noResults")}
               </h3>
-              <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-                Không có kết quả nào phù hợp với từ khóa &ldquo;{searchQuery}
-                &rdquo;. Hãy thử tìm với tên nhân vật, tựa game hoặc từ khóa
-                khác.
-              </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleClearSearch}
                 className="mt-4 cursor-pointer rounded-xl text-xs font-semibold"
               >
-                Xem tất cả tác phẩm
+                {t("clearSearch")}
               </Button>
             </div>
           )}

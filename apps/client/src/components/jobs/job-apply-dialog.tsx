@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,10 +23,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, Loader2, Send } from "lucide-react";
-import { JobItem } from "./jobs-types";
+import { Loader2, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
+import type { JobSummaryResDto, JobDetailResDto } from "@/services/jobs";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
+import { applyJob } from "@/services/jobs";
 
 const applyJobSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
@@ -50,7 +51,7 @@ type ApplyJobFormValues = z.infer<typeof applyJobSchema>;
 export interface JobApplyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  job: JobItem | null;
+  job: JobSummaryResDto | JobDetailResDto | null;
 }
 
 export function JobApplyDialog({
@@ -58,13 +59,14 @@ export function JobApplyDialog({
   onOpenChange,
   job,
 }: JobApplyDialogProps) {
+  const t = useTranslations("Jobs.applyDialog");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
 
   const handleOpenChange = (val: boolean) => {
     if (val && !isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để ứng tuyển Job này!");
+      toast.info(t("loginRequired"));
       router.push("/auth/login?from=/jobs");
       return;
     }
@@ -74,33 +76,41 @@ export function JobApplyDialog({
   const form = useForm<ApplyJobFormValues>({
     resolver: zodResolver(applyJobSchema),
     defaultValues: {
-      fullName: "Hải Anh",
-      stageName: "Hải Anh",
-      contact: "0901234567",
-      portfolioUrl: "https://kosume.vn/cosplayer/haianh",
-      experience:
-        "Hơn 3 năm kinh nghiệm cosplay các nhân vật Honkai & Genshin, từng làm model sự kiện và chụp lookbook.",
-      message:
-        "Rất mong có cơ hội được hợp tác cùng thương hiệu trong dự án lần này!",
+      fullName: "",
+      stageName: "",
+      contact: "",
+      portfolioUrl: "",
+      experience: "",
+      message: "",
     },
   });
 
   const onSubmit = async (values: ApplyJobFormValues) => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để ứng tuyển Job này!");
+      toast.info(t("loginRequired"));
       router.push("/auth/login?from=/jobs");
       return;
     }
+    if (!job) return;
+
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      toast.success("Nộp hồ sơ ứng tuyển thành công!", {
-        description: `Hồ sơ của bạn đã được chuyển tới bộ phận tuyển dụng của ${job?.brandName}. Họ sẽ liên hệ qua ${values.contact} sớm nhất!`,
+      await applyJob(job.id, {
+        fullName: values.fullName,
+        stageName: values.stageName,
+        contactInfo: values.contact,
+        portfolioUrl: values.portfolioUrl || undefined,
+        experience: values.experience,
+        message: values.message || undefined,
+      });
+
+      toast.success(t("successTitle"), {
+        description: t("successDesc", { brandName: job.brandName }),
       });
       onOpenChange(false);
       form.reset();
     } catch {
-      toast.error("Gửi hồ sơ thất bại. Vui lòng thử lại!");
+      toast.error("Không thể gửi hồ sơ ứng tuyển. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -110,55 +120,13 @@ export function JobApplyDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-card border-border/80 max-h-[92vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6">
-        <DialogHeader className="space-y-1.5 text-left">
-          {/* Target Job Info Card */}
-          <div className="border-border/60 bg-muted/40 flex items-start gap-3 rounded-2xl border p-3">
-            <div
-              className={`ring-border relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ${
-                job.brandColor || "bg-muted"
-              }`}
-            >
-              {job.brandLogo ? (
-                <Image
-                  src={job.brandLogo}
-                  alt={job.brandName}
-                  fill
-                  sizes="40px"
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-xs font-black text-white">
-                  {job.brandInitials || job.brandName.slice(0, 2)}
-                </span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-foreground text-xs font-bold">
-                  {job.brandName}
-                </span>
-                {job.isVerified && (
-                  <span className="inline-flex size-3.5 items-center justify-center rounded-full bg-blue-500 text-white">
-                    <Check className="size-2 stroke-[3]" />
-                  </span>
-                )}
-              </div>
-              <h4 className="text-foreground mt-0.5 line-clamp-1 text-xs font-bold">
-                {job.title}
-              </h4>
-              <p className="mt-0.5 text-[11px] font-semibold text-emerald-400">
-                {job.budget} • {job.location}
-              </p>
-            </div>
-          </div>
-
-          <DialogTitle className="text-foreground pt-2 text-lg font-bold">
-            Ứng tuyển vị trí Cosplayer
+      <DialogContent className="bg-card border-border/80 max-h-[90vh] max-w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 shadow-2xl sm:max-w-lg sm:rounded-3xl sm:p-6">
+        <DialogHeader className="space-y-1 text-left">
+          <DialogTitle className="text-foreground text-base font-bold sm:text-xl">
+            {t("title", { jobTitle: job.title })}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground text-xs">
-            Thông tin hồ sơ của bạn sẽ được gửi trực tiếp tới đại diện thương
-            hiệu {job.brandName}.
+          <DialogDescription className="text-muted-foreground text-xs sm:text-sm">
+            {t("desc", { brandName: job.brandName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +135,6 @@ export function JobApplyDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-3.5 pt-2"
           >
-            {/* Họ tên & Stage Name */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -175,7 +142,7 @@ export function JobApplyDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Họ và tên thật
+                      {t("fullName")} *
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -195,11 +162,11 @@ export function JobApplyDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Nghệ danh cosplay
+                      {t("stageName")} *
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="VD: Hải Anh / Kiriko"
+                        placeholder="Kiriko Cos"
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -210,7 +177,6 @@ export function JobApplyDialog({
               />
             </div>
 
-            {/* Liên hệ & Link Portfolio */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -218,11 +184,11 @@ export function JobApplyDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      SĐT / Zalo / Telegram
+                      {t("contact")} *
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="09xx... hoặc @telegram"
+                        placeholder="0901234567"
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -238,11 +204,11 @@ export function JobApplyDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      Link Profile / Portfolio
+                      {t("portfolioUrl")}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="https://kosume.vn/..."
+                        placeholder="https://kosume.vn/cosplayer/..."
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -253,19 +219,18 @@ export function JobApplyDialog({
               />
             </div>
 
-            {/* Kinh nghiệm */}
             <FormField
               control={form.control}
               name="experience"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Kinh nghiệm & Dự án tiêu biểu
+                    {t("experience")} *
                   </FormLabel>
                   <FormControl>
                     <Textarea
+                      placeholder="Mô tả kinh nghiệm chụp, kinh nghiệm đi show..."
                       rows={3}
-                      placeholder="Các nhân vật đã từng hóa thân, phong cách biểu diễn hoặc giải thưởng đã đạt được..."
                       className="resize-none rounded-xl text-xs"
                       {...field}
                     />
@@ -275,19 +240,19 @@ export function JobApplyDialog({
               )}
             />
 
-            {/* Lời nhắn gửi */}
             <FormField
               control={form.control}
               name="message"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-semibold">
-                    Lời nhắn thêm (tùy chọn)
+                    {t("message")}
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Ghi chú thêm về chiều cao, lịch rảnh hoặc yêu cầu đặc biệt..."
-                      className="h-9 rounded-xl text-xs"
+                    <Textarea
+                      placeholder="Lời nhắn thêm..."
+                      rows={2}
+                      className="resize-none rounded-xl text-xs"
                       {...field}
                     />
                   </FormControl>
@@ -296,33 +261,32 @@ export function JobApplyDialog({
               )}
             />
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="border-border/60 flex items-center justify-end gap-2 border-t pt-3">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange(false)}
                 className="h-9 cursor-pointer rounded-xl text-xs"
-                disabled={isSubmitting}
               >
-                Hủy bỏ
+                Hủy
               </Button>
+
               <Button
                 type="submit"
                 size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-xl text-xs font-bold"
                 disabled={isSubmitting}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-xl text-xs font-bold shadow-sm"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                    Đang nộp hồ sơ...
+                    <span>{t("submitting")}</span>
                   </>
                 ) : (
                   <>
                     <Send className="mr-1.5 size-3.5" />
-                    Gửi hồ sơ ứng tuyển
+                    <span>{t("submit")}</span>
                   </>
                 )}
               </Button>

@@ -1,5 +1,6 @@
+import { notFound } from "next/navigation";
 import { EventDetailModal } from "@/components/events/event-detail-modal";
-import { getEventById } from "@/components/events/events-data";
+import { getEventBySlug } from "@/services/events";
 
 interface InterceptedEventPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -9,7 +10,11 @@ export default async function InterceptedEventPage({
   params,
 }: InterceptedEventPageProps) {
   const { id } = await params;
-  const event = getEventById(id);
 
-  return <EventDetailModal event={event} />;
+  try {
+    const event = await getEventBySlug(id);
+    return <EventDetailModal event={event} />;
+  } catch {
+    notFound();
+  }
 }

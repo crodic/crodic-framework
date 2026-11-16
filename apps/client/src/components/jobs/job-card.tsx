@@ -2,17 +2,20 @@
 
 import React from "react";
 import Image from "next/image";
-import { Check, Calendar, MapPin } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { JobItem } from "./jobs-types";
+import { useTranslations } from "next-intl";
+import type { JobSummaryResDto } from "@/services/jobs";
 
 export interface JobCardProps {
-  job: JobItem;
-  onViewDetails: (job: JobItem) => void;
-  onApply: (job: JobItem) => void;
+  job: JobSummaryResDto;
+  onViewDetails: (job: JobSummaryResDto) => void;
+  onApply: (job: JobSummaryResDto) => void;
 }
 
 export function JobCard({ job, onViewDetails, onApply }: JobCardProps) {
+  const t = useTranslations("Jobs.card");
+
   return (
     <article className="group border-border/70 bg-card hover:border-primary/40 relative flex flex-col justify-between rounded-2xl border p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5">
       <div>
@@ -23,9 +26,9 @@ export function JobCard({ job, onViewDetails, onApply }: JobCardProps) {
               job.brandColor || "bg-muted"
             }`}
           >
-            {job.brandLogo ? (
+            {job.brandLogoUrl ? (
               <Image
-                src={job.brandLogo}
+                src={job.brandLogoUrl}
                 alt={job.brandName}
                 fill
                 sizes="32px"
@@ -45,7 +48,7 @@ export function JobCard({ job, onViewDetails, onApply }: JobCardProps) {
             {job.isVerified && (
               <span
                 className="inline-flex size-3.5 items-center justify-center rounded-full bg-blue-500 text-white shadow-2xs sm:size-4"
-                title="Thương hiệu đã xác thực"
+                title={t("verified")}
               >
                 <Check className="size-2 stroke-[3] sm:size-2.5" />
               </span>
@@ -66,58 +69,54 @@ export function JobCard({ job, onViewDetails, onApply }: JobCardProps) {
         <div className="mt-3 space-y-1.5 text-xs">
           {/* Budget */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-muted-foreground font-medium">Ngân sách</span>
+            <span className="text-muted-foreground font-medium">
+              {t("budget")}
+            </span>
             <span className="rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-400 sm:text-xs">
-              {job.budget}
+              {job.budgetLabel}
             </span>
           </div>
 
           {/* Location & Deadline */}
           <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-[11px] font-medium sm:text-xs">
-            <span>
-              Địa điểm:{" "}
-              <strong className="text-foreground/90 font-semibold">
-                {job.location}
-              </strong>
-            </span>
+            <span>{job.locationLabel}</span>
             <span>•</span>
             <span>
-              Deadline:{" "}
+              {t("deadline")}:{" "}
               <strong className="text-foreground/90 font-semibold">
-                {job.deadline}
+                {job.deadlineLabel}
               </strong>
             </span>
           </div>
 
-          {/* Requirements */}
-          {job.requirements && (
-            <p className="text-muted-foreground line-clamp-1 text-[11px] sm:text-xs">
-              Yêu cầu:{" "}
-              <span className="text-foreground/80">{job.requirements}</span>
-            </p>
-          )}
+          {/* Category */}
+          <div className="text-muted-foreground line-clamp-1 text-[11px] sm:text-xs">
+            <span className="text-foreground/80 font-medium">
+              {job.categoryLabel}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons Footer */}
-      <div className="border-border/40 mt-4 grid grid-cols-2 gap-2 border-t pt-2">
+      {/* Action CTA Buttons */}
+      <div className="border-border/40 mt-4 flex items-center justify-end gap-2 border-t pt-3">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => onViewDetails(job)}
-          className="border-border/80 hover:bg-muted/70 h-8.5 cursor-pointer rounded-xl px-2 text-xs font-semibold"
+          className="h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold"
         >
-          Xem chi tiết
+          {t("viewDetails")}
         </Button>
 
         <Button
           type="button"
           size="sm"
           onClick={() => onApply(job)}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 h-8.5 cursor-pointer rounded-xl px-2 text-xs font-bold shadow-2xs transition-transform active:scale-95"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-3.5 text-xs font-bold transition-transform hover:scale-[1.02]"
         >
-          Ứng tuyển ngay
+          {t("applyNow")}
         </Button>
       </div>
     </article>
