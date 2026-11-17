@@ -11,8 +11,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { PostEntity } from '../../post/entities/post.entity';
 import {
   AddCollectionItemReqDto,
@@ -40,6 +40,8 @@ function slugify(text: string): string {
 @Injectable()
 export class CollectionService {
   constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
     @InjectRepository(CollectionEntity)
     private readonly collectionRepo: Repository<CollectionEntity>,
     @InjectRepository(CollectionItemEntity)
@@ -165,10 +167,18 @@ export class CollectionService {
     }
 
     const existing = await this.itemRepo.findOne({
-      where: { collectionId, postId: dto.postId },
+      where: {
+        collectionId,
+        postId: dto.postId,
+        postMediaId: dto.postMediaId ? dto.postMediaId : IsNull(),
+      },
     });
     if (existing) {
-      throw new ConflictException('Post is already saved in this collection');
+      throw new ConflictException(
+        dto.postMediaId
+          ? 'Tấm ảnh này đã có trong bộ sưu tập'
+          : 'Album này đã có trong bộ sưu tập',
+      );
     }
 
     const post = await this.postRepo.findOne({ where: { id: dto.postId } });
@@ -176,18 +186,25 @@ export class CollectionService {
       throw new NotFoundException(`Post #${dto.postId} not found`);
     }
 
-    const item = this.itemRepo.create({
-      collectionId,
-      postId: dto.postId,
-      postMediaId: dto.postMediaId ?? null,
-      sortOrder: col.itemsCount,
+    return await this.dataSource.transaction(async (em) => {
+      const item = em.create(CollectionItemEntity, {
+        collectionId,
+        postId: dto.postId,
+        postMediaId: dto.postMediaId ?? null,
+        sortOrder: col.itemsCount,
+      });
+      const saved = await em.save(CollectionItemEntity, item);
+
+      // Update collection items count atomically
+      await em.increment(
+        CollectionEntity,
+        { id: collectionId },
+        'itemsCount',
+        1,
+      );
+
+      return this.toItemDto(saved, post);
     });
-    const saved = await this.itemRepo.save(item);
-
-    // Update collection items count & thumbnail preview
-    await this.collectionRepo.increment({ id: collectionId }, 'itemsCount', 1);
-
-    return this.toItemDto(saved, post);
   }
 
   /**
@@ -215,8 +232,15 @@ export class CollectionService {
       throw new NotFoundException(`Item #${itemId} not found in collection`);
     }
 
-    await this.itemRepo.delete({ id: itemId });
-    await this.collectionRepo.decrement({ id: collectionId }, 'itemsCount', 1);
+    await this.dataSource.transaction(async (em) => {
+      await em.delete(CollectionItemEntity, { id: itemId });
+      await em.decrement(
+        CollectionEntity,
+        { id: collectionId },
+        'itemsCount',
+        1,
+      );
+    });
   }
 
   /**

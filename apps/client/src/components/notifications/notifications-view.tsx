@@ -80,7 +80,7 @@ export function NotificationsView() {
       await markNotificationAsRead(id);
       refetch();
     } catch {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t("errorOccurred"));
     }
   };
 
@@ -90,12 +90,12 @@ export function NotificationsView() {
       refetch();
       toast.success(t("markAllSuccess"));
     } catch {
-      toast.error("Có lỗi xảy ra");
+      toast.error(t("errorOccurred"));
     }
   };
 
   const handleDelete = (_id: string) => {
-    toast.success("Đã xóa thông báo.");
+    toast.success(t("deleteSuccess"));
   };
 
   return (
@@ -118,7 +118,7 @@ export function NotificationsView() {
                 </h1>
                 {unreadCount > 0 && (
                   <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold">
-                    {unreadCount} mới
+                    {t("newCount", { count: String(unreadCount) })}
                   </span>
                 )}
               </div>
@@ -149,7 +149,7 @@ export function NotificationsView() {
             >
               <Link href="/settings">
                 <Settings className="text-muted-foreground size-4" />
-                <span>Cài đặt thông báo</span>
+                <span>{t("settings")}</span>
               </Link>
             </Button>
           </div>

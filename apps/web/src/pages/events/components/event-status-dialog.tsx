@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { apiUpdateAdminEventStatus } from '../queries'
-import type { Event } from '../schema'
+import type { Event, EventStatus } from '../schema'
 
 interface EventStatusDialogProps {
   open: boolean
@@ -34,8 +35,11 @@ export function EventStatusDialog({
   onOpenChange,
   event,
 }: EventStatusDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<string>(event?.status ?? 'upcoming')
+  const [status, setStatus] = useState<EventStatus>(
+    (event?.status as EventStatus) ?? 'upcoming'
+  )
   const [isFeaturedFestival, setIsFeaturedFestival] = useState<boolean>(
     event?.isFeaturedFestival ?? false
   )
@@ -47,7 +51,12 @@ export function EventStatusDialog({
     mutationFn: apiUpdateAdminEventStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })
-      toast.success('Cập nhật trạng thái sự kiện thành công')
+      toast.success(
+        t(
+          'events.messages.statusUpdated',
+          'Cập nhật trạng thái sự kiện thành công'
+        )
+      )
       onOpenChange(false)
     },
     onError: restApiErrorHandler,
@@ -75,7 +84,10 @@ export function EventStatusDialog({
         <div className='grid gap-4 py-3'>
           <div className='space-y-2'>
             <Label htmlFor='status'>Trạng thái sự kiện</Label>
-            <Select value={status} onValueChange={(val) => setStatus(val)}>
+            <Select
+              value={status}
+              onValueChange={(val) => setStatus(val as EventStatus)}
+            >
               <SelectTrigger id='status'>
                 <SelectValue placeholder='Chọn trạng thái' />
               </SelectTrigger>

@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ interface EventFormDialogProps {
 }
 
 export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -59,7 +61,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     mutationFn: apiCreateAdminEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })
-      toast.success('Đã tạo sự kiện mới thành công')
+      toast.success(
+        t('events.messages.created', 'Đã tạo sự kiện mới thành công')
+      )
       onOpenChange(false)
       form.reset()
     },

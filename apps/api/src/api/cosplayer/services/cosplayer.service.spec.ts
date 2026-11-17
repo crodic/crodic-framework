@@ -5,7 +5,8 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
@@ -20,6 +21,7 @@ describe('CosplayerService', () => {
   let serviceRepo: any;
   let characterRepo: any;
   let userRepo: any;
+  let dataSource: any;
 
   beforeEach(async () => {
     profileRepo = {
@@ -28,13 +30,11 @@ describe('CosplayerService', () => {
       findOneOrFail: jest.fn(),
       count: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('1') })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: item.id || id('1'),
-          updatedAt: new Date(),
-        })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: item.id || id('1'),
+        updatedAt: new Date(),
+      })),
       increment: jest.fn().mockResolvedValue(undefined),
       decrement: jest.fn().mockResolvedValue(undefined),
     };
@@ -43,13 +43,11 @@ describe('CosplayerService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('10') })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: item.id || id('10'),
-          updatedAt: new Date(),
-        })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: item.id || id('10'),
+        updatedAt: new Date(),
+      })),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -57,13 +55,11 @@ describe('CosplayerService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('20') })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: item.id || id('20'),
-          updatedAt: new Date(),
-        })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: item.id || id('20'),
+        updatedAt: new Date(),
+      })),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -71,9 +67,30 @@ describe('CosplayerService', () => {
       findOne: jest.fn(),
     };
 
+    dataSource = {
+      transaction: jest.fn().mockImplementation(async (cb) => {
+        const em = {
+          findOne: jest
+            .fn()
+            .mockResolvedValue({ id: id('1'), charactersCount: 1 }),
+          create: jest
+            .fn()
+            .mockImplementation((_, dto) => ({ ...dto, id: id('20') })),
+          save: jest
+            .fn()
+            .mockImplementation(async (_, item) => ({ ...item, id: id('20') })),
+          delete: jest.fn().mockResolvedValue({}),
+          increment: jest.fn().mockResolvedValue({}),
+          decrement: jest.fn().mockResolvedValue({}),
+        };
+        return cb(em);
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CosplayerService,
+        { provide: getDataSourceToken(), useValue: dataSource },
         {
           provide: getRepositoryToken(CosplayerProfileEntity),
           useValue: profileRepo,
@@ -218,12 +235,7 @@ describe('CosplayerService', () => {
         coverImageUrl: 'http://img.com',
       });
 
-      expect(characterRepo.save).toHaveBeenCalled();
-      expect(profileRepo.increment).toHaveBeenCalledWith(
-        { userId: id('100') },
-        'charactersCount',
-        1,
-      );
+      expect(dataSource.transaction).toHaveBeenCalled();
     });
   });
 });

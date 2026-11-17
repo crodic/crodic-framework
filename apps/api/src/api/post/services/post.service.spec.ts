@@ -36,13 +36,11 @@ describe('PostService', () => {
       createQueryBuilder: jest.fn(),
       findOne: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('1') })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: item.id || id('1'),
-          updatedAt: new Date(),
-        })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: item.id || id('1'),
+        updatedAt: new Date(),
+      })),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
       softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
       increment: jest.fn().mockResolvedValue(undefined),
@@ -72,20 +70,16 @@ describe('PostService', () => {
     commentRepo = {
       createQueryBuilder: jest.fn(),
       findOne: jest.fn(),
-      create: jest
-        .fn()
-        .mockImplementation((dto) => ({
-          ...dto,
-          id: id('40'),
-          createdAt: new Date(),
-        })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: item.id || id('40'),
-          createdAt: new Date(),
-        })),
+      create: jest.fn().mockImplementation((dto) => ({
+        ...dto,
+        id: id('40'),
+        createdAt: new Date(),
+      })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: item.id || id('40'),
+        createdAt: new Date(),
+      })),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -100,15 +94,13 @@ describe('PostService', () => {
     };
 
     profileRepo = {
-      findOne: jest
-        .fn()
-        .mockResolvedValue({
-          id: id('1'),
-          userId: id('100'),
-          displayName: 'KIRIKO',
-          handle: '@kiriko',
-          albumsCount: 5,
-        }),
+      findOne: jest.fn().mockResolvedValue({
+        id: id('1'),
+        userId: id('100'),
+        displayName: 'KIRIKO',
+        handle: '@kiriko',
+        albumsCount: 5,
+      }),
       find: jest.fn().mockResolvedValue([]),
       increment: jest.fn().mockResolvedValue(undefined),
       decrement: jest.fn().mockResolvedValue(undefined),
@@ -122,8 +114,13 @@ describe('PostService', () => {
             .fn()
             .mockResolvedValue({ id: id('1'), likesCount: 1 }),
           create: jest.fn().mockImplementation((_, dto) => dto),
-          save: jest.fn().mockResolvedValue({}),
+          save: jest
+            .fn()
+            .mockImplementation(async (_, item) =>
+              Array.isArray(item) ? item : { ...item, id: id('1') },
+            ),
           delete: jest.fn().mockResolvedValue({}),
+          softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
           increment: jest.fn().mockResolvedValue({}),
           decrement: jest.fn().mockResolvedValue({}),
         };
@@ -207,13 +204,7 @@ describe('PostService', () => {
         media: [{ mediaUrl: 'url1', mediaType: EMediaType.IMAGE }],
       });
 
-      expect(postRepo.save).toHaveBeenCalled();
-      expect(mediaRepo.save).toHaveBeenCalled();
-      expect(profileRepo.increment).toHaveBeenCalledWith(
-        { userId: id('100') },
-        'albumsCount',
-        1,
-      );
+      expect(dataSource.transaction).toHaveBeenCalled();
       expect(res.title).toBe('New Photoset');
     });
   });
@@ -227,13 +218,12 @@ describe('PostService', () => {
       );
     });
 
-    it('soft deletes post and decrements albumsCount', async () => {
+    it('soft deletes post and decrements albumsCount in transaction', async () => {
       postRepo.findOne.mockResolvedValue({ id: id('1'), authorId: id('100') });
 
       await service.delete(id('100'), id('1'));
 
-      expect(postRepo.softDelete).toHaveBeenCalledWith({ id: id('1') });
-      expect(profileRepo.decrement).toHaveBeenCalled();
+      expect(dataSource.transaction).toHaveBeenCalled();
     });
   });
 

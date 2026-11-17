@@ -12,8 +12,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
@@ -47,6 +47,8 @@ function slugify(text: string): string {
 @Injectable()
 export class CosplayerService {
   constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
     @InjectRepository(CosplayerProfileEntity)
     private readonly profileRepo: Repository<CosplayerProfileEntity>,
     @InjectRepository(CosplayerServiceEntity)
@@ -383,25 +385,32 @@ export class CosplayerService {
     userId: AutoIncrementID,
     dto: CreateCosplayerCharacterReqDto,
   ): Promise<CosplayerCharacterResDto> {
-    const character = this.characterRepo.create({
-      userId,
-      characterName: dto.characterName,
-      seriesName: dto.seriesName,
-      characterTagId: dto.characterTagId ?? null,
-      copyrightTagId: dto.copyrightTagId ?? null,
-      coverFileId: dto.coverFileId ?? null,
-      coverImageUrl: dto.coverImageUrl,
-      albumsCount: dto.albumsCount ?? 0,
-      photosCount: dto.photosCount ?? 0,
-      sortOrder: dto.sortOrder ?? 0,
+    return await this.dataSource.transaction(async (em) => {
+      const character = em.create(CosplayerCharacterEntity, {
+        userId,
+        characterName: dto.characterName,
+        seriesName: dto.seriesName,
+        characterTagId: dto.characterTagId ?? null,
+        copyrightTagId: dto.copyrightTagId ?? null,
+        coverFileId: dto.coverFileId ?? null,
+        coverImageUrl: dto.coverImageUrl,
+        albumsCount: dto.albumsCount ?? 0,
+        photosCount: dto.photosCount ?? 0,
+        sortOrder: dto.sortOrder ?? 0,
+      });
+
+      const saved = await em.save(CosplayerCharacterEntity, character);
+
+      // Update charactersCount on profile atomically
+      await em.increment(
+        CosplayerProfileEntity,
+        { userId },
+        'charactersCount',
+        1,
+      );
+
+      return this.toCharacterDto(saved);
     });
-
-    const saved = await this.characterRepo.save(character);
-
-    // Update charactersCount on profile
-    await this.profileRepo.increment({ userId }, 'charactersCount', 1);
-
-    return this.toCharacterDto(saved);
   }
 
   async updateCharacter(
@@ -453,13 +462,22 @@ export class CosplayerService {
       );
     }
 
-    await this.characterRepo.delete({ id: characterId });
+    await this.dataSource.transaction(async (em) => {
+      await em.delete(CosplayerCharacterEntity, { id: characterId });
 
-    // Decrement charactersCount on profile
-    const profile = await this.profileRepo.findOne({ where: { userId } });
-    if (profile && profile.charactersCount > 0) {
-      await this.profileRepo.decrement({ userId }, 'charactersCount', 1);
-    }
+      // Decrement charactersCount on profile atomically
+      const profile = await em.findOne(CosplayerProfileEntity, {
+        where: { userId },
+      });
+      if (profile && profile.charactersCount > 0) {
+        await em.decrement(
+          CosplayerProfileEntity,
+          { userId },
+          'charactersCount',
+          1,
+        );
+      }
+    });
   }
 
   // =================== MAPPERS ===================
@@ -505,6 +523,12 @@ export class CosplayerService {
       heightLabel: p.heightLabel ?? null,
       experienceYearsNum: p.experienceYearsNum ?? null,
       experienceLabel: p.experienceLabel ?? null,
+      stats: {
+        heightCm: p.heightCm ?? null,
+        heightLabel: p.heightLabel ?? null,
+        experienceYearsNum: p.experienceYearsNum ?? null,
+        experienceLabel: p.experienceLabel ?? null,
+      },
       skills: p.skills || [],
       awardsBadges: p.awardsBadges || [],
       contactEmail: p.contactEmail ?? null,
@@ -513,6 +537,12 @@ export class CosplayerService {
       instagramUrl: p.instagramUrl ?? null,
       tiktokUrl: p.tiktokUrl ?? null,
       twitterUrl: p.twitterUrl ?? null,
+      socialLinks: {
+        facebookUrl: p.facebookUrl ?? null,
+        instagramUrl: p.instagramUrl ?? null,
+        tiktokUrl: p.tiktokUrl ?? null,
+        twitterUrl: p.twitterUrl ?? null,
+      },
       followingCount: Number(p.followingCount || 0),
       collectionsCount: Number(p.collectionsCount || 0),
       services: services.map((s) => this.toServiceDto(s)),

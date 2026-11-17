@@ -11,6 +11,14 @@ export const ReportColumnKey = {
   updatedAt: 'updatedAt',
 } as const
 
+export const reportStatusEnum = z.enum([
+  'pending',
+  'reviewing',
+  'resolved',
+  'dismissed',
+])
+export type ReportStatus = z.infer<typeof reportStatusEnum>
+
 export const contentReportSchema = z.object({
   id: z.string(),
   reporterUserId: z.string(),

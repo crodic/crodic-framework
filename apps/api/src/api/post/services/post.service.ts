@@ -212,64 +212,73 @@ export class PostService {
       slugCandidate = `${slugCandidate}-${Date.now().toString(36).slice(-4)}`;
     }
 
-    const post = this.postRepo.create({
-      authorId,
-      slug: slugCandidate,
-      title: dto.title,
-      caption: dto.caption ?? null,
-      postType: dto.postType,
-      albumCategory: dto.albumCategory,
-      albumCategoryLabel: dto.albumCategoryLabel ?? null,
-      characterName: dto.characterName ?? null,
-      fandomName: dto.fandomName ?? null,
-      cosplayerCharacterId: dto.cosplayerCharacterId ?? null,
-      characterTagId: dto.characterTagId ?? null,
-      copyrightTagId: dto.copyrightTagId ?? null,
-      coverImageUrl: dto.coverImageUrl,
-      isCollage: dto.isCollage ?? false,
-      collagePreviewUrls:
-        dto.collagePreviewUrls ||
-        dto.media?.slice(0, 4).map((m) => m.mediaUrl) ||
-        [],
-      tagNamesCache: dto.tagNamesCache || [],
-      isPublic: dto.isPublic ?? true,
-      enableWatermark: dto.enableWatermark ?? false,
-      status: dto.status ?? EPostStatus.PUBLISHED,
-      photosCount: dto.media?.length || 1,
-      likesCount: 0,
-      commentsCount: 0,
-      savesCount: 0,
-      sharesCount: 0,
-      viewsCount: 0,
-      trendingScore: 0,
+    return await this.dataSource.transaction(async (em) => {
+      const post = em.create(PostEntity, {
+        authorId,
+        slug: slugCandidate,
+        title: dto.title,
+        caption: dto.caption ?? null,
+        postType: dto.postType,
+        albumCategory: dto.albumCategory,
+        albumCategoryLabel: dto.albumCategoryLabel ?? null,
+        characterName: dto.characterName ?? null,
+        fandomName: dto.fandomName ?? null,
+        cosplayerCharacterId: dto.cosplayerCharacterId ?? null,
+        characterTagId: dto.characterTagId ?? null,
+        copyrightTagId: dto.copyrightTagId ?? null,
+        coverImageUrl: dto.coverImageUrl,
+        isCollage: dto.isCollage ?? false,
+        collagePreviewUrls:
+          dto.collagePreviewUrls ||
+          dto.media?.slice(0, 4).map((m) => m.mediaUrl) ||
+          [],
+        tagNamesCache: dto.tagNamesCache || [],
+        isPublic: dto.isPublic ?? true,
+        enableWatermark: dto.enableWatermark ?? false,
+        status: dto.status ?? EPostStatus.PUBLISHED,
+        photosCount: dto.media?.length || 1,
+        likesCount: 0,
+        commentsCount: 0,
+        savesCount: 0,
+        sharesCount: 0,
+        viewsCount: 0,
+        trendingScore: 0,
+      });
+
+      const savedPost = await em.save(PostEntity, post);
+
+      const mediaEntities = (dto.media || []).map((m, idx) =>
+        em.create(PostMediaEntity, {
+          postId: savedPost.id,
+          url: m.mediaUrl,
+          mediaType: m.mediaType,
+          fileId: m.fileId ?? null,
+          width: m.width ?? null,
+          height: m.height ?? null,
+          sortOrder: m.sortOrder ?? idx,
+          isCover: m.isCover ?? idx === 0,
+          altText: m.caption ?? null,
+        }),
+      );
+
+      const savedMedia =
+        mediaEntities.length > 0
+          ? await em.save(PostMediaEntity, mediaEntities)
+          : [];
+
+      // Increment author's albumsCount atomically
+      await em.increment(
+        CosplayerProfileEntity,
+        { userId: authorId },
+        'albumsCount',
+        1,
+      );
+
+      const profile = await em.findOne(CosplayerProfileEntity, {
+        where: { userId: authorId },
+      });
+      return this.toDetailDto(savedPost, savedMedia, profile, false);
     });
-
-    const savedPost = await this.postRepo.save(post);
-
-    const mediaEntities = (dto.media || []).map((m, idx) =>
-      this.mediaRepo.create({
-        postId: savedPost.id,
-        url: m.mediaUrl,
-        mediaType: m.mediaType,
-        fileId: m.fileId ?? null,
-        width: m.width ?? null,
-        height: m.height ?? null,
-        sortOrder: m.sortOrder ?? idx,
-        isCover: m.isCover ?? idx === 0,
-        altText: m.caption ?? null,
-      }),
-    );
-
-    const savedMedia =
-      mediaEntities.length > 0 ? await this.mediaRepo.save(mediaEntities) : [];
-
-    // Increment author's albumsCount
-    await this.profileRepo.increment({ userId: authorId }, 'albumsCount', 1);
-
-    const profile = await this.profileRepo.findOne({
-      where: { userId: authorId },
-    });
-    return this.toDetailDto(savedPost, savedMedia, profile, false);
   }
 
   /**
@@ -290,66 +299,68 @@ export class PostService {
       );
     }
 
-    if (dto.title !== undefined) post.title = dto.title;
-    if (dto.caption !== undefined) post.caption = dto.caption;
-    if (dto.postType !== undefined) post.postType = dto.postType;
-    if (dto.albumCategory !== undefined) post.albumCategory = dto.albumCategory;
-    if (dto.albumCategoryLabel !== undefined)
-      post.albumCategoryLabel = dto.albumCategoryLabel;
-    if (dto.characterName !== undefined) post.characterName = dto.characterName;
-    if (dto.fandomName !== undefined) post.fandomName = dto.fandomName;
-    if (dto.cosplayerCharacterId !== undefined)
-      post.cosplayerCharacterId = dto.cosplayerCharacterId;
-    if (dto.characterTagId !== undefined)
-      post.characterTagId = dto.characterTagId;
-    if (dto.copyrightTagId !== undefined)
-      post.copyrightTagId = dto.copyrightTagId;
-    if (dto.coverImageUrl !== undefined) post.coverImageUrl = dto.coverImageUrl;
-    if (dto.isCollage !== undefined) post.isCollage = dto.isCollage;
-    if (dto.collagePreviewUrls !== undefined)
-      post.collagePreviewUrls = dto.collagePreviewUrls;
-    if (dto.tagNamesCache !== undefined) post.tagNamesCache = dto.tagNamesCache;
-    if (dto.isPublic !== undefined) post.isPublic = dto.isPublic;
-    if (dto.enableWatermark !== undefined)
-      post.enableWatermark = dto.enableWatermark;
-    if (dto.status !== undefined) post.status = dto.status;
+    return await this.dataSource.transaction(async (em) => {
+      if (dto.title !== undefined) post.title = dto.title;
+      if (dto.caption !== undefined) post.caption = dto.caption;
+      if (dto.postType !== undefined) post.postType = dto.postType;
+      if (dto.albumCategory !== undefined)
+        post.albumCategory = dto.albumCategory;
+      if (dto.albumCategoryLabel !== undefined)
+        post.albumCategoryLabel = dto.albumCategoryLabel;
+      if (dto.characterName !== undefined)
+        post.characterName = dto.characterName;
+      if (dto.fandomName !== undefined) post.fandomName = dto.fandomName;
+      if (dto.cosplayerCharacterId !== undefined)
+        post.cosplayerCharacterId = dto.cosplayerCharacterId;
+      if (dto.characterTagId !== undefined)
+        post.characterTagId = dto.characterTagId;
+      if (dto.copyrightTagId !== undefined)
+        post.copyrightTagId = dto.copyrightTagId;
+      if (dto.coverImageUrl !== undefined)
+        post.coverImageUrl = dto.coverImageUrl;
+      if (dto.isCollage !== undefined) post.isCollage = dto.isCollage;
+      if (dto.collagePreviewUrls !== undefined)
+        post.collagePreviewUrls = dto.collagePreviewUrls;
+      if (dto.tagNamesCache !== undefined)
+        post.tagNamesCache = dto.tagNamesCache;
+      if (dto.isPublic !== undefined) post.isPublic = dto.isPublic;
+      if (dto.enableWatermark !== undefined)
+        post.enableWatermark = dto.enableWatermark;
+      if (dto.status !== undefined) post.status = dto.status;
 
-    const savedPost = await this.postRepo.save(post);
-
-    if (dto.media !== undefined) {
-      await this.mediaRepo.delete({ postId });
-      const newMedia = dto.media.map((m, idx) =>
-        this.mediaRepo.create({
-          postId,
-          url: m.mediaUrl,
-          mediaType: m.mediaType,
-          fileId: m.fileId ?? null,
-          width: m.width ?? null,
-          height: m.height ?? null,
-          sortOrder: m.sortOrder ?? idx,
-          isCover: m.isCover ?? idx === 0,
-          altText: m.caption ?? null,
-        }),
-      );
-      if (newMedia.length > 0) {
-        await this.mediaRepo.save(newMedia);
+      if (dto.media !== undefined) {
+        await em.delete(PostMediaEntity, { postId });
+        const newMedia = dto.media.map((m, idx) =>
+          em.create(PostMediaEntity, {
+            postId,
+            url: m.mediaUrl,
+            mediaType: m.mediaType,
+            fileId: m.fileId ?? null,
+            width: m.width ?? null,
+            height: m.height ?? null,
+            sortOrder: m.sortOrder ?? idx,
+            isCover: m.isCover ?? idx === 0,
+            altText: m.caption ?? null,
+          }),
+        );
+        if (newMedia.length > 0) {
+          await em.save(PostMediaEntity, newMedia);
+        }
+        post.photosCount = newMedia.length;
       }
-      post.photosCount = newMedia.length;
-      await this.postRepo.update(
-        { id: postId },
-        { photosCount: newMedia.length },
-      );
-    }
 
-    const [mediaList, profile] = await Promise.all([
-      this.mediaRepo.find({
-        where: { postId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-      this.profileRepo.findOne({ where: { userId: authorId } }),
-    ]);
+      const savedPost = await em.save(PostEntity, post);
 
-    return this.toDetailDto(savedPost, mediaList, profile, false);
+      const [mediaList, profile] = await Promise.all([
+        em.find(PostMediaEntity, {
+          where: { postId },
+          order: { sortOrder: 'ASC', id: 'ASC' },
+        }),
+        em.findOne(CosplayerProfileEntity, { where: { userId: authorId } }),
+      ]);
+
+      return this.toDetailDto(savedPost, mediaList, profile, false);
+    });
   }
 
   /**
@@ -369,14 +380,21 @@ export class PostService {
       );
     }
 
-    await this.postRepo.softDelete({ id: postId });
+    await this.dataSource.transaction(async (em) => {
+      await em.softDelete(PostEntity, { id: postId });
 
-    const profile = await this.profileRepo.findOne({
-      where: { userId: authorId },
+      const profile = await em.findOne(CosplayerProfileEntity, {
+        where: { userId: authorId },
+      });
+      if (profile && profile.albumsCount > 0) {
+        await em.decrement(
+          CosplayerProfileEntity,
+          { userId: authorId },
+          'albumsCount',
+          1,
+        );
+      }
     });
-    if (profile && profile.albumsCount > 0) {
-      await this.profileRepo.decrement({ userId: authorId }, 'albumsCount', 1);
-    }
   }
 
   /**

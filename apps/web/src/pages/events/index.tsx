@@ -46,7 +46,7 @@ export function PageEventsOverview() {
     mutationFn: apiDeleteAdminEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })
-      toast.success('Xóa sự kiện thành công')
+      toast.success(t('events.messages.deleted', 'Xóa sự kiện thành công'))
       setEventToDelete(null)
     },
     onError: restApiErrorHandler,
@@ -118,7 +118,7 @@ export function PageEventsOverview() {
         actions={
           <Button onClick={() => setIsCreateOpen(true)}>
             <PlusIcon className='mr-1.5 size-4' />
-            Tạo sự kiện mới
+            {t('events.actions.create', 'Tạo sự kiện mới')}
           </Button>
         }
       />

@@ -796,7 +796,15 @@
     "viewAll": "View all",
     "latest": "Latest",
     "interested": "Interested",
-    "saved": "Saved"
+    "saved": "Saved",
+    "loginToFollow": "Please log in to follow the creator!",
+    "loginToLike": "Please log in to like this post!",
+    "savedToCollection": "Saved to your personal collection!",
+    "removedFromSaved": "Removed from saved collection",
+    "copiedShareLink": "Copied link to clipboard!",
+    "loginToComment": "Please log in to comment!",
+    "commentSuccess": "Comment posted!",
+    "commentError": "An error occurred while posting comment."
   },
   "Explore": {
     "title": "Explore the Cosplay Universe",
@@ -856,7 +864,11 @@
       "system": "System"
     },
     "emptyTitle": "No notifications yet",
-    "emptyDesc": "Social interactions, booking updates, and system news will appear here."
+    "emptyDesc": "Social interactions, booking updates, and system news will appear here.",
+    "settings": "Notification Settings",
+    "newCount": "{count} new",
+    "errorOccurred": "An error occurred",
+    "deleteSuccess": "Notification deleted."
   },
   "Common": {
     "loading": "Loading...",

@@ -53,7 +53,7 @@ export function PostInfo({
 
   const handleToggleFollow = async () => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để theo dõi tác giả!");
+      toast.info(t("loginToFollow"));
       return;
     }
     const next = !isFollowing;
@@ -67,7 +67,7 @@ export function PostInfo({
 
   const handleToggleLike = async () => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để thích tác phẩm!");
+      toast.info(t("loginToLike"));
       return;
     }
     const next = !isLiked;
@@ -87,9 +87,9 @@ export function PostInfo({
     const nextState = !isSaved;
     setIsSaved(nextState);
     if (nextState) {
-      toast.success("Đã lưu vào bộ sưu tập cá nhân!");
+      toast.success(t("savedToCollection"));
     } else {
-      toast.info("Đã xóa khỏi danh sách đã lưu");
+      toast.info(t("removedFromSaved"));
     }
   };
 
@@ -97,7 +97,7 @@ export function PostInfo({
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setCopiedShare(true);
-      toast.success("Đã sao chép liên kết vào clipboard!");
+      toast.success(t("copiedShareLink"));
       setTimeout(() => setCopiedShare(false), 2500);
     }
   };
@@ -107,7 +107,7 @@ export function PostInfo({
     if (!newCommentText.trim() || isSubmittingComment) return;
 
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để bình luận!");
+      toast.info(t("loginToComment"));
       return;
     }
 
@@ -116,9 +116,9 @@ export function PostInfo({
       const created = await addPostComment(post.id, newCommentText.trim());
       setComments((prev) => [created, ...prev]);
       setNewCommentText("");
-      toast.success("Đã đăng bình luận!");
+      toast.success(t("commentSuccess"));
     } catch {
-      toast.error("Có lỗi xảy ra khi đăng bình luận.");
+      toast.error(t("commentError"));
     } finally {
       setIsSubmittingComment(false);
     }

@@ -150,6 +150,34 @@ export class CosplayerSummaryResDto {
   createdAt!: Date;
 }
 
+export class CosplayerPhysicalStatsResDto {
+  @ApiPropertyOptional({ example: 165 })
+  heightCm?: number | null;
+
+  @ApiPropertyOptional({ example: '1m65' })
+  heightLabel?: string | null;
+
+  @ApiPropertyOptional({ example: 6 })
+  experienceYearsNum?: number | null;
+
+  @ApiPropertyOptional({ example: '6 năm kinh nghiệm' })
+  experienceLabel?: string | null;
+}
+
+export class CosplayerSocialLinksResDto {
+  @ApiPropertyOptional({ example: 'https://facebook.com/kiriko' })
+  facebookUrl?: string | null;
+
+  @ApiPropertyOptional({ example: 'https://instagram.com/kiriko' })
+  instagramUrl?: string | null;
+
+  @ApiPropertyOptional({ example: 'https://tiktok.com/@kiriko' })
+  tiktokUrl?: string | null;
+
+  @ApiPropertyOptional({ example: 'https://twitter.com/kiriko' })
+  twitterUrl?: string | null;
+}
+
 export class CosplayerDetailResDto extends CosplayerSummaryResDto {
   @ApiPropertyOptional({
     example:
@@ -179,6 +207,12 @@ export class CosplayerDetailResDto extends CosplayerSummaryResDto {
 
   @ApiPropertyOptional({ example: '6 năm kinh nghiệm' })
   experienceLabel?: string | null;
+
+  @ApiPropertyOptional({ type: () => CosplayerPhysicalStatsResDto })
+  stats?: CosplayerPhysicalStatsResDto;
+
+  @ApiPropertyOptional({ type: () => CosplayerSocialLinksResDto })
+  socialLinks?: CosplayerSocialLinksResDto;
 
   @ApiProperty({
     type: [String],

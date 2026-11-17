@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -39,6 +40,7 @@ interface JobFormDialogProps {
 }
 
 export function JobFormDialog({ open, onOpenChange }: JobFormDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const form = useForm<JobFormValues>({
@@ -65,7 +67,9 @@ export function JobFormDialog({ open, onOpenChange }: JobFormDialogProps) {
     mutationFn: apiCreateAdminJob,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] })
-      toast.success('Đã tạo tin tuyển dụng mới thành công')
+      toast.success(
+        t('jobs.messages.created', 'Đã tạo tin tuyển dụng mới thành công')
+      )
       onOpenChange(false)
       form.reset()
     },

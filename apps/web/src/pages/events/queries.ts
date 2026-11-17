@@ -1,34 +1,17 @@
-import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { apiLinksSchema, apiMetaSchema } from '@/global'
+import { parsePaginatedResponse } from '@/lib/api-pagination'
 import http from '@/lib/http'
 import type { RestQueryParams } from '@/lib/query-builder'
-import { eventSchema, type Event, type EventFormValues } from './schema'
-
-const paginatedMetaWrapper = z.object({
-  meta: apiMetaSchema.passthrough(),
-  links: apiLinksSchema.optional(),
-})
+import {
+  eventSchema,
+  type Event,
+  type EventFormValues,
+  type EventStatus,
+} from './schema'
 
 export async function apiGetAdminEvents(params: RestQueryParams) {
   const response = await http.get('/admin/events', { params })
-  if (Array.isArray(response.data)) {
-    const data = z.array(eventSchema).parse(response.data)
-    return {
-      data,
-      meta: {
-        page: params.page ?? 1,
-        perPage: params.limit ?? data.length,
-        totalItems: data.length,
-        totalPages: 1,
-      },
-    }
-  }
-  return paginatedMetaWrapper
-    .extend({
-      data: z.array(eventSchema),
-    })
-    .parse(response.data)
+  return parsePaginatedResponse(eventSchema, response.data, params)
 }
 
 export async function apiGetAdminEventById(id: string): Promise<Event> {
@@ -57,7 +40,7 @@ export async function apiUpdateAdminEventStatus({
   isRecruiting,
 }: {
   id: string
-  status: string
+  status: EventStatus
   isFeaturedFestival?: boolean
   isRecruiting?: boolean
 }) {

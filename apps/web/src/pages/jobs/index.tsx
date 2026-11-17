@@ -46,7 +46,7 @@ export function PageJobsOverview() {
     mutationFn: apiDeleteAdminJob,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] })
-      toast.success('Xóa tin tuyển dụng thành công')
+      toast.success(t('jobs.messages.deleted', 'Xóa tin tuyển dụng thành công'))
       setJobToDelete(null)
     },
     onError: restApiErrorHandler,
@@ -114,7 +114,7 @@ export function PageJobsOverview() {
         actions={
           <Button onClick={() => setIsCreateOpen(true)}>
             <PlusIcon className='mr-1.5 size-4' />
-            Tạo tin tuyển dụng
+            {t('jobs.actions.create', 'Đăng tin mới')}
           </Button>
         }
       />

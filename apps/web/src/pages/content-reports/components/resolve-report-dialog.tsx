@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ export function ResolveReportDialog({
   onOpenChange,
   report,
 }: ResolveReportDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<'resolved' | 'dismissed'>('resolved')
   const [resolutionNote, setResolutionNote] = useState('')
@@ -43,7 +45,12 @@ export function ResolveReportDialog({
     mutationFn: apiResolveContentReport,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-content-reports'] })
-      toast.success('Báo cáo đã được xử lý thành công')
+      toast.success(
+        t(
+          'contentReports.messages.resolved',
+          'Đã xử lý báo cáo vi phạm thành công'
+        )
+      )
       onOpenChange(false)
       setResolutionNote('')
     },

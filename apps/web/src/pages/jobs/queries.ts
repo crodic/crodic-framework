@@ -1,34 +1,17 @@
-import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { apiLinksSchema, apiMetaSchema } from '@/global'
+import { parsePaginatedResponse } from '@/lib/api-pagination'
 import http from '@/lib/http'
 import type { RestQueryParams } from '@/lib/query-builder'
-import { jobSchema, type Job, type JobFormValues } from './schema'
-
-const paginatedMetaWrapper = z.object({
-  meta: apiMetaSchema.passthrough(),
-  links: apiLinksSchema.optional(),
-})
+import {
+  jobSchema,
+  type Job,
+  type JobFormValues,
+  type JobStatus,
+} from './schema'
 
 export async function apiGetAdminJobs(params: RestQueryParams) {
   const response = await http.get('/admin/jobs', { params })
-  if (Array.isArray(response.data)) {
-    const data = z.array(jobSchema).parse(response.data)
-    return {
-      data,
-      meta: {
-        page: params.page ?? 1,
-        perPage: params.limit ?? data.length,
-        totalItems: data.length,
-        totalPages: 1,
-      },
-    }
-  }
-  return paginatedMetaWrapper
-    .extend({
-      data: z.array(jobSchema),
-    })
-    .parse(response.data)
+  return parsePaginatedResponse(jobSchema, response.data, params)
 }
 
 export async function apiGetAdminJobById(id: string): Promise<Job> {
@@ -56,7 +39,7 @@ export async function apiUpdateAdminJobStatus({
   isFeatured,
 }: {
   id: string
-  status: string
+  status: JobStatus
   isFeatured?: boolean
 }) {
   return await http.patch(`/admin/jobs/${id}/status`, { status, isFeatured })

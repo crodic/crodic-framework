@@ -794,7 +794,15 @@
     "viewAll": "Xem tất cả",
     "latest": "Mới nhất",
     "interested": "Quan tâm",
-    "saved": "Đã lưu"
+    "saved": "Đã lưu",
+    "loginToFollow": "Vui lòng đăng nhập để theo dõi tác giả!",
+    "loginToLike": "Vui lòng đăng nhập để thích tác phẩm!",
+    "savedToCollection": "Đã lưu vào bộ sưu tập cá nhân!",
+    "removedFromSaved": "Đã xóa khỏi danh sách đã lưu",
+    "copiedShareLink": "Đã sao chép liên kết vào clipboard!",
+    "loginToComment": "Vui lòng đăng nhập để bình luận!",
+    "commentSuccess": "Đã đăng bình luận!",
+    "commentError": "Có lỗi xảy ra khi đăng bình luận."
   },
   "Explore": {
     "title": "Khám Phá Vũ Trụ Cosplay",
@@ -854,7 +862,11 @@
       "system": "Hệ thống"
     },
     "emptyTitle": "Không có thông báo nào",
-    "emptyDesc": "Các hoạt động tương tác, cập nhật booking và tin tức hệ thống sẽ hiển thị tại đây."
+    "emptyDesc": "Các hoạt động tương tác, cập nhật booking và tin tức hệ thống sẽ hiển thị tại đây.",
+    "settings": "Cài đặt thông báo",
+    "newCount": "{count} mới",
+    "errorOccurred": "Có lỗi xảy ra",
+    "deleteSuccess": "Đã xóa thông báo."
   },
   "Common": {
     "loading": "Đang tải...",

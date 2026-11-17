@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { apiUpdateAdminJobStatus } from '../queries'
-import type { Job } from '../schema'
+import type { Job, JobStatus } from '../schema'
 
 interface JobStatusDialogProps {
   open: boolean
@@ -34,8 +35,11 @@ export function JobStatusDialog({
   onOpenChange,
   job,
 }: JobStatusDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<string>(job?.status ?? 'open')
+  const [status, setStatus] = useState<JobStatus>(
+    (job?.status as JobStatus) ?? 'open'
+  )
   const [isFeatured, setIsFeatured] = useState<boolean>(
     job?.isFeatured ?? false
   )
@@ -44,7 +48,12 @@ export function JobStatusDialog({
     mutationFn: apiUpdateAdminJobStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] })
-      toast.success('Cập nhật trạng thái tin tuyển dụng thành công')
+      toast.success(
+        t(
+          'jobs.messages.statusUpdated',
+          'Cập nhật trạng thái tin tuyển dụng thành công'
+        )
+      )
       onOpenChange(false)
     },
     onError: restApiErrorHandler,
@@ -73,7 +82,10 @@ export function JobStatusDialog({
         <div className='grid gap-4 py-3'>
           <div className='space-y-2'>
             <Label htmlFor='status'>Trạng thái tin</Label>
-            <Select value={status} onValueChange={(val) => setStatus(val)}>
+            <Select
+              value={status}
+              onValueChange={(val) => setStatus(val as JobStatus)}
+            >
               <SelectTrigger id='status'>
                 <SelectValue placeholder='Chọn trạng thái' />
               </SelectTrigger>

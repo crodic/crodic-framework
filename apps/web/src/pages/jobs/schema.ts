@@ -14,6 +14,15 @@ export const JobColumnKey = {
   createdAt: 'createdAt',
 } as const
 
+export const jobStatusEnum = z.enum([
+  'draft',
+  'pending_approval',
+  'open',
+  'closed',
+  'expired',
+])
+export type JobStatus = z.infer<typeof jobStatusEnum>
+
 export const jobSchema = z.object({
   id: z.string(),
   slug: z.string(),

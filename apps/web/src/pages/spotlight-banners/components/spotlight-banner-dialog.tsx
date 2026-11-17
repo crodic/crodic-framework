@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
@@ -44,6 +45,7 @@ export function SpotlightBannerDialog({
   onOpenChange,
   banner,
 }: SpotlightBannerDialogProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!banner
 
@@ -94,7 +96,9 @@ export function SpotlightBannerDialog({
     mutationFn: apiCreateAdminSpotlightBanner,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-spotlight-banners'] })
-      toast.success('Đã tạo banner tiêu điểm mới')
+      toast.success(
+        t('spotlight.messages.created', 'Đã thêm banner tiêu điểm thành công')
+      )
       onOpenChange(false)
       form.reset()
     },
@@ -105,7 +109,12 @@ export function SpotlightBannerDialog({
     mutationFn: apiUpdateAdminSpotlightBanner,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-spotlight-banners'] })
-      toast.success('Cập nhật banner tiêu điểm thành công')
+      toast.success(
+        t(
+          'spotlight.messages.updated',
+          'Đã cập nhật banner tiêu điểm thành công'
+        )
+      )
       onOpenChange(false)
     },
     onError: restApiErrorHandler,

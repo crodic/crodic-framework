@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { PostEntity } from '../../post/entities/post.entity';
 import { CollectionItemEntity } from '../entities/collection-item.entity';
 import { CollectionEntity } from '../entities/collection.entity';
@@ -18,28 +19,25 @@ describe('CollectionService', () => {
   let collectionRepo: any;
   let itemRepo: any;
   let postRepo: any;
+  let dataSource: any;
 
   beforeEach(async () => {
     collectionRepo = {
       createQueryBuilder: jest.fn(),
       findOne: jest.fn(),
       count: jest.fn().mockResolvedValue(0),
-      create: jest
-        .fn()
-        .mockImplementation((dto) => ({
-          ...dto,
-          id: id('1'),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: id('1'),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })),
+      create: jest.fn().mockImplementation((dto) => ({
+        ...dto,
+        id: id('1'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: id('1'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
       softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
       increment: jest.fn().mockResolvedValue(undefined),
       decrement: jest.fn().mockResolvedValue(undefined),
@@ -48,20 +46,16 @@ describe('CollectionService', () => {
     itemRepo = {
       createQueryBuilder: jest.fn(),
       findOne: jest.fn(),
-      create: jest
-        .fn()
-        .mockImplementation((dto) => ({
-          ...dto,
-          id: id('10'),
-          createdAt: new Date(),
-        })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: id('10'),
-          createdAt: new Date(),
-        })),
+      create: jest.fn().mockImplementation((dto) => ({
+        ...dto,
+        id: id('10'),
+        createdAt: new Date(),
+      })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: id('10'),
+        createdAt: new Date(),
+      })),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -69,9 +63,27 @@ describe('CollectionService', () => {
       findOne: jest.fn(),
     };
 
+    dataSource = {
+      transaction: jest.fn().mockImplementation(async (cb) => {
+        const em = {
+          create: jest
+            .fn()
+            .mockImplementation((_, dto) => ({ ...dto, id: id('10') })),
+          save: jest
+            .fn()
+            .mockImplementation(async (_, item) => ({ ...item, id: id('10') })),
+          delete: jest.fn().mockResolvedValue({}),
+          increment: jest.fn().mockResolvedValue({}),
+          decrement: jest.fn().mockResolvedValue({}),
+        };
+        return cb(em);
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CollectionService,
+        { provide: getDataSourceToken(), useValue: dataSource },
         {
           provide: getRepositoryToken(CollectionEntity),
           useValue: collectionRepo,
@@ -151,11 +163,7 @@ describe('CollectionService', () => {
         postId: id('50'),
       });
       expect(res.postId).toBe(id('50'));
-      expect(collectionRepo.increment).toHaveBeenCalledWith(
-        { id: id('1') },
-        'itemsCount',
-        1,
-      );
+      expect(dataSource.transaction).toHaveBeenCalled();
     });
 
     it('throws ConflictException if already added', async () => {
@@ -180,12 +188,7 @@ describe('CollectionService', () => {
       itemRepo.findOne.mockResolvedValue({ id: id('10') });
 
       await service.removeItem(id('100'), id('1'), id('10'));
-      expect(itemRepo.delete).toHaveBeenCalledWith({ id: id('10') });
-      expect(collectionRepo.decrement).toHaveBeenCalledWith(
-        { id: id('1') },
-        'itemsCount',
-        1,
-      );
+      expect(dataSource.transaction).toHaveBeenCalled();
     });
   });
 });

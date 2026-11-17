@@ -1,34 +1,12 @@
-import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { apiLinksSchema, apiMetaSchema } from '@/global'
+import { parsePaginatedResponse } from '@/lib/api-pagination'
 import http from '@/lib/http'
 import type { RestQueryParams } from '@/lib/query-builder'
 import { spotlightBannerSchema, type SpotlightBannerFormValues } from './schema'
 
-const paginatedMetaWrapper = z.object({
-  meta: apiMetaSchema.passthrough(),
-  links: apiLinksSchema.optional(),
-})
-
 export async function apiGetAdminSpotlightBanners(params: RestQueryParams) {
   const response = await http.get('/admin/spotlight-banners', { params })
-  if (Array.isArray(response.data)) {
-    const data = z.array(spotlightBannerSchema).parse(response.data)
-    return {
-      data,
-      meta: {
-        page: params.page ?? 1,
-        perPage: params.limit ?? data.length,
-        totalItems: data.length,
-        totalPages: 1,
-      },
-    }
-  }
-  return paginatedMetaWrapper
-    .extend({
-      data: z.array(spotlightBannerSchema),
-    })
-    .parse(response.data)
+  return parsePaginatedResponse(spotlightBannerSchema, response.data, params)
 }
 
 export async function apiCreateAdminSpotlightBanner(

@@ -51,7 +51,12 @@ export function PageSpotlightBannersOverview() {
     mutationFn: apiToggleAdminSpotlightBanner,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-spotlight-banners'] })
-      toast.success('Đã thay đổi trạng thái hiển thị banner')
+      toast.success(
+        t(
+          'spotlight.messages.toggled',
+          'Đã chuyển đổi trạng thái hiển thị banner'
+        )
+      )
     },
     onError: restApiErrorHandler,
   })
@@ -60,7 +65,9 @@ export function PageSpotlightBannersOverview() {
     mutationFn: apiDeleteAdminSpotlightBanner,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-spotlight-banners'] })
-      toast.success('Xóa banner thành công')
+      toast.success(
+        t('spotlight.messages.deleted', 'Đã xóa banner tiêu điểm thành công')
+      )
       setBannerToDelete(null)
     },
     onError: restApiErrorHandler,
@@ -144,7 +151,7 @@ export function PageSpotlightBannersOverview() {
         actions={
           <Button onClick={handleCreate}>
             <PlusIcon className='mr-1.5 size-4' />
-            Thêm Banner mới
+            {t('spotlight.actions.create', 'Thêm Banner')}
           </Button>
         }
       />

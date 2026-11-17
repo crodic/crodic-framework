@@ -15,6 +15,15 @@ export const EventColumnKey = {
   createdAt: 'createdAt',
 } as const
 
+export const eventStatusEnum = z.enum([
+  'draft',
+  'upcoming',
+  'ongoing',
+  'completed',
+  'cancelled',
+])
+export type EventStatus = z.infer<typeof eventStatusEnum>
+
 export const eventSchema = z.object({
   id: z.string(),
   slug: z.string(),
