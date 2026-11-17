@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import http from '@/lib/http'
+import { PaginateQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +19,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +27,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import AutoCompleteAsyncSelectControl from '@/components/forms/auto-complete-async-select-control'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
 import {
   apiCreateAdminSpotlightBanner,
@@ -53,12 +57,13 @@ export function SpotlightBannerDialog({
   const form = useForm<SpotlightBannerFormValues>({
     resolver: zodResolver(spotlightBannerFormSchema),
     defaultValues: {
+      cosplayerUserId: '',
       name: '',
       badge: 'Cosplayer Tiêu Điểm Tuần Này',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
       bannerImageUrl: '',
-      portfolioHref: '/cosplayer/kiriko',
-      bookingHref: '/booking?cosplayer=kiriko',
+      portfolioHref: '',
+      bookingHref: '',
       sortOrder: 0,
       isVerified: true,
       isActive: true,
@@ -68,6 +73,9 @@ export function SpotlightBannerDialog({
   useEffect(() => {
     if (banner) {
       form.reset({
+        cosplayerUserId: banner.cosplayerUserId
+          ? String(banner.cosplayerUserId)
+          : '',
         name: banner.name,
         badge: banner.badge,
         tagline: banner.tagline,
@@ -80,12 +88,13 @@ export function SpotlightBannerDialog({
       })
     } else {
       form.reset({
+        cosplayerUserId: '',
         name: '',
         badge: 'Cosplayer Tiêu Điểm Tuần Này',
         tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
         bannerImageUrl: '',
-        portfolioHref: '/cosplayer/kiriko',
-        bookingHref: '/booking?cosplayer=kiriko',
+        portfolioHref: '',
+        bookingHref: '',
         sortOrder: 0,
         isVerified: true,
         isActive: true,
@@ -150,6 +159,96 @@ export function SpotlightBannerDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className='space-y-4 py-2'
           >
+            {/* Chọn Cosplayer để tự động map thông tin */}
+            <FormField
+              control={form.control}
+              name='cosplayerUserId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t(
+                      'spotlight.fields.cosplayerUser',
+                      'Liên kết Cosplayer (Tùy chọn)'
+                    )}
+                  </FormLabel>
+                  <FormControl>
+                    <AutoCompleteAsyncSelectControl
+                      {...field}
+                      value={field.value || undefined}
+                      placeholder={t(
+                        'spotlight.placeholders.selectCosplayer',
+                        'Tìm kiếm và chọn Cosplayer trên sàn...'
+                      )}
+                      isClearable
+                      defaultOption={
+                        banner?.cosplayerUserId
+                          ? {
+                              value: String(banner.cosplayerUserId),
+                              label: banner.name,
+                            }
+                          : undefined
+                      }
+                      fetchOptions={async (search, page) => {
+                        const builder = new PaginateQueryBuilder()
+                          .page(page)
+                          .limit(10)
+                        if (search) {
+                          builder.additionalFilter('search', search)
+                        }
+                        const res = await http.get('/public/cosplayers', {
+                          params: builder.build(),
+                        })
+                        const items = res.data?.data || []
+                        return {
+                          data: items.map((c: any) => ({
+                            value: String(c.userId),
+                            label: `${c.displayName} (${c.handle || c.slug})`,
+                            slug: c.slug,
+                            displayName: c.displayName,
+                            isVerified: c.isVerified,
+                            tagline: c.tagline,
+                          })),
+                          hasMore: page < (res.data?.meta?.totalPages ?? 1),
+                        }
+                      }}
+                      onChange={(val) => {
+                        field.onChange(val ? String(val) : '')
+                      }}
+                      onSelectOption={(opt: any) => {
+                        if (opt) {
+                          form.setValue(
+                            'name',
+                            opt.displayName || opt.label || ''
+                          )
+                          form.setValue(
+                            'portfolioHref',
+                            `/cosplayer/${opt.slug}`
+                          )
+                          form.setValue(
+                            'bookingHref',
+                            `/cosplayer/${opt.slug}#booking`
+                          )
+                          if (opt.isVerified !== undefined) {
+                            form.setValue('isVerified', opt.isVerified)
+                          }
+                          if (opt.tagline && !form.getValues('tagline')) {
+                            form.setValue('tagline', opt.tagline)
+                          }
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription className='text-muted-foreground text-xs'>
+                    {t(
+                      'spotlight.fields.cosplayerUserHelp',
+                      'Chọn Cosplayer để tự động điền Tên, Tích xanh và tạo đường link Portfolio / Booking chuẩn xác.'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name='name'
@@ -228,7 +327,11 @@ export function SpotlightBannerDialog({
                   <FormItem>
                     <FormLabel required>Link hồ sơ (Portfolio)</FormLabel>
                     <FormControl>
-                      <Input placeholder='/cosplayer/kiriko' {...field} />
+                      <Input
+                        placeholder='/cosplayer/kiriko'
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,6 +348,7 @@ export function SpotlightBannerDialog({
                       <Input
                         placeholder='/booking?cosplayer=kiriko'
                         {...field}
+                        value={field.value ?? ''}
                       />
                     </FormControl>
                     <FormMessage />

@@ -32,6 +32,7 @@ export const spotlightBannerSchema = z.object({
 export type SpotlightBanner = z.infer<typeof spotlightBannerSchema>
 
 export const spotlightBannerFormSchema = z.object({
+  cosplayerUserId: z.string().optional().nullable(),
   name: z.string().min(2, 'Tên người/nhân vật là bắt buộc'),
   badge: z.string().min(2, 'Huy hiệu là bắt buộc (Ví dụ: Cosplayer Tiêu Điểm)'),
   tagline: z.string().min(5, 'Slogan/mô tả là bắt buộc'),
@@ -43,7 +44,7 @@ export const spotlightBannerFormSchema = z.object({
   portfolioHref: z
     .string()
     .min(1, 'Liên kết hồ sơ là bắt buộc (VD: /cosplayer/kiriko)'),
-  bookingHref: z.string().optional(),
+  bookingHref: z.string().optional().nullable(),
   sortOrder: z.number(),
   isVerified: z.boolean(),
   isActive: z.boolean(),
