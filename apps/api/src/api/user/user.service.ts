@@ -71,14 +71,16 @@ export class UserService {
     }
 
     const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      searchableColumns: ['email', 'id', 'fullName'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt', 'role'],
+      searchableColumns: ['email', 'id', 'fullName', 'username'],
       defaultSortBy: [['id', 'DESC']],
-      relations: [],
+      relations: ['cosplayerProfile'],
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         fullName: [FilterOperator.ILIKE],
         email: [FilterOperator.ILIKE],
+        username: [FilterOperator.ILIKE],
+        role: [FilterOperator.EQ, FilterOperator.IN],
         id: [FilterOperator.EQ],
       },
     });
@@ -149,6 +151,7 @@ export class UserService {
     assert(id, 'id is required');
     const user = await this.userRepository.findOneOrFail({
       where: { id },
+      relations: ['cosplayerProfile'],
       withDeleted: true,
     });
 
@@ -158,10 +161,39 @@ export class UserService {
   async update(id: AutoIncrementID, updateUserDto: UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    user.firstName = updateUserDto.firstName;
-    user.lastName = updateUserDto.lastName;
+    if (updateUserDto.firstName !== undefined) {
+      user.firstName = updateUserDto.firstName;
+    }
+    if (updateUserDto.lastName !== undefined) {
+      user.lastName = updateUserDto.lastName;
+    }
+    if (updateUserDto.role !== undefined) {
+      user.role = updateUserDto.role;
+    }
+    if (updateUserDto.username !== undefined) {
+      user.username = updateUserDto.username;
+    }
 
     await this.userRepository.save(user);
+    return user.toDto(UserResDto);
+  }
+
+  async toggleVerify(id: AutoIncrementID): Promise<UserResDto> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { id },
+      relations: ['cosplayerProfile'],
+    });
+
+    user.verifiedAt = user.verifiedAt ? null : new Date();
+    if (user.cosplayerProfile) {
+      user.cosplayerProfile.isVerified = !!user.verifiedAt;
+      await this.dataSource
+        .getRepository('cosplayer_profiles')
+        .save(user.cosplayerProfile);
+    }
+
+    const saved = await this.userRepository.save(user);
+    return saved.toDto(UserResDto);
   }
 
   async remove(id: AutoIncrementID) {

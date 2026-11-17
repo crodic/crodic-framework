@@ -5,7 +5,10 @@ import {
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
-import { EReportTargetType } from '../constants/content-report.constant';
+import {
+  EReportStatus,
+  EReportTargetType,
+} from '../constants/content-report.constant';
 
 export class CreateContentReportReqDto {
   @EnumField(() => EReportTargetType)
@@ -21,4 +24,13 @@ export class CreateContentReportReqDto {
   @StringFieldOptional({ maxLength: 1000 })
   @Trim()
   description?: string;
+}
+
+export class ResolveContentReportReqDto {
+  @EnumField(() => EReportStatus)
+  status!: EReportStatus;
+
+  @StringFieldOptional({ maxLength: 1000 })
+  @Trim()
+  resolutionNote?: string;
 }

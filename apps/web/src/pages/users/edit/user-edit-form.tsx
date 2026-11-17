@@ -23,6 +23,13 @@ import {
   Form,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
 import { apiEditUser } from '../queries'
 import { type UserEditSchema, userEditSchema, type UserSchema } from '../schema'
@@ -37,6 +44,8 @@ export function UserEditForm({ data }: { data: UserSchema }) {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName ?? undefined,
+      username: data.username ?? undefined,
+      role: data.role || 'fan',
     },
     resolver: zodResolver(userEditSchema),
   })
@@ -131,6 +140,48 @@ export function UserEditForm({ data }: { data: UserSchema }) {
                     <FormControl>
                       <Input placeholder='Doe' {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='username'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder='kiriko_cos' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='role'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>
+                      {t('users.table.role', 'Vai trò')}
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Chọn vai trò' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value='fan'>Fan</SelectItem>
+                        <SelectItem value='cosplayer'>Cosplayer</SelectItem>
+                        <SelectItem value='recruiter'>
+                          Nhà tuyển dụng / Brand
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventAdminController } from './controllers/event-admin.controller';
 import { EventPublicController } from './controllers/event-public.controller';
 import { EventUserController } from './controllers/event-user.controller';
 import { EventApplicationEntity } from './entities/event-application.entity';
@@ -17,7 +18,11 @@ import { EventService } from './services/event.service';
       EventInterestEntity,
     ]),
   ],
-  controllers: [EventPublicController, EventUserController],
+  controllers: [
+    EventAdminController,
+    EventPublicController,
+    EventUserController,
+  ],
   providers: [EventService],
   exports: [TypeOrmModule, EventService],
 })

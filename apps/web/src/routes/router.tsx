@@ -206,6 +206,26 @@ const PageTagEncyclopediaOverview = lazy(() =>
     default: m.PageTagEncyclopediaOverview,
   }))
 )
+const PageContentReportsOverview = lazy(() =>
+  import('@/pages/content-reports').then((m) => ({
+    default: m.PageContentReportsOverview,
+  }))
+)
+const PageJobsOverview = lazy(() =>
+  import('@/pages/jobs').then((m) => ({
+    default: m.PageJobsOverview,
+  }))
+)
+const PageEventsOverview = lazy(() =>
+  import('@/pages/events').then((m) => ({
+    default: m.PageEventsOverview,
+  }))
+)
+const PageSpotlightBannersOverview = lazy(() =>
+  import('@/pages/spotlight-banners').then((m) => ({
+    default: m.PageSpotlightBannersOverview,
+  }))
+)
 
 const appRoutes: RouteObject[] = [
   {
@@ -605,6 +625,38 @@ const appRoutes: RouteObject[] = [
             ),
           },
         ],
+      },
+      {
+        path: '/content-reports',
+        element: (
+          <RouteAuthorize action='read' subject='CONTENT_REPORT'>
+            <PageContentReportsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/jobs',
+        element: (
+          <RouteAuthorize action='read' subject='JOB'>
+            <PageJobsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/events',
+        element: (
+          <RouteAuthorize action='read' subject='EVENT'>
+            <PageEventsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/spotlight-banners',
+        element: (
+          <RouteAuthorize action='read' subject='SPOTLIGHT'>
+            <PageSpotlightBannersOverview />
+          </RouteAuthorize>
+        ),
       },
       {
         path: 'logs',

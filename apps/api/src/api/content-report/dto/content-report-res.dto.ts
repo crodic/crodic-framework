@@ -30,3 +30,26 @@ export class ContentReportResDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class ContentReportAdminResDto extends ContentReportResDto {
+  @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
+  reporterName?: string;
+
+  @ApiPropertyOptional({ example: 'user@example.com' })
+  reporterEmail?: string;
+
+  @ApiPropertyOptional({ example: '/avatars/u1.jpg' })
+  reporterAvatar?: string | null;
+
+  @ApiPropertyOptional({ type: String, example: '99' })
+  resolvedByAdminId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({ example: 'Admin User' })
+  resolvedByAdminName?: string | null;
+
+  @ApiPropertyOptional({ example: 'Đã xử lý gỡ nội dung vi phạm' })
+  resolutionNote?: string | null;
+
+  @ApiPropertyOptional()
+  updatedAt?: Date;
+}

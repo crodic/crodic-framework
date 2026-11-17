@@ -41,3 +41,14 @@ export class SpotlightBannerResDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class SpotlightBannerAdminResDto extends SpotlightBannerResDto {
+  @ApiProperty({ example: true })
+  isActive!: boolean;
+
+  @ApiPropertyOptional({ type: String, example: '50' })
+  bannerFileId?: AutoIncrementID | null;
+
+  @ApiProperty()
+  updatedAt!: Date;
+}

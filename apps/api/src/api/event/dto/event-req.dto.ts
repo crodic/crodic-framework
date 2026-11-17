@@ -1,9 +1,19 @@
+import { AutoIncrementID } from '../../../common/types/common.type';
 import {
+  ArrayFieldOptional,
+  BooleanFieldOptional,
+  DateField,
+  DateFieldOptional,
+  EnumField,
+  EnumFieldOptional,
+  NumberFieldOptional,
   StringField,
   StringFieldOptional,
+  URLField,
   URLFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
+import { EEventStatus } from '../constants/event.constant';
 
 export class CreateEventApplicationReqDto {
   @StringField({ maxLength: 150 })
@@ -38,4 +48,179 @@ export class ParticipateEventReqDto {
   @StringFieldOptional({ maxLength: 255 })
   @Trim()
   characterPlanned?: string;
+}
+
+export class CreateEventReqDto {
+  @StringField({ maxLength: 220 })
+  @Trim()
+  title!: string;
+
+  @StringField({ maxLength: 10 })
+  @Trim()
+  dayLabel!: string;
+
+  @StringField({ maxLength: 20 })
+  @Trim()
+  monthLabel!: string;
+
+  @StringFieldOptional({ maxLength: 10 })
+  @Trim()
+  yearLabel?: string;
+
+  @StringField({ maxLength: 40 })
+  @Trim()
+  dateString!: string;
+
+  @DateField()
+  startAt!: Date;
+
+  @DateFieldOptional()
+  endAt?: Date;
+
+  @StringField({ maxLength: 100 })
+  @Trim()
+  locationLabel!: string;
+
+  @StringFieldOptional({ maxLength: 40, default: 'hcm' })
+  @Trim()
+  locationFilterCode?: string;
+
+  @StringFieldOptional()
+  cityId?: AutoIncrementID;
+
+  @StringField({ maxLength: 255 })
+  @Trim()
+  venue!: string;
+
+  @URLField()
+  imageUrl!: string;
+
+  @URLFieldOptional()
+  bannerImageUrl?: string;
+
+  @StringField()
+  @Trim()
+  description!: string;
+
+  @StringFieldOptional({ maxLength: 100 })
+  @Trim()
+  ticketPriceLabel?: string;
+
+  @NumberFieldOptional({ min: 0 })
+  ticketPriceAmount?: number;
+
+  @BooleanFieldOptional()
+  isRecruiting?: boolean;
+
+  @BooleanFieldOptional()
+  isFeaturedFestival?: boolean;
+
+  @StringFieldOptional({ maxLength: 120 })
+  @Trim()
+  registrationCta?: string;
+
+  @ArrayFieldOptional({ itemType: 'any' })
+  schedule?: any[];
+
+  @ArrayFieldOptional({ itemType: 'string' })
+  categories?: string[];
+
+  @ArrayFieldOptional({ itemType: 'string' })
+  filterTags?: string[];
+
+  @EnumFieldOptional(() => EEventStatus, { default: EEventStatus.UPCOMING })
+  status?: EEventStatus;
+}
+
+export class UpdateEventReqDto {
+  @StringFieldOptional({ maxLength: 220 })
+  @Trim()
+  title?: string;
+
+  @StringFieldOptional({ maxLength: 10 })
+  @Trim()
+  dayLabel?: string;
+
+  @StringFieldOptional({ maxLength: 20 })
+  @Trim()
+  monthLabel?: string;
+
+  @StringFieldOptional({ maxLength: 10 })
+  @Trim()
+  yearLabel?: string;
+
+  @StringFieldOptional({ maxLength: 40 })
+  @Trim()
+  dateString?: string;
+
+  @DateFieldOptional()
+  startAt?: Date;
+
+  @DateFieldOptional()
+  endAt?: Date;
+
+  @StringFieldOptional({ maxLength: 100 })
+  @Trim()
+  locationLabel?: string;
+
+  @StringFieldOptional({ maxLength: 40 })
+  @Trim()
+  locationFilterCode?: string;
+
+  @StringFieldOptional()
+  cityId?: AutoIncrementID;
+
+  @StringFieldOptional({ maxLength: 255 })
+  @Trim()
+  venue?: string;
+
+  @URLFieldOptional()
+  imageUrl?: string;
+
+  @URLFieldOptional()
+  bannerImageUrl?: string;
+
+  @StringFieldOptional()
+  @Trim()
+  description?: string;
+
+  @StringFieldOptional({ maxLength: 100 })
+  @Trim()
+  ticketPriceLabel?: string;
+
+  @NumberFieldOptional({ min: 0 })
+  ticketPriceAmount?: number;
+
+  @BooleanFieldOptional()
+  isRecruiting?: boolean;
+
+  @BooleanFieldOptional()
+  isFeaturedFestival?: boolean;
+
+  @StringFieldOptional({ maxLength: 120 })
+  @Trim()
+  registrationCta?: string;
+
+  @ArrayFieldOptional({ itemType: 'any' })
+  schedule?: any[];
+
+  @ArrayFieldOptional({ itemType: 'string' })
+  categories?: string[];
+
+  @ArrayFieldOptional({ itemType: 'string' })
+  filterTags?: string[];
+
+  @EnumFieldOptional(() => EEventStatus)
+  status?: EEventStatus;
+}
+
+export class UpdateEventStatusReqDto {
+  @EnumField(() => EEventStatus)
+  status!: EEventStatus;
+
+  @BooleanFieldOptional()
+  isFeaturedFestival?: boolean;
+
+  @BooleanFieldOptional()
+  isRecruiting?: boolean;
 }

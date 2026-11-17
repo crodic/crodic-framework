@@ -45,6 +45,22 @@ export const groupPermission = [
     permissions: ['create', 'read', 'update', 'delete'],
   },
   {
+    group: 'CONTENT_REPORT',
+    permissions: ['read', 'update'],
+  },
+  {
+    group: 'JOB',
+    permissions: ['create', 'read', 'update', 'delete', 'publish'],
+  },
+  {
+    group: 'EVENT',
+    permissions: ['create', 'read', 'update', 'delete', 'publish'],
+  },
+  {
+    group: 'SPOTLIGHT',
+    permissions: ['create', 'read', 'update', 'delete'],
+  },
+  {
     group: 'manage',
     permissions: ['all'],
   },
@@ -111,6 +127,30 @@ export const permissions = [
   { action: 'read', subject: 'TAG_ENCYCLOPEDIA' },
   { action: 'update', subject: 'TAG_ENCYCLOPEDIA' },
   { action: 'delete', subject: 'TAG_ENCYCLOPEDIA' },
+
+  // CONTENT_REPORT
+  { action: 'read', subject: 'CONTENT_REPORT' },
+  { action: 'update', subject: 'CONTENT_REPORT' },
+
+  // JOB
+  { action: 'create', subject: 'JOB' },
+  { action: 'read', subject: 'JOB' },
+  { action: 'update', subject: 'JOB' },
+  { action: 'delete', subject: 'JOB' },
+  { action: 'publish', subject: 'JOB' },
+
+  // EVENT
+  { action: 'create', subject: 'EVENT' },
+  { action: 'read', subject: 'EVENT' },
+  { action: 'update', subject: 'EVENT' },
+  { action: 'delete', subject: 'EVENT' },
+  { action: 'publish', subject: 'EVENT' },
+
+  // SPOTLIGHT
+  { action: 'create', subject: 'SPOTLIGHT' },
+  { action: 'read', subject: 'SPOTLIGHT' },
+  { action: 'update', subject: 'SPOTLIGHT' },
+  { action: 'delete', subject: 'SPOTLIGHT' },
 
   // SUPER
   { action: 'manage', subject: 'all' },

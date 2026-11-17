@@ -22,6 +22,7 @@ import {
   CreateJobApplicationReqDto,
   CreateJobReqDto,
   UpdateJobReqDto,
+  UpdateJobStatusReqDto,
 } from '../dto/job-req.dto';
 import {
   JobApplicationResDto,
@@ -254,6 +255,92 @@ export class JobService {
       );
     }
 
+    await this.jobRepo.softDelete({ id: jobId });
+  }
+
+  /**
+   * Admin: Get job by ID.
+   */
+  async findById(jobId: AutoIncrementID): Promise<JobDetailResDto> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId } });
+    if (!job) {
+      throw new NotFoundException(`Job #${jobId} not found`);
+    }
+    return this.toDetailDto(job, false);
+  }
+
+  /**
+   * Admin: Update any job posting without ownership restriction.
+   */
+  async updateAdmin(
+    jobId: AutoIncrementID,
+    dto: UpdateJobReqDto,
+  ): Promise<JobDetailResDto> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId } });
+    if (!job) {
+      throw new NotFoundException(`Job #${jobId} not found`);
+    }
+
+    if (dto.title !== undefined) job.title = dto.title;
+    if (dto.brandId !== undefined) job.brandId = dto.brandId;
+    if (dto.brandName !== undefined) job.brandName = dto.brandName;
+    if (dto.brandLogoUrl !== undefined) job.brandLogoUrl = dto.brandLogoUrl;
+    if (dto.brandInitials !== undefined) job.brandInitials = dto.brandInitials;
+    if (dto.brandColor !== undefined) job.brandColor = dto.brandColor;
+    if (dto.isVerified !== undefined) job.isVerified = dto.isVerified;
+    if (dto.categoryCode !== undefined) job.categoryCode = dto.categoryCode;
+    if (dto.categoryLabel !== undefined) job.categoryLabel = dto.categoryLabel;
+    if (dto.budgetLabel !== undefined) job.budgetLabel = dto.budgetLabel;
+    if (dto.budgetMin !== undefined) job.budgetMin = dto.budgetMin;
+    if (dto.budgetMax !== undefined) job.budgetMax = dto.budgetMax;
+    if (dto.locationLabel !== undefined) job.locationLabel = dto.locationLabel;
+    if (dto.locationFilterCode !== undefined)
+      job.locationFilterCode = dto.locationFilterCode;
+    if (dto.cityId !== undefined) job.cityId = dto.cityId;
+    if (dto.deadlineLabel !== undefined) job.deadlineLabel = dto.deadlineLabel;
+    if (dto.deadlineAt !== undefined) job.deadlineAt = dto.deadlineAt;
+    if (dto.requirements !== undefined) job.requirements = dto.requirements;
+    if (dto.description !== undefined) job.description = dto.description;
+    if (dto.perks !== undefined) job.perks = dto.perks;
+    if (dto.filterTags !== undefined) job.filterTags = dto.filterTags;
+    if (dto.contactEmail !== undefined) job.contactEmail = dto.contactEmail;
+    if (dto.thumbnailUrl !== undefined) job.thumbnailUrl = dto.thumbnailUrl;
+    if (dto.isFeatured !== undefined) job.isFeatured = dto.isFeatured;
+    if (dto.status !== undefined) job.status = dto.status;
+
+    const saved = await this.jobRepo.save(job);
+    return this.toDetailDto(saved, false);
+  }
+
+  /**
+   * Admin: Quick status and featured toggle.
+   */
+  async updateStatusAdmin(
+    jobId: AutoIncrementID,
+    dto: UpdateJobStatusReqDto,
+  ): Promise<JobDetailResDto> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId } });
+    if (!job) {
+      throw new NotFoundException(`Job #${jobId} not found`);
+    }
+
+    job.status = dto.status;
+    if (dto.isFeatured !== undefined) {
+      job.isFeatured = dto.isFeatured;
+    }
+
+    const saved = await this.jobRepo.save(job);
+    return this.toDetailDto(saved, false);
+  }
+
+  /**
+   * Admin: Delete job posting without ownership restriction.
+   */
+  async deleteAdmin(jobId: AutoIncrementID): Promise<void> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId } });
+    if (!job) {
+      throw new NotFoundException(`Job #${jobId} not found`);
+    }
     await this.jobRepo.softDelete({ id: jobId });
   }
 

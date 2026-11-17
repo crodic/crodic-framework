@@ -31,6 +31,10 @@ export async function apiRestoreUser(id: string) {
   return await http.post(`/users/${id}/restore`)
 }
 
+export async function apiToggleVerifyUser(id: string) {
+  return await http.patch(`/users/${id}/verify`)
+}
+
 export async function apiCreateUser(data: UserCreateSchema) {
   return await http.post('/users', data)
 }

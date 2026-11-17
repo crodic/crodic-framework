@@ -242,6 +242,17 @@ export function PageUserShow() {
                   label={t('users.show.fullName')}
                   value={data?.fullName}
                 />
+                <DescriptionItem
+                  label='Username'
+                  value={data?.username ? `@${data.username}` : '—'}
+                />
+                <DescriptionItem label={t('users.table.role', 'Vai trò')}>
+                  <div className='mt-1'>
+                    <Badge variant='outline' className='text-xs uppercase'>
+                      {data?.role || 'fan'}
+                    </Badge>
+                  </div>
+                </DescriptionItem>
                 <DescriptionItem label={t('common.status', 'Status')}>
                   <div className='mt-2 flex flex-wrap gap-1'>
                     {isDeleted ? (
@@ -256,9 +267,33 @@ export function PageUserShow() {
                   </div>
                 </DescriptionItem>
                 <DescriptionItem
-                  label={t('users.show.emailVerified')}
-                  value={data?.verifiedAt ? 'Active' : 'Inactive'}
+                  label={t('users.table.verified', 'Xác minh')}
+                  value={
+                    data?.verifiedAt
+                      ? 'Đã xác minh (Verified)'
+                      : 'Chưa xác minh'
+                  }
                 />
+                {data?.cosplayerProfile && (
+                  <DescriptionItem label='Hồ sơ Cosplayer'>
+                    <div className='bg-muted/30 flex flex-col gap-1 rounded-md border p-3 text-sm'>
+                      <div className='font-semibold'>
+                        {data.cosplayerProfile.displayName} (
+                        {data.cosplayerProfile.roleBadge || 'Cosplayer'})
+                      </div>
+                      <div className='text-muted-foreground text-xs'>
+                        Slug: /{data.cosplayerProfile.slug} • Điểm xếp hạng:{' '}
+                        {data.cosplayerProfile.rankingScore} pts
+                      </div>
+                      <div className='text-xs'>
+                        Nhận booking:{' '}
+                        {data.cosplayerProfile.isAcceptingBooking
+                          ? 'Có'
+                          : 'Đang tạm dừng'}
+                      </div>
+                    </div>
+                  </DescriptionItem>
+                )}
                 <DescriptionItem
                   label={t('users.show.createdAt')}
                   value={format(data.createdAt, 'dd/MM/yyyy HH:mm aa')}

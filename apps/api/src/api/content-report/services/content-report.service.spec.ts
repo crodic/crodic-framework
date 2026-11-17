@@ -17,20 +17,16 @@ describe('ContentReportService', () => {
   beforeEach(async () => {
     reportRepo = {
       createQueryBuilder: jest.fn(),
-      create: jest
-        .fn()
-        .mockImplementation((dto) => ({
-          ...dto,
-          id: id('1'),
-          createdAt: new Date(),
-        })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: id('1'),
-          createdAt: new Date(),
-        })),
+      create: jest.fn().mockImplementation((dto) => ({
+        ...dto,
+        id: id('1'),
+        createdAt: new Date(),
+      })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: id('1'),
+        createdAt: new Date(),
+      })),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +53,42 @@ describe('ContentReportService', () => {
 
       expect(res.targetType).toBe(EReportTargetType.POST);
       expect(res.status).toBe(EReportStatus.PENDING);
+      expect(reportRepo.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('resolveReport', () => {
+    it('updates report status and resolution note', async () => {
+      const mockReport = {
+        id: id('1'),
+        status: EReportStatus.PENDING,
+        reporterUserId: id('100'),
+        targetType: EReportTargetType.POST,
+        targetId: id('50'),
+        reason: 'Spam',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      reportRepo.findOne = jest.fn().mockResolvedValue(mockReport);
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue({
+          ...mockReport,
+          status: EReportStatus.RESOLVED,
+          resolvedByAdminId: id('99'),
+          resolutionNote: 'Post hidden',
+        }),
+      };
+      reportRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const res = await service.resolveReport(id('1'), id('99'), {
+        status: EReportStatus.RESOLVED,
+        resolutionNote: 'Post hidden',
+      });
+
+      expect(res.status).toBe(EReportStatus.RESOLVED);
       expect(reportRepo.save).toHaveBeenCalled();
     });
   });

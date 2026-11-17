@@ -15,10 +15,16 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import { UserEntity } from '../../user/entities/user.entity';
-import { EEventApplicationStatus } from '../constants/event.constant';
+import {
+  EEventApplicationStatus,
+  EEventStatus,
+} from '../constants/event.constant';
 import {
   CreateEventApplicationReqDto,
+  CreateEventReqDto,
   ParticipateEventReqDto,
+  UpdateEventReqDto,
+  UpdateEventStatusReqDto,
 } from '../dto/event-req.dto';
 import {
   EventApplicationResDto,
@@ -323,6 +329,158 @@ export class EventService {
       order: { createdAt: 'DESC' },
     });
     return list.map((item) => this.toApplicationDto(item));
+  }
+
+  async findById(eventId: AutoIncrementID): Promise<EventDetailResDto> {
+    const event = await this.eventRepo.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Event #${eventId} not found`);
+    }
+    const participants = await this.participantRepo.find({
+      where: { eventId },
+      order: { sortOrder: 'ASC' },
+    });
+    return this.toDetailDto(event, participants, false, false);
+  }
+
+  async createEvent(
+    adminId: AutoIncrementID,
+    dto: CreateEventReqDto,
+  ): Promise<EventDetailResDto> {
+    let slugCandidate = dto.title
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[đĐ]/g, 'd')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!slugCandidate) {
+      slugCandidate = `event-${Date.now().toString(36)}`;
+    }
+    const slugCollision = await this.eventRepo.count({
+      where: { slug: slugCandidate },
+    });
+    if (slugCollision > 0) {
+      slugCandidate = `${slugCandidate}-${Date.now().toString(36).slice(-4)}`;
+    }
+
+    const event = this.eventRepo.create({
+      slug: slugCandidate,
+      title: dto.title,
+      dayLabel: dto.dayLabel,
+      monthLabel: dto.monthLabel,
+      yearLabel: dto.yearLabel ?? null,
+      dateString: dto.dateString,
+      startAt: dto.startAt,
+      endAt: dto.endAt ?? null,
+      locationLabel: dto.locationLabel,
+      locationFilterCode: dto.locationFilterCode || 'hcm',
+      cityId: dto.cityId ?? null,
+      venue: dto.venue,
+      imageUrl: dto.imageUrl,
+      bannerImageUrl: dto.bannerImageUrl ?? null,
+      description: dto.description,
+      ticketPriceLabel: dto.ticketPriceLabel ?? null,
+      ticketPriceAmount: dto.ticketPriceAmount ?? null,
+      isRecruiting: dto.isRecruiting ?? false,
+      isFeaturedFestival: dto.isFeaturedFestival ?? false,
+      registrationCta: dto.registrationCta ?? null,
+      schedule: dto.schedule || [],
+      categories: dto.categories || [],
+      filterTags: dto.filterTags || [],
+      status: dto.status ?? EEventStatus.UPCOMING,
+      createdByAdminId: adminId,
+      participantsCount: 0,
+      applicationsCount: 0,
+      interestedCount: 0,
+    });
+
+    const saved = await this.eventRepo.save(event);
+    return this.toDetailDto(saved, [], false, false);
+  }
+
+  async updateEvent(
+    eventId: AutoIncrementID,
+    dto: UpdateEventReqDto,
+  ): Promise<EventDetailResDto> {
+    const event = await this.eventRepo.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Event #${eventId} not found`);
+    }
+
+    if (dto.title !== undefined) event.title = dto.title;
+    if (dto.dayLabel !== undefined) event.dayLabel = dto.dayLabel;
+    if (dto.monthLabel !== undefined) event.monthLabel = dto.monthLabel;
+    if (dto.yearLabel !== undefined) event.yearLabel = dto.yearLabel;
+    if (dto.dateString !== undefined) event.dateString = dto.dateString;
+    if (dto.startAt !== undefined) event.startAt = dto.startAt;
+    if (dto.endAt !== undefined) event.endAt = dto.endAt;
+    if (dto.locationLabel !== undefined)
+      event.locationLabel = dto.locationLabel;
+    if (dto.locationFilterCode !== undefined)
+      event.locationFilterCode = dto.locationFilterCode;
+    if (dto.cityId !== undefined) event.cityId = dto.cityId;
+    if (dto.venue !== undefined) event.venue = dto.venue;
+    if (dto.imageUrl !== undefined) event.imageUrl = dto.imageUrl;
+    if (dto.bannerImageUrl !== undefined)
+      event.bannerImageUrl = dto.bannerImageUrl;
+    if (dto.description !== undefined) event.description = dto.description;
+    if (dto.ticketPriceLabel !== undefined)
+      event.ticketPriceLabel = dto.ticketPriceLabel;
+    if (dto.ticketPriceAmount !== undefined)
+      event.ticketPriceAmount = dto.ticketPriceAmount;
+    if (dto.isRecruiting !== undefined) event.isRecruiting = dto.isRecruiting;
+    if (dto.isFeaturedFestival !== undefined)
+      event.isFeaturedFestival = dto.isFeaturedFestival;
+    if (dto.registrationCta !== undefined)
+      event.registrationCta = dto.registrationCta;
+    if (dto.schedule !== undefined) event.schedule = dto.schedule;
+    if (dto.categories !== undefined) event.categories = dto.categories;
+    if (dto.filterTags !== undefined) event.filterTags = dto.filterTags;
+    if (dto.status !== undefined) event.status = dto.status;
+
+    const saved = await this.eventRepo.save(event);
+    const participants = await this.participantRepo.find({
+      where: { eventId },
+      order: { sortOrder: 'ASC' },
+    });
+    return this.toDetailDto(saved, participants, false, false);
+  }
+
+  async updateEventStatus(
+    eventId: AutoIncrementID,
+    dto: UpdateEventStatusReqDto,
+  ): Promise<EventDetailResDto> {
+    const event = await this.eventRepo.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Event #${eventId} not found`);
+    }
+
+    event.status = dto.status;
+    if (dto.isFeaturedFestival !== undefined) {
+      event.isFeaturedFestival = dto.isFeaturedFestival;
+    }
+    if (dto.isRecruiting !== undefined) {
+      event.isRecruiting = dto.isRecruiting;
+    }
+
+    const saved = await this.eventRepo.save(event);
+    const participants = await this.participantRepo.find({
+      where: { eventId },
+      order: { sortOrder: 'ASC' },
+    });
+    return this.toDetailDto(saved, participants, false, false);
+  }
+
+  async deleteEvent(eventId: AutoIncrementID): Promise<void> {
+    const event = await this.eventRepo.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundException(`Event #${eventId} not found`);
+    }
+    await this.eventRepo.softDelete({ id: eventId });
   }
 
   // =================== MAPPERS ===================

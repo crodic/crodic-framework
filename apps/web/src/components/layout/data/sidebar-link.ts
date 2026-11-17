@@ -15,6 +15,10 @@ import {
   BookMarked,
   MapPin,
   Tags,
+  Briefcase,
+  CalendarDays,
+  ShieldAlert,
+  Sparkles,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -110,6 +114,35 @@ export const sidebarLink: SidebarData = {
           url: '/locations',
           icon: MapPin,
           permission: 'LOCATION',
+        },
+      ],
+    },
+    {
+      title: 'navigation.kosume.title',
+      items: [
+        {
+          title: 'navigation.kosume.reports',
+          url: '/content-reports',
+          icon: ShieldAlert,
+          permission: 'CONTENT_REPORT',
+        },
+        {
+          title: 'navigation.kosume.jobs',
+          url: '/jobs',
+          icon: Briefcase,
+          permission: 'JOB',
+        },
+        {
+          title: 'navigation.kosume.events',
+          url: '/events',
+          icon: CalendarDays,
+          permission: 'EVENT',
+        },
+        {
+          title: 'navigation.kosume.spotlight',
+          url: '/spotlight-banners',
+          icon: Sparkles,
+          permission: 'SPOTLIGHT',
         },
       ],
     },

@@ -3,6 +3,8 @@ import z from 'zod'
 export const ColumnKey = {
   id: 'id',
   email: 'email',
+  username: 'username',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   avatar: 'avatar',
@@ -12,14 +14,28 @@ export const ColumnKey = {
   all: 'all',
 }
 
+export const userCosplayerSummarySchema = z.object({
+  slug: z.string(),
+  displayName: z.string(),
+  roleBadge: z.string().nullish(),
+  isVerified: z.boolean(),
+  isAcceptingBooking: z.boolean(),
+  rankingScore: z.number(),
+})
+
+export type UserCosplayerSummary = z.infer<typeof userCosplayerSummarySchema>
+
 export const userSchema = z.object({
   id: z.string(),
+  username: z.string().nullish(),
+  role: z.string().default('fan'),
   email: z.string(),
   avatar: z.string().nullish(),
   firstName: z.string(),
   lastName: z.string().nullable(),
   fullName: z.string(),
   verifiedAt: z.boolean(),
+  cosplayerProfile: userCosplayerSummarySchema.nullish(),
   notifications: z
     .object({
       system: z.boolean().default(true),
@@ -76,7 +92,9 @@ export type UserCreateSchema = z.infer<typeof userCreateSchema>
 export const userEditSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().optional(),
-  email: z.email('Invalid email address'),
+  username: z.string().optional(),
+  role: z.string().optional(),
+  email: z.email('Invalid email address').optional(),
 })
 
 export type UserEditSchema = z.infer<typeof userEditSchema>

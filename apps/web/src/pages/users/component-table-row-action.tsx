@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Edit2Icon, RotateCcw, Trash2Icon } from 'lucide-react'
+import { BadgeCheck, Edit2Icon, RotateCcw, Trash2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
-import { apiDeleteUser, apiRestoreUser } from './queries'
+import { apiDeleteUser, apiRestoreUser, apiToggleVerifyUser } from './queries'
 import { type UserSchema } from './schema'
 
 export default function ComponentTableRowActions({
@@ -33,6 +33,17 @@ export default function ComponentTableRowActions({
   const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
 
   const isDeleted = Boolean(row.original.deletedAt)
+
+  const toggleVerifyMutation = useMutation({
+    mutationFn: apiToggleVerifyUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success(
+        t('users.messages.verifyToggleSuccess', 'Verification status updated')
+      )
+    },
+    onError: restApiErrorHandler,
+  })
 
   const deleteUserMutation = useMutation({
     mutationFn: apiDeleteUser,
@@ -144,6 +155,33 @@ export default function ComponentTableRowActions({
           <Edit2Icon className='text-primary size-4' aria-hidden='true' />
         </Link>
       </Button>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label='Toggle verification'
+            onClick={() => toggleVerifyMutation.mutate(row.original.id)}
+            disabled={toggleVerifyMutation.isPending}
+          >
+            <BadgeCheck
+              className={`size-4 ${
+                row.original.verifiedAt
+                  ? 'fill-emerald-100 text-emerald-500 dark:fill-emerald-950'
+                  : 'text-muted-foreground'
+              }`}
+              aria-hidden='true'
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side='left'>
+          {row.original.verifiedAt
+            ? t('users.actions.unverify', 'Hủy xác minh tài khoản')
+            : t('users.actions.verify', 'Xác minh tài khoản')}
+        </TooltipContent>
+      </Tooltip>
+
       <Button
         variant='ghost'
         size='icon'

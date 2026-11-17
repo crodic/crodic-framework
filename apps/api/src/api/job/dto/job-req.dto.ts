@@ -216,3 +216,11 @@ export class CreateJobApplicationReqDto {
   @Trim()
   message?: string;
 }
+
+export class UpdateJobStatusReqDto {
+  @EnumField(() => EJobStatus)
+  status!: EJobStatus;
+
+  @BooleanFieldOptional()
+  isFeatured?: boolean;
+}

@@ -174,6 +174,7 @@ describe('UserService', () => {
 
       expect(userRepositoryValue.findOneOrFail).toHaveBeenCalledWith({
         where: { id: '1' },
+        relations: ['cosplayerProfile'],
         withDeleted: true,
       });
       expect(result).toEqual(expect.objectContaining({ email: user.email }));
@@ -199,6 +200,24 @@ describe('UserService', () => {
 
       expect(user.firstName).toBe('New');
       expect(user.lastName).toBe('Person');
+      expect(userRepositoryValue.save).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('toggleVerify', () => {
+    it('toggles verification state', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        firstName: 'Jane',
+        verifiedAt: null,
+      });
+
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
+      userRepositoryValue.save.mockResolvedValue(user);
+
+      const result = await service.toggleVerify('1' as any);
+
+      expect(user.verifiedAt).toBeInstanceOf(Date);
       expect(userRepositoryValue.save).toHaveBeenCalledWith(user);
     });
   });
