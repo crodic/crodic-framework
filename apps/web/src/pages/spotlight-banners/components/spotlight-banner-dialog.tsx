@@ -207,7 +207,7 @@ export function SpotlightBannerDialog({
                     <ImagePickerInput
                       label={t(
                         'spotlight.fields.bannerImageUrl',
-                        'Hình ảnh Banner'
+                        'Đường dẫn hình ảnh Banner'
                       )}
                       required
                       value={field.value || ''}

@@ -89,91 +89,97 @@ export function ImagePickerInput({
         {required && <span className='text-destructive ms-1'>*</span>}
       </Label>
 
-      <div className='flex flex-col gap-2'>
+      <div className='flex items-center gap-2'>
         <Input
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!error}
           className={cn(
-            'w-full',
+            'flex-1',
             error && 'border-destructive focus-visible:ring-destructive'
           )}
         />
 
-        <div className='flex items-center gap-2'>
-          <Button
-            type='button'
-            variant='secondary'
-            className='flex-1'
-            onClick={() => setIsPickerOpen(true)}
-            title={t('imagePicker.chooseFromGallery')}
-          >
-            <FolderSearch className='mr-2 size-4' />
-            {t('imagePicker.browse')}
-          </Button>
+        <Button
+          type='button'
+          variant='secondary'
+          size='sm'
+          className='shrink-0'
+          onClick={() => setIsPickerOpen(true)}
+          title={t('imagePicker.chooseFromGallery', 'Chọn từ thư viện')}
+        >
+          <FolderSearch className='mr-1.5 size-4' />
+          {t('imagePicker.browse', 'Duyệt')}
+        </Button>
 
-          <Button
-            type='button'
-            variant='outline'
-            className='flex-1'
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            title={t('imagePicker.uploadImage')}
-          >
-            {isUploading ? (
-              <Loader2 className='size-4 animate-spin' />
-            ) : (
-              <>
-                <ImagePlus className='mr-2 size-4' />
-                {t('imagePicker.upload')}
-              </>
-            )}
-          </Button>
-        </div>
+        <Button
+          type='button'
+          variant='outline'
+          size='sm'
+          className='shrink-0'
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          title={t('imagePicker.uploadImage', 'Tải ảnh')}
+        >
+          {isUploading ? (
+            <Loader2 className='size-4 animate-spin' />
+          ) : (
+            <>
+              <ImagePlus className='mr-1.5 size-4' />
+              {t('imagePicker.upload', 'Tải lên')}
+            </>
+          )}
+        </Button>
 
         <input
           ref={fileInputRef}
           id='image-picker-file-input'
           name='image-picker-file-input'
           type='file'
-          accept='image/*'
+          accept={accept}
           className='hidden'
           onChange={handleFileSelect}
         />
       </div>
 
-      {/* Image Preview */}
+      {/* Image Preview Card */}
       {value && (
-        <div className='bg-muted/20 relative mt-2 max-w-sm rounded-md border p-1'>
-          {imageError ? (
-            <div className='text-muted-foreground flex items-center gap-2 p-3 text-xs'>
-              <ImageOff className='text-destructive size-4 shrink-0' />
-              <span className='truncate'>
-                {t(
-                  'imagePicker.cannotLoadPreview',
-                  'Không thể tải ảnh xem trước'
-                )}
-              </span>
-            </div>
-          ) : (
-            <img
-              src={value}
-              alt='Preview'
-              className='bg-muted/20 h-auto max-h-[160px] w-full rounded object-contain'
-              onError={() => setImageError(true)}
-              onLoad={() => setImageError(false)}
-            />
-          )}
+        <div className='bg-muted/40 relative mt-2 flex items-center gap-3 rounded-lg border p-2 text-xs'>
+          <div className='border-border/60 bg-background relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md border'>
+            {imageError ? (
+              <ImageOff className='text-muted-foreground/60 size-5' />
+            ) : (
+              <img
+                src={value}
+                alt='Preview'
+                className='h-full w-full object-cover'
+                onError={() => setImageError(true)}
+                onLoad={() => setImageError(false)}
+              />
+            )}
+          </div>
+          <div className='min-w-0 flex-1'>
+            <p className='text-foreground truncate font-medium'>{value}</p>
+            <p className='text-muted-foreground mt-0.5 text-[11px]'>
+              {imageError
+                ? t(
+                    'imagePicker.cannotLoadPreview',
+                    'Không thể tải ảnh xem trước'
+                  )
+                : t('imagePicker.imageLoaded', 'Ảnh xem trước khả dụng')}
+            </p>
+          </div>
           <Button
             type='button'
-            variant='destructive'
+            variant='ghost'
             size='icon'
             aria-label='Remove image'
-            className='absolute -top-2 -right-2 size-6 rounded-full shadow-sm'
+            className='text-muted-foreground hover:text-destructive size-7 shrink-0'
             onClick={() => onChange('')}
+            title={t('common.delete', 'Xóa')}
           >
-            <XIcon className='size-3' />
+            <XIcon className='size-4' />
           </Button>
         </div>
       )}
