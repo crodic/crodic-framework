@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { ImagePickerInput } from '@/components/forms/image-picker-input'
 import {
   apiCreateAdminSpotlightBanner,
   apiUpdateAdminSpotlightBanner,
@@ -202,11 +203,16 @@ export function SpotlightBannerDialog({
               name='bannerImageUrl'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Đường dẫn hình ảnh Banner</FormLabel>
                   <FormControl>
-                    <Input
+                    <ImagePickerInput
+                      label={t(
+                        'spotlight.fields.bannerImageUrl',
+                        'Hình ảnh Banner'
+                      )}
+                      required
+                      value={field.value || ''}
+                      onChange={field.onChange}
                       placeholder='https://... hoặc /landing/hero-banner.png'
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

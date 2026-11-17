@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { ImagePickerInput } from '@/components/forms/image-picker-input'
 import { apiCreateAdminEvent } from '../queries'
 import { eventFormSchema, type EventFormValues } from '../schema'
 
@@ -185,13 +186,16 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='imageUrl'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel required>
-                      Đường dẫn ảnh đại diện (Image URL)
-                    </FormLabel>
                     <FormControl>
-                      <Input
+                      <ImagePickerInput
+                        label={t(
+                          'events.fields.imageUrl',
+                          'Ảnh đại diện sự kiện (Poster/Cover)'
+                        )}
+                        required
+                        value={field.value || ''}
+                        onChange={field.onChange}
                         placeholder='https://... hoặc /landing/event-1.jpg'
-                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
