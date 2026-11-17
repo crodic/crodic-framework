@@ -217,7 +217,9 @@ export function PageUserShow() {
             <CardContent>
               <div className='flex flex-col items-center gap-4'>
                 <Avatar className='inline-block size-24'>
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarFallback>
+                    {data?.fullName?.slice(0, 2)?.toUpperCase() || 'US'}
+                  </AvatarFallback>
                   <AvatarImage
                     src={data?.avatar ?? undefined}
                     alt={data?.fullName}
@@ -228,83 +230,112 @@ export function PageUserShow() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('users.show.cardTitle')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Descriptions>
-                <DescriptionItem
-                  label={t('users.show.email')}
-                  value={data?.email}
-                />
-                <DescriptionItem
-                  label={t('users.show.fullName')}
-                  value={data?.fullName}
-                />
-                <DescriptionItem
-                  label='Username'
-                  value={data?.username ? `@${data.username}` : '—'}
-                />
-                <DescriptionItem label={t('users.table.role', 'Vai trò')}>
-                  <div className='mt-1'>
-                    <Badge variant='outline' className='text-xs uppercase'>
-                      {data?.role || 'fan'}
-                    </Badge>
-                  </div>
-                </DescriptionItem>
-                <DescriptionItem label={t('common.status', 'Status')}>
-                  <div className='mt-2 flex flex-wrap gap-1'>
-                    {isDeleted ? (
-                      <Badge variant='destructive' className='text-xs'>
-                        {t('common.status.deleted', 'Deleted')}
+          <div className='flex flex-col gap-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('users.show.cardTitle')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Descriptions>
+                  <DescriptionItem
+                    label={t('users.show.email')}
+                    value={data?.email}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.fullName')}
+                    value={data?.fullName}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.username', 'Username')}
+                    value={data?.username ? `@${data.username}` : '—'}
+                  />
+                  <DescriptionItem label={t('users.show.role', 'Vai trò')}>
+                    <div className='mt-1'>
+                      <Badge variant='outline' className='text-xs uppercase'>
+                        {data?.role || 'fan'}
                       </Badge>
-                    ) : (
-                      <Badge variant='outline-success' className='text-xs'>
-                        {t('common.status.active', 'Active')}
-                      </Badge>
-                    )}
-                  </div>
-                </DescriptionItem>
-                <DescriptionItem
-                  label={t('users.table.verified', 'Xác minh')}
-                  value={
-                    data?.verifiedAt
-                      ? 'Đã xác minh (Verified)'
-                      : 'Chưa xác minh'
-                  }
-                />
-                {data?.cosplayerProfile && (
-                  <DescriptionItem label='Hồ sơ Cosplayer'>
-                    <div className='bg-muted/30 flex flex-col gap-1 rounded-md border p-3 text-sm'>
-                      <div className='font-semibold'>
-                        {data.cosplayerProfile.displayName} (
-                        {data.cosplayerProfile.roleBadge || 'Cosplayer'})
-                      </div>
-                      <div className='text-muted-foreground text-xs'>
-                        Slug: /{data.cosplayerProfile.slug} • Điểm xếp hạng:{' '}
-                        {data.cosplayerProfile.rankingScore} pts
-                      </div>
-                      <div className='text-xs'>
-                        Nhận booking:{' '}
-                        {data.cosplayerProfile.isAcceptingBooking
-                          ? 'Có'
-                          : 'Đang tạm dừng'}
-                      </div>
                     </div>
                   </DescriptionItem>
-                )}
-                <DescriptionItem
-                  label={t('users.show.createdAt')}
-                  value={format(data.createdAt, 'dd/MM/yyyy HH:mm aa')}
-                />
-                <DescriptionItem
-                  label={t('users.show.updatedAt')}
-                  value={format(data.updatedAt, 'dd/MM/yyyy HH:mm aa')}
-                />
-              </Descriptions>
-            </CardContent>
-          </Card>
+                  <DescriptionItem label={t('users.show.status', 'Trạng thái')}>
+                    <div className='mt-2 flex flex-wrap gap-1'>
+                      {isDeleted ? (
+                        <Badge variant='destructive' className='text-xs'>
+                          {t('common.status.deleted', 'Deleted')}
+                        </Badge>
+                      ) : (
+                        <Badge variant='outline-success' className='text-xs'>
+                          {t('common.status.active', 'Active')}
+                        </Badge>
+                      )}
+                    </div>
+                  </DescriptionItem>
+                  <DescriptionItem
+                    label={t('users.show.verifiedStatus', 'Xác minh')}
+                    value={
+                      data?.verifiedAt
+                        ? t('users.show.verified', 'Đã xác minh (Verified)')
+                        : t('users.show.unverified', 'Chưa xác minh')
+                    }
+                  />
+                  <DescriptionItem
+                    label={t('users.show.createdAt')}
+                    value={format(new Date(data.createdAt), 'dd/MM/yyyy HH:mm')}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.updatedAt')}
+                    value={format(new Date(data.updatedAt), 'dd/MM/yyyy HH:mm')}
+                  />
+                </Descriptions>
+              </CardContent>
+            </Card>
+
+            {data?.role === 'cosplayer' && data?.cosplayerProfile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {t('users.show.cosplayerProfileTitle', 'Hồ sơ Cosplayer')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Descriptions>
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerDisplayName',
+                        'Tên hiển thị'
+                      )}
+                      value={data.cosplayerProfile.displayName}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerBadge', 'Huy hiệu')}
+                      value={data.cosplayerProfile.roleBadge || 'Cosplayer'}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerSlug', 'Đường dẫn (Slug)')}
+                      value={`/${data.cosplayerProfile.slug}`}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.rankingScore', 'Điểm xếp hạng')}
+                      value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
+                    />
+                    <DescriptionItem
+                      label={t(
+                        'users.show.bookingStatus',
+                        'Trạng thái nhận booking'
+                      )}
+                      value={
+                        data.cosplayerProfile.isAcceptingBooking
+                          ? t(
+                              'users.show.acceptingBooking',
+                              'Đang nhận booking'
+                            )
+                          : t('users.show.notAcceptingBooking', 'Đang tạm dừng')
+                      }
+                    />
+                  </Descriptions>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </Main>
     </>

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { UserEntity } from '../../../api/user/entities/user.entity';
 import { UserAccountEntity } from '../../../api/user/entities/user-account.entity';
 import { EUserRole } from '../../../api/user/constants/user.constant';
@@ -230,38 +230,6 @@ export class KosumeSeedService {
         lastName: 'Anh',
         role: EUserRole.FAN,
         avatar: '/landing/cosplay-work-6.jpg',
-        profile: {
-          slug: 'haianh_fan',
-          displayName: 'Hải Anh',
-          handle: 'haianh_fan',
-          roleBadge: 'Thành viên (Fan)',
-          tagline: 'Fan hâm mộ văn hóa cosplay và nhiếp ảnh sự kiện',
-          bio: 'Đam mê ngắm và sưu tầm ảnh cosplay ✨ / Fandom yêu thích: Genshin Impact, Honkai: Star Rail.',
-          avatarUrl: '/landing/cosplay-work-6.jpg',
-          coverUrl: '/landing/hero-banner.png',
-          locationLabel: 'Hà Nội, VN',
-          workArea: 'Hà Nội',
-          heightCm: 160,
-          heightLabel: '1m60',
-          experienceYearsNum: 2,
-          experienceLabel: 'Fan cosplay 2 năm',
-          skills: [
-            'Chụp ảnh Fan-cam',
-            'Sưu tầm Merchandise',
-            'Hỗ trợ Hậu trường',
-          ],
-          specialties: ['Genshin Impact', 'Honkai: Star Rail'],
-          contactEmail: 'haianh.fan@gmail.com',
-          isVerified: false,
-          isAcceptingBooking: false,
-          followersCount: 240,
-          followingCount: 135,
-          totalLikesCount: 2400,
-          albumsCount: 0,
-          charactersCount: 0,
-          collectionsCount: 14,
-          rankingScore: 12.0,
-        },
       },
     ];
 
@@ -305,20 +273,25 @@ export class KosumeSeedService {
 
       savedUsers[u.username] = user;
 
-      // Upsert profile
-      let profile = await this.profileRepo.findOne({
-        where: { userId: user.id },
-      });
-
-      if (!profile) {
-        profile = this.profileRepo.create({
-          userId: user.id,
-          ...u.profile,
+      // Upsert profile for cosplayers only
+      if (u.role === EUserRole.COSPLAYER && 'profile' in u && u.profile) {
+        const existingProfile = await this.profileRepo.findOne({
+          where: { userId: user.id },
         });
+
+        if (!existingProfile) {
+          const newProfile = this.profileRepo.create({
+            userId: user.id,
+            ...u.profile,
+          } as DeepPartial<CosplayerProfileEntity>);
+          await this.profileRepo.save(newProfile);
+        } else {
+          Object.assign(existingProfile, u.profile);
+          await this.profileRepo.save(existingProfile);
+        }
       } else {
-        Object.assign(profile, u.profile);
+        await this.profileRepo.delete({ userId: user.id });
       }
-      await this.profileRepo.save(profile);
     }
 
     const kirikoUser = savedUsers['kiriko'];

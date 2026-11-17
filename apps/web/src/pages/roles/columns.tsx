@@ -87,7 +87,7 @@ export function getRolesTableColumns(): ColumnDef<RoleSchema>[] {
       },
       cell: ({ row }) => (
         <p className='truncate overflow-hidden'>
-          {format(row.original.createdAt, 'dd/MM/yyyy HH:mm aa')}
+          {format(new Date(row.original.createdAt), 'dd/MM/yyyy HH:mm')}
         </p>
       ),
       enableColumnFilter: false,

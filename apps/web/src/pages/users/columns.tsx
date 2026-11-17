@@ -240,7 +240,7 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
         icon: Calendar,
       },
       cell: ({ row }) => (
-        <p>{format(row.original.createdAt, 'dd/MM/yyyy HH:mm aa')}</p>
+        <p>{format(new Date(row.original.createdAt), 'dd/MM/yyyy HH:mm')}</p>
       ),
       enableColumnFilter: true,
     },
