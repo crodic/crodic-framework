@@ -19,6 +19,11 @@ import {
 @Entity('content_reports')
 @Index('IDX_content_reports_moderation', ['status', 'targetType', 'createdAt'])
 @Index('IDX_content_reports_target', ['targetType', 'targetId'])
+@Index(
+  'UQ_content_reports_reporter_target',
+  ['reporterUserId', 'targetType', 'targetId'],
+  { unique: true },
+)
 export class ContentReportEntity extends AbstractEntity {
   constructor(data?: Partial<ContentReportEntity>) {
     super();

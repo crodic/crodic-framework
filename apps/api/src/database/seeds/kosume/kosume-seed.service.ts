@@ -12,6 +12,10 @@ import { EUserRole } from '../../../api/user/constants/user.constant';
 import { EAccountProvider } from '../../../common/constants/entity.enum';
 import { CosplayerProfileEntity } from '../../../api/cosplayer/entities/cosplayer-profile.entity';
 import { CosplayerServiceEntity } from '../../../api/cosplayer/entities/cosplayer-service.entity';
+import {
+  ECurrencyCode,
+  EServicePriceUnit,
+} from '../../../api/cosplayer/constants/cosplayer.constant';
 import { CosplayerCharacterEntity } from '../../../api/cosplayer/entities/cosplayer-character.entity';
 import { PostEntity } from '../../../api/post/entities/post.entity';
 import { PostMediaEntity } from '../../../api/post/entities/post-media.entity';
@@ -20,6 +24,7 @@ import { PostCommentEntity } from '../../../api/post/entities/post-comment.entit
 import {
   EAlbumCategory,
   EMediaType,
+  EPostCollaboratorRole,
   EPostStatus,
   EPostType,
 } from '../../../api/post/constants/post.constant';
@@ -535,6 +540,10 @@ export class KosumeSeedService {
           description:
             'Phục trang chuẩn bị tỉ mỉ, diễn xuất theo concept yêu cầu, hỗ trợ ekip chuyên nghiệp.',
           badgeLabel: 'Theo thỏa thuận',
+          startingPrice: 2500000,
+          currency: ECurrencyCode.VND,
+          priceUnit: EServicePriceUnit.SESSION,
+          isNegotiable: true,
           sortOrder: 1,
           isActive: true,
         }),
@@ -544,6 +553,10 @@ export class KosumeSeedService {
           description:
             'Tham gia giao lưu, ký tặng fans, biểu diễn catwalk sân khấu chính festival.',
           badgeLabel: 'Nhận lịch trước 2 tuần',
+          startingPrice: 4000000,
+          currency: ECurrencyCode.VND,
+          priceUnit: EServicePriceUnit.EVENT,
+          isNegotiable: true,
           sortOrder: 2,
           isActive: true,
         }),
@@ -553,6 +566,10 @@ export class KosumeSeedService {
           description:
             'Quảng bá sản phẩm, livestream trải nghiệm game và chụp ảnh lookbook thương mại.',
           badgeLabel: 'Trao đổi qua Email',
+          startingPrice: null,
+          currency: ECurrencyCode.VND,
+          priceUnit: EServicePriceUnit.PROJECT,
+          isNegotiable: true,
           sortOrder: 3,
           isActive: true,
         }),
@@ -826,6 +843,7 @@ export class KosumeSeedService {
           participantsCount: 42,
           applicationsCount: 18,
           interestedCount: 1280,
+          organizerName: 'Kosume Events & Community',
         }),
       );
 
@@ -895,6 +913,7 @@ export class KosumeSeedService {
           participantsCount: 28,
           applicationsCount: 12,
           interestedCount: 890,
+          organizerName: 'Hanoi ACG Festival Committee',
         }),
         this.eventRepo.create({
           slug: 'kosume-crafting-artist-market-tphcm',
@@ -929,6 +948,7 @@ export class KosumeSeedService {
           participantsCount: 35,
           applicationsCount: 5,
           interestedCount: 650,
+          organizerName: 'Kosume Crafting Guild',
         }),
       ]);
     }
@@ -972,6 +992,10 @@ export class KosumeSeedService {
             ),
           ],
           tagNamesCache: ['HonkaiStarRail', 'Acheron', 'Photoset', 'CosplayVN'],
+          collaborators: [
+            { role: EPostCollaboratorRole.PHOTOGRAPHER, name: 'Neko Studio' },
+            { role: EPostCollaboratorRole.MUA, name: 'Miko Makeup' },
+          ],
           isPublic: true,
           enableWatermark: false,
           status: EPostStatus.PUBLISHED,
@@ -1060,6 +1084,13 @@ export class KosumeSeedService {
             ),
           ],
           tagNamesCache: ['HonkaiStarRail', 'Kafka', 'StellaronHunter'],
+          collaborators: [
+            {
+              role: EPostCollaboratorRole.PHOTOGRAPHER,
+              name: 'Lumiere Visuals',
+            },
+            { role: EPostCollaboratorRole.PROP_MAKER, name: 'Soriko Studio' },
+          ],
           isPublic: true,
           status: EPostStatus.PUBLISHED,
           isFeaturedWork: true,

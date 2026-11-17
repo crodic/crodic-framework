@@ -219,6 +219,41 @@ export function PostInfo({
               ))}
             </div>
           )}
+
+          {/* Collaborators / Credits */}
+          {post.collaborators && post.collaborators.length > 0 && (
+            <div className="border-border/50 bg-muted/20 space-y-1.5 rounded-xl border p-3">
+              <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
+                {t("collaboratorsTitle")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {post.collaborators.map((collab, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-background/80 border-border/60 flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs"
+                  >
+                    <span className="text-muted-foreground font-medium">
+                      {t(`collaboratorRoles.${collab.role}`)}:
+                    </span>
+                    {collab.socialUrl ? (
+                      <a
+                        href={collab.socialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary font-semibold hover:underline"
+                      >
+                        {collab.name}
+                      </a>
+                    ) : (
+                      <span className="text-foreground font-semibold">
+                        {collab.name}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Comments Section */}

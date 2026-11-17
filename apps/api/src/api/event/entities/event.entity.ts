@@ -14,6 +14,8 @@ import {
 import { CityEntity } from '../../location/entities/city.entity';
 import { FileEntity } from '../../file/entities/file.entity';
 import { AdminUserEntity } from '../../admin-user/entities/admin-user.entity';
+import { BrandEntity } from '../../brand/entities/brand.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { EEventStatus } from '../constants/event.constant';
 import { EventParticipantEntity } from './event-participant.entity';
 import { EventApplicationEntity } from './event-application.entity';
@@ -27,6 +29,7 @@ import { EventInterestEntity } from './event-interest.entity';
 @Index('IDX_events_status_start', ['status', 'startAt'])
 @Index('IDX_events_featured', ['isFeaturedFestival', 'startAt'])
 @Index('IDX_events_recruiting', ['isRecruiting', 'startAt'])
+@Index('IDX_events_brand_id', ['brandId'])
 export class EventEntity extends AbstractEntity {
   constructor(data?: Partial<EventEntity>) {
     super();
@@ -160,6 +163,34 @@ export class EventEntity extends AbstractEntity {
 
   @Column({ name: 'interested_count', type: 'integer', default: 0 })
   interestedCount!: number;
+
+  @Column({ name: 'brand_id', type: 'bigint', nullable: true })
+  brandId?: AutoIncrementID | null;
+
+  @ManyToOne(() => BrandEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'brand_id',
+    foreignKeyConstraintName: 'FK_events_brand_id',
+  })
+  brand?: Relation<BrandEntity> | null;
+
+  @Column({ name: 'organizer_user_id', type: 'bigint', nullable: true })
+  organizerUserId?: AutoIncrementID | null;
+
+  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'organizer_user_id',
+    foreignKeyConstraintName: 'FK_events_organizer_user_id',
+  })
+  organizerUser?: Relation<UserEntity> | null;
+
+  @Column({
+    name: 'organizer_name',
+    type: 'varchar',
+    length: 160,
+    nullable: true,
+  })
+  organizerName?: string | null;
 
   @Column({ name: 'created_by_admin_id', type: 'bigint', nullable: true })
   createdByAdminId?: AutoIncrementID | null;

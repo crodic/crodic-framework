@@ -71,6 +71,18 @@ export class EventSummaryResDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   cityId?: AutoIncrementID | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  brandId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  organizerUserId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({
+    example: 'Kosume Events & Community',
+    nullable: true,
+  })
+  organizerName?: string | null;
+
   @ApiProperty({
     example: 'Trung tâm Triển lãm SECC - 799 Nguyễn Văn Linh, Quận 7',
   })

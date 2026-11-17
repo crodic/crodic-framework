@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import http from '@/lib/http'
-import { PaginateQueryBuilder } from '@/lib/query-builder'
+import { RestQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
@@ -38,6 +38,25 @@ import {
   type SpotlightBanner,
   type SpotlightBannerFormValues,
 } from '../schema'
+
+interface CosplayerSearchItem {
+  userId: string | number
+  slug: string
+  displayName: string
+  handle?: string | null
+  isVerified?: boolean
+  tagline?: string | null
+}
+
+interface CosplayerSelectOption {
+  value: string
+  label: string
+  slug?: string
+  displayName?: string
+  isVerified?: boolean
+  tagline?: string | null
+  [key: string]: unknown
+}
 
 interface SpotlightBannerDialogProps {
   open: boolean
@@ -189,18 +208,21 @@ export function SpotlightBannerDialog({
                           : undefined
                       }
                       fetchOptions={async (search, page) => {
-                        const builder = new PaginateQueryBuilder()
+                        const builder = new RestQueryBuilder()
                           .page(page)
                           .limit(10)
                         if (search) {
-                          builder.additionalFilter('search', search)
+                          builder.filter('search', search)
                         }
-                        const res = await http.get('/public/cosplayers', {
+                        const res = await http.get<{
+                          data?: CosplayerSearchItem[]
+                          meta?: { totalPages?: number }
+                        }>('/public/cosplayers', {
                           params: builder.build(),
                         })
-                        const items = res.data?.data || []
+                        const items = res.data?.data ?? []
                         return {
-                          data: items.map((c: any) => ({
+                          data: items.map((c): CosplayerSelectOption => ({
                             value: String(c.userId),
                             label: `${c.displayName} (${c.handle || c.slug})`,
                             slug: c.slug,
@@ -214,26 +236,28 @@ export function SpotlightBannerDialog({
                       onChange={(val) => {
                         field.onChange(val ? String(val) : '')
                       }}
-                      onSelectOption={(opt: any) => {
-                        if (opt) {
-                          form.setValue(
-                            'name',
-                            opt.displayName || opt.label || ''
-                          )
+                      onSelectOption={(opt) => {
+                        if (!opt || Array.isArray(opt)) return
+                        const selected = opt as CosplayerSelectOption
+                        form.setValue(
+                          'name',
+                          selected.displayName || selected.label || ''
+                        )
+                        if (selected.slug) {
                           form.setValue(
                             'portfolioHref',
-                            `/cosplayer/${opt.slug}`
+                            `/cosplayer/${selected.slug}`
                           )
                           form.setValue(
                             'bookingHref',
-                            `/cosplayer/${opt.slug}#booking`
+                            `/cosplayer/${selected.slug}#booking`
                           )
-                          if (opt.isVerified !== undefined) {
-                            form.setValue('isVerified', opt.isVerified)
-                          }
-                          if (opt.tagline && !form.getValues('tagline')) {
-                            form.setValue('tagline', opt.tagline)
-                          }
+                        }
+                        if (selected.isVerified !== undefined) {
+                          form.setValue('isVerified', selected.isVerified)
+                        }
+                        if (selected.tagline && !form.getValues('tagline')) {
+                          form.setValue('tagline', selected.tagline)
                         }
                       }}
                     />

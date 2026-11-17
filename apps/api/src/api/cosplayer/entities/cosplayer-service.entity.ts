@@ -10,6 +10,10 @@ import {
   Relation,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import {
+  ECurrencyCode,
+  EServicePriceUnit,
+} from '../constants/cosplayer.constant';
 import { CosplayerProfileEntity } from './cosplayer-profile.entity';
 
 @Entity('cosplayer_services')
@@ -54,6 +58,35 @@ export class CosplayerServiceEntity extends AbstractEntity {
 
   @Column({ name: 'badge_label', length: 80 })
   badgeLabel!: string;
+
+  @Column({
+    name: 'starting_price',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    nullable: true,
+  })
+  startingPrice?: number | null;
+
+  @Column({
+    type: 'enum',
+    enum: ECurrencyCode,
+    default: ECurrencyCode.VND,
+    enumName: 'currency_code_enum',
+  })
+  currency!: ECurrencyCode;
+
+  @Column({
+    name: 'price_unit',
+    type: 'enum',
+    enum: EServicePriceUnit,
+    enumName: 'service_price_unit_enum',
+    nullable: true,
+  })
+  priceUnit?: EServicePriceUnit | null;
+
+  @Column({ name: 'is_negotiable', type: 'boolean', default: true })
+  isNegotiable!: boolean;
 
   @Column({ name: 'sort_order', type: 'smallint', default: 0 })
   sortOrder!: number;

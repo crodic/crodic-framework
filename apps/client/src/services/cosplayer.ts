@@ -1,12 +1,21 @@
 import { http } from "@/lib/http";
 import type { PaginatedResponse } from "@repo/query-builder";
 
+export type ServicePriceUnit =
+  "hour" | "session" | "day" | "event" | "set" | "project" | "item";
+
+export type CurrencyCode = "VND" | "USD" | "JPY";
+
 export interface CosplayerServiceResDto {
   id: string;
   userId: string;
   title: string;
   description?: string | null;
   badgeLabel: string;
+  startingPrice?: number | null;
+  currency?: CurrencyCode;
+  priceUnit?: ServicePriceUnit | null;
+  isNegotiable?: boolean;
   sortOrder: number;
   isActive: boolean;
   createdAt: string;

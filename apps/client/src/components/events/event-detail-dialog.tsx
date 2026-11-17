@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
+  Building2,
   Calendar,
   Check,
   Clock,
@@ -147,6 +148,21 @@ export function EventDetailDialog({
               <p className="text-foreground/80 text-xs leading-relaxed sm:text-sm">
                 {detail.description}
               </p>
+            </div>
+          )}
+
+          {/* Organizer */}
+          {event.organizerName && (
+            <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-xl border p-3">
+              <Building2 className="text-primary size-4 shrink-0" />
+              <div>
+                <p className="text-muted-foreground text-[10px]">
+                  {tDetail("organizer")}
+                </p>
+                <p className="text-foreground text-xs font-bold">
+                  {event.organizerName}
+                </p>
+              </div>
             </div>
           )}
 

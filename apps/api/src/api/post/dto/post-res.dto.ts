@@ -3,9 +3,27 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import {
   EAlbumCategory,
   EMediaType,
+  EPostCollaboratorRole,
   EPostStatus,
   EPostType,
 } from '../constants/post.constant';
+
+export class PostCollaboratorResDto {
+  @ApiProperty({
+    enum: EPostCollaboratorRole,
+    example: EPostCollaboratorRole.PHOTOGRAPHER,
+  })
+  role!: EPostCollaboratorRole;
+
+  @ApiProperty({ example: 'Neko Studio' })
+  name!: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  userId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  socialUrl?: string | null;
+}
 
 export class PostMediaResDto {
   @ApiProperty({ type: String, example: '1' })
@@ -118,6 +136,9 @@ export class PostSummaryResDto {
     example: ['Acheron', 'HonkaiStarRail', 'CosplayVN'],
   })
   tagNamesCache!: string[];
+
+  @ApiPropertyOptional({ type: () => [PostCollaboratorResDto] })
+  collaborators?: PostCollaboratorResDto[];
 
   @ApiProperty({ example: true })
   isPublic!: boolean;

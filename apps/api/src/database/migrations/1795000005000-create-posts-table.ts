@@ -33,6 +33,7 @@ export class CreatePostsTable1795000005000 implements MigrationInterface {
         "is_collage" boolean NOT NULL DEFAULT false,
         "collage_preview_urls" jsonb NOT NULL DEFAULT '[]',
         "tag_names_cache" jsonb NOT NULL DEFAULT '[]',
+        "collaborators" jsonb NOT NULL DEFAULT '[]',
         "is_public" boolean NOT NULL DEFAULT true,
         "enable_watermark" boolean NOT NULL DEFAULT false,
         "status" "public"."post_status_enum" NOT NULL DEFAULT 'published',
@@ -60,6 +61,12 @@ export class CreatePostsTable1795000005000 implements MigrationInterface {
       CREATE INDEX "IDX_posts_copyright_tag" ON "posts" ("copyright_tag_id", "published_at")
     `);
     await queryRunner.query(`
+      CREATE INDEX "IDX_posts_character_tag" ON "posts" ("character_tag_id", "published_at")
+    `);
+    await queryRunner.query(`
+      CREATE INDEX "IDX_posts_cosplayer_character" ON "posts" ("cosplayer_character_id", "published_at")
+    `);
+    await queryRunner.query(`
       CREATE INDEX "IDX_posts_featured" ON "posts" ("is_featured_work", "published_at")
     `);
     await queryRunner.query(`
@@ -82,6 +89,10 @@ export class CreatePostsTable1795000005000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."IDX_posts_feed_public"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_posts_trending"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_posts_featured"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_posts_cosplayer_character"`,
+    );
+    await queryRunner.query(`DROP INDEX "public"."IDX_posts_character_tag"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_posts_copyright_tag"`);
     await queryRunner.query(`DROP TABLE "posts"`);
     await queryRunner.query(`DROP TYPE "public"."post_status_enum"`);

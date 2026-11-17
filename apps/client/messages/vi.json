@@ -706,6 +706,7 @@
       "statusRecruiting": "Đang tuyển Cosplayer",
       "statusClosed": "Đã chốt danh sách",
       "about": "Giới thiệu sự kiện",
+      "organizer": "Đơn vị tổ chức",
       "guests": "Cosplayers & Khách mời tham gia",
       "schedule": "Lịch trình hoạt động",
       "share": "Chia sẻ",
@@ -802,7 +803,16 @@
     "copiedShareLink": "Đã sao chép liên kết vào clipboard!",
     "loginToComment": "Vui lòng đăng nhập để bình luận!",
     "commentSuccess": "Đã đăng bình luận!",
-    "commentError": "Có lỗi xảy ra khi đăng bình luận."
+    "commentError": "Có lỗi xảy ra khi đăng bình luận.",
+    "collaboratorsTitle": "Ekip thực hiện",
+    "collaboratorRoles": {
+      "photographer": "Nhiếp ảnh",
+      "mua": "Trang điểm (MUA)",
+      "cosplayer": "Cosplayer",
+      "prop_maker": "Đạo cụ",
+      "retoucher": "Hậu kỳ",
+      "staff": "Hỗ trợ"
+    }
   },
   "Explore": {
     "title": "Khám Phá Vũ Trụ Cosplay",
@@ -838,7 +848,17 @@
     "services": {
       "priceLabel": "Giá dịch vụ",
       "duration": "Thời lượng",
-      "bookNow": "Đặt lịch ngay"
+      "bookNow": "Đặt lịch ngay",
+      "negotiable": "Có thương lượng",
+      "units": {
+        "hour": "giờ",
+        "session": "buổi",
+        "day": "ngày",
+        "event": "sự kiện",
+        "set": "set ảnh",
+        "project": "dự án",
+        "item": "sản phẩm"
+      }
     },
     "characters": {
       "photosCount": "{count} ảnh",

@@ -14,6 +14,10 @@ import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity('event_participants')
 @Index('IDX_event_participants_event_sort', ['eventId', 'sortOrder'])
+@Index('UQ_event_participants_event_user', ['eventId', 'userId'], {
+  unique: true,
+  where: '"user_id" IS NOT NULL',
+})
 export class EventParticipantEntity extends AbstractEntity {
   constructor(data?: Partial<EventParticipantEntity>) {
     super();

@@ -37,9 +37,15 @@ export class CreateContentReportsTable1795000026000 implements MigrationInterfac
     await queryRunner.query(`
       CREATE INDEX "IDX_content_reports_target" ON "content_reports" ("target_type", "target_id")
     `);
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX "UQ_content_reports_reporter_target" ON "content_reports" ("reporter_user_id", "target_type", "target_id")
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP INDEX "public"."UQ_content_reports_reporter_target"`,
+    );
     await queryRunner.query(`DROP INDEX "public"."IDX_content_reports_target"`);
     await queryRunner.query(
       `DROP INDEX "public"."IDX_content_reports_moderation"`,

@@ -39,6 +39,9 @@ export class CreateEventsTable1795000017000 implements MigrationInterface {
         "participants_count" integer NOT NULL DEFAULT '0',
         "applications_count" integer NOT NULL DEFAULT '0',
         "interested_count" integer NOT NULL DEFAULT '0',
+        "brand_id" bigint,
+        "organizer_user_id" bigint,
+        "organizer_name" character varying(160),
         "created_by_admin_id" bigint,
         "deleted_at" TIMESTAMP WITH TIME ZONE,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -46,10 +49,15 @@ export class CreateEventsTable1795000017000 implements MigrationInterface {
         CONSTRAINT "PK_event_id" PRIMARY KEY ("id"),
         CONSTRAINT "FK_events_city_id" FOREIGN KEY ("city_id") REFERENCES "cities"("id") ON DELETE SET NULL,
         CONSTRAINT "FK_events_image_file_id" FOREIGN KEY ("image_file_id") REFERENCES "files"("id") ON DELETE SET NULL,
+        CONSTRAINT "FK_events_brand_id" FOREIGN KEY ("brand_id") REFERENCES "brands"("id") ON DELETE SET NULL,
+        CONSTRAINT "FK_events_organizer_user_id" FOREIGN KEY ("organizer_user_id") REFERENCES "users"("id") ON DELETE SET NULL,
         CONSTRAINT "FK_events_created_by_admin_id" FOREIGN KEY ("created_by_admin_id") REFERENCES "admin_users"("id") ON DELETE SET NULL
       )
     `);
 
+    await queryRunner.query(`
+      CREATE INDEX "IDX_events_brand_id" ON "events" ("brand_id")
+    `);
     await queryRunner.query(`
       CREATE INDEX "IDX_events_recruiting" ON "events" ("is_recruiting", "start_at")
     `);
@@ -69,6 +77,7 @@ export class CreateEventsTable1795000017000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."IDX_events_status_start"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_events_featured"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_events_recruiting"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_events_brand_id"`);
     await queryRunner.query(`DROP TABLE "events"`);
     await queryRunner.query(`DROP TYPE "public"."event_status_enum"`);
   }

@@ -15,7 +15,18 @@ import { PostMediaEntity } from '../../post/entities/post-media.entity';
 
 @Entity('collection_items')
 @Index('IDX_collection_items_collection_sort', ['collectionId', 'sortOrder'])
-@Index('IDX_collection_items_post', ['collectionId', 'postId'])
+@Index('UQ_collection_items_collection_post', ['collectionId', 'postId'], {
+  unique: true,
+  where: '"post_media_id" IS NULL',
+})
+@Index(
+  'UQ_collection_items_collection_media',
+  ['collectionId', 'postId', 'postMediaId'],
+  {
+    unique: true,
+    where: '"post_media_id" IS NOT NULL',
+  },
+)
 export class CollectionItemEntity extends AbstractEntity {
   constructor(data?: Partial<CollectionItemEntity>) {
     super();

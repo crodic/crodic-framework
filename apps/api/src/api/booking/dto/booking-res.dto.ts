@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { ECurrencyCode } from '../../cosplayer/constants/cosplayer.constant';
 import { EBookingRequestStatus } from '../constants/booking.constant';
 
 export class BookingUserSummaryResDto {
@@ -44,8 +45,20 @@ export class BookingRequestResDto {
   @ApiProperty({ example: '25/12/2024' })
   targetDateLabel!: string;
 
+  @ApiPropertyOptional({ nullable: true })
+  targetStartAt?: Date | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  targetEndAt?: Date | null;
+
   @ApiProperty({ example: '10.000.000đ' })
   budgetLabel!: string;
+
+  @ApiPropertyOptional({ example: 10000000, nullable: true })
+  budgetAmount?: number | null;
+
+  @ApiPropertyOptional({ enum: ECurrencyCode, example: ECurrencyCode.VND })
+  currency?: ECurrencyCode;
 
   @ApiProperty({ example: 'Mời cosplay Raiden Shogun tham gia booth giao lưu' })
   details!: string;
@@ -81,6 +94,9 @@ export class DirectMessageResDto {
 
   @ApiPropertyOptional({ type: BookingUserSummaryResDto })
   recipient?: BookingUserSummaryResDto;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  bookingRequestId?: AutoIncrementID | null;
 
   @ApiProperty({
     example: 'Chào bạn, mình muốn thảo luận thêm về lịch trình sự kiện.',

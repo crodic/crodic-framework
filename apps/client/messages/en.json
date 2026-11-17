@@ -708,6 +708,7 @@
       "statusRecruiting": "Recruiting Cosplayers",
       "statusClosed": "Registration Closed",
       "about": "About the Event",
+      "organizer": "Organizer",
       "guests": "Participating Cosplayers & Guests",
       "schedule": "Activity Schedule",
       "share": "Share",
@@ -804,7 +805,16 @@
     "copiedShareLink": "Copied link to clipboard!",
     "loginToComment": "Please log in to comment!",
     "commentSuccess": "Comment posted!",
-    "commentError": "An error occurred while posting comment."
+    "commentError": "An error occurred while posting comment.",
+    "collaboratorsTitle": "Production Credits",
+    "collaboratorRoles": {
+      "photographer": "Photographer",
+      "mua": "Makeup Artist",
+      "cosplayer": "Cosplayer",
+      "prop_maker": "Prop Maker",
+      "retoucher": "Retoucher",
+      "staff": "Staff"
+    }
   },
   "Explore": {
     "title": "Explore the Cosplay Universe",
@@ -838,9 +848,19 @@
       "about": "About"
     },
     "services": {
-      "priceLabel": "Price",
+      "priceLabel": "Service Rate",
       "duration": "Duration",
-      "bookNow": "Book Service"
+      "bookNow": "Book Service",
+      "negotiable": "Negotiable",
+      "units": {
+        "hour": "hour",
+        "session": "session",
+        "day": "day",
+        "event": "event",
+        "set": "set",
+        "project": "project",
+        "item": "item"
+      }
     },
     "characters": {
       "photosCount": "{count} photos",

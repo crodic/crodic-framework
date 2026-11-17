@@ -21,7 +21,10 @@ export class CreateCollectionItemsTable1795000012000 implements MigrationInterfa
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "IDX_collection_items_post" ON "collection_items" ("collection_id", "post_id")
+      CREATE UNIQUE INDEX "UQ_collection_items_collection_media" ON "collection_items" ("collection_id", "post_id", "post_media_id") WHERE "post_media_id" IS NOT NULL
+    `);
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX "UQ_collection_items_collection_post" ON "collection_items" ("collection_id", "post_id") WHERE "post_media_id" IS NULL
     `);
     await queryRunner.query(`
       CREATE INDEX "IDX_collection_items_collection_sort" ON "collection_items" ("collection_id", "sort_order")
@@ -32,7 +35,12 @@ export class CreateCollectionItemsTable1795000012000 implements MigrationInterfa
     await queryRunner.query(
       `DROP INDEX "public"."IDX_collection_items_collection_sort"`,
     );
-    await queryRunner.query(`DROP INDEX "public"."IDX_collection_items_post"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."UQ_collection_items_collection_post"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."UQ_collection_items_collection_media"`,
+    );
     await queryRunner.query(`DROP TABLE "collection_items"`);
   }
 }

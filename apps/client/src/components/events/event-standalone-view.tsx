@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
+  Building2,
   Calendar,
   Check,
   Clock,
@@ -203,6 +204,19 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
             <p className="text-foreground/85 text-xs leading-relaxed whitespace-pre-line sm:text-sm sm:leading-7">
               {detail.description || event.title}
             </p>
+            {event.organizerName && (
+              <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-2xl border p-3.5">
+                <Building2 className="text-primary size-4 shrink-0" />
+                <div>
+                  <p className="text-muted-foreground text-[11px] font-medium">
+                    {tDetail("organizer")}
+                  </p>
+                  <p className="text-foreground text-xs font-bold sm:text-sm">
+                    {event.organizerName}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Featured Guests / Cosplayers */}

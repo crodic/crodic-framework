@@ -11,6 +11,7 @@ import {
   Relation,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { BookingRequestEntity } from './booking-request.entity';
 
 @Entity('direct_messages')
 @Index('IDX_direct_messages_recipient_unread', [
@@ -18,6 +19,12 @@ import { UserEntity } from '../../user/entities/user.entity';
   'isRead',
   'createdAt',
 ])
+@Index('IDX_direct_messages_conversation', [
+  'senderId',
+  'recipientId',
+  'createdAt',
+])
+@Index('IDX_direct_messages_booking_request', ['bookingRequestId', 'createdAt'])
 export class DirectMessageEntity extends AbstractEntity {
   constructor(data?: Partial<DirectMessageEntity>) {
     super();
@@ -49,6 +56,19 @@ export class DirectMessageEntity extends AbstractEntity {
     foreignKeyConstraintName: 'FK_direct_messages_recipient_id',
   })
   recipient?: Relation<UserEntity>;
+
+  @Column({ name: 'booking_request_id', type: 'bigint', nullable: true })
+  bookingRequestId?: AutoIncrementID | null;
+
+  @ManyToOne(() => BookingRequestEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({
+    name: 'booking_request_id',
+    foreignKeyConstraintName: 'FK_direct_messages_booking_request_id',
+  })
+  bookingRequest?: Relation<BookingRequestEntity> | null;
 
   @Column({ type: 'text' })
   content!: string;

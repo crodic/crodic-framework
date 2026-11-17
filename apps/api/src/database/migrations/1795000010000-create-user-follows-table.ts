@@ -12,6 +12,7 @@ export class CreateUserFollowsTable1795000010000 implements MigrationInterface {
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "PK_user_follow_id" PRIMARY KEY ("id"),
+        CONSTRAINT "CHK_user_follows_no_self_follow" CHECK ("follower_id" <> "following_id"),
         CONSTRAINT "FK_user_follows_follower_id" FOREIGN KEY ("follower_id") REFERENCES "users"("id") ON DELETE CASCADE,
         CONSTRAINT "FK_user_follows_following_id" FOREIGN KEY ("following_id") REFERENCES "users"("id") ON DELETE CASCADE
       )

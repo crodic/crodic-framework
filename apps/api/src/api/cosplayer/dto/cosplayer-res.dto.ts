@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import {
+  ECurrencyCode,
+  EServicePriceUnit,
+} from '../constants/cosplayer.constant';
 
 export class CosplayerServiceResDto {
   @ApiProperty({ type: String, example: '1' })
@@ -18,6 +22,22 @@ export class CosplayerServiceResDto {
 
   @ApiProperty({ example: 'Theo thỏa thuận' })
   badgeLabel!: string;
+
+  @ApiPropertyOptional({ example: 2500000, nullable: true })
+  startingPrice?: number | null;
+
+  @ApiPropertyOptional({ enum: ECurrencyCode, example: ECurrencyCode.VND })
+  currency?: ECurrencyCode;
+
+  @ApiPropertyOptional({
+    enum: EServicePriceUnit,
+    example: EServicePriceUnit.SESSION,
+    nullable: true,
+  })
+  priceUnit?: EServicePriceUnit | null;
+
+  @ApiPropertyOptional({ example: true })
+  isNegotiable?: boolean;
 
   @ApiProperty({ example: 0 })
   sortOrder!: number;

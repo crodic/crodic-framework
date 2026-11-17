@@ -75,7 +75,6 @@ export class CosplayerProfileEntity extends AbstractEntity {
     type: 'varchar',
     length: 80,
     nullable: true,
-    default: 'Thành viên (Fan)',
   })
   roleBadge?: string | null;
 
@@ -147,7 +146,6 @@ export class CosplayerProfileEntity extends AbstractEntity {
     type: 'varchar',
     length: 160,
     nullable: true,
-    default: 'Toàn quốc',
   })
   workArea?: string | null;
 

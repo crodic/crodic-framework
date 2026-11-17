@@ -175,6 +175,22 @@ export class UserService {
     }
 
     await this.userRepository.save(user);
+
+    if (updateUserDto.username) {
+      const cleanUsername = updateUserDto.username
+        .replace(/^@+/, '')
+        .trim()
+        .toLowerCase();
+      if (cleanUsername) {
+        await this.dataSource
+          .getRepository('cosplayer_profiles')
+          .update(
+            { userId: id },
+            { slug: cleanUsername, handle: `@${cleanUsername}` },
+          );
+      }
+    }
+
     return user.toDto(UserResDto);
   }
 

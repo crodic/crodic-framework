@@ -25,6 +25,9 @@ export interface EventSummaryResDto {
   locationLabel: string;
   locationFilterCode: string;
   cityId?: string | null;
+  brandId?: string | null;
+  organizerUserId?: string | null;
+  organizerName?: string | null;
   venue: string;
   imageUrl: string;
   bannerImageUrl?: string | null;

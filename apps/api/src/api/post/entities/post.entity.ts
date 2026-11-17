@@ -16,12 +16,20 @@ import { TagEntity } from '../../tag/entities/tag.entity';
 import { CosplayerCharacterEntity } from '../../cosplayer/entities/cosplayer-character.entity';
 import {
   EAlbumCategory,
+  EPostCollaboratorRole,
   EPostStatus,
   EPostType,
 } from '../constants/post.constant';
 import { PostMediaEntity } from './post-media.entity';
 import { PostLikeEntity } from './post-like.entity';
 import { PostCommentEntity } from './post-comment.entity';
+
+export interface IPostCollaborator {
+  role: EPostCollaboratorRole;
+  name: string;
+  userId?: AutoIncrementID | null;
+  socialUrl?: string | null;
+}
 
 @Entity('posts')
 @Index('UQ_posts_slug', ['slug'], {
@@ -37,6 +45,8 @@ import { PostCommentEntity } from './post-comment.entity';
 @Index('IDX_posts_trending', ['isPublic', 'status', 'trendingScore'])
 @Index('IDX_posts_featured', ['isFeaturedWork', 'publishedAt'])
 @Index('IDX_posts_copyright_tag', ['copyrightTagId', 'publishedAt'])
+@Index('IDX_posts_character_tag', ['characterTagId', 'publishedAt'])
+@Index('IDX_posts_cosplayer_character', ['cosplayerCharacterId', 'publishedAt'])
 export class PostEntity extends AbstractEntity {
   constructor(data?: Partial<PostEntity>) {
     super();
@@ -153,6 +163,9 @@ export class PostEntity extends AbstractEntity {
 
   @Column({ name: 'tag_names_cache', type: 'jsonb', default: () => `'[]'` })
   tagNamesCache!: string[];
+
+  @Column({ type: 'jsonb', default: () => `'[]'` })
+  collaborators!: IPostCollaborator[];
 
   @Column({ name: 'is_public', type: 'boolean', default: true })
   isPublic!: boolean;

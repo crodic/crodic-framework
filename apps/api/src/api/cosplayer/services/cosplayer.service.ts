@@ -18,6 +18,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
 import { CosplayerServiceEntity } from '../entities/cosplayer-service.entity';
+import { ECurrencyCode } from '../constants/cosplayer.constant';
 import {
   CreateCosplayerCharacterReqDto,
   CreateCosplayerServiceReqDto,
@@ -233,11 +234,11 @@ export class CosplayerService {
     }
 
     if (dto.handle && dto.handle !== profile.handle) {
-      const formattedHandle = dto.handle.startsWith('@')
-        ? dto.handle
-        : `@${dto.handle}`;
+      const rawHandle = dto.handle.replace(/^@+/, '').trim();
+      const cleanSlug = slugify(rawHandle) || rawHandle.toLowerCase();
+      const formattedHandle = `@${cleanSlug}`;
       const existing = await this.profileRepo.findOne({
-        where: { handle: formattedHandle },
+        where: [{ handle: formattedHandle }, { slug: cleanSlug }],
       });
       if (existing && String(existing.userId) !== String(userId)) {
         throw new ConflictException(
@@ -245,6 +246,8 @@ export class CosplayerService {
         );
       }
       profile.handle = formattedHandle;
+      profile.slug = cleanSlug;
+      await this.userRepo.update({ id: userId }, { username: cleanSlug });
     }
 
     if (dto.displayName !== undefined) profile.displayName = dto.displayName;
@@ -316,6 +319,10 @@ export class CosplayerService {
       title: dto.title,
       description: dto.description ?? null,
       badgeLabel: dto.badgeLabel,
+      startingPrice: dto.startingPrice ?? null,
+      currency: dto.currency ?? ECurrencyCode.VND,
+      priceUnit: dto.priceUnit ?? null,
+      isNegotiable: dto.isNegotiable ?? true,
       sortOrder: dto.sortOrder ?? 0,
       isActive: dto.isActive ?? true,
     });
@@ -344,6 +351,11 @@ export class CosplayerService {
     if (dto.title !== undefined) service.title = dto.title;
     if (dto.description !== undefined) service.description = dto.description;
     if (dto.badgeLabel !== undefined) service.badgeLabel = dto.badgeLabel;
+    if (dto.startingPrice !== undefined)
+      service.startingPrice = dto.startingPrice;
+    if (dto.currency !== undefined) service.currency = dto.currency;
+    if (dto.priceUnit !== undefined) service.priceUnit = dto.priceUnit;
+    if (dto.isNegotiable !== undefined) service.isNegotiable = dto.isNegotiable;
     if (dto.sortOrder !== undefined) service.sortOrder = dto.sortOrder;
     if (dto.isActive !== undefined) service.isActive = dto.isActive;
 
@@ -558,6 +570,13 @@ export class CosplayerService {
       title: s.title,
       description: s.description ?? null,
       badgeLabel: s.badgeLabel,
+      startingPrice:
+        s.startingPrice !== null && s.startingPrice !== undefined
+          ? Number(s.startingPrice)
+          : null,
+      currency: s.currency ?? ECurrencyCode.VND,
+      priceUnit: s.priceUnit ?? null,
+      isNegotiable: s.isNegotiable ?? true,
       sortOrder: s.sortOrder,
       isActive: s.isActive,
       createdAt: s.createdAt,

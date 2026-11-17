@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { addDays, format } from "date-fns";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,13 +21,33 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Calendar, Check, Loader2, Send, User } from "lucide-react";
+import { CalendarIcon, Check, Loader2, Send } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
+
+function formatBookingBudget(amount: number, currency: string): string {
+  if (!amount || amount <= 0) return "Thỏa thuận";
+  const locale = currency === "USD" ? "en-US" : "vi-VN";
+  return `${new Intl.NumberFormat(locale).format(amount)} ${currency}`;
+}
 
 const bookingSchema = z.object({
   bookingType: z.string().min(1, "Vui lòng chọn loại hình booking"),
@@ -34,7 +55,8 @@ const bookingSchema = z.object({
   contact: z
     .string()
     .min(8, "Vui lòng nhập số điện thoại hoặc Telegram / Zalo"),
-  targetDate: z.string().min(1, "Vui lòng nhập ngày dự kiến"),
+  targetDate: z.string().min(1, "Vui lòng chọn ngày dự kiến"),
+  budgetAmount: z.number().min(0).optional(),
   budget: z.string().min(1, "Vui lòng nhập mức ngân sách dự kiến"),
   details: z
     .string()
@@ -62,12 +84,19 @@ const BOOKING_TYPES = [
   "Chế tác đạo cụ & phục trang Crafting",
 ];
 
+const CURRENCY_OPTIONS = ["VND", "USD", "JPY"] as const;
+
 export function RankingBookingDialog({
   open,
   onOpenChange,
   target,
 }: RankingBookingDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [targetDateObj, setTargetDateObj] = useState<Date>(() =>
+    addDays(new Date(), 14)
+  );
+  const [dateOpen, setDateOpen] = useState(false);
+  const [currency, setCurrency] = useState<string>("VND");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
 
@@ -86,14 +115,31 @@ export function RankingBookingDialog({
       bookingType: "Chụp ảnh Photoset / Model thương mại",
       fullName: "Hải Anh",
       contact: "0901234567",
-      targetDate: "20/12/2026",
-      budget: "5.000.000 VNĐ - 10.000.000 VNĐ",
+      targetDate: format(targetDateObj, "dd/MM/yyyy"),
+      budgetAmount: 5000000,
+      budget: formatBookingBudget(5000000, "VND"),
       details:
         "Cần mời cosplayer tham gia buổi chụp concept Honkai Star Rail tại studio TP.HCM.",
     },
   });
 
-  const onSubmit = async (values: BookingFormValues) => {
+  const resetLocalState = () => {
+    const nextDate = addDays(new Date(), 14);
+    setTargetDateObj(nextDate);
+    setCurrency("VND");
+    form.reset({
+      bookingType: "Chụp ảnh Photoset / Model thương mại",
+      fullName: "Hải Anh",
+      contact: "0901234567",
+      targetDate: format(nextDate, "dd/MM/yyyy"),
+      budgetAmount: 5000000,
+      budget: formatBookingBudget(5000000, "VND"),
+      details:
+        "Cần mời cosplayer tham gia buổi chụp concept Honkai Star Rail tại studio TP.HCM.",
+    });
+  };
+
+  const onSubmit = async (_values: BookingFormValues) => {
     if (!isAuthenticated) {
       toast.info("Vui lòng đăng nhập để gửi yêu cầu Booking!");
       router.push("/auth/login?from=/ranking");
@@ -111,13 +157,16 @@ export function RankingBookingDialog({
         }
       );
       onOpenChange(false);
-      form.reset();
+      resetLocalState();
     } catch {
       toast.error("Có lỗi xảy ra khi gửi yêu cầu booking. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
   if (!target) return null;
 
@@ -253,13 +302,43 @@ export function RankingBookingDialog({
                     <FormLabel className="text-xs font-semibold">
                       Thời gian dự kiến
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="DD/MM/YYYY hoặc Tháng..."
-                        className="h-9 rounded-xl text-xs"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Popover open={dateOpen} onOpenChange={setDateOpen} modal>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "h-9 w-full justify-start rounded-xl text-left text-xs font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-1.5 size-3.5 opacity-70" />
+                            {targetDateObj
+                              ? format(targetDateObj, "dd/MM/yyyy")
+                              : field.value || "Chọn ngày dự kiến"}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          captionLayout="dropdown"
+                          selected={targetDateObj}
+                          onSelect={(date) => {
+                            if (!date) return;
+                            setTargetDateObj(date);
+                            form.setValue(
+                              "targetDate",
+                              format(date, "dd/MM/yyyy"),
+                              { shouldValidate: true }
+                            );
+                            setDateOpen(false);
+                          }}
+                          disabled={(date) => date < startOfToday}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )}
@@ -267,19 +346,60 @@ export function RankingBookingDialog({
 
               <FormField
                 control={form.control}
-                name="budget"
+                name="budgetAmount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
                       Ngân sách dự kiến
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="VD: 5.000.000 VNĐ"
-                        className="h-9 rounded-xl text-xs"
-                        {...field}
-                      />
-                    </FormControl>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={currency === "USD" ? 50 : 500000}
+                          value={field.value ?? 0}
+                          onChange={(e) => {
+                            const amount = Math.max(
+                              0,
+                              Number(e.target.value) || 0
+                            );
+                            field.onChange(amount);
+                            form.setValue(
+                              "budget",
+                              formatBookingBudget(amount, currency),
+                              { shouldValidate: true }
+                            );
+                          }}
+                          className="h-9 flex-1 rounded-xl text-xs"
+                        />
+                      </FormControl>
+                      <Select
+                        value={currency}
+                        onValueChange={(nextCurrency) => {
+                          setCurrency(nextCurrency);
+                          form.setValue(
+                            "budget",
+                            formatBookingBudget(
+                              form.getValues("budgetAmount") ?? 0,
+                              nextCurrency
+                            ),
+                            { shouldValidate: true }
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="h-9 w-[84px] rounded-xl text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCY_OPTIONS.map((curr) => (
+                            <SelectItem key={curr} value={curr}>
+                              {curr}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )}

@@ -233,6 +233,7 @@ export class PostService {
           dto.media?.slice(0, 4).map((m) => m.mediaUrl) ||
           [],
         tagNamesCache: dto.tagNamesCache || [],
+        collaborators: dto.collaborators || [],
         isPublic: dto.isPublic ?? true,
         enableWatermark: dto.enableWatermark ?? false,
         status: dto.status ?? EPostStatus.PUBLISHED,
@@ -323,6 +324,8 @@ export class PostService {
         post.collagePreviewUrls = dto.collagePreviewUrls;
       if (dto.tagNamesCache !== undefined)
         post.tagNamesCache = dto.tagNamesCache;
+      if (dto.collaborators !== undefined)
+        post.collaborators = dto.collaborators;
       if (dto.isPublic !== undefined) post.isPublic = dto.isPublic;
       if (dto.enableWatermark !== undefined)
         post.enableWatermark = dto.enableWatermark;
@@ -751,6 +754,7 @@ export class PostService {
       isCollage: post.isCollage,
       collagePreviewUrls: post.collagePreviewUrls || [],
       tagNamesCache: post.tagNamesCache || [],
+      collaborators: post.collaborators || [],
       isPublic: post.isPublic,
       status: post.status,
       isFeaturedWork: post.isFeaturedWork,

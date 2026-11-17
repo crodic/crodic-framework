@@ -11,6 +11,7 @@ import {
   Relation,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { ECurrencyCode } from '../../cosplayer/constants/cosplayer.constant';
 import { EBookingRequestStatus } from '../constants/booking.constant';
 
 @Entity('booking_requests')
@@ -18,6 +19,11 @@ import { EBookingRequestStatus } from '../constants/booking.constant';
   'targetCosplayerId',
   'status',
   'createdAt',
+])
+@Index('IDX_booking_requests_schedule', [
+  'targetCosplayerId',
+  'status',
+  'targetStartAt',
 ])
 @Index('IDX_booking_requests_requester', ['requesterUserId', 'createdAt'])
 export class BookingRequestEntity extends AbstractEntity {
@@ -64,8 +70,31 @@ export class BookingRequestEntity extends AbstractEntity {
   @Column({ name: 'target_date_label', length: 100 })
   targetDateLabel!: string;
 
+  @Column({ name: 'target_start_at', type: 'timestamptz', nullable: true })
+  targetStartAt?: Date | null;
+
+  @Column({ name: 'target_end_at', type: 'timestamptz', nullable: true })
+  targetEndAt?: Date | null;
+
   @Column({ name: 'budget_label', length: 120 })
   budgetLabel!: string;
+
+  @Column({
+    name: 'budget_amount',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    nullable: true,
+  })
+  budgetAmount?: number | null;
+
+  @Column({
+    type: 'enum',
+    enum: ECurrencyCode,
+    default: ECurrencyCode.VND,
+    enumName: 'currency_code_enum',
+  })
+  currency!: ECurrencyCode;
 
   @Column({ type: 'text' })
   details!: string;

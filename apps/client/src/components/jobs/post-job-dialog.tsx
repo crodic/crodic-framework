@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { addDays, format } from "date-fns";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,16 +20,71 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Briefcase, Loader2, PlusCircle } from "lucide-react";
+import {
+  Briefcase,
+  CalendarIcon,
+  Loader2,
+  MapPin,
+  PlusCircle,
+} from "lucide-react";
 import { JobFilterId } from "./jobs-types";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createJob, type JobDetailResDto } from "@/services/jobs";
+
+const CLIENT_JOB_LOCATIONS = [
+  { label: "TP.HCM", code: "hcm" },
+  { label: "Hà Nội", code: "hn" },
+  { label: "Đà Nẵng", code: "dn" },
+  { label: "Toàn quốc", code: "all" },
+  { label: "Online / Remote", code: "remote" },
+] as const;
+
+const CLIENT_JOB_BUDGET_UNITS = [
+  { value: "/ ngày", label: "/ ngày" },
+  { value: "/ buổi", label: "/ buổi" },
+  { value: "/ sự kiện", label: "/ sự kiện" },
+  { value: "/ bộ", label: "/ bộ" },
+  { value: "negotiable", label: "Thỏa thuận" },
+] as const;
+
+function buildClientJobBudgetLabel(
+  min?: number,
+  max?: number,
+  unit = "/ ngày"
+): string {
+  if (unit === "negotiable") return "Thỏa thuận";
+  const fmt = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)}đ`;
+  const hasMin = typeof min === "number" && min > 0;
+  const hasMax = typeof max === "number" && max > 0;
+
+  if (hasMin && hasMax && max > min) {
+    return `${fmt(min)} - ${fmt(max)} ${unit}`;
+  }
+  if (hasMin) return `${fmt(min)} ${unit}`;
+  if (hasMax) return `Đến ${fmt(max)} ${unit}`;
+  return "Thỏa thuận";
+}
 
 const postJobSchema = z.object({
   brandName: z
@@ -37,8 +93,11 @@ const postJobSchema = z.object({
   title: z.string().min(5, "Tiêu đề tin tuyển dụng phải có ít nhất 5 ký tự"),
   category: z.string().min(1, "Vui lòng chọn hoặc nhập hạng mục"),
   budget: z.string().min(1, "Vui lòng nhập mức thù lao / ngân sách dự kiến"),
-  location: z.string().min(1, "Vui lòng nhập địa điểm làm việc"),
-  deadline: z.string().min(1, "Vui lòng nhập hạn nhận hồ sơ"),
+  budgetMin: z.number().min(0).optional(),
+  budgetMax: z.number().min(0).optional(),
+  location: z.string().min(1, "Vui lòng chọn địa điểm làm việc"),
+  deadline: z.string().min(1, "Vui lòng chọn hạn nhận hồ sơ"),
+  deadlineAt: z.string().optional(),
   requirements: z.string().min(5, "Vui lòng nhập yêu cầu đối với cosplayer"),
   description: z.string().min(10, "Vui lòng mô tả chi tiết công việc"),
   contactEmail: z.string().email("Vui lòng nhập email hợp lệ"),
@@ -75,6 +134,11 @@ export function PostJobDialog({
   onJobCreated,
 }: PostJobDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState<Date>(() =>
+    addDays(new Date(), 30)
+  );
+  const [deadlineOpen, setDeadlineOpen] = useState(false);
+  const [budgetUnit, setBudgetUnit] = useState<string>("/ ngày");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const t = useTranslations("Jobs.postDialog");
@@ -94,14 +158,51 @@ export function PostJobDialog({
       brandName: "",
       title: "",
       category: "Mẫu ảnh / Lookbook",
-      budget: "",
-      location: "",
-      deadline: "",
+      budgetMin: 5000000,
+      budgetMax: 8000000,
+      budget: buildClientJobBudgetLabel(5000000, 8000000, "/ ngày"),
+      location: "TP.HCM",
+      deadline: format(deadlineDate, "dd/MM/yyyy"),
+      deadlineAt: deadlineDate.toISOString(),
       requirements: "",
       description: "",
       contactEmail: "",
     },
   });
+
+  const syncBudget = (
+    nextMin: number | undefined,
+    nextMax: number | undefined,
+    nextUnit: string
+  ) => {
+    form.setValue("budgetMin", nextUnit === "negotiable" ? undefined : nextMin);
+    form.setValue("budgetMax", nextUnit === "negotiable" ? undefined : nextMax);
+    form.setValue(
+      "budget",
+      buildClientJobBudgetLabel(nextMin, nextMax, nextUnit),
+      { shouldValidate: true }
+    );
+  };
+
+  const resetLocalForm = () => {
+    const nextDeadline = addDays(new Date(), 30);
+    setDeadlineDate(nextDeadline);
+    setBudgetUnit("/ ngày");
+    form.reset({
+      brandName: "",
+      title: "",
+      category: "Mẫu ảnh / Lookbook",
+      budgetMin: 5000000,
+      budgetMax: 8000000,
+      budget: buildClientJobBudgetLabel(5000000, 8000000, "/ ngày"),
+      location: "TP.HCM",
+      deadline: format(nextDeadline, "dd/MM/yyyy"),
+      deadlineAt: nextDeadline.toISOString(),
+      requirements: "",
+      description: "",
+      contactEmail: "",
+    });
+  };
 
   const onSubmit = async (values: PostJobFormValues) => {
     if (!isAuthenticated) {
@@ -112,11 +213,13 @@ export function PostJobDialog({
     setIsSubmitting(true);
     try {
       const categoryCode = CATEGORY_MAP[values.category] || "event";
-      const tags: JobFilterId[] = [
-        "all",
-        categoryCode,
-        values.location.toLowerCase().includes("hcm") ? "hcm" : "hanoi",
-      ];
+      const matchedLoc = CLIENT_JOB_LOCATIONS.find(
+        (loc) => loc.label === values.location
+      );
+      const locationFilterCode = matchedLoc?.code ?? "hcm";
+      const tags: JobFilterId[] = ["all", categoryCode];
+      if (locationFilterCode === "hcm") tags.push("hcm");
+      else if (locationFilterCode === "hn") tags.push("hanoi");
 
       const created = await createJob({
         title: values.title,
@@ -127,8 +230,12 @@ export function PostJobDialog({
         categoryCode,
         categoryLabel: values.category,
         budgetLabel: values.budget,
+        budgetMin: values.budgetMin,
+        budgetMax: values.budgetMax,
         locationLabel: values.location,
+        locationFilterCode,
         deadlineLabel: values.deadline,
+        deadlineAt: values.deadlineAt,
         requirements: values.requirements,
         description: values.description,
         contactEmail: values.contactEmail,
@@ -140,13 +247,16 @@ export function PostJobDialog({
         description: t("successDesc"),
       });
       onOpenChange(false);
-      form.reset();
+      resetLocalForm();
     } catch {
       toast.error("Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -272,17 +382,28 @@ export function PostJobDialog({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <FormField
                 control={form.control}
-                name="budget"
+                name="budgetMin"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
-                      {t("budget")}
+                      Ngân sách từ (VNĐ)
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="VD: 5.000.000đ"
+                        type="number"
+                        min={0}
+                        step={500000}
+                        disabled={budgetUnit === "negotiable"}
+                        value={field.value ?? 0}
+                        onChange={(e) => {
+                          const val = Math.max(0, Number(e.target.value) || 0);
+                          syncBudget(
+                            val,
+                            form.getValues("budgetMax"),
+                            budgetUnit
+                          );
+                        }}
                         className="h-9 rounded-xl text-xs"
-                        {...field}
                       />
                     </FormControl>
                     <FormMessage className="text-[11px]" />
@@ -292,19 +413,88 @@ export function PostJobDialog({
 
               <FormField
                 control={form.control}
+                name="budgetMax"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold">
+                      Đến (VNĐ)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={500000}
+                        disabled={budgetUnit === "negotiable"}
+                        value={field.value ?? 0}
+                        onChange={(e) => {
+                          const val = Math.max(0, Number(e.target.value) || 0);
+                          syncBudget(
+                            form.getValues("budgetMin"),
+                            val,
+                            budgetUnit
+                          );
+                        }}
+                        className="h-9 rounded-xl text-xs"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[11px]" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-2">
+                <Label className="text-xs font-semibold">Đơn vị tính</Label>
+                <Select
+                  value={budgetUnit}
+                  onValueChange={(val) => {
+                    setBudgetUnit(val);
+                    syncBudget(
+                      form.getValues("budgetMin"),
+                      form.getValues("budgetMax"),
+                      val
+                    );
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLIENT_JOB_BUDGET_UNITS.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <FormField
+                control={form.control}
                 name="location"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold">
                       {t("location")}
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="TP.HCM / Hà Nội..."
-                        className="h-9 rounded-xl text-xs"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="h-9 w-full rounded-xl text-xs">
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="size-3.5 opacity-70" />
+                            <SelectValue placeholder="Chọn địa điểm" />
+                          </span>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CLIENT_JOB_LOCATIONS.map((loc) => (
+                          <SelectItem key={loc.label} value={loc.label}>
+                            {loc.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )}
@@ -318,13 +508,48 @@ export function PostJobDialog({
                     <FormLabel className="text-xs font-semibold">
                       {t("deadline")}
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="DD/MM/YYYY"
-                        className="h-9 rounded-xl text-xs"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Popover
+                      open={deadlineOpen}
+                      onOpenChange={setDeadlineOpen}
+                      modal
+                    >
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "h-9 w-full justify-start rounded-xl text-left text-xs font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-1.5 size-3.5 opacity-70" />
+                            {deadlineDate
+                              ? format(deadlineDate, "dd/MM/yyyy")
+                              : field.value || "Chọn hạn nộp"}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          captionLayout="dropdown"
+                          selected={deadlineDate}
+                          onSelect={(date) => {
+                            if (!date) return;
+                            setDeadlineDate(date);
+                            form.setValue(
+                              "deadline",
+                              format(date, "dd/MM/yyyy"),
+                              { shouldValidate: true }
+                            );
+                            form.setValue("deadlineAt", date.toISOString());
+                            setDeadlineOpen(false);
+                          }}
+                          disabled={(date) => date < startOfToday}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )}

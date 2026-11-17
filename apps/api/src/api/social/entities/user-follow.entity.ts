@@ -1,6 +1,7 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { AbstractEntity } from '../../../database/entities/abstract.entity';
 import {
+  Check,
   Column,
   Entity,
   Index,
@@ -15,6 +16,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 @Index('UQ_user_follows_pair', ['followerId', 'followingId'], { unique: true })
 @Index('IDX_user_follows_following', ['followingId', 'createdAt'])
 @Index('IDX_user_follows_follower', ['followerId', 'createdAt'])
+@Check('CHK_user_follows_no_self_follow', '"follower_id" <> "following_id"')
 export class UserFollowEntity extends AbstractEntity {
   constructor(data?: Partial<UserFollowEntity>) {
     super();

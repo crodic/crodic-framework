@@ -65,6 +65,7 @@ describe('CosplayerService', () => {
 
     userRepo = {
       findOne: jest.fn(),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     dataSource = {

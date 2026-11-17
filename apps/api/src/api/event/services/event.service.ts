@@ -379,6 +379,9 @@ export class EventService {
       locationLabel: dto.locationLabel,
       locationFilterCode: dto.locationFilterCode || 'hcm',
       cityId: dto.cityId ?? null,
+      brandId: dto.brandId ?? null,
+      organizerUserId: dto.organizerUserId ?? null,
+      organizerName: dto.organizerName ?? null,
       venue: dto.venue,
       imageUrl: dto.imageUrl,
       bannerImageUrl: dto.bannerImageUrl ?? null,
@@ -423,6 +426,11 @@ export class EventService {
     if (dto.locationFilterCode !== undefined)
       event.locationFilterCode = dto.locationFilterCode;
     if (dto.cityId !== undefined) event.cityId = dto.cityId;
+    if (dto.brandId !== undefined) event.brandId = dto.brandId;
+    if (dto.organizerUserId !== undefined)
+      event.organizerUserId = dto.organizerUserId;
+    if (dto.organizerName !== undefined)
+      event.organizerName = dto.organizerName;
     if (dto.venue !== undefined) event.venue = dto.venue;
     if (dto.imageUrl !== undefined) event.imageUrl = dto.imageUrl;
     if (dto.bannerImageUrl !== undefined)
@@ -503,6 +511,9 @@ export class EventService {
       locationLabel: e.locationLabel,
       locationFilterCode: e.locationFilterCode,
       cityId: e.cityId ?? null,
+      brandId: e.brandId ?? null,
+      organizerUserId: e.organizerUserId ?? null,
+      organizerName: e.organizerName ?? null,
       venue: e.venue,
       imageUrl: e.imageUrl,
       bannerImageUrl: e.bannerImageUrl ?? null,

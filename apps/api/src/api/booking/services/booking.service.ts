@@ -14,6 +14,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { ECurrencyCode } from '../../cosplayer/constants/cosplayer.constant';
 import { EBookingRequestStatus } from '../constants/booking.constant';
 import {
   CreateBookingRequestReqDto,
@@ -68,7 +69,11 @@ export class BookingService {
       fullName: dto.fullName,
       contactInfo: dto.contactInfo,
       targetDateLabel: dto.targetDateLabel,
+      targetStartAt: dto.targetStartAt ?? null,
+      targetEndAt: dto.targetEndAt ?? null,
       budgetLabel: dto.budgetLabel,
+      budgetAmount: dto.budgetAmount ?? null,
+      currency: dto.currency ?? ECurrencyCode.VND,
       details: dto.details,
       status: EBookingRequestStatus.PENDING,
     });
@@ -289,6 +294,7 @@ export class BookingService {
     const message = this.messageRepo.create({
       senderId,
       recipientId: dto.recipientId,
+      bookingRequestId: dto.bookingRequestId ?? null,
       content: dto.content,
       isRead: false,
     });
@@ -427,7 +433,14 @@ export class BookingService {
       fullName: b.fullName,
       contactInfo: b.contactInfo,
       targetDateLabel: b.targetDateLabel,
+      targetStartAt: b.targetStartAt ?? null,
+      targetEndAt: b.targetEndAt ?? null,
       budgetLabel: b.budgetLabel,
+      budgetAmount:
+        b.budgetAmount !== null && b.budgetAmount !== undefined
+          ? Number(b.budgetAmount)
+          : null,
+      currency: b.currency ?? ECurrencyCode.VND,
       details: b.details,
       status: b.status,
       responseNote: b.responseNote ?? null,
@@ -463,6 +476,7 @@ export class BookingService {
             avatarUrl: m.recipient.avatar ?? null,
           }
         : undefined,
+      bookingRequestId: m.bookingRequestId ?? null,
       content: m.content,
       isRead: m.isRead,
       readAt: m.readAt ?? null,

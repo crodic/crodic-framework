@@ -15,6 +15,16 @@ import {
 import { Trim } from '../../../decorators/transform.decorators';
 import { EEventStatus } from '../constants/event.constant';
 
+export class EventScheduleItemInputDto {
+  @StringField({ maxLength: 50 })
+  @Trim()
+  time!: string;
+
+  @StringField({ maxLength: 300 })
+  @Trim()
+  activity!: string;
+}
+
 export class CreateEventApplicationReqDto {
   @StringField({ maxLength: 150 })
   @Trim()
@@ -88,6 +98,16 @@ export class CreateEventReqDto {
   @StringFieldOptional()
   cityId?: AutoIncrementID;
 
+  @StringFieldOptional()
+  brandId?: AutoIncrementID;
+
+  @StringFieldOptional()
+  organizerUserId?: AutoIncrementID;
+
+  @StringFieldOptional({ maxLength: 160 })
+  @Trim()
+  organizerName?: string;
+
   @StringField({ maxLength: 255 })
   @Trim()
   venue!: string;
@@ -119,13 +139,13 @@ export class CreateEventReqDto {
   @Trim()
   registrationCta?: string;
 
-  @ArrayFieldOptional({ itemType: 'any' })
-  schedule?: any[];
+  @ArrayFieldOptional(EventScheduleItemInputDto)
+  schedule?: EventScheduleItemInputDto[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   categories?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   filterTags?: string[];
 
   @EnumFieldOptional(() => EEventStatus, { default: EEventStatus.UPCOMING })
@@ -170,6 +190,16 @@ export class UpdateEventReqDto {
   @StringFieldOptional()
   cityId?: AutoIncrementID;
 
+  @StringFieldOptional()
+  brandId?: AutoIncrementID;
+
+  @StringFieldOptional()
+  organizerUserId?: AutoIncrementID;
+
+  @StringFieldOptional({ maxLength: 160 })
+  @Trim()
+  organizerName?: string;
+
   @StringFieldOptional({ maxLength: 255 })
   @Trim()
   venue?: string;
@@ -201,13 +231,13 @@ export class UpdateEventReqDto {
   @Trim()
   registrationCta?: string;
 
-  @ArrayFieldOptional({ itemType: 'any' })
-  schedule?: any[];
+  @ArrayFieldOptional(EventScheduleItemInputDto)
+  schedule?: EventScheduleItemInputDto[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   categories?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   filterTags?: string[];
 
   @EnumFieldOptional(() => EEventStatus)

@@ -25,9 +25,15 @@ export class CreateEventParticipantsTable1795000018000 implements MigrationInter
     await queryRunner.query(`
       CREATE INDEX "IDX_event_participants_event_sort" ON "event_participants" ("event_id", "sort_order")
     `);
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX "UQ_event_participants_event_user" ON "event_participants" ("event_id", "user_id") WHERE "user_id" IS NOT NULL
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP INDEX "public"."UQ_event_participants_event_user"`,
+    );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_event_participants_event_sort"`,
     );

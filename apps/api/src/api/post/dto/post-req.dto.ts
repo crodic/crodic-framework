@@ -3,18 +3,36 @@ import {
   ArrayFieldOptional,
   BooleanFieldOptional,
   ClassField,
+  EnumField,
   EnumFieldOptional,
   NumberFieldOptional,
   StringField,
   StringFieldOptional,
+  URLFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
 import {
   EAlbumCategory,
   EMediaType,
+  EPostCollaboratorRole,
   EPostStatus,
   EPostType,
 } from '../constants/post.constant';
+
+export class PostCollaboratorInputDto {
+  @EnumField(() => EPostCollaboratorRole)
+  role!: EPostCollaboratorRole;
+
+  @StringField({ maxLength: 120 })
+  @Trim()
+  name!: string;
+
+  @StringFieldOptional()
+  userId?: AutoIncrementID;
+
+  @URLFieldOptional()
+  socialUrl?: string;
+}
 
 export class CreatePostMediaInputDto {
   @StringField({ maxLength: 500 })
@@ -85,11 +103,14 @@ export class CreatePostReqDto {
   @BooleanFieldOptional()
   isCollage?: boolean;
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   collagePreviewUrls?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   tagNamesCache?: string[];
+
+  @ArrayFieldOptional(PostCollaboratorInputDto)
+  collaborators?: PostCollaboratorInputDto[];
 
   @BooleanFieldOptional()
   isPublic?: boolean;
@@ -146,11 +167,14 @@ export class UpdatePostReqDto {
   @BooleanFieldOptional()
   isCollage?: boolean;
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   collagePreviewUrls?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   tagNamesCache?: string[];
+
+  @ArrayFieldOptional(PostCollaboratorInputDto)
+  collaborators?: PostCollaboratorInputDto[];
 
   @BooleanFieldOptional()
   isPublic?: boolean;
@@ -161,7 +185,7 @@ export class UpdatePostReqDto {
   @EnumFieldOptional(() => EPostStatus)
   status?: EPostStatus;
 
-  @ArrayFieldOptional({ itemType: 'object' })
+  @ArrayFieldOptional(CreatePostMediaInputDto)
   media?: CreatePostMediaInputDto[];
 }
 

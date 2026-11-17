@@ -17,7 +17,11 @@ export interface BookingRequestResDto {
   fullName: string;
   contactInfo: string;
   targetDateLabel: string;
+  targetStartAt?: string | null;
+  targetEndAt?: string | null;
   budgetLabel: string;
+  budgetAmount?: number | null;
+  currency?: "VND" | "USD" | "JPY";
   details: string;
   status: "pending" | "accepted" | "declined" | "completed" | "cancelled";
   responseNote?: string | null;
@@ -31,7 +35,11 @@ export interface CreateBookingPayload {
   fullName: string;
   contactInfo: string;
   targetDateLabel: string;
+  targetStartAt?: string;
+  targetEndAt?: string;
   budgetLabel: string;
+  budgetAmount?: number;
+  currency?: "VND" | "USD" | "JPY";
   details: string;
 }
 

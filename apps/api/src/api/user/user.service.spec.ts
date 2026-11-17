@@ -20,7 +20,7 @@ describe('UserService', () => {
   let userSessionRepositoryValue: Partial<
     Record<keyof Repository<UserSessionEntity>, jest.Mock>
   >;
-  let dataSourceMock: { transaction: jest.Mock };
+  let dataSourceMock: { transaction: jest.Mock; getRepository: jest.Mock };
   let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
 
   beforeAll(async () => {
@@ -41,6 +41,10 @@ describe('UserService', () => {
       delete: jest.fn(),
     };
     dataSourceMock = {
+      getRepository: jest.fn().mockReturnValue({
+        save: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
+      }),
       transaction: jest.fn().mockImplementation(async (cb) => {
         const managerMock = {
           getRepository: jest.fn().mockImplementation((entity) => {

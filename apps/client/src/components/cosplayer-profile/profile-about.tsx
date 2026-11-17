@@ -16,13 +16,38 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import type { CosplayerDetailResDto } from "@/services/cosplayer";
 
 interface ProfileAboutProps {
   profile: CosplayerDetailResDto;
 }
 
+const VALID_PRICE_UNITS = new Set([
+  "hour",
+  "session",
+  "day",
+  "event",
+  "set",
+  "project",
+  "item",
+]);
+
+function formatServicePrice(amount?: number | null, currency = "VND") {
+  if (amount === null || amount === undefined) return null;
+  try {
+    return new Intl.NumberFormat(currency === "VND" ? "vi-VN" : "en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: currency === "VND" || currency === "JPY" ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${currency}`;
+  }
+}
+
 export function ProfileAbout({ profile }: ProfileAboutProps) {
+  const tServices = useTranslations("CosplayerProfile.services");
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       {/* Left 2 Columns: Bio, Specs & Skills */}
@@ -131,26 +156,46 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {profile.services.map((srv) => (
-                <div
-                  key={srv.id}
-                  className="bg-muted/40 border-border/40 flex items-center justify-between rounded-xl border p-3"
-                >
-                  <div>
-                    <p className="text-foreground text-sm font-bold">
-                      {srv.title}
-                    </p>
-                    {srv.description && (
-                      <p className="text-muted-foreground text-xs">
-                        {srv.description}
+              {profile.services.map((srv) => {
+                const formattedPrice = formatServicePrice(
+                  srv.startingPrice,
+                  srv.currency
+                );
+                const unitLabel =
+                  srv.priceUnit && VALID_PRICE_UNITS.has(srv.priceUnit)
+                    ? tServices(`units.${srv.priceUnit}`)
+                    : null;
+
+                return (
+                  <div
+                    key={srv.id}
+                    className="bg-muted/40 border-border/40 flex flex-col justify-between gap-3 rounded-xl border p-3 sm:flex-row sm:items-center"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="text-foreground text-sm font-bold">
+                        {srv.title}
                       </p>
-                    )}
+                      {srv.description && (
+                        <p className="text-muted-foreground text-xs">
+                          {srv.description}
+                        </p>
+                      )}
+                      {(formattedPrice || unitLabel) && (
+                        <p className="text-primary pt-0.5 text-xs font-semibold">
+                          {formattedPrice || tServices("priceLabel")}
+                          {unitLabel ? ` / ${unitLabel}` : ""}
+                          {srv.isNegotiable
+                            ? ` • ${tServices("negotiable")}`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-primary bg-primary/10 w-fit shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold">
+                      {srv.badgeLabel}
+                    </span>
                   </div>
-                  <span className="text-primary bg-primary/10 rounded-md px-2.5 py-1 text-xs font-semibold">
-                    {srv.badgeLabel}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         )}

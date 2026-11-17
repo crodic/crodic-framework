@@ -16,6 +16,29 @@ export async function generateSitemaps() {
   ];
 }
 
+type SitemapFrequency = NonNullable<
+  MetadataRoute.Sitemap[number]["changeFrequency"]
+>;
+
+function buildLocalizedEntries(
+  baseUrl: string,
+  rawPath: string,
+  lastModified: Date,
+  changeFrequency: SitemapFrequency,
+  priority: number
+): MetadataRoute.Sitemap {
+  const languages = Object.fromEntries(
+    routing.locales.map((loc) => [loc, `${baseUrl}/${loc}${rawPath}`])
+  );
+  return routing.locales.map((locale) => ({
+    url: `${baseUrl}/${locale}${rawPath}`,
+    lastModified,
+    changeFrequency,
+    priority,
+    alternates: { languages },
+  }));
+}
+
 export default async function sitemap(props: {
   id: Promise<string> | string;
 }): Promise<MetadataRoute.Sitemap> {
@@ -29,36 +52,28 @@ export default async function sitemap(props: {
 
   // 1. Pages Sitemap (Static Pages + Dynamic CMS Pages)
   if (id === "pages") {
-    const staticPages = [
-      { path: "", changeFrequency: "daily" as const, priority: 1.0 },
-      { path: "/explore", changeFrequency: "daily" as const, priority: 0.9 },
-      { path: "/feed", changeFrequency: "daily" as const, priority: 0.9 },
-      { path: "/ranking", changeFrequency: "daily" as const, priority: 0.8 },
-      { path: "/landing", changeFrequency: "weekly" as const, priority: 0.7 },
-      {
-        path: "/auth/login",
-        changeFrequency: "monthly" as const,
-        priority: 0.5,
-      },
-      {
-        path: "/auth/sign-up",
-        changeFrequency: "monthly" as const,
-        priority: 0.5,
-      },
+    const staticPages: {
+      path: string;
+      changeFrequency: SitemapFrequency;
+      priority: number;
+    }[] = [
+      { path: "", changeFrequency: "daily", priority: 1.0 },
+      { path: "/explore", changeFrequency: "daily", priority: 0.9 },
+      { path: "/feed", changeFrequency: "daily", priority: 0.9 },
+      { path: "/ranking", changeFrequency: "daily", priority: 0.8 },
+      { path: "/landing", changeFrequency: "weekly", priority: 0.7 },
+      { path: "/auth/login", changeFrequency: "monthly", priority: 0.5 },
+      { path: "/auth/sign-up", changeFrequency: "monthly", priority: 0.5 },
     ];
 
     const staticEntries: MetadataRoute.Sitemap = staticPages.flatMap((page) =>
-      routing.locales.map((locale) => ({
-        url: `${baseUrl}/${locale}${page.path}`,
-        lastModified: now,
-        changeFrequency: page.changeFrequency,
-        priority: page.priority,
-        alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [loc, `${baseUrl}/${loc}${page.path}`])
-          ),
-        },
-      }))
+      buildLocalizedEntries(
+        baseUrl,
+        page.path,
+        now,
+        page.changeFrequency,
+        page.priority
+      )
     );
 
     const cmsEntries: MetadataRoute.Sitemap = [];
@@ -90,180 +105,121 @@ export default async function sitemap(props: {
 
   // 2. Events Sitemap
   if (id === "events") {
-    const eventListingEntries: MetadataRoute.Sitemap = routing.locales.map(
-      (locale) => ({
-        url: `${baseUrl}/${locale}/events`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.8,
-        alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/events`])
-          ),
-        },
-      })
+    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
+      baseUrl,
+      "/events",
+      now,
+      "daily",
+      0.8
     );
 
-    const eventDetailEntries: MetadataRoute.Sitemap = [];
     try {
       const eventsRes = await getEvents({ limit: 100 });
-      const events = eventsRes?.data || [];
-      for (const event of events) {
+      for (const event of eventsRes?.data || []) {
         const slugOrId = event.slug || event.id;
         if (!slugOrId) continue;
-
-        for (const locale of routing.locales) {
-          eventDetailEntries.push({
-            url: `${baseUrl}/${locale}/events/${slugOrId}`,
-            lastModified: event.createdAt ? new Date(event.createdAt) : now,
-            changeFrequency: "daily",
-            priority: 0.8,
-            alternates: {
-              languages: Object.fromEntries(
-                routing.locales.map((loc) => [
-                  loc,
-                  `${baseUrl}/${loc}/events/${slugOrId}`,
-                ])
-              ),
-            },
-          });
-        }
+        entries.push(
+          ...buildLocalizedEntries(
+            baseUrl,
+            `/events/${slugOrId}`,
+            event.createdAt ? new Date(event.createdAt) : now,
+            "daily",
+            0.8
+          )
+        );
       }
     } catch (err) {
       console.warn("Failed to fetch events for sitemap:", err);
     }
 
-    return [...eventListingEntries, ...eventDetailEntries];
+    return entries;
   }
 
   // 3. Posts Sitemap
   if (id === "posts") {
-    const postEntries: MetadataRoute.Sitemap = [];
+    const entries: MetadataRoute.Sitemap = [];
     try {
       const postsRes = await getPosts({ limit: 100 });
-      const posts = postsRes?.data || [];
-      for (const post of posts) {
+      for (const post of postsRes?.data || []) {
         const slugOrId = post.slug || post.id;
         if (!slugOrId) continue;
-
-        for (const locale of routing.locales) {
-          postEntries.push({
-            url: `${baseUrl}/${locale}/post/${slugOrId}`,
-            lastModified: post.publishedAt ? new Date(post.publishedAt) : now,
-            changeFrequency: "weekly",
-            priority: 0.7,
-            alternates: {
-              languages: Object.fromEntries(
-                routing.locales.map((loc) => [
-                  loc,
-                  `${baseUrl}/${loc}/post/${slugOrId}`,
-                ])
-              ),
-            },
-          });
-        }
+        entries.push(
+          ...buildLocalizedEntries(
+            baseUrl,
+            `/post/${slugOrId}`,
+            post.publishedAt ? new Date(post.publishedAt) : now,
+            "weekly",
+            0.7
+          )
+        );
       }
     } catch (err) {
       console.warn("Failed to fetch posts for sitemap:", err);
     }
 
-    return postEntries;
+    return entries;
   }
 
   // 4. Cosplayers Sitemap
   if (id === "cosplayers") {
-    const cosplayerListingEntries: MetadataRoute.Sitemap = routing.locales.map(
-      (locale) => ({
-        url: `${baseUrl}/${locale}/cosplayer`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.8,
-        alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/cosplayer`])
-          ),
-        },
-      })
+    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
+      baseUrl,
+      "/cosplayer",
+      now,
+      "weekly",
+      0.8
     );
 
-    const cosplayerDetailEntries: MetadataRoute.Sitemap = [];
     try {
       const cosplayersRes = await getCosplayers({ limit: 100 });
-      const cosplayers = cosplayersRes?.data || [];
-      for (const cosplayer of cosplayers) {
+      for (const cosplayer of cosplayersRes?.data || []) {
         if (!cosplayer.slug) continue;
-
-        for (const locale of routing.locales) {
-          cosplayerDetailEntries.push({
-            url: `${baseUrl}/${locale}/cosplayer/${cosplayer.slug}`,
-            lastModified: cosplayer.createdAt
-              ? new Date(cosplayer.createdAt)
-              : now,
-            changeFrequency: "weekly",
-            priority: 0.8,
-            alternates: {
-              languages: Object.fromEntries(
-                routing.locales.map((loc) => [
-                  loc,
-                  `${baseUrl}/${loc}/cosplayer/${cosplayer.slug}`,
-                ])
-              ),
-            },
-          });
-        }
+        entries.push(
+          ...buildLocalizedEntries(
+            baseUrl,
+            `/cosplayer/${cosplayer.slug}`,
+            cosplayer.createdAt ? new Date(cosplayer.createdAt) : now,
+            "weekly",
+            0.8
+          )
+        );
       }
     } catch (err) {
       console.warn("Failed to fetch cosplayers for sitemap:", err);
     }
 
-    return [...cosplayerListingEntries, ...cosplayerDetailEntries];
+    return entries;
   }
 
   // 5. Jobs Sitemap
   if (id === "jobs") {
-    const jobListingEntries: MetadataRoute.Sitemap = routing.locales.map(
-      (locale) => ({
-        url: `${baseUrl}/${locale}/jobs`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.8,
-        alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/jobs`])
-          ),
-        },
-      })
+    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
+      baseUrl,
+      "/jobs",
+      now,
+      "daily",
+      0.8
     );
 
-    const jobDetailEntries: MetadataRoute.Sitemap = [];
     try {
       const jobsRes = await getJobs({ limit: 100 });
-      const jobs = jobsRes?.data || [];
-      for (const job of jobs) {
+      for (const job of jobsRes?.data || []) {
         if (!job.slug) continue;
-
-        for (const locale of routing.locales) {
-          jobDetailEntries.push({
-            url: `${baseUrl}/${locale}/jobs?slug=${job.slug}`,
-            lastModified: job.createdAt ? new Date(job.createdAt) : now,
-            changeFrequency: "weekly",
-            priority: 0.7,
-            alternates: {
-              languages: Object.fromEntries(
-                routing.locales.map((loc) => [
-                  loc,
-                  `${baseUrl}/${loc}/jobs?slug=${job.slug}`,
-                ])
-              ),
-            },
-          });
-        }
+        entries.push(
+          ...buildLocalizedEntries(
+            baseUrl,
+            `/jobs?slug=${job.slug}`,
+            job.createdAt ? new Date(job.createdAt) : now,
+            "weekly",
+            0.7
+          )
+        );
       }
     } catch (err) {
       console.warn("Failed to fetch jobs for sitemap:", err);
     }
 
-    return [...jobListingEntries, ...jobDetailEntries];
+    return entries;
   }
 
   return [];

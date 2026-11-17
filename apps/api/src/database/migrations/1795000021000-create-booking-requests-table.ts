@@ -17,7 +17,11 @@ export class CreateBookingRequestsTable1795000021000 implements MigrationInterfa
         "full_name" character varying(150) NOT NULL,
         "contact_info" character varying(150) NOT NULL,
         "target_date_label" character varying(100) NOT NULL,
+        "target_start_at" TIMESTAMP WITH TIME ZONE,
+        "target_end_at" TIMESTAMP WITH TIME ZONE,
         "budget_label" character varying(120) NOT NULL,
+        "budget_amount" numeric(14,2),
+        "currency" "public"."currency_code_enum" NOT NULL DEFAULT 'VND',
         "details" text NOT NULL,
         "status" "public"."booking_request_status_enum" NOT NULL DEFAULT 'pending',
         "response_note" text,
@@ -35,6 +39,9 @@ export class CreateBookingRequestsTable1795000021000 implements MigrationInterfa
       CREATE INDEX "IDX_booking_requests_target_status" ON "booking_requests" ("target_cosplayer_id", "status", "created_at")
     `);
     await queryRunner.query(`
+      CREATE INDEX "IDX_booking_requests_schedule" ON "booking_requests" ("target_cosplayer_id", "status", "target_start_at")
+    `);
+    await queryRunner.query(`
       CREATE INDEX "IDX_booking_requests_requester" ON "booking_requests" ("requester_user_id", "created_at")
     `);
   }
@@ -42,6 +49,9 @@ export class CreateBookingRequestsTable1795000021000 implements MigrationInterfa
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `DROP INDEX "public"."IDX_booking_requests_requester"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_booking_requests_schedule"`,
     );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_booking_requests_target_status"`,

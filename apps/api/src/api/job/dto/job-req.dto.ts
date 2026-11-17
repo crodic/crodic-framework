@@ -1,6 +1,5 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
-  ArrayFieldOptional,
   BooleanFieldOptional,
   DateFieldOptional,
   EmailField,
@@ -83,10 +82,10 @@ export class CreateJobReqDto {
   @Trim()
   description!: string;
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   perks?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   filterTags?: string[];
 
   @EmailField()
@@ -172,10 +171,10 @@ export class UpdateJobReqDto {
   @Trim()
   description?: string;
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   perks?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   filterTags?: string[];
 
   @EmailField({ required: false })

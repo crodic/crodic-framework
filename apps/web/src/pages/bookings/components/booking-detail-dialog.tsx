@@ -141,6 +141,15 @@ export function BookingDetailDialog({
                   {t('bookings.targetDate', 'Thời gian dự kiến')}
                 </span>
                 <p className='font-semibold'>{booking.targetDateLabel}</p>
+                {booking.targetStartAt &&
+                  !Number.isNaN(new Date(booking.targetStartAt).getTime()) && (
+                    <p className='text-muted-foreground text-xs'>
+                      {format(
+                        new Date(booking.targetStartAt),
+                        'dd/MM/yyyy HH:mm'
+                      )}
+                    </p>
+                  )}
               </div>
 
               <div className='bg-card space-y-1 rounded border p-3'>
@@ -151,6 +160,15 @@ export function BookingDetailDialog({
                 <p className='font-semibold text-emerald-600 dark:text-emerald-400'>
                   {booking.budgetLabel}
                 </p>
+                {booking.budgetAmount !== null &&
+                  booking.budgetAmount !== undefined && (
+                    <p className='text-muted-foreground text-xs'>
+                      {new Intl.NumberFormat('vi-VN').format(
+                        booking.budgetAmount
+                      )}{' '}
+                      {booking.currency || 'VND'}
+                    </p>
+                  )}
               </div>
             </div>
 

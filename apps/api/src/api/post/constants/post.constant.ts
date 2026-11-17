@@ -23,3 +23,12 @@ export enum EMediaType {
   IMAGE = 'image',
   VIDEO = 'video',
 }
+
+export enum EPostCollaboratorRole {
+  PHOTOGRAPHER = 'photographer',
+  MUA = 'mua',
+  COSPLAYER = 'cosplayer',
+  PROP_MAKER = 'prop_maker',
+  RETOUCHER = 'retoucher',
+  STAFF = 'staff',
+}

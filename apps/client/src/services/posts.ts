@@ -1,6 +1,16 @@
 import { http } from "@/lib/http";
 import type { PaginatedResponse } from "@repo/query-builder";
 
+export type PostCollaboratorRole =
+  "photographer" | "mua" | "cosplayer" | "prop_maker" | "retoucher" | "staff";
+
+export interface PostCollaboratorDto {
+  role: PostCollaboratorRole;
+  name: string;
+  userId?: string | null;
+  socialUrl?: string | null;
+}
+
 export interface PostMediaResDto {
   id: string;
   postId: string;
@@ -37,6 +47,7 @@ export interface PostSummaryResDto {
   isCollage: boolean;
   collagePreviewUrls: string[];
   tagNamesCache: string[];
+  collaborators?: PostCollaboratorDto[];
   isPublic: boolean;
   status: "draft" | "published" | "archived" | "moderation_flagged";
   isFeaturedWork: boolean;
@@ -82,6 +93,7 @@ export interface CreatePostPayload {
   albumCategory?: "series" | "event" | "original" | "studio" | "casual";
   coverImageUrl?: string;
   tags?: string[];
+  collaborators?: PostCollaboratorDto[];
   media?: {
     mediaUrl: string;
     mediaType?: "image" | "video";

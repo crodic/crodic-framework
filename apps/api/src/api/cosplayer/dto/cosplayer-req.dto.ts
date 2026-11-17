@@ -1,9 +1,9 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
-  ArrayFieldOptional,
   BooleanField,
   BooleanFieldOptional,
   EmailFieldOptional,
+  EnumFieldOptional,
   NumberField,
   NumberFieldOptional,
   StringField,
@@ -11,6 +11,10 @@ import {
   URLFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
+import {
+  ECurrencyCode,
+  EServicePriceUnit,
+} from '../constants/cosplayer.constant';
 
 export class UpdateCosplayerProfileReqDto {
   @StringFieldOptional({ maxLength: 120 })
@@ -71,13 +75,13 @@ export class UpdateCosplayerProfileReqDto {
   @Trim()
   experienceLabel?: string;
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   skills?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   specialties?: string[];
 
-  @ArrayFieldOptional({ itemType: 'string' })
+  @StringFieldOptional({ each: true })
   awardsBadges?: string[];
 
   @EmailFieldOptional()
@@ -119,6 +123,18 @@ export class CreateCosplayerServiceReqDto {
   @Trim()
   badgeLabel!: string;
 
+  @NumberFieldOptional({ min: 0 })
+  startingPrice?: number;
+
+  @EnumFieldOptional(() => ECurrencyCode, { default: ECurrencyCode.VND })
+  currency?: ECurrencyCode;
+
+  @EnumFieldOptional(() => EServicePriceUnit)
+  priceUnit?: EServicePriceUnit;
+
+  @BooleanFieldOptional({ default: true })
+  isNegotiable?: boolean;
+
   @NumberFieldOptional({ min: 0, max: 1000 })
   sortOrder?: number;
 
@@ -138,6 +154,18 @@ export class UpdateCosplayerServiceReqDto {
   @StringFieldOptional({ maxLength: 80 })
   @Trim()
   badgeLabel?: string;
+
+  @NumberFieldOptional({ min: 0 })
+  startingPrice?: number;
+
+  @EnumFieldOptional(() => ECurrencyCode)
+  currency?: ECurrencyCode;
+
+  @EnumFieldOptional(() => EServicePriceUnit)
+  priceUnit?: EServicePriceUnit;
+
+  @BooleanFieldOptional()
+  isNegotiable?: boolean;
 
   @NumberFieldOptional({ min: 0, max: 1000 })
   sortOrder?: number;
