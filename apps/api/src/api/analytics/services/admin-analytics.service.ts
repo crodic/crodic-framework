@@ -54,7 +54,7 @@ export class AdminAnalyticsService {
       this.profileRepo.count({ where: { isVerified: true } }),
       this.postRepo.count(),
       this.postRepo.count({ where: { isFeaturedWork: true } }),
-      this.postRepo.count({ where: { status: EPostStatus.PENDING_REVIEW } }),
+      this.postRepo.count({ where: { status: EPostStatus.DRAFT } }),
       this.bookingRepo.count(),
       this.bookingRepo.count({
         where: { status: EBookingRequestStatus.COMPLETED },

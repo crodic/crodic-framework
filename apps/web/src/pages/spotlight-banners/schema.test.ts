@@ -8,7 +8,8 @@ describe('Spotlight Banner Zod Schemas', () => {
       name: 'KIRIKO',
       badge: 'Cosplayer Tiêu Điểm',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
-      bannerImageUrl: '/landing/hero-banner.png',
+      bannerImageUrl:
+        'https://images.unsplash.com/photo-1578632767115-351597cf2477',
       portfolioHref: '/cosplayer/kiriko',
       bookingHref: '/booking?cosplayer=kiriko',
       sortOrder: 0,
@@ -25,7 +26,8 @@ describe('Spotlight Banner Zod Schemas', () => {
       name: 'KIRIKO',
       badge: 'Cosplayer Tiêu Điểm',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
-      bannerImageUrl: '/landing/hero-banner.png',
+      bannerImageUrl:
+        'https://images.unsplash.com/photo-1578632767115-351597cf2477',
       portfolioHref: '/cosplayer/kiriko',
       sortOrder: 0,
       isVerified: true,

@@ -96,7 +96,7 @@ export function PagePlatformSettings() {
   }
 
   return (
-    <Main className='flex max-w-4xl flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -117,305 +117,325 @@ export function PagePlatformSettings() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-          {/* Section 1: Upload & Album Policies */}
-          <Card>
-            <CardHeader>
-              <div className='flex items-center gap-2'>
-                <HardDrive className='text-primary size-5' />
-                <CardTitle>
-                  {t(
-                    'platformSettings.uploadTitle',
-                    'Quy định tải lên & Album bài đăng'
-                  )}
-                </CardTitle>
-              </div>
-              <CardDescription>
-                {t(
-                  'platformSettings.uploadDesc',
-                  'Thiết lập giới hạn số lượng ảnh và dung lượng tệp cho mỗi tác phẩm trên Studio Feed.'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <FormField
-                  control={form.control}
-                  name='max_photos_per_album'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t(
-                          'platformSettings.maxPhotos',
-                          'Số ảnh tối đa mỗi Album'
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          min={1}
-                          max={200}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t(
-                          'platformSettings.maxPhotosHelp',
-                          'Khuyến nghị: 30 - 60 ảnh'
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+            {/* Column 1: Upload policies & Content safety filter */}
+            <div className='space-y-6'>
+              {/* Section 1: Upload & Album Policies */}
+              <Card>
+                <CardHeader>
+                  <div className='flex items-center gap-2'>
+                    <HardDrive className='text-primary size-5' />
+                    <CardTitle>
+                      {t(
+                        'platformSettings.uploadTitle',
+                        'Quy định tải lên & Album bài đăng'
+                      )}
+                    </CardTitle>
+                  </div>
+                  <CardDescription>
+                    {t(
+                      'platformSettings.uploadDesc',
+                      'Thiết lập giới hạn số lượng ảnh và dung lượng tệp cho mỗi tác phẩm trên Studio Feed.'
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='max_photos_per_album'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t(
+                              'platformSettings.maxPhotos',
+                              'Số ảnh tối đa mỗi Album'
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              min={1}
+                              max={200}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t(
+                              'platformSettings.maxPhotosHelp',
+                              'Khuyến nghị: 30 - 60 ảnh'
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name='max_file_size_mb'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t(
-                          'platformSettings.maxFileSize',
-                          'Dung lượng tệp tối đa (MB)'
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          min={1}
-                          max={100}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t(
-                          'platformSettings.maxFileSizeHelp',
-                          'Mỗi ảnh đơn lẻ (VD: 25 MB)'
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={form.control}
+                      name='max_file_size_mb'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t(
+                              'platformSettings.maxFileSize',
+                              'Dung lượng tệp tối đa (MB)'
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              min={1}
+                              max={100}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t(
+                              'platformSettings.maxFileSizeHelp',
+                              'Mỗi ảnh đơn lẻ (VD: 25 MB)'
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name='auto_approve_posts'
-                render={({ field }) => (
-                  <FormItem className='flex items-center justify-between rounded-lg border p-3'>
-                    <div className='space-y-0.5'>
-                      <FormLabel>
-                        {t(
-                          'platformSettings.autoApprovePosts',
-                          'Tự động duyệt bài đăng'
-                        )}
-                      </FormLabel>
-                      <FormDescription>
-                        {t(
-                          'platformSettings.autoApprovePostsHelp',
-                          'Bài đăng mới của người dùng sẽ hiển thị ngay lập tức mà không cần qua hàng đợi chờ duyệt.'
-                        )}
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+                  <FormField
+                    control={form.control}
+                    name='auto_approve_posts'
+                    render={({ field }) => (
+                      <FormItem className='flex items-center justify-between rounded-lg border p-3'>
+                        <div className='space-y-0.5'>
+                          <FormLabel>
+                            {t(
+                              'platformSettings.autoApprovePosts',
+                              'Tự động duyệt bài đăng'
+                            )}
+                          </FormLabel>
+                          <FormDescription>
+                            {t(
+                              'platformSettings.autoApprovePostsHelp',
+                              'Bài đăng mới của người dùng sẽ hiển thị ngay lập tức mà không cần qua hàng đợi chờ duyệt.'
+                            )}
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
 
-          {/* Section 2: Bookings & Jobs Policies */}
-          <Card>
-            <CardHeader>
-              <div className='flex items-center gap-2'>
-                <Wallet className='size-5 text-emerald-500' />
-                <CardTitle>
-                  {t(
-                    'platformSettings.bookingTitle',
-                    'Quy tắc Booking & Tuyển dụng'
-                  )}
-                </CardTitle>
-              </div>
-              <CardDescription>
-                {t(
-                  'platformSettings.bookingDesc',
-                  'Chính sách hoa hồng dịch vụ trung gian và quy chuẩn phê duyệt tin tuyển dụng.'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <FormField
-                  control={form.control}
-                  name='commission_platform_rate_percent'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t(
-                          'platformSettings.commissionRate',
-                          'Phí nền tảng Booking (%)'
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='number'
-                          min={0}
-                          max={50}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t(
-                          'platformSettings.commissionRateHelp',
-                          'Tỷ lệ % chiết khấu dịch vụ (VD: 5%)'
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='auto_approve_jobs'
-                  render={({ field }) => (
-                    <FormItem className='flex items-center justify-between self-center rounded-lg border p-3'>
-                      <div className='space-y-0.5'>
-                        <FormLabel>
-                          {t(
-                            'platformSettings.autoApproveJobs',
-                            'Tự động duyệt tin Casting'
-                          )}
-                        </FormLabel>
+              {/* Section 3: Safe Filter & Banned Keywords */}
+              <Card>
+                <CardHeader>
+                  <div className='flex items-center gap-2'>
+                    <ShieldAlert className='size-5 text-rose-500' />
+                    <CardTitle>
+                      {t(
+                        'platformSettings.filterTitle',
+                        'Bộ lọc từ khóa cấm & An toàn cộng đồng'
+                      )}
+                    </CardTitle>
+                  </div>
+                  <CardDescription>
+                    {t(
+                      'platformSettings.filterDesc',
+                      'Danh sách các từ khóa nhạy cảm, spam hoặc nội dung không phù hợp (phân cách bởi dấu phẩy).'
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name='banned_keywords'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Textarea
+                            rows={3}
+                            placeholder='từ_khóa_1, từ_khóa_2, từ_khóa_3...'
+                            {...field}
+                          />
+                        </FormControl>
                         <FormDescription>
                           {t(
-                            'platformSettings.autoApproveJobsHelp',
-                            'Mở tin tuyển dụng không cần admin duyệt trước'
+                            'platformSettings.filterHelp',
+                            'Nội dung chứa các từ khóa này sẽ tự động bị gắn cờ hoặc chuyển sang trạng thái chờ duyệt.'
                           )}
                         </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Section 3: Safe Filter & Banned Keywords */}
-          <Card>
-            <CardHeader>
-              <div className='flex items-center gap-2'>
-                <ShieldAlert className='size-5 text-rose-500' />
-                <CardTitle>
-                  {t(
-                    'platformSettings.filterTitle',
-                    'Bộ lọc từ khóa cấm & An toàn cộng đồng'
-                  )}
-                </CardTitle>
-              </div>
-              <CardDescription>
-                {t(
-                  'platformSettings.filterDesc',
-                  'Danh sách các từ khóa nhạy cảm, spam hoặc nội dung không phù hợp (phân cách bởi dấu phẩy).'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name='banned_keywords'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Textarea
-                        rows={3}
-                        placeholder='từ_khóa_1, từ_khóa_2, từ_khóa_3...'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
+            {/* Column 2: Booking policies & Support contacts */}
+            <div className='space-y-6'>
+              {/* Section 2: Bookings & Jobs Policies */}
+              <Card>
+                <CardHeader>
+                  <div className='flex items-center gap-2'>
+                    <Wallet className='size-5 text-emerald-500' />
+                    <CardTitle>
                       {t(
-                        'platformSettings.filterHelp',
-                        'Nội dung chứa các từ khóa này sẽ tự động bị gắn cờ hoặc chuyển sang trạng thái chờ duyệt.'
+                        'platformSettings.bookingTitle',
+                        'Quy tắc Booking & Tuyển dụng'
                       )}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+                    </CardTitle>
+                  </div>
+                  <CardDescription>
+                    {t(
+                      'platformSettings.bookingDesc',
+                      'Chính sách hoa hồng dịch vụ trung gian và quy chuẩn phê duyệt tin tuyển dụng.'
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='commission_platform_rate_percent'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t(
+                              'platformSettings.commissionRate',
+                              'Phí nền tảng Booking (%)'
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              min={0}
+                              max={50}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t(
+                              'platformSettings.commissionRateHelp',
+                              'Tỷ lệ % chiết khấu dịch vụ (VD: 5%)'
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          {/* Section 4: Contact & Helpline */}
-          <Card>
-            <CardHeader>
-              <div className='flex items-center gap-2'>
-                <HelpCircle className='size-5 text-blue-500' />
-                <CardTitle>
-                  {t(
-                    'platformSettings.supportTitle',
-                    'Kênh hỗ trợ người dùng & Hotline'
-                  )}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <FormField
-                  control={form.control}
-                  name='support_email'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('platformSettings.supportEmail', 'Email hỗ trợ')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder='support@kosume.com' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name='auto_approve_jobs'
+                      render={({ field }) => (
+                        <FormItem className='flex items-center justify-between self-center rounded-lg border p-3'>
+                          <div className='space-y-0.5'>
+                            <FormLabel>
+                              {t(
+                                'platformSettings.autoApproveJobs',
+                                'Tự động duyệt tin Casting'
+                              )}
+                            </FormLabel>
+                            <FormDescription>
+                              {t(
+                                'platformSettings.autoApproveJobsHelp',
+                                'Mở tin tuyển dụng không cần admin duyệt trước'
+                              )}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-                <FormField
-                  control={form.control}
-                  name='support_hotline'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('platformSettings.supportHotline', 'Hotline hỗ trợ')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder='1900-KOSUME' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              {/* Section 4: Contact & Helpline */}
+              <Card>
+                <CardHeader>
+                  <div className='flex items-center gap-2'>
+                    <HelpCircle className='size-5 text-blue-500' />
+                    <CardTitle>
+                      {t(
+                        'platformSettings.supportTitle',
+                        'Kênh hỗ trợ người dùng & Hotline'
+                      )}
+                    </CardTitle>
+                  </div>
+                  <CardDescription>
+                    {t(
+                      'platformSettings.supportDesc',
+                      'Kênh hỗ trợ giải quyết sự cố, hotline khẩn cấp cho người dùng và đối tác.'
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name='support_email'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('platformSettings.supportEmail', 'Email hỗ trợ')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder='support@kosume.com'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name='support_hotline'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t(
+                              'platformSettings.supportHotline',
+                              'Hotline hỗ trợ'
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder='1900-KOSUME' {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           <div className='flex justify-end'>
             <Button

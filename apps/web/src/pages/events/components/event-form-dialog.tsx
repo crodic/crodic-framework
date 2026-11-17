@@ -48,7 +48,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
       startAt: new Date().toISOString(),
       locationLabel: 'TP.HCM',
       venue: 'SECC - Trung tâm Hội chợ & Triển lãm Sài Gòn, Q.7',
-      imageUrl: '/landing/featured-work-1.jpg',
+      imageUrl: '',
       description:
         'Lễ hội hóa thân Cosplay quy mô lớn nhất mùa đông với hàng ngàn cosplayer.',
       ticketPriceLabel: '120.000đ - 250.000đ',
@@ -195,7 +195,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                         required
                         value={field.value || ''}
                         onChange={field.onChange}
-                        placeholder='https://... hoặc /landing/event-1.jpg'
+                        placeholder='https://...'
                       />
                     </FormControl>
                     <FormMessage />

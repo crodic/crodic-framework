@@ -19,11 +19,15 @@ import { EventParticipantEntity } from '../../../api/event/entities/event-partic
 import { SpotlightBannerEntity } from '../../../api/spotlight/entities/spotlight-banner.entity';
 import { LeaderboardSnapshotEntity } from '../../../api/ranking/entities/leaderboard-snapshot.entity';
 import { NotificationEntity } from '../../../api/notification/entities/notification.entity';
+import { FileEntity } from '../../../api/file/entities/file.entity';
+import { FileFolderEntity } from '../../../api/file/entities/file-folder.entity';
 import { KosumeSeedService } from './kosume-seed.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      FileEntity,
+      FileFolderEntity,
       UserEntity,
       UserAccountEntity,
       CosplayerProfileEntity,

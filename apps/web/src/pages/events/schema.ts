@@ -63,7 +63,9 @@ export const eventFormSchema = z.object({
   startAt: z.string().min(1, 'Thời gian bắt đầu là bắt buộc'),
   locationLabel: z.string().min(1, 'Tỉnh / Thành phố là bắt buộc'),
   venue: z.string().min(2, 'Địa điểm tổ chức là bắt buộc'),
-  imageUrl: z.string().min(1, 'Ảnh đại diện sự kiện là bắt buộc'),
+  imageUrl: z
+    .string()
+    .url('Ảnh đại diện sự kiện phải là URL hợp lệ (bắt đầu bằng https://...)'),
   description: z.string().min(5, 'Mô tả sự kiện là bắt buộc'),
   ticketPriceLabel: z.string().optional(),
   status: z.enum(['draft', 'upcoming', 'ongoing', 'completed', 'cancelled']),

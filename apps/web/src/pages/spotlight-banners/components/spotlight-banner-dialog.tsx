@@ -56,7 +56,7 @@ export function SpotlightBannerDialog({
       name: '',
       badge: 'Cosplayer Tiêu Điểm Tuần Này',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
-      bannerImageUrl: '/landing/hero-banner.png',
+      bannerImageUrl: '',
       portfolioHref: '/cosplayer/kiriko',
       bookingHref: '/booking?cosplayer=kiriko',
       sortOrder: 0,
@@ -83,7 +83,7 @@ export function SpotlightBannerDialog({
         name: '',
         badge: 'Cosplayer Tiêu Điểm Tuần Này',
         tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
-        bannerImageUrl: '/landing/hero-banner.png',
+        bannerImageUrl: '',
         portfolioHref: '/cosplayer/kiriko',
         bookingHref: '/booking?cosplayer=kiriko',
         sortOrder: 0,
@@ -212,7 +212,7 @@ export function SpotlightBannerDialog({
                       required
                       value={field.value || ''}
                       onChange={field.onChange}
-                      placeholder='https://... hoặc /landing/hero-banner.png'
+                      placeholder='https://...'
                     />
                   </FormControl>
                   <FormMessage />

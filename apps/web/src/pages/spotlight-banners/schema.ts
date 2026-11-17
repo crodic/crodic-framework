@@ -35,7 +35,11 @@ export const spotlightBannerFormSchema = z.object({
   name: z.string().min(2, 'Tên người/nhân vật là bắt buộc'),
   badge: z.string().min(2, 'Huy hiệu là bắt buộc (Ví dụ: Cosplayer Tiêu Điểm)'),
   tagline: z.string().min(5, 'Slogan/mô tả là bắt buộc'),
-  bannerImageUrl: z.string().min(1, 'Đường dẫn hình ảnh banner là bắt buộc'),
+  bannerImageUrl: z
+    .string()
+    .url(
+      'Đường dẫn hình ảnh banner phải là URL hợp lệ (bắt đầu bằng https://...)'
+    ),
   portfolioHref: z
     .string()
     .min(1, 'Liên kết hồ sơ là bắt buộc (VD: /cosplayer/kiriko)'),

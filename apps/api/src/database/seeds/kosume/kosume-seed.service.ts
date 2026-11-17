@@ -1,3 +1,8 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as crypto from 'node:crypto';
+import { FileEntity } from '../../../api/file/entities/file.entity';
+import { FileFolderEntity } from '../../../api/file/entities/file-folder.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
@@ -85,10 +90,200 @@ export class KosumeSeedService {
     private readonly leaderboardRepo: Repository<LeaderboardSnapshotEntity>,
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
+    @InjectRepository(FileEntity)
+    private readonly fileRepo: Repository<FileEntity>,
+    @InjectRepository(FileFolderEntity)
+    private readonly folderRepo: Repository<FileFolderEntity>,
   ) {}
+
+  private async seedKosumeFiles(): Promise<Record<string, string>> {
+    this.logger.log('Seeding Kosume static files into media library...');
+
+    let folder = await this.folderRepo.findOne({ where: { name: 'kosume' } });
+    if (!folder) {
+      folder = this.folderRepo.create({
+        name: 'kosume',
+        title: 'Kosume Platform',
+        color: '#EC4899',
+        depth: 0,
+      });
+      await this.folderRepo.save(folder);
+    }
+
+    const appUrl = (process.env.APP_URL ?? 'http://localhost:8001').replace(
+      /\/+$/,
+      '',
+    );
+    const localRoot = process.env.FILESYSTEM_LOCAL_ROOT ?? 'storage';
+    const targetDir = path.resolve(
+      process.cwd(),
+      localRoot,
+      'public',
+      'uploads',
+      'image',
+    );
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    let sourceDir = path.resolve(__dirname, 'assets');
+    if (!fs.existsSync(sourceDir)) {
+      sourceDir = path.resolve(
+        process.cwd(),
+        'src',
+        'database',
+        'seeds',
+        'kosume',
+        'assets',
+      );
+    }
+
+    const fileUrlMap: Record<string, string> = {};
+
+    if (!fs.existsSync(sourceDir)) {
+      this.logger.warn(`Source assets directory not found at ${sourceDir}`);
+      return fileUrlMap;
+    }
+
+    const files = fs.readdirSync(sourceDir);
+    for (const fileName of files) {
+      const sourceFilePath = path.join(sourceDir, fileName);
+      if (!fs.statSync(sourceFilePath).isFile()) continue;
+
+      const ext = path.extname(fileName).slice(1);
+      const nameWithoutExt = path.basename(fileName, `.${ext}`);
+      const publicId = `kosume-${nameWithoutExt}`;
+      const destFileName = `${publicId}.${ext}`;
+      const destFilePath = path.join(targetDir, destFileName);
+
+      const buffer = fs.readFileSync(sourceFilePath);
+      fs.writeFileSync(destFilePath, buffer);
+
+      const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+      const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+      const size = buffer.length;
+
+      let fileEntity = await this.fileRepo.findOne({
+        where: { public_id: publicId },
+      });
+      if (!fileEntity) {
+        fileEntity = this.fileRepo.create({
+          public_id: publicId,
+          folder: 'kosume',
+          disk: 'public',
+          visibility: 'public',
+          original_name: fileName,
+          path: `uploads/image/${destFileName}`,
+          hash,
+          mime,
+          size,
+          width: 1200,
+          height: 800,
+          duration: null,
+          resource_type: 'image',
+          status: 'active',
+          is_starred: false,
+        });
+        await this.fileRepo.save(fileEntity);
+      }
+
+      const fileUrl = `${appUrl}/storage/uploads/image/${destFileName}`;
+      fileUrlMap[fileName] = fileUrl;
+    }
+
+    // Update existing database entities if they still use legacy relative paths
+    for (const [originalName, fileUrl] of Object.entries(fileUrlMap)) {
+      const legacyPath = `/landing/${originalName}`;
+
+      await this.spotlightRepo
+        .createQueryBuilder()
+        .update()
+        .set({ bannerImageUrl: fileUrl })
+        .where('bannerImageUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.eventRepo
+        .createQueryBuilder()
+        .update()
+        .set({ imageUrl: fileUrl })
+        .where('imageUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.eventRepo
+        .createQueryBuilder()
+        .update()
+        .set({ bannerImageUrl: fileUrl })
+        .where('bannerImageUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.postRepo
+        .createQueryBuilder()
+        .update()
+        .set({ coverImageUrl: fileUrl })
+        .where('coverImageUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.mediaRepo
+        .createQueryBuilder()
+        .update()
+        .set({ url: fileUrl })
+        .where('url = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.jobRepo
+        .createQueryBuilder()
+        .update()
+        .set({ brandLogoUrl: fileUrl })
+        .where('brandLogoUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.brandRepo
+        .createQueryBuilder()
+        .update()
+        .set({ logoUrl: fileUrl })
+        .where('logoUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.brandRepo
+        .createQueryBuilder()
+        .update()
+        .set({ coverUrl: fileUrl })
+        .where('coverUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.profileRepo
+        .createQueryBuilder()
+        .update()
+        .set({ avatarUrl: fileUrl })
+        .where('avatarUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.profileRepo
+        .createQueryBuilder()
+        .update()
+        .set({ coverUrl: fileUrl })
+        .where('coverUrl = :legacyPath', { legacyPath })
+        .execute();
+
+      await this.userRepo
+        .createQueryBuilder()
+        .update()
+        .set({ avatar: fileUrl })
+        .where('avatar = :legacyPath', { legacyPath })
+        .execute();
+    }
+
+    this.logger.log(
+      `Seeded ${Object.keys(fileUrlMap).length} Kosume files successfully.`,
+    );
+    return fileUrlMap;
+  }
 
   async run(): Promise<void> {
     this.logger.log('Seeding Kosume domain data...');
+    const fileUrls = await this.seedKosumeFiles();
+    const getUrl = (name: string, fallback: string) =>
+      fileUrls[name] ?? fallback;
 
     // 1. Seed Users & Profiles
     const usersData = [
@@ -98,7 +293,10 @@ export class KosumeSeedService {
         firstName: 'KIRIKO',
         lastName: 'Cosplayer',
         role: EUserRole.COSPLAYER,
-        avatar: '/landing/avatar-kiriko.jpg',
+        avatar: getUrl(
+          'avatar-kiriko.jpg',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        ),
         profile: {
           slug: 'kiriko',
           displayName: 'KIRIKO',
@@ -108,8 +306,14 @@ export class KosumeSeedService {
           bio: 'Tiểu sử ngắn nhân viên, xuất sắc, khoa vẽ cosplay nhóm.',
           artisticBio:
             'Chào mừng bạn đến với không gian nghệ thuật của Kiriko! Với hơn 5 năm gắn bó cùng nghệ thuật hóa thân Cosplay, Kiriko luôn hướng tới sự chỉn chu và cảm xúc trọn vẹn trong từng nhân vật. Từ phục trang, makeup đến thần thái biểu cảm, mỗi tác phẩm là một câu chuyện được kể bằng tất cả nhiệt huyết.',
-          avatarUrl: '/landing/avatar-kiriko.jpg',
-          coverUrl: '/landing/hero-banner.png',
+          avatarUrl: getUrl(
+            'avatar-kiriko.jpg',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          ),
+          coverUrl: getUrl(
+            'hero-banner.png',
+            'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=80',
+          ),
           locationLabel: 'HÀ NỘI, VN',
           workArea: 'Hà Nội & Toàn quốc',
           heightCm: 165,
@@ -156,7 +360,10 @@ export class KosumeSeedService {
         firstName: 'Soriko',
         lastName: 'Studio',
         role: EUserRole.COSPLAYER,
-        avatar: '/landing/avatar-soriko.jpg',
+        avatar: getUrl(
+          'avatar-soriko.jpg',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+        ),
         profile: {
           slug: 'sorikocos',
           displayName: 'Soriko',
@@ -164,8 +371,14 @@ export class KosumeSeedService {
           roleBadge: 'Costume Maker • Cosplayer',
           tagline: 'Chuyên phục trang và đạo cụ cosplay thủ công tinh xảo',
           bio: 'Maker phục trang & Cosplayer tự do tại TP.HCM.',
-          avatarUrl: '/landing/avatar-soriko.jpg',
-          coverUrl: '/landing/hero-banner.png',
+          avatarUrl: getUrl(
+            'avatar-soriko.jpg',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+          ),
+          coverUrl: getUrl(
+            'hero-banner.png',
+            'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=80',
+          ),
           locationLabel: 'TP.HCM, VN',
           workArea: 'TP.HCM & Toàn quốc',
           heightCm: 162,
@@ -193,7 +406,10 @@ export class KosumeSeedService {
         firstName: 'Acheron',
         lastName: 'VN',
         role: EUserRole.COSPLAYER,
-        avatar: '/landing/avatar-acheron.jpg',
+        avatar: getUrl(
+          'avatar-acheron.jpg',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        ),
         profile: {
           slug: 'acheron_vn',
           displayName: 'Acheron_VN',
@@ -201,8 +417,14 @@ export class KosumeSeedService {
           roleBadge: 'Model • Crafting',
           tagline: 'Khởi nguyên lôi thần - Thần thái và phục trang đỉnh cao',
           bio: 'Chuyên phong cách visual mạnh mẽ và concept anime dark fantasy.',
-          avatarUrl: '/landing/avatar-acheron.jpg',
-          coverUrl: '/landing/hero-banner.png',
+          avatarUrl: getUrl(
+            'avatar-acheron.jpg',
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+          ),
+          coverUrl: getUrl(
+            'hero-banner.png',
+            'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=80',
+          ),
           locationLabel: 'Đà Nẵng, VN',
           workArea: 'Toàn quốc',
           heightCm: 168,
@@ -229,7 +451,10 @@ export class KosumeSeedService {
         firstName: 'Hải',
         lastName: 'Anh',
         role: EUserRole.FAN,
-        avatar: '/landing/cosplay-work-6.jpg',
+        avatar: getUrl(
+          'cosplay-work-6.jpg',
+          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+        ),
       },
     ];
 
@@ -344,7 +569,10 @@ export class KosumeSeedService {
           userId: kirikoUser.id,
           characterName: 'Raiden Shogun',
           seriesName: 'Genshin Impact',
-          coverImageUrl: '/landing/art-raiden-1.jpg',
+          coverImageUrl: getUrl(
+            'art-raiden-1.jpg',
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+          ),
           albumsCount: 6,
           photosCount: 42,
           sortOrder: 1,
@@ -353,7 +581,10 @@ export class KosumeSeedService {
           userId: kirikoUser.id,
           characterName: 'Acheron',
           seriesName: 'Honkai: Star Rail',
-          coverImageUrl: '/landing/art-acheron.jpg',
+          coverImageUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           albumsCount: 8,
           photosCount: 56,
           sortOrder: 2,
@@ -362,7 +593,10 @@ export class KosumeSeedService {
           userId: kirikoUser.id,
           characterName: 'Kafka',
           seriesName: 'Honkai: Star Rail',
-          coverImageUrl: '/landing/art-kafka.jpg',
+          coverImageUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           albumsCount: 5,
           photosCount: 35,
           sortOrder: 3,
@@ -429,7 +663,10 @@ export class KosumeSeedService {
           brandId: savedBrands['hoyoverse-vn'].id,
           posterUserId: kirikoUser.id,
           brandName: 'HoYoverse VN',
-          brandLogoUrl: '/landing/art-acheron.jpg',
+          brandLogoUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           brandInitials: 'HYV',
           brandColor: 'bg-blue-600',
           isVerified: true,
@@ -454,7 +691,10 @@ export class KosumeSeedService {
           ],
           filterTags: ['all', 'event', 'game_ads', 'hcm'],
           contactEmail: 'recruitment@hoyoverse.vn',
-          thumbnailUrl: '/landing/art-acheron.jpg',
+          thumbnailUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           isFeatured: true,
           status: EJobStatus.OPEN,
           applicationsCount: 14,
@@ -464,7 +704,10 @@ export class KosumeSeedService {
           brandId: savedBrands['vng-games'].id,
           posterUserId: kirikoUser.id,
           brandName: 'VNG Games',
-          brandLogoUrl: '/landing/art-kafka.jpg',
+          brandLogoUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           brandInitials: 'VNG',
           brandColor: 'bg-orange-600',
           isVerified: true,
@@ -488,7 +731,10 @@ export class KosumeSeedService {
           ],
           filterTags: ['all', 'lookbook', 'game_ads', 'hanoi'],
           contactEmail: 'talent@vnggames.vn',
-          thumbnailUrl: '/landing/art-kafka.jpg',
+          thumbnailUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           isFeatured: true,
           status: EJobStatus.OPEN,
           applicationsCount: 8,
@@ -498,7 +744,10 @@ export class KosumeSeedService {
           brandId: savedBrands['garena-vn'].id,
           posterUserId: kirikoUser.id,
           brandName: 'Garena VN',
-          brandLogoUrl: '/landing/art-raiden-1.jpg',
+          brandLogoUrl: getUrl(
+            'art-raiden-1.jpg',
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+          ),
           brandInitials: 'GAR',
           brandColor: 'bg-red-600',
           isVerified: true,
@@ -522,7 +771,10 @@ export class KosumeSeedService {
           ],
           filterTags: ['all', 'event', 'hcm'],
           contactEmail: 'cosplay@garena.vn',
-          thumbnailUrl: '/landing/art-raiden-1.jpg',
+          thumbnailUrl: getUrl(
+            'art-raiden-1.jpg',
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+          ),
           isFeatured: true,
           status: EJobStatus.OPEN,
           applicationsCount: 19,
@@ -546,8 +798,14 @@ export class KosumeSeedService {
           locationLabel: 'TP.HCM',
           locationFilterCode: 'hcm',
           venue: 'SECC - Trung tâm Hội chợ & Triển lãm Sài Gòn, Q.7',
-          imageUrl: '/landing/cosplay-work-1.jpg',
-          bannerImageUrl: '/landing/hero-banner.png',
+          imageUrl: getUrl(
+            'cosplay-work-1.jpg',
+            'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=1200&q=80',
+          ),
+          bannerImageUrl: getUrl(
+            'hero-banner.png',
+            'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=80',
+          ),
           description:
             'Lễ hội Cosplay lớn nhất năm 2026 quy tụ hơn 500 creator, nghệ sĩ đạo cụ và khách mời quốc tế. Không gian trải nghiệm sân khấu Catwalk hoành tráng, giải đấu cosplay contest kịch tính và hàng trăm gian hàng phụ kiện độc quyền.',
           ticketPriceLabel: '120.000 VNĐ',
@@ -576,7 +834,10 @@ export class KosumeSeedService {
           eventId: event1.id,
           userId: kirikoUser.id,
           name: 'KIRIKO',
-          avatarUrl: '/landing/avatar-kiriko.jpg',
+          avatarUrl: getUrl(
+            'avatar-kiriko.jpg',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          ),
           isVerified: true,
           roleLabel: 'Guest Cosplayer',
           sortOrder: 1,
@@ -585,7 +846,10 @@ export class KosumeSeedService {
           eventId: event1.id,
           userId: sorikoUser.id,
           name: 'Soriko',
-          avatarUrl: '/landing/avatar-soriko.jpg',
+          avatarUrl: getUrl(
+            'avatar-soriko.jpg',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+          ),
           isVerified: true,
           roleLabel: 'Gian hàng Handmade',
           sortOrder: 2,
@@ -605,8 +869,14 @@ export class KosumeSeedService {
           locationLabel: 'Hà Nội',
           locationFilterCode: 'hanoi',
           venue: 'Cung Thể Thao Quần Ngựa, Ba Đình, Hà Nội',
-          imageUrl: '/landing/cosplay-work-2.jpg',
-          bannerImageUrl: '/landing/art-acheron.jpg',
+          imageUrl: getUrl(
+            'cosplay-work-2.jpg',
+            'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=1200&q=80',
+          ),
+          bannerImageUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           description:
             'Đại nhạc hội anime mùa đông, sàn diễn catwalk cosplay hoành tráng và chuyên nghiệp nhất miền Bắc.',
           ticketPriceLabel: '100.000 VNĐ',
@@ -638,8 +908,14 @@ export class KosumeSeedService {
           locationLabel: 'TP.HCM',
           locationFilterCode: 'hcm',
           venue: 'Nhà thi đấu Hồ Xuân Hương, Q.3, TP.HCM',
-          imageUrl: '/landing/cosplay-work-3.jpg',
-          bannerImageUrl: '/landing/art-kafka.jpg',
+          imageUrl: getUrl(
+            'cosplay-work-3.jpg',
+            'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+          ),
+          bannerImageUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           description:
             'Không gian giao lưu, mua sắm phụ kiện cosplay, đạo cụ handmade và art print độc quyền từ các creator hàng đầu.',
           ticketPriceLabel: 'Miễn phí vào cổng',
@@ -672,13 +948,28 @@ export class KosumeSeedService {
           albumCategoryLabel: 'Nhân vật & Series',
           characterName: 'Acheron',
           fandomName: 'Honkai: Star Rail',
-          coverImageUrl: '/landing/art-acheron.jpg',
+          coverImageUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           isCollage: true,
           collagePreviewUrls: [
-            '/landing/art-acheron.jpg',
-            '/landing/art-raiden-1.jpg',
-            '/landing/cosplay-work-1.jpg',
-            '/landing/cosplay-work-2.jpg',
+            getUrl(
+              'art-acheron.jpg',
+              'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+            ),
+            getUrl(
+              'art-raiden-1.jpg',
+              'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+            ),
+            getUrl(
+              'cosplay-work-1.jpg',
+              'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=1200&q=80',
+            ),
+            getUrl(
+              'cosplay-work-2.jpg',
+              'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=1200&q=80',
+            ),
           ],
           tagNamesCache: ['HonkaiStarRail', 'Acheron', 'Photoset', 'CosplayVN'],
           isPublic: true,
@@ -698,7 +989,10 @@ export class KosumeSeedService {
         this.mediaRepo.create({
           postId: post1.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/art-acheron.jpg',
+          url: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 0,
           isCover: true,
           altText: 'Acheron portrait',
@@ -706,7 +1000,10 @@ export class KosumeSeedService {
         this.mediaRepo.create({
           postId: post1.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/art-raiden-1.jpg',
+          url: getUrl(
+            'art-raiden-1.jpg',
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 1,
           isCover: false,
           altText: 'Acheron pose with sword',
@@ -714,7 +1011,10 @@ export class KosumeSeedService {
         this.mediaRepo.create({
           postId: post1.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/cosplay-work-1.jpg',
+          url: getUrl(
+            'cosplay-work-1.jpg',
+            'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 2,
           isCover: false,
           altText: 'Acheron close-up eye detail',
@@ -722,7 +1022,10 @@ export class KosumeSeedService {
         this.mediaRepo.create({
           postId: post1.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/cosplay-work-2.jpg',
+          url: getUrl(
+            'cosplay-work-2.jpg',
+            'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 3,
           isCover: false,
           altText: 'Acheron back view landscape',
@@ -741,11 +1044,20 @@ export class KosumeSeedService {
           albumCategoryLabel: 'Nhân vật & Series',
           characterName: 'Kafka',
           fandomName: 'Honkai: Star Rail',
-          coverImageUrl: '/landing/art-kafka.jpg',
+          coverImageUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           isCollage: false,
           collagePreviewUrls: [
-            '/landing/art-kafka.jpg',
-            '/landing/cosplay-work-3.jpg',
+            getUrl(
+              'art-kafka.jpg',
+              'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+            ),
+            getUrl(
+              'cosplay-work-3.jpg',
+              'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+            ),
           ],
           tagNamesCache: ['HonkaiStarRail', 'Kafka', 'StellaronHunter'],
           isPublic: true,
@@ -764,14 +1076,20 @@ export class KosumeSeedService {
         this.mediaRepo.create({
           postId: post2.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/art-kafka.jpg',
+          url: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 0,
           isCover: true,
         }),
         this.mediaRepo.create({
           postId: post2.id,
           mediaType: EMediaType.IMAGE,
-          url: '/landing/cosplay-work-3.jpg',
+          url: getUrl(
+            'cosplay-work-3.jpg',
+            'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+          ),
           sortOrder: 1,
           isCover: false,
         }),
@@ -832,8 +1150,14 @@ export class KosumeSeedService {
           isPublic: true,
           itemsCount: 2,
           previewThumbnails: [
-            '/landing/art-raiden-1.jpg',
-            '/landing/art-kafka.jpg',
+            getUrl(
+              'art-raiden-1.jpg',
+              'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+            ),
+            getUrl(
+              'art-kafka.jpg',
+              'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+            ),
           ],
         }),
       );
@@ -862,7 +1186,10 @@ export class KosumeSeedService {
           isVerified: true,
           badge: 'Cosplayer Tiêu Điểm Tuần Này',
           tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
-          bannerImageUrl: '/landing/hero-banner.png',
+          bannerImageUrl: getUrl(
+            'hero-banner.png',
+            'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1600&q=80',
+          ),
           portfolioHref: '/cosplayer/kiriko',
           bookingHref: '/cosplayer/kiriko#booking',
           sortOrder: 0,
@@ -874,7 +1201,10 @@ export class KosumeSeedService {
           isVerified: true,
           badge: 'Cosplayer Nổi Bật Tháng Này',
           tagline: 'Khởi nguyên lôi thần - Thần thái và phục trang đỉnh cao',
-          bannerImageUrl: '/landing/art-acheron.jpg',
+          bannerImageUrl: getUrl(
+            'art-acheron.jpg',
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+          ),
           portfolioHref: '/cosplayer/kiriko',
           bookingHref: '/cosplayer/kiriko#booking-acheron',
           sortOrder: 1,
@@ -886,7 +1216,10 @@ export class KosumeSeedService {
           isVerified: true,
           badge: 'Siêu Phẩm Hóa Thân 2026',
           tagline: 'Sát thủ thợ săn Stellaron - Quyến rũ và bí ẩn',
-          bannerImageUrl: '/landing/art-kafka.jpg',
+          bannerImageUrl: getUrl(
+            'art-kafka.jpg',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          ),
           portfolioHref: '/cosplayer/sorikocos',
           bookingHref: '/cosplayer/sorikocos#booking-kafka',
           sortOrder: 2,
@@ -917,15 +1250,27 @@ export class KosumeSeedService {
             displayName: 'KIRIKO',
             handle: '@kirikocos',
             roleLabel: 'Model • Crafting',
-            avatarUrl: '/landing/avatar-kiriko.jpg',
+            avatarUrl: getUrl(
+              'avatar-kiriko.jpg',
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            ),
             isVerified: true,
             likesCount: 85200,
             followersCount: 12500,
             score: 98.5,
             featuredProjects: [
-              '/landing/art-raiden-1.jpg',
-              '/landing/art-acheron.jpg',
-              '/landing/art-kafka.jpg',
+              getUrl(
+                'art-raiden-1.jpg',
+                'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+              ),
+              getUrl(
+                'art-acheron.jpg',
+                'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
+              ),
+              getUrl(
+                'art-kafka.jpg',
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+              ),
             ],
             portfolioHref: '/cosplayer/kiriko',
           }),
@@ -940,14 +1285,23 @@ export class KosumeSeedService {
             displayName: 'Soriko',
             handle: '@sorikocos',
             roleLabel: 'Costume Maker',
-            avatarUrl: '/landing/avatar-soriko.jpg',
+            avatarUrl: getUrl(
+              'avatar-soriko.jpg',
+              'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+            ),
             isVerified: true,
             likesCount: 72400,
             followersCount: 9800,
             score: 94.2,
             featuredProjects: [
-              '/landing/art-kafka.jpg',
-              '/landing/cosplay-work-3.jpg',
+              getUrl(
+                'art-kafka.jpg',
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+              ),
+              getUrl(
+                'cosplay-work-3.jpg',
+                'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80',
+              ),
             ],
             portfolioHref: '/cosplayer/sorikocos',
           }),
@@ -967,7 +1321,10 @@ export class KosumeSeedService {
           type: ENotificationType.BOOKING_REQUEST,
           actorUserId: kirikoUser.id,
           actorName: 'KIRIKO',
-          actorAvatarUrl: '/landing/avatar-kiriko.jpg',
+          actorAvatarUrl: getUrl(
+            'avatar-kiriko.jpg',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          ),
           actorRole: 'Pro Cosplayer',
           actorIsVerified: true,
           title: 'Yêu cầu Booking Cosplay mới',
@@ -976,7 +1333,10 @@ export class KosumeSeedService {
           actionUrl: '/jobs',
           actionLabel: 'Xem hợp đồng & Chi tiết',
           secondaryActionLabel: 'Từ chối',
-          previewImageUrl: '/landing/art-raiden-1.jpg',
+          previewImageUrl: getUrl(
+            'art-raiden-1.jpg',
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+          ),
           isRead: false,
         }),
         this.notificationRepo.create({
@@ -985,7 +1345,10 @@ export class KosumeSeedService {
           type: ENotificationType.FOLLOW,
           actorUserId: sorikoUser.id,
           actorName: 'Soriko',
-          actorAvatarUrl: '/landing/avatar-soriko.jpg',
+          actorAvatarUrl: getUrl(
+            'avatar-soriko.jpg',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+          ),
           actorRole: 'Costume Maker',
           actorIsVerified: true,
           title: 'Người theo dõi mới',
