@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react'
-import { FolderSearch, ImagePlus, Loader2, XIcon } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { FolderSearch, ImageOff, ImagePlus, Loader2, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import http from '@/lib/http'
@@ -33,7 +33,12 @@ export function ImagePickerInput({
   const { t } = useTranslation()
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setImageError(false)
+  }, [value])
 
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,18 +145,26 @@ export function ImagePickerInput({
 
       {/* Image Preview */}
       {value && (
-        <div className='relative mt-2 max-w-sm rounded-md border p-1'>
-          <img
-            src={value}
-            alt='Preview'
-            className='h-auto max-h-[160px] w-full rounded object-contain'
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'none'
-            }}
-            onLoad={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'block'
-            }}
-          />
+        <div className='bg-muted/20 relative mt-2 max-w-sm rounded-md border p-1'>
+          {imageError ? (
+            <div className='text-muted-foreground flex items-center gap-2 p-3 text-xs'>
+              <ImageOff className='text-destructive size-4 shrink-0' />
+              <span className='truncate'>
+                {t(
+                  'imagePicker.cannotLoadPreview',
+                  'Không thể tải ảnh xem trước'
+                )}
+              </span>
+            </div>
+          ) : (
+            <img
+              src={value}
+              alt='Preview'
+              className='bg-muted/20 h-auto max-h-[160px] w-full rounded object-contain'
+              onError={() => setImageError(true)}
+              onLoad={() => setImageError(false)}
+            />
+          )}
           <Button
             type='button'
             variant='destructive'

@@ -19,6 +19,9 @@ import {
   CalendarDays,
   ShieldAlert,
   Sparkles,
+  Image as ImageIcon,
+  Handshake,
+  Sliders,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -139,10 +142,28 @@ export const sidebarLink: SidebarData = {
           permission: 'EVENT',
         },
         {
+          title: 'navigation.kosume.posts',
+          url: '/posts',
+          icon: ImageIcon,
+          permission: 'POST',
+        },
+        {
+          title: 'navigation.kosume.bookings',
+          url: '/bookings',
+          icon: Handshake,
+          permission: 'BOOKING',
+        },
+        {
           title: 'navigation.kosume.spotlight',
           url: '/spotlight-banners',
           icon: Sparkles,
           permission: 'SPOTLIGHT',
+        },
+        {
+          title: 'navigation.kosume.settings',
+          url: '/platform-settings',
+          icon: Sliders,
+          permission: 'SETTING',
         },
       ],
     },

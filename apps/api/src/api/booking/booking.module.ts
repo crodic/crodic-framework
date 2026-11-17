@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../user/entities/user.entity';
+import { BookingAdminController } from './controllers/booking-admin.controller';
 import { BookingUserController } from './controllers/booking-user.controller';
 import { DirectMessageUserController } from './controllers/direct-message-user.controller';
 import { BookingRequestEntity } from './entities/booking-request.entity';
@@ -15,7 +16,11 @@ import { BookingService } from './services/booking.service';
       UserEntity,
     ]),
   ],
-  controllers: [BookingUserController, DirectMessageUserController],
+  controllers: [
+    BookingUserController,
+    DirectMessageUserController,
+    BookingAdminController,
+  ],
   providers: [BookingService],
   exports: [TypeOrmModule, BookingService],
 })

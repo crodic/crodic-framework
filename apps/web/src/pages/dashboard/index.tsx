@@ -12,6 +12,7 @@ import {
   LayersIcon,
   RefreshCwIcon,
   ServerIcon,
+  Sparkles,
   WorkflowIcon,
   XCircleIcon,
   ZapIcon,
@@ -28,8 +29,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
 import { DashboardKpiCards } from './components/dashboard-kpi-cards'
+import { KosumeAnalyticsTab } from './components/kosume-analytics-tab'
 import { QueueMetricsBarChart } from './components/queue-metrics-bar-chart'
 import { QueueStatusDonutChart } from './components/queue-status-donut-chart'
 
@@ -165,46 +168,66 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* 1. Executive Metric KPI Cards */}
-        <DashboardKpiCards
-          queues={queues}
-          healthStatus={healthQuery.data?.status}
-          systemUptime={systemIndicator?.uptime as string | undefined}
-          redisLatency={redisIndicator?.latency as string | undefined}
-          databaseStatus={dbIndicator?.status as string | undefined}
-        />
+        {/* Dashboard Tabs */}
+        <Tabs defaultValue='kosume' className='w-full space-y-6'>
+          <TabsList className='grid w-full max-w-md grid-cols-2'>
+            <TabsTrigger value='kosume' className='gap-2'>
+              <Sparkles className='text-primary size-4' />
+              <span>{t('dashboard.tabs.kosume', 'Nền tảng Kosume')}</span>
+            </TabsTrigger>
+            <TabsTrigger value='system' className='gap-2'>
+              <ServerIcon className='size-4' />
+              <span>{t('dashboard.tabs.system', 'Hạ tầng Hệ thống')}</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* 2. shadcn Interactive Charts Row */}
-        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-          <div className='lg:col-span-2'>
-            <QueueMetricsBarChart
+          <TabsContent value='kosume' className='space-y-6'>
+            <KosumeAnalyticsTab />
+          </TabsContent>
+
+          <TabsContent value='system' className='space-y-6'>
+            {/* 1. Executive Metric KPI Cards */}
+            <DashboardKpiCards
               queues={queues}
-              isLoading={queueQuery.isFetching}
+              healthStatus={healthQuery.data?.status}
+              systemUptime={systemIndicator?.uptime as string | undefined}
+              redisLatency={redisIndicator?.latency as string | undefined}
+              databaseStatus={dbIndicator?.status as string | undefined}
             />
-          </div>
-          <div>
-            <QueueStatusDonutChart
-              queues={queues}
+
+            {/* 2. shadcn Interactive Charts Row */}
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+              <div className='lg:col-span-2'>
+                <QueueMetricsBarChart
+                  queues={queues}
+                  isLoading={queueQuery.isFetching}
+                />
+              </div>
+              <div>
+                <QueueStatusDonutChart
+                  queues={queues}
+                  isLoading={queueQuery.isFetching}
+                />
+              </div>
+            </div>
+
+            {/* 3. Detailed Queue Workers */}
+            <QueueMonitoringSection
+              data={queueQuery.data}
               isLoading={queueQuery.isFetching}
+              onRefresh={() => queueQuery.refetch()}
             />
-          </div>
-        </div>
 
-        {/* 3. Detailed Queue Workers */}
-        <QueueMonitoringSection
-          data={queueQuery.data}
-          isLoading={queueQuery.isFetching}
-          onRefresh={() => queueQuery.refetch()}
-        />
-
-        {/* 4. Infrastructure Health Checks */}
-        <SystemHealthSection
-          health={healthQuery.data}
-          isLoading={healthQuery.isFetching}
-          isError={healthQuery.isError}
-          updatedAt={healthQuery.dataUpdatedAt}
-          onRefresh={() => healthQuery.refetch()}
-        />
+            {/* 4. Infrastructure Health Checks */}
+            <SystemHealthSection
+              health={healthQuery.data}
+              isLoading={healthQuery.isFetching}
+              isError={healthQuery.isError}
+              updatedAt={healthQuery.dataUpdatedAt}
+              onRefresh={() => healthQuery.refetch()}
+            />
+          </TabsContent>
+        </Tabs>
       </Main>
     </>
   )

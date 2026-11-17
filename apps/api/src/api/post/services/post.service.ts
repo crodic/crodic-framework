@@ -398,6 +398,164 @@ export class PostService {
   }
 
   /**
+   * Admin: List posts and studio albums with rich QueryBuilder filtering.
+   */
+  async findAllAdmin(
+    query: QueryParams,
+  ): Promise<Paginated<PostSummaryResDto>> {
+    const baseQb = this.postRepo
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author');
+
+    const paginated = await QueryBuilder.for(baseQb, query)
+      .allowedFilters([
+        AllowedFilter.exact('postType'),
+        AllowedFilter.exact('albumCategory'),
+        AllowedFilter.exact('authorId'),
+        AllowedFilter.exact('isPublic'),
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('isFeaturedWork'),
+        AllowedFilter.exact('copyrightTagId'),
+        AllowedFilter.exact('characterTagId'),
+        AllowedFilter.partial('title'),
+        AllowedFilter.partial('characterName'),
+        AllowedFilter.partial('fandomName'),
+        AllowedFilter.callback('search', (qb, value) => {
+          const term = Array.isArray(value) ? String(value[0]) : String(value);
+          const normalized = term.trim().toLowerCase();
+          if (!normalized) return;
+          qb.andWhere(
+            new Brackets((b) => {
+              b.where('LOWER(post.title) LIKE :sTerm', {
+                sTerm: `%${normalized}%`,
+              })
+                .orWhere('LOWER(post.characterName) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                })
+                .orWhere('LOWER(post.fandomName) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                });
+            }),
+          );
+        }),
+      ])
+      .allowedSorts([
+        'publishedAt',
+        'createdAt',
+        'trendingScore',
+        'likesCount',
+        'viewsCount',
+        'commentsCount',
+        'photosCount',
+      ])
+      .defaultSort('-createdAt')
+      .paginate();
+
+    const authorIds = paginated.data.map((p) => p.authorId);
+    const profiles =
+      authorIds.length > 0
+        ? await this.profileRepo.find({
+            where: { userId: In(authorIds) },
+          })
+        : [];
+    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+
+    const mapped = paginated.data.map((post) =>
+      this.toSummaryDto(post, profileMap.get(String(post.authorId))),
+    );
+
+    return new Paginated(mapped, paginated.meta, paginated.links);
+  }
+
+  /**
+   * Admin: Get post detail by ID.
+   */
+  async findOneAdmin(postId: AutoIncrementID): Promise<PostDetailResDto> {
+    const post = await this.postRepo.findOne({
+      where: { id: postId },
+      relations: ['author'],
+    });
+    if (!post) {
+      throw new NotFoundException(`Post #${postId} not found`);
+    }
+
+    const [media, profile] = await Promise.all([
+      this.mediaRepo.find({
+        where: { postId },
+        order: { sortOrder: 'ASC', id: 'ASC' },
+      }),
+      this.profileRepo.findOne({ where: { userId: post.authorId } }),
+    ]);
+
+    return this.toDetailDto(post, media, profile, false);
+  }
+
+  /**
+   * Admin: Toggle featured work placement.
+   */
+  async toggleFeatureAdmin(
+    postId: AutoIncrementID,
+    isFeatured?: boolean,
+  ): Promise<PostDetailResDto> {
+    const post = await this.postRepo.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`Post #${postId} not found`);
+    }
+
+    post.isFeaturedWork =
+      isFeatured !== undefined ? isFeatured : !post.isFeaturedWork;
+    const saved = await this.postRepo.save(post);
+    return this.findOneAdmin(saved.id);
+  }
+
+  /**
+   * Admin: Update post status and public visibility.
+   */
+  async updateStatusAdmin(
+    postId: AutoIncrementID,
+    status: EPostStatus,
+    isPublic?: boolean,
+  ): Promise<PostDetailResDto> {
+    const post = await this.postRepo.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`Post #${postId} not found`);
+    }
+
+    post.status = status;
+    if (isPublic !== undefined) {
+      post.isPublic = isPublic;
+    }
+    const saved = await this.postRepo.save(post);
+    return this.findOneAdmin(saved.id);
+  }
+
+  /**
+   * Admin: Delete post and decrement counters.
+   */
+  async deleteAdmin(postId: AutoIncrementID): Promise<void> {
+    const post = await this.postRepo.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`Post #${postId} not found`);
+    }
+
+    await this.dataSource.transaction(async (em) => {
+      await em.softDelete(PostEntity, { id: postId });
+
+      const profile = await em.findOne(CosplayerProfileEntity, {
+        where: { userId: post.authorId },
+      });
+      if (profile && profile.albumsCount > 0) {
+        await em.decrement(
+          CosplayerProfileEntity,
+          { userId: post.authorId },
+          'albumsCount',
+          1,
+        );
+      }
+    });
+  }
+
+  /**
    * Toggle like on post.
    */
   async toggleLike(

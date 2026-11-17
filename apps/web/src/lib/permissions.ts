@@ -61,6 +61,18 @@ export const groupPermission = [
     permissions: ['create', 'read', 'update', 'delete'],
   },
   {
+    group: 'POST',
+    permissions: ['create', 'read', 'update', 'delete', 'publish'],
+  },
+  {
+    group: 'BOOKING',
+    permissions: ['read', 'update', 'delete'],
+  },
+  {
+    group: 'SETTING',
+    permissions: ['read', 'update'],
+  },
+  {
     group: 'manage',
     permissions: ['all'],
   },
@@ -151,6 +163,22 @@ export const permissions = [
   { action: 'read', subject: 'SPOTLIGHT' },
   { action: 'update', subject: 'SPOTLIGHT' },
   { action: 'delete', subject: 'SPOTLIGHT' },
+
+  // POST
+  { action: 'create', subject: 'POST' },
+  { action: 'read', subject: 'POST' },
+  { action: 'update', subject: 'POST' },
+  { action: 'delete', subject: 'POST' },
+  { action: 'publish', subject: 'POST' },
+
+  // BOOKING
+  { action: 'read', subject: 'BOOKING' },
+  { action: 'update', subject: 'BOOKING' },
+  { action: 'delete', subject: 'BOOKING' },
+
+  // SETTING
+  { action: 'read', subject: 'SETTING' },
+  { action: 'update', subject: 'SETTING' },
 
   // SUPER
   { action: 'manage', subject: 'all' },

@@ -226,6 +226,21 @@ const PageSpotlightBannersOverview = lazy(() =>
     default: m.PageSpotlightBannersOverview,
   }))
 )
+const PagePostsOverview = lazy(() =>
+  import('@/pages/posts').then((m) => ({
+    default: m.PagePostsOverview,
+  }))
+)
+const PageBookingsOverview = lazy(() =>
+  import('@/pages/bookings').then((m) => ({
+    default: m.PageBookingsOverview,
+  }))
+)
+const PagePlatformSettings = lazy(() =>
+  import('@/pages/platform-settings').then((m) => ({
+    default: m.PagePlatformSettings,
+  }))
+)
 
 const appRoutes: RouteObject[] = [
   {
@@ -655,6 +670,30 @@ const appRoutes: RouteObject[] = [
         element: (
           <RouteAuthorize action='read' subject='SPOTLIGHT'>
             <PageSpotlightBannersOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/posts',
+        element: (
+          <RouteAuthorize action='read' subject='POST'>
+            <PagePostsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/bookings',
+        element: (
+          <RouteAuthorize action='read' subject='BOOKING'>
+            <PageBookingsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/platform-settings',
+        element: (
+          <RouteAuthorize action='read' subject='SETTING'>
+            <PagePlatformSettings />
           </RouteAuthorize>
         ),
       },

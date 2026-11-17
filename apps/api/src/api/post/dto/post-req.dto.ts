@@ -173,3 +173,16 @@ export class CreatePostCommentReqDto {
   @StringFieldOptional()
   parentCommentId?: AutoIncrementID;
 }
+
+export class UpdatePostStatusReqDto {
+  @EnumFieldOptional(() => EPostStatus)
+  status!: EPostStatus;
+
+  @BooleanFieldOptional()
+  isPublic?: boolean;
+}
+
+export class TogglePostFeaturedReqDto {
+  @BooleanFieldOptional()
+  isFeatured?: boolean;
+}

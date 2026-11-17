@@ -18,6 +18,7 @@ import { EBookingRequestStatus } from '../constants/booking.constant';
 import {
   CreateBookingRequestReqDto,
   SendDirectMessageReqDto,
+  UpdateBookingStatusAdminReqDto,
   UpdateBookingStatusReqDto,
 } from '../dto/booking-req.dto';
 import {
@@ -172,6 +173,98 @@ export class BookingService {
 
     const saved = await this.bookingRepo.save(booking);
     return this.toBookingDto(saved);
+  }
+
+  // =================== ADMIN OPERATIONS ===================
+
+  async findAllAdmin(
+    query: QueryParams,
+  ): Promise<Paginated<BookingRequestResDto>> {
+    const baseQb = this.bookingRepo
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.targetCosplayer', 'targetCosplayer')
+      .leftJoinAndSelect('booking.requesterUser', 'requesterUser');
+
+    const paginated = await QueryBuilder.for(baseQb, query)
+      .allowedFilters([
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('targetCosplayerId'),
+        AllowedFilter.exact('requesterUserId'),
+        AllowedFilter.partial('bookingType'),
+        AllowedFilter.partial('fullName'),
+        AllowedFilter.callback('search', (qb, value) => {
+          const term = Array.isArray(value) ? String(value[0]) : String(value);
+          const normalized = term.trim().toLowerCase();
+          if (!normalized) return;
+          qb.andWhere(
+            new Brackets((b) => {
+              b.where('LOWER(booking.fullName) LIKE :sTerm', {
+                sTerm: `%${normalized}%`,
+              })
+                .orWhere('LOWER(booking.bookingType) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                })
+                .orWhere('LOWER(booking.details) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                });
+            }),
+          );
+        }),
+      ])
+      .allowedSorts(['createdAt', 'status', 'targetDateLabel'])
+      .defaultSort('-createdAt')
+      .paginate();
+
+    const mapped = paginated.data.map((item) => this.toBookingDto(item));
+    return new Paginated(mapped, paginated.meta, paginated.links);
+  }
+
+  async findOneAdmin(
+    bookingId: AutoIncrementID,
+  ): Promise<BookingRequestResDto> {
+    const booking = await this.bookingRepo.findOne({
+      where: { id: bookingId },
+      relations: ['targetCosplayer', 'requesterUser'],
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking request #${bookingId} not found`);
+    }
+
+    return this.toBookingDto(booking);
+  }
+
+  async updateStatusAdmin(
+    bookingId: AutoIncrementID,
+    dto: UpdateBookingStatusAdminReqDto,
+  ): Promise<BookingRequestResDto> {
+    const booking = await this.bookingRepo.findOne({
+      where: { id: bookingId },
+      relations: ['targetCosplayer', 'requesterUser'],
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking request #${bookingId} not found`);
+    }
+
+    booking.status = dto.status;
+    if (dto.responseNote !== undefined) {
+      booking.responseNote = dto.responseNote;
+    }
+    booking.respondedAt = new Date();
+
+    const saved = await this.bookingRepo.save(booking);
+    return this.toBookingDto(saved);
+  }
+
+  async deleteAdmin(bookingId: AutoIncrementID): Promise<void> {
+    const booking = await this.bookingRepo.findOne({
+      where: { id: bookingId },
+    });
+    if (!booking) {
+      throw new NotFoundException(`Booking request #${bookingId} not found`);
+    }
+    await this.bookingRepo.softDelete(bookingId);
   }
 
   // =================== DIRECT MESSAGES ===================

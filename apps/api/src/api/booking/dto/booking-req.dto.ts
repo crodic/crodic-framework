@@ -45,6 +45,8 @@ export class UpdateBookingStatusReqDto {
   responseNote?: string;
 }
 
+export class UpdateBookingStatusAdminReqDto extends UpdateBookingStatusReqDto {}
+
 export class SendDirectMessageReqDto {
   @StringField()
   recipientId!: AutoIncrementID;

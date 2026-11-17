@@ -25,6 +25,7 @@ import { RankingModule } from './ranking/ranking.module';
 import { SpotlightModule } from './spotlight/spotlight.module';
 import { NotificationModule } from './notification/notification.module';
 import { ContentReportModule } from './content-report/content-report.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ContentReportModule } from './content-report/content-report.module';
     SpotlightModule,
     NotificationModule,
     ContentReportModule,
+    AnalyticsModule,
   ],
   exports: [
     UserModule,
@@ -82,6 +84,7 @@ import { ContentReportModule } from './content-report/content-report.module';
     SpotlightModule,
     NotificationModule,
     ContentReportModule,
+    AnalyticsModule,
   ],
 })
 export class ApiModule {}

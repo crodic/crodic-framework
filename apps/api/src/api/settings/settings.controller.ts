@@ -15,6 +15,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -28,8 +29,11 @@ import {
   WEBSITE_MAX_FILE_SIZE,
   websiteUploadOptions,
 } from './configs/multer.config';
+import { KosumeSettingResDto } from './dto/kosume-setting.res.dto';
+import { UpdateKosumeSettingReqDto } from './dto/update-kosume-setting.req.dto';
 import { UpdateWebsiteSettingReqDto } from './dto/update-website-setting.req.dto';
 import { WebsiteSettingResDto } from './dto/website-setting.res.dto';
+import { SettingKeys } from './enums/setting-keys';
 import { SettingsService } from './settings.service';
 import { ValidSettingKey } from './validations/valid-setting-key.validate';
 
@@ -45,6 +49,54 @@ export class SettingsController {
     private readonly settingsService: SettingsService,
     private readonly storage: FilesystemService,
   ) {}
+
+  @Get('platform/kosume')
+  @ApiAuth({
+    summary: 'Get platform business and moderation settings',
+    type: KosumeSettingResDto,
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Read, AppSubjects.Setting),
+  )
+  async getKosumeSettings(): Promise<KosumeSettingResDto> {
+    const defaultSettings: KosumeSettingResDto = {
+      max_photos_per_album: 50,
+      max_file_size_mb: 25,
+      auto_approve_posts: true,
+      auto_approve_jobs: false,
+      commission_platform_rate_percent: 5,
+      banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
+      support_email: 'support@kosume.com',
+      support_hotline: '1900-KOSUME',
+    };
+
+    const setting = await this.settingsService.get<KosumeSettingResDto>(
+      SettingKeys.KOSUME,
+      defaultSettings,
+    );
+
+    return { ...defaultSettings, ...(setting || {}) };
+  }
+
+  @Put('platform/kosume')
+  @ApiAuth({
+    summary: 'Update platform business and moderation settings',
+    type: KosumeSettingResDto,
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.Setting),
+  )
+  async updateKosumeSettings(
+    @Body() dto: UpdateKosumeSettingReqDto,
+  ): Promise<KosumeSettingResDto> {
+    const current = await this.getKosumeSettings();
+    const updated = {
+      ...current,
+      ...dto,
+    };
+    await this.settingsService.set(SettingKeys.KOSUME, updated);
+    return updated;
+  }
 
   @Get(':key')
   async getSettingByKey(
