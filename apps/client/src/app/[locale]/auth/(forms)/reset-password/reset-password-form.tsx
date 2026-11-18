@@ -86,18 +86,7 @@ export default function ResetPasswordForm() {
       {/* Mobile Brand Logo */}
       <div className="mb-6 flex justify-center lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2">
-          <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-xl shadow-md shadow-purple-500/20">
-            <svg
-              className="size-4 fill-current"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <span className="text-foreground text-xl font-black tracking-tight">
-            Kosume
-          </span>
+          <WhiteLabelLogo className="h-8 w-auto object-contain" />
         </Link>
       </div>
 

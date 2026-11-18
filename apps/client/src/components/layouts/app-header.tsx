@@ -28,6 +28,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
+import { WhiteLabelLogo } from "@/lib/white-label";
 import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile, useSignOut } from "@/hooks/use-profile";
@@ -92,16 +93,10 @@ export function AppHeader() {
           href="/"
           className="flex cursor-pointer items-center gap-1.5 text-base font-black tracking-tight select-none md:hidden"
         >
-          <div className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-lg shadow-xs">
-            <svg
-              className="size-3.5 fill-current"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <span className="text-foreground text-base font-bold">Kosume</span>
+          <WhiteLabelLogo
+            className="h-7 w-auto object-contain"
+            textClassName="text-base"
+          />
         </Link>
 
         {/* Desktop Search Bar (hidden on mobile) */}

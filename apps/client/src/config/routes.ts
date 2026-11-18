@@ -67,6 +67,7 @@ export const isPublicRoute = createRouteMatcher([/^\/pages(\/.*)?$/]);
 const protectedMatcher = createRouteMatcher([
   /^\/feed(\/.*)?$/,
   /^\/notifications(\/.*)?$/,
+  /^\/onboarding(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/settings(\/.*)?$/,
   /^\/upload(\/.*)?$/,

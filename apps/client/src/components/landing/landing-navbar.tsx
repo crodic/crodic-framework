@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
+import { WhiteLabelLogo } from "@/lib/white-label";
 
 export function LandingNavbar() {
   const t = useTranslations("Landing.nav");
@@ -49,11 +50,10 @@ export function LandingNavbar() {
           className="group focus-visible:ring-ring flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
           aria-label={t("homeAria")}
         >
-          <span className="text-2xl font-black tracking-tight transition-transform duration-200 group-hover:scale-[1.02]">
-            <span className="text-primary">Cos</span>
-            <span className="text-foreground">Space</span>
-          </span>
-          <span className="bg-primary size-1.5 animate-pulse rounded-full" />
+          <WhiteLabelLogo
+            className="h-8 w-auto object-contain"
+            textClassName="text-2xl"
+          />
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -123,8 +123,10 @@ export function LandingNavbar() {
             >
               <SheetHeader className="border-border/40 border-b pb-4 text-left">
                 <SheetTitle className="flex items-center gap-1.5 text-xl font-bold">
-                  <span className="text-primary">Cos</span>
-                  <span className="text-foreground">Space</span>
+                  <WhiteLabelLogo
+                    className="h-7 w-auto object-contain"
+                    textClassName="text-xl"
+                  />
                 </SheetTitle>
               </SheetHeader>
 

@@ -1148,5 +1148,122 @@
     "photoAlbum": "Photo album",
     "videoReel": "Video reel",
     "tagCharacter": "Tag character"
+  },
+  "Onboarding": {
+    "pageTitle": "Welcome to Kosume",
+    "pageDesc": "Complete your profile to personalize your cosplay experience",
+    "skip": "Skip for now",
+    "stepProgress": "Step {current} of {total}",
+    "steps": {
+      "role": "Role",
+      "profile": "Profile",
+      "ready": "Ready"
+    },
+    "step1": {
+      "title": "How do you plan to use Kosume?",
+      "subtitle": "This helps us personalize your feed and recommend the most relevant creators and events.",
+      "roles": {
+        "cosplayer": {
+          "title": "Cosplayer / Creator",
+          "badge": "Creator",
+          "description": "Cosplay characters, publish photo albums, and connect with your fan community."
+        },
+        "photographer": {
+          "title": "Photographer / Studio / MUA",
+          "badge": "Professional",
+          "description": "Cosplay photography, photo retouching, makeup artist, or prop crafting."
+        },
+        "fan": {
+          "title": "Cosplay Fan / Enthusiast",
+          "badge": "Enthusiast",
+          "description": "Discover high-quality photosets, follow favorite cosplayers, and track conventions."
+        }
+      },
+      "continueBtn": "Continue"
+    },
+    "step2": {
+      "creatorTitle": "Set Up Your Creative Profile",
+      "fanTitle": "Customize Your Interests",
+      "subtitle": "You can always change any of this information later in Account Settings.",
+      "fields": {
+        "displayName": "Stage Name / Display Name",
+        "displayNamePlaceholder": "e.g. Yuki, Hai Anh...",
+        "handle": "Unique Handle",
+        "handlePlaceholder": "username",
+        "handlePreview": "Your profile link will be:",
+        "location": "Location / City",
+        "locationPlaceholder": "Select your city",
+        "bio": "Short Bio",
+        "bioPlaceholder": "Share a few words about your cosplay journey or creative aesthetic...",
+        "specialtiesCosplayer": "Genres & Cosplay Specialties",
+        "specialtiesPhotographer": "Services & Professional Skills",
+        "specialtiesFan": "Favorite Fandoms & Games",
+        "specialtiesHint": "Select at least one genre you love:"
+      },
+      "cities": {
+        "hcm": "Ho Chi Minh City",
+        "hanoi": "Hanoi",
+        "danang": "Da Nang",
+        "cantho": "Can Tho",
+        "haiphong": "Hai Phong",
+        "other": "Other / International"
+      },
+      "specialtyOptions": {
+        "animeManga": "Anime / Manga",
+        "gameHoyoverse": "Genshin / Honkai",
+        "armorMecha": "Armor & Mecha",
+        "wigStyling": "Wig Styling",
+        "propMaking": "Prop Making",
+        "vtuber": "VTuber",
+        "fantasyRpg": "Fantasy / RPG",
+        "gothicLolita": "Gothic / Lolita",
+        "horrorFx": "Horror / FX",
+        "studioShoot": "Studio Photoshoot",
+        "outdoorEvent": "Outdoor & Convention",
+        "retouchColor": "Retouch & Color Grading",
+        "cinematicVideo": "Cinematic Video Reel",
+        "makeupCosplay": "Cosplay Makeup",
+        "fandomGenshin": "Genshin Impact",
+        "fandomHsr": "Honkai: Star Rail",
+        "fandomZzz": "Zenless Zone Zero",
+        "fandomFrieren": "Frieren",
+        "fandomKimetsu": "Demon Slayer",
+        "fandomJjk": "Jujutsu Kaisen",
+        "fandomLol": "League of Legends",
+        "fandomOnePiece": "One Piece",
+        "fandomHololive": "VTuber / Hololive",
+        "fandomFate": "Fate / Grand Order"
+      },
+      "validation": {
+        "displayNameRequired": "Please enter your display or stage name",
+        "handleRequired": "Please enter your unique handle",
+        "handleInvalid": "Handle can only contain lowercase letters, numbers, underscores and hyphens (3-30 chars)",
+        "locationRequired": "Please select your location"
+      },
+      "backBtn": "Back",
+      "saveBtn": "Save & Continue",
+      "saving": "Saving..."
+    },
+    "step3": {
+      "title": "Welcome to Kosume!",
+      "subtitle": "Your profile is all set. Start exploring the vibrant cosplay community today!",
+      "summaryTitle": "Your Profile",
+      "roleLabel": "Role",
+      "locationLabel": "Location",
+      "specialtiesLabel": "Interests",
+      "exploreBtn": "Start Exploring",
+      "profileBtn": "View My Profile"
+    },
+    "toasts": {
+      "savedSuccess": "Profile configured successfully!",
+      "handleConflict": "This handle is already taken. Please choose another one.",
+      "saveFailed": "Failed to save profile. Please try again later."
+    },
+    "banner": {
+      "title": "Your profile is incomplete!",
+      "desc": "Set up your role, stage name, and favorite fandoms for a personalized experience.",
+      "cta": "Set Up Now",
+      "dismiss": "Dismiss"
+    }
   }
 }

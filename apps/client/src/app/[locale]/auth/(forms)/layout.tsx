@@ -6,6 +6,7 @@ import { cn, decodeToken } from "@/lib/utils";
 import { Award, Briefcase, Camera, Star, Users } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { WhiteLabelLogo } from "@/lib/white-label";
 
 interface AuthFormsLayoutProps {
   children: React.ReactNode;
@@ -60,23 +61,10 @@ export default async function AuthLayout({
               href="/"
               className="group flex items-center gap-3 transition-opacity hover:opacity-90"
             >
-              <div className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-xl shadow-lg shadow-purple-500/20">
-                <svg
-                  className="size-5 fill-current"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-              </div>
-              <div>
-                <span className="text-xl font-black tracking-tight text-white">
-                  Kosume
-                </span>
-                <p className="text-xs text-purple-300/70">
-                  Cosplay Creative Hub &amp; Community
-                </p>
-              </div>
+              <WhiteLabelLogo
+                className="h-10 w-auto object-contain brightness-0 invert"
+                textClassName="text-white text-xl"
+              />
             </Link>
 
             <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3.5 py-1 text-xs font-medium text-purple-300 backdrop-blur-md">

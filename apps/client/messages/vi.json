@@ -1148,5 +1148,122 @@
     "photoAlbum": "Album ảnh",
     "videoReel": "Video ngắn",
     "tagCharacter": "Gắn thẻ nhân vật"
+  },
+  "Onboarding": {
+    "pageTitle": "Chào mừng bạn đến với Kosume",
+    "pageDesc": "Hoàn thiện hồ sơ để cá nhân hóa trải nghiệm cosplay của bạn",
+    "skip": "Bỏ qua",
+    "stepProgress": "Bước {current} / {total}",
+    "steps": {
+      "role": "Vai trò",
+      "profile": "Hồ sơ",
+      "ready": "Sẵn sàng"
+    },
+    "step1": {
+      "title": "Bạn tham gia Kosume với vai trò gì?",
+      "subtitle": "Điều này giúp chúng tôi cá nhân hóa trang chủ và gợi ý nội dung phù hợp nhất cho bạn.",
+      "roles": {
+        "cosplayer": {
+          "title": "Cosplayer / Creator",
+          "badge": "Nhà sáng tạo",
+          "description": "Hóa trang nhân vật, đăng tải bộ ảnh cosplay và kết nối cộng đồng người hâm mộ."
+        },
+        "photographer": {
+          "title": "Nhiếp ảnh gia / Studio / MUA",
+          "badge": "Chuyên nghiệp",
+          "description": "Chụp ảnh cosplay, hậu kỳ ảnh, makeup hoặc cung cấp phụ kiện đạo cụ cho creator."
+        },
+        "fan": {
+          "title": "Cosplay Fan / Khán giả",
+          "badge": "Người yêu thích",
+          "description": "Khám phá các bộ ảnh chất lượng cao, theo dõi cosplayer yêu thích và cập nhật sự kiện."
+        }
+      },
+      "continueBtn": "Tiếp tục"
+    },
+    "step2": {
+      "creatorTitle": "Thiết lập hồ sơ sáng tạo",
+      "fanTitle": "Tùy biến sở thích của bạn",
+      "subtitle": "Bạn có thể chỉnh sửa lại bất kỳ thông tin nào sau này trong phần Cài đặt cá nhân.",
+      "fields": {
+        "displayName": "Nghệ danh / Tên hiển thị",
+        "displayNamePlaceholder": "Nhập tên hoặc nghệ danh...",
+        "handle": "Handle duy nhất",
+        "handlePlaceholder": "username",
+        "handlePreview": "Trang cá nhân của bạn sẽ là:",
+        "location": "Khu vực / Thành phố hoạt động",
+        "locationPlaceholder": "Chọn thành phố của bạn",
+        "bio": "Bio ngắn giới thiệu",
+        "bioPlaceholder": "Chia sẻ đôi điều về sở thích cosplay hoặc phong cách nghệ thuật của bạn...",
+        "specialtiesCosplayer": "Chuyên môn & Thể loại cosplay",
+        "specialtiesPhotographer": "Dịch vụ & Kỹ năng chuyên môn",
+        "specialtiesFan": "Fandom & Tựa game yêu thích",
+        "specialtiesHint": "Chọn ít nhất một thể loại bạn quan tâm:"
+      },
+      "cities": {
+        "hcm": "TP. Hồ Chí Minh",
+        "hanoi": "Hà Nội",
+        "danang": "Đà Nẵng",
+        "cantho": "Cần Thơ",
+        "haiphong": "Hải Phòng",
+        "other": "Khác / Quốc tế"
+      },
+      "specialtyOptions": {
+        "animeManga": "Anime / Manga",
+        "gameHoyoverse": "Genshin / Honkai",
+        "armorMecha": "Armor & Mecha",
+        "wigStyling": "Wig Styling",
+        "propMaking": "Prop Making",
+        "vtuber": "VTuber",
+        "fantasyRpg": "Fantasy / RPG",
+        "gothicLolita": "Gothic / Lolita",
+        "horrorFx": "Horror / FX",
+        "studioShoot": "Chụp Studio",
+        "outdoorEvent": "Chụp Ngoại cảnh & Festival",
+        "retouchColor": "Retouch & Blend màu",
+        "cinematicVideo": "Quay Video Cinematic",
+        "makeupCosplay": "Makeup Cosplay",
+        "fandomGenshin": "Genshin Impact",
+        "fandomHsr": "Honkai: Star Rail",
+        "fandomZzz": "Zenless Zone Zero",
+        "fandomFrieren": "Frieren",
+        "fandomKimetsu": "Demon Slayer",
+        "fandomJjk": "Jujutsu Kaisen",
+        "fandomLol": "League of Legends",
+        "fandomOnePiece": "One Piece",
+        "fandomHololive": "VTuber / Hololive",
+        "fandomFate": "Fate / Grand Order"
+      },
+      "validation": {
+        "displayNameRequired": "Vui lòng nhập tên hiển thị hoặc nghệ danh",
+        "handleRequired": "Vui lòng nhập handle",
+        "handleInvalid": "Handle chỉ gồm chữ cái thường, số, dấu gạch dưới và gạch ngang (3-30 ký tự)",
+        "locationRequired": "Vui lòng chọn khu vực của bạn"
+      },
+      "backBtn": "Quay lại",
+      "saveBtn": "Lưu & Tiếp tục",
+      "saving": "Đang lưu..."
+    },
+    "step3": {
+      "title": "Chào mừng bạn đến với Kosume!",
+      "subtitle": "Hồ sơ của bạn đã sẵn sàng. Hãy bắt đầu khám phá thế giới cosplay đầy màu sắc ngay hôm nay!",
+      "summaryTitle": "Hồ sơ của bạn",
+      "roleLabel": "Vai trò",
+      "locationLabel": "Khu vực",
+      "specialtiesLabel": "Quan tâm",
+      "exploreBtn": "Khám phá cộng đồng ngay",
+      "profileBtn": "Xem trang cá nhân của tôi"
+    },
+    "toasts": {
+      "savedSuccess": "Đã thiết lập hồ sơ thành công!",
+      "handleConflict": "Handle này đã có người sử dụng. Vui lòng chọn handle khác.",
+      "saveFailed": "Không thể lưu thông tin. Vui lòng thử lại sau."
+    },
+    "banner": {
+      "title": "Hồ sơ của bạn chưa hoàn thiện!",
+      "desc": "Thiết lập vai trò, nghệ danh và sở thích để nhận đề xuất cá nhân hóa.",
+      "cta": "Thiết lập ngay",
+      "dismiss": "Đóng"
+    }
   }
 }

@@ -20,6 +20,11 @@ import { APP_SIDEBAR_NAV } from "@/config/navigation";
 import { useAuthStore } from "@/store/use-auth-store";
 import { isProtectedRoute } from "@/config/routes";
 import {
+  WhiteLabelLogo,
+  useWhiteLabel,
+  DEFAULT_BRAND_NAME,
+} from "@/lib/white-label";
+import {
   BookOpen,
   Calendar,
   Compass,
@@ -37,7 +42,9 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { whiteLabel } = useWhiteLabel();
   const tNav = useTranslations("Navigation");
+  const brandName = whiteLabel?.brandName || DEFAULT_BRAND_NAME;
 
   const visibleNavGroups = APP_SIDEBAR_NAV.map((group) => ({
     ...group,
@@ -94,28 +101,14 @@ export function AppSidebar() {
             <SidebarMenuButton
               size="lg"
               asChild
-              tooltip="Kosume"
+              tooltip={brandName}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors"
             >
               <Link href="/" onClick={handleLinkClick}>
-                {/* Hexagon Brand Emblem */}
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-xl shadow-xs">
-                  <svg
-                    className="size-4 fill-current"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="text-sidebar-foreground truncate text-base font-bold">
-                    Kosume
-                  </span>
-                  <span className="text-muted-foreground truncate text-[11px] font-medium">
-                    Portfolio Hub
-                  </span>
-                </div>
+                <WhiteLabelLogo
+                  className="h-8 w-auto object-contain"
+                  textClassName="text-base"
+                />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

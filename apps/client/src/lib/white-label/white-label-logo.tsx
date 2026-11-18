@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import React, { useSyncExternalStore } from "react";
 import { DEFAULT_BRAND_NAME } from "./white-label.config";
 import { useWhiteLabel } from "./white-label-provider";
+import { cn } from "@/lib/utils";
 
 type WhiteLabelLogoProps = {
   className?: string;
@@ -12,6 +13,8 @@ type WhiteLabelLogoProps = {
   height?: number;
   alt?: string;
   fallback?: React.ReactNode;
+  textClassName?: string;
+  showEmblemOnFallback?: boolean;
 };
 
 const emptySubscribe = () => () => {};
@@ -22,27 +25,55 @@ export function WhiteLabelLogo({
   height = 36,
   alt,
   fallback,
+  textClassName,
+  showEmblemOnFallback = true,
 }: WhiteLabelLogoProps) {
   const { whiteLabel, isEnabled } = useWhiteLabel();
   const { theme, resolvedTheme } = useTheme();
   const isMounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
-    () => false,
+    () => false
+  );
+
+  const brandName =
+    isEnabled && whiteLabel?.brandName
+      ? whiteLabel.brandName
+      : DEFAULT_BRAND_NAME;
+
+  const defaultFallback = (
+    <div className="inline-flex items-center gap-2">
+      {showEmblemOnFallback && (
+        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-xl shadow-xs">
+          <svg
+            className="size-4 fill-current"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+      )}
+      <span
+        className={cn(
+          "text-foreground text-xl font-black tracking-tight",
+          textClassName
+        )}
+      >
+        {brandName}
+      </span>
+    </div>
   );
 
   if (!isEnabled || !whiteLabel) {
-    return (
-      <>{fallback ?? <span className="font-bold">{DEFAULT_BRAND_NAME}</span>}</>
-    );
+    return <>{fallback ?? defaultFallback}</>;
   }
 
   const isDark = isMounted && (resolvedTheme === "dark" || theme === "dark");
   const logoSrc = (isDark && whiteLabel.siteDarkLogo) || whiteLabel.siteLogo;
-  const brandName = whiteLabel.brandName || DEFAULT_BRAND_NAME;
 
   if (!logoSrc) {
-    return <>{fallback ?? <span className="font-bold">{brandName}</span>}</>;
+    return <>{fallback ?? defaultFallback}</>;
   }
 
   return (
