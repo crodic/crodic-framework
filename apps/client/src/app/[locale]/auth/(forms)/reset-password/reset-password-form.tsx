@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import xior, { XiorError } from "xior";
-import { z } from "zod";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +29,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { WhiteLabelLogo } from "@/lib/white-label";
+import {
+  createResetPasswordFormSchema,
+  type ResetPasswordFormValues,
+} from "./schema";
 
 export default function ResetPasswordForm() {
   const t = useTranslations("Auth.resetPassword");
@@ -36,19 +40,10 @@ export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const resetPasswordFormSchema = z
-    .object({
-      password: z.string().min(8, { message: t("validation.passwordMin") }),
-      confirmPassword: z
-        .string()
-        .min(8, { message: t("validation.passwordMin") }),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t("validation.passwordsMismatch"),
-      path: ["confirmPassword"],
-    });
-
-  type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;
+  const resetPasswordFormSchema = useMemo(
+    () => createResetPasswordFormSchema(t),
+    [t]
+  );
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordFormSchema),

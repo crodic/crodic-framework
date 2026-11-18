@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { BadgeCheck, Check, Plus } from "lucide-react";
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { FollowedCosplayer } from "./profile-types";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { toggleFollow as toggleFollowApi } from "@/services/social";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ProfileFollowedProps {
   initialFollowed: FollowedCosplayer[];
@@ -16,15 +19,36 @@ interface ProfileFollowedProps {
 export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
   const t = useTranslations("Profile");
   const tCos = useTranslations("CosplayerProfile");
+  const queryClient = useQueryClient();
   const [followedList, setFollowedList] =
     useState<FollowedCosplayer[]>(initialFollowed);
 
-  const toggleFollow = (id: string) => {
-    setFollowedList((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isFollowing: !item.isFollowing } : item
-      )
-    );
+  useEffect(() => {
+    if (initialFollowed) {
+      setFollowedList(initialFollowed);
+    }
+  }, [initialFollowed]);
+
+  const handleToggleFollow = async (id: string, name: string) => {
+    try {
+      const res = await toggleFollowApi(id);
+      setFollowedList((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, isFollowing: res.following } : item
+        )
+      );
+      await queryClient.invalidateQueries({ queryKey: ["my-following"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+      if (res.following) {
+        toast.success(tCos("followedSuccess", { name }));
+      } else {
+        toast.info(tCos("unfollowedSuccess", { name }));
+      }
+    } catch {
+      toast.error(tCos("followError"));
+    }
   };
 
   const getCosplayerSlug = (cosplayer: FollowedCosplayer) => {
@@ -116,7 +140,9 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
                   <Button
                     type="button"
                     variant={cosplayer.isFollowing ? "outline" : "default"}
-                    onClick={() => toggleFollow(cosplayer.id)}
+                    onClick={() =>
+                      handleToggleFollow(cosplayer.id, cosplayer.name)
+                    }
                     className={cn(
                       "h-9 w-full cursor-pointer rounded-xl text-xs font-semibold transition-all",
                       cosplayer.isFollowing

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   FolderHeart,
@@ -12,6 +12,7 @@ import {
   Share2,
   Clock,
   Images,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,10 +24,26 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createCollectionSchema,
+  type CreateCollectionFormValues,
+} from "./schema";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CollectionPhoto, SavedCollection } from "./profile-types";
 import { useTranslations } from "next-intl";
+import { createCollection, deleteCollection } from "@/services/collections";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ProfileSavedCollectionsProps {
   initialCollections: SavedCollection[];
@@ -39,10 +56,23 @@ export function ProfileSavedCollections({
 }: ProfileSavedCollectionsProps) {
   const t = useTranslations("Profile");
   const tCommon = useTranslations("Common");
+  const queryClient = useQueryClient();
   const [collections, setCollections] =
     useState<SavedCollection[]>(initialCollections);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
+
+  const form = useForm<CreateCollectionFormValues>({
+    resolver: zodResolver(createCollectionSchema(t)),
+    defaultValues: {
+      title: "",
+    },
+  });
+
+  useEffect(() => {
+    if (initialCollections) {
+      setCollections(initialCollections);
+    }
+  }, [initialCollections]);
 
   // Viewing full collection modal
   const [selectedCollection, setSelectedCollection] =
@@ -51,23 +81,48 @@ export function ProfileSavedCollections({
   // Fullscreen Lightbox for individual photo
   const [activePhoto, setActivePhoto] = useState<CollectionPhoto | null>(null);
 
-  const handleCreateCollection = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
+  const createMutation = useMutation({
+    mutationFn: (values: CreateCollectionFormValues) =>
+      createCollection({
+        title: values.title.trim(),
+        isPublic: true,
+      }),
+    onSuccess: async (created) => {
+      const newCol: SavedCollection = {
+        id: created.id,
+        title: created.title,
+        count: created.itemsCount || 0,
+        thumbnails: created.previewThumbnails || [],
+        photos: [],
+        updatedAt: created.updatedAt,
+      };
 
-    const newCol: SavedCollection = {
-      id: `col-${Date.now()}`,
-      title: newTitle.trim(),
-      count: 0,
-      thumbnails: [],
-      photos: [],
-      updatedAt: new Date().toLocaleDateString(),
-    };
+      setCollections((prev) => [newCol, ...prev]);
+      form.reset();
+      setIsCreateOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      toast.success(t("collectionCreated"));
+    },
+    onError: () => {
+      toast.error(tCommon("error"));
+    },
+  });
 
-    setCollections((prev) => [newCol, ...prev]);
-    setNewTitle("");
-    setIsCreateOpen(false);
-    toast.success(t("collectionCreated"));
+  const deleteMutation = useMutation({
+    mutationFn: (collectionId: string) => deleteCollection(collectionId),
+    onSuccess: async (_, collectionId) => {
+      setCollections((prev) => prev.filter((c) => c.id !== collectionId));
+      setSelectedCollection(null);
+      await queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      toast.success(tCommon("confirm"));
+    },
+    onError: () => {
+      toast.error(tCommon("error"));
+    },
+  });
+
+  const onSubmitCreate = (values: CreateCollectionFormValues) => {
+    createMutation.mutate(values);
   };
 
   const handleRemovePhoto = (photoId: string) => {
@@ -88,8 +143,7 @@ export function ProfileSavedCollections({
   };
 
   const handleDeleteCollection = (collectionId: string) => {
-    setCollections((prev) => prev.filter((c) => c.id !== collectionId));
-    setSelectedCollection(null);
+    deleteMutation.mutate(collectionId);
   };
 
   const handleShareCollection = (col: SavedCollection) => {
@@ -409,38 +463,58 @@ export function ProfileSavedCollections({
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreateCollection} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <label className="text-muted-foreground text-xs font-semibold">
-                {t("collectionTitle")}
-              </label>
-              <Input
-                placeholder={t("collectionPlaceholder")}
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="h-10 rounded-xl"
-                required
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmitCreate)}
+              className="space-y-4 pt-2"
+            >
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold">
+                      {t("collectionTitle")}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("collectionPlaceholder")}
+                        className="h-10 rounded-xl"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsCreateOpen(false)}
-                className="rounded-xl"
-              >
-                {tCommon("cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={!newTitle.trim()}
-                className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
-              >
-                {t("createCollection")}
-              </Button>
-            </DialogFooter>
-          </form>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={createMutation.isPending}
+                  onClick={() => setIsCreateOpen(false)}
+                  className="rounded-xl"
+                >
+                  {tCommon("cancel")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      {t("createCollection")}
+                    </>
+                  ) : (
+                    t("createCollection")
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>

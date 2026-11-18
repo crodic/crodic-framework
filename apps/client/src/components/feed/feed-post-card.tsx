@@ -12,8 +12,8 @@ import {
   MoreHorizontal,
   SendHorizontal,
   Share2,
+  Loader2,
 } from "lucide-react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -22,7 +22,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -31,14 +37,14 @@ import { PhotoLightbox } from "./photo-lightbox";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
 import { toggleLikePost, addPostComment } from "@/services/posts";
+import {
+  getMyCollections,
+  createCollection,
+  addCollectionItem,
+} from "@/services/collections";
 import { useTranslations } from "next-intl";
-
-const createCommentSchema = (errorMsg: string) =>
-  z.object({
-    comment: z.string().min(1, errorMsg),
-  });
-
-type CommentFormValues = { comment: string };
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFeedCommentSchema, type FeedCommentFormValues } from "./schema";
 
 export interface FeedPostCardProps {
   post: PostSummaryResDto;
@@ -54,6 +60,7 @@ interface LocalComment {
 
 export function FeedPostCard({ post }: FeedPostCardProps) {
   const t = useTranslations("Feed");
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
   const currentAuthorName = profile?.fullName || profile?.firstName || "You";
@@ -84,42 +91,110 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
     : "";
 
   const commentSchema = React.useMemo(
-    () => createCommentSchema(t("inputCommentError")),
+    () => createFeedCommentSchema(t("inputCommentError")),
     [t]
   );
 
-  const form = useForm<CommentFormValues>({
+  const form = useForm<FeedCommentFormValues>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
       comment: "",
     },
   });
 
-  const handleToggleLike = async () => {
+  const likeMutation = useMutation({
+    mutationFn: () => toggleLikePost(post.id),
+    onMutate: () => {
+      const nextState = !isLiked;
+      setIsLiked(nextState);
+      setLikesCount((prev) => (nextState ? prev + 1 : prev - 1));
+      return { previousLiked: isLiked, previousCount: likesCount };
+    },
+    onSuccess: (data) => {
+      if (typeof data?.liked === "boolean") {
+        setIsLiked(data.liked);
+      }
+      if (typeof data?.likesCount === "number") {
+        setLikesCount(data.likesCount);
+      }
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+    onError: (_err, _variables, context) => {
+      if (context) {
+        setIsLiked(context.previousLiked);
+        setLikesCount(context.previousCount);
+      }
+      toast.error(t("likeError"));
+    },
+  });
+
+  const bookmarkMutation = useMutation({
+    mutationFn: async (nextState: boolean) => {
+      const myCols = await getMyCollections({ limit: 1 });
+      let targetColId = myCols?.data?.[0]?.id;
+      if (!targetColId) {
+        const created = await createCollection({
+          title: "Saved Works",
+          isPublic: false,
+        });
+        targetColId = created.id;
+      }
+      if (nextState) {
+        await addCollectionItem(targetColId, { postId: post.id });
+      }
+      return { nextState };
+    },
+    onSuccess: ({ nextState }) => {
+      queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      if (nextState) {
+        toast.success(t("savedToCollection"));
+      } else {
+        toast.info(t("removedFromSaved"));
+      }
+    },
+    onError: () => {
+      setIsBookmarked(!isBookmarked);
+      toast.error(t("saveError"));
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (content: string) => addPostComment(post.id, content),
+    onSuccess: (created) => {
+      const newComment: LocalComment = {
+        id: created.id || `comment-${Date.now()}`,
+        authorName: created.author?.displayName || currentAuthorName,
+        authorAvatarUrl: created.author?.avatarUrl || currentAuthorAvatar,
+        content: created.content,
+        createdAt: t("justNow"),
+      };
+      setComments((prev) => [newComment, ...prev]);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["post-comments", post.id] });
+      toast.success(t("commentSuccess"));
+    },
+    onError: () => {
+      toast.error(t("commentError"));
+    },
+  });
+
+  const handleToggleLike = () => {
     if (!isAuthenticated) {
       toast.info(t("loginToLike"));
       return;
     }
-    const nextState = !isLiked;
-    setIsLiked(nextState);
-    setLikesCount((prev) => (nextState ? prev + 1 : prev - 1));
-
-    try {
-      await toggleLikePost(post.id);
-    } catch {
-      setIsLiked(!nextState);
-      setLikesCount((prev) => (!nextState ? prev + 1 : prev - 1));
-    }
+    likeMutation.mutate();
   };
 
   const handleToggleBookmark = () => {
+    if (!isAuthenticated) {
+      toast.info(t("loginToComment"));
+      return;
+    }
     const nextState = !isBookmarked;
     setIsBookmarked(nextState);
-    if (nextState) {
-      toast.success(t("savedToCollection"));
-    } else {
-      toast.info(t("removedFromSaved"));
-    }
+    bookmarkMutation.mutate(nextState);
   };
 
   const handleShare = () => {
@@ -131,31 +206,12 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
     }
   };
 
-  const handleAddComment = async (content: string) => {
+  const onSubmitComment = (values: FeedCommentFormValues) => {
     if (!isAuthenticated) {
       toast.info(t("loginToComment"));
       return;
     }
-
-    try {
-      const created = await addPostComment(post.id, content);
-      const newComment: LocalComment = {
-        id: created.id || `comment-${Date.now()}`,
-        authorName: created.author?.displayName || currentAuthorName,
-        authorAvatarUrl: created.author?.avatarUrl || currentAuthorAvatar,
-        content: created.content,
-        createdAt: t("justNow"),
-      };
-      setComments((prev) => [newComment, ...prev]);
-      toast.success(t("commentSuccess"));
-    } catch {
-      toast.error(t("commentError"));
-    }
-  };
-
-  const onSubmitComment = (values: CommentFormValues) => {
-    handleAddComment(values.comment.trim());
-    form.reset();
+    commentMutation.mutate(values.comment.trim());
   };
 
   const openLightbox = (index: number) => {
@@ -479,15 +535,21 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button
                   type="submit"
                   size="sm"
+                  disabled={commentMutation.isPending}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 h-8.5 cursor-pointer rounded-xl px-3 shadow-xs"
                 >
-                  <SendHorizontal className="size-3.5" />
+                  {commentMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <SendHorizontal className="size-3.5" />
+                  )}
                 </Button>
               </form>
             </Form>

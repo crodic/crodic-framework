@@ -2,8 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Camera, Check, Link as LinkIcon, User } from "lucide-react";
-import { z } from "zod";
+import { Camera, Check, Link as LinkIcon, Loader2, User } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -25,28 +24,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { CosplayerDetailResDto } from "@/services/cosplayer";
-
-const createProfileEditSchema = (t: (key: any) => string) =>
-  z.object({
-    displayName: z.string().min(1, t("valDisplayName")),
-    handle: z.string().min(1, t("valHandle")),
-    bio: z.string().optional(),
-    facebookUrl: z.string().optional(),
-    instagramUrl: z.string().optional(),
-    tiktokUrl: z.string().optional(),
-    twitterUrl: z.string().optional(),
-  });
-
-type ProfileEditFormValues = {
-  displayName: string;
-  handle: string;
-  bio?: string;
-  facebookUrl?: string;
-  instagramUrl?: string;
-  tiktokUrl?: string;
-  twitterUrl?: string;
-};
+import {
+  uploadMyAvatar,
+  uploadMyCover,
+  updateMyCosplayerProfile,
+  type CosplayerDetailResDto,
+} from "@/services/cosplayer";
+import { createProfileEditSchema, type ProfileEditFormValues } from "./schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ProfileEditDialogProps {
   open: boolean;
@@ -62,8 +48,11 @@ export function ProfileEditDialog({
   onSave,
 }: ProfileEditDialogProps) {
   const t = useTranslations("CosplayerProfile.editDialog");
+  const queryClient = useQueryClient();
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || "");
   const [coverUrl, setCoverUrl] = useState(profile.coverUrl || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -96,11 +85,14 @@ export function ProfileEditDialog({
     });
     setAvatarUrl(profile.avatarUrl || "");
     setCoverUrl(profile.coverUrl || "");
+    setAvatarFile(null);
+    setCoverFile(null);
   }, [profile, form]);
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setCoverFile(file);
       const tempUrl = URL.createObjectURL(file);
       setCoverUrl(tempUrl);
     }
@@ -109,29 +101,63 @@ export function ProfileEditDialog({
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const tempUrl = URL.createObjectURL(file);
       setAvatarUrl(tempUrl);
     }
   };
 
-  const onSubmit = (values: ProfileEditFormValues) => {
-    onSave({
-      displayName: values.displayName,
-      handle: values.handle,
-      bio: values.bio,
-      avatarUrl,
-      coverUrl,
-      facebookUrl: values.facebookUrl,
-      instagramUrl: values.instagramUrl,
-      tiktokUrl: values.tiktokUrl,
-      twitterUrl: values.twitterUrl,
-    });
+  const updateMutation = useMutation({
+    mutationFn: async (values: ProfileEditFormValues) => {
+      let finalAvatarUrl = avatarUrl;
+      let finalCoverUrl = coverUrl;
 
-    setIsSaved(true);
-    setTimeout(() => {
-      setIsSaved(false);
-      onOpenChange(false);
-    }, 1000);
+      if (avatarFile) {
+        const res = await uploadMyAvatar(avatarFile);
+        finalAvatarUrl = res.avatarUrl;
+      }
+
+      if (coverFile) {
+        const res = await uploadMyCover(coverFile);
+        finalCoverUrl = res.coverUrl;
+      }
+
+      const updatePayload: Partial<CosplayerDetailResDto> = {
+        displayName: values.displayName,
+        handle: values.handle,
+        bio: values.bio,
+        avatarUrl: finalAvatarUrl,
+        coverUrl: finalCoverUrl,
+        facebookUrl: values.facebookUrl,
+        instagramUrl: values.instagramUrl,
+        tiktokUrl: values.tiktokUrl,
+        twitterUrl: values.twitterUrl,
+      };
+
+      return updateMyCosplayerProfile(updatePayload);
+    },
+    onSuccess: async (updated) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+
+      onSave(updated);
+      setIsSaved(true);
+      toast.success(t("success"));
+      setTimeout(() => {
+        setIsSaved(false);
+        onOpenChange(false);
+      }, 800);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || t("saving"));
+    },
+  });
+
+  const onSubmit = (values: ProfileEditFormValues) => {
+    updateMutation.mutate(values);
   };
 
   return (
@@ -375,6 +401,7 @@ export function ProfileEditDialog({
               <Button
                 type="button"
                 variant="ghost"
+                disabled={updateMutation.isPending}
                 onClick={() => onOpenChange(false)}
                 className="rounded-xl"
               >
@@ -382,10 +409,19 @@ export function ProfileEditDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={isSaved}
+                disabled={isSaved || updateMutation.isPending}
                 className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-6 font-semibold"
               >
-                {isSaved ? t("saving") : t("save")}
+                {updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    {t("saving")}
+                  </>
+                ) : isSaved ? (
+                  t("saving")
+                ) : (
+                  t("save")
+                )}
               </Button>
             </DialogFooter>
           </form>

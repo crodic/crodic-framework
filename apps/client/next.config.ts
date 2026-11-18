@@ -15,6 +15,22 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.google.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ggpht.com",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.crodic.click",
       },
       {
@@ -70,6 +86,19 @@ const nextConfig: NextConfig = {
         hostname: "api.crodic.click",
       },
     ],
+  },
+  async rewrites() {
+    const rawApiUrl =
+      process.env.SERVER_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:8000";
+    const apiBase = rawApiUrl.replace(/\/api(\/v\d+)?\/?$/, "");
+    return [
+      {
+        source: "/storage/:path*",
+        destination: `${apiBase}/storage/:path*`,
+      },
+    ];
   },
 };
 

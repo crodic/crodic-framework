@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { z } from "zod";
+import React, { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -37,27 +36,8 @@ import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { applyEvent } from "@/services/events";
-
-const createApplyEventSchema = (tApply: (key: any) => string) =>
-  z.object({
-    fullName: z.string().min(1, tApply("valFullName")),
-    stageName: z.string().min(1, tApply("valStageName")),
-    category: z.string().min(1, tApply("valCategory")),
-    phone: z.string().min(8, tApply("valPhone")),
-    characterPlanned: z.string().min(1, tApply("valCharacter")),
-    portfolioUrl: z.string().optional(),
-    notes: z.string().optional(),
-  });
-
-type ApplyEventFormValues = {
-  fullName: string;
-  stageName: string;
-  category: string;
-  phone: string;
-  characterPlanned: string;
-  portfolioUrl?: string;
-  notes?: string;
-};
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createApplyEventSchema, type ApplyEventFormValues } from "./schema";
 
 export interface EventApplyDialogProps {
   open: boolean;
@@ -70,7 +50,7 @@ export function EventApplyDialog({
   onOpenChange,
   event,
 }: EventApplyDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
   const router = useRouter();
@@ -81,18 +61,6 @@ export function EventApplyDialog({
     () => createApplyEventSchema(tApply),
     [tApply]
   );
-
-  const handleOpenChange = (val: boolean) => {
-    if (val) {
-      if (isHydrating) return;
-      if (!isAuthenticated) {
-        toast.info(t("loginRequired"));
-        router.push("/auth/login?from=/events");
-        return;
-      }
-    }
-    onOpenChange(val);
-  };
 
   const form = useForm<ApplyEventFormValues>({
     resolver: zodResolver(applyEventSchema),
@@ -107,36 +75,57 @@ export function EventApplyDialog({
     },
   });
 
-  const onSubmit = async (values: ApplyEventFormValues) => {
-    if (isHydrating) return;
-    if (!isAuthenticated) {
-      toast.info(t("loginRequired"));
-      router.push("/auth/login?from=/events");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
+  const applyMutation = useMutation({
+    mutationFn: async (values: ApplyEventFormValues) => {
+      if (!event?.id) throw new Error("Event ID missing");
+      return applyEvent(event.id, {
+        roleType: values.category,
+        stageName: values.stageName,
+        contactInfo: values.phone,
+        portfolioUrl: values.portfolioUrl,
+        experience: values.characterPlanned,
+        message: values.notes,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       if (event?.id) {
-        await applyEvent(event.id, {
-          roleType: values.category,
-          stageName: values.stageName,
-          contactInfo: values.phone,
-          portfolioUrl: values.portfolioUrl,
-          experience: values.characterPlanned,
-          message: values.notes,
-        });
+        queryClient.invalidateQueries({ queryKey: ["event", event.id] });
       }
       toast.success(tApply("successTitle"), {
         description: tApply("successDesc"),
       });
       form.reset();
       onOpenChange(false);
-    } catch {
+    },
+    onError: () => {
       toast.error(tApply("errorGeneric"));
-    } finally {
-      setIsSubmitting(false);
+    },
+  });
+
+  const handleOpenChange = (val: boolean) => {
+    if (val) {
+      if (isHydrating) return;
+      if (!isAuthenticated) {
+        toast.info(t("loginRequired"));
+        router.push("/auth/login?from=/events");
+        return;
+      }
     }
+    onOpenChange(val);
   };
+
+  const onSubmit = (values: ApplyEventFormValues) => {
+    if (isHydrating) return;
+    if (!isAuthenticated) {
+      toast.info(t("loginRequired"));
+      router.push("/auth/login?from=/events");
+      return;
+    }
+    applyMutation.mutate(values);
+  };
+
+  const isSubmitting = applyMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

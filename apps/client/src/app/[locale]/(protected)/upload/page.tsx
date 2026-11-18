@@ -1,7 +1,6 @@
 import React from "react";
 import Layout from "@/components/layouts/layout";
-import { SortableImageUpload } from "@/components/form/sortable-image-upload";
-import { CreateAlbumForm } from "@/components/studio/create-album-form";
+import { StudioUploadView } from "@/components/studio/studio-upload-view";
 import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -37,33 +36,7 @@ export default async function StudioUploadPage({ params }: UploadPageProps) {
           </p>
         </div>
 
-        {/* Studio Upload Frame */}
-        <div className="bg-card border-border/80 flex flex-col overflow-hidden rounded-2xl border shadow-xl md:flex-row">
-          {/* Left Column: Sortable Image Grid */}
-          <div className="border-border/60 flex flex-1 flex-col border-r p-6 md:w-[58%]">
-            <SortableImageUpload
-              variant="studio"
-              showInlineAddSlot={true}
-              existingImages={[]}
-              maxFiles={20}
-              gridClassName="grid-cols-2 sm:grid-cols-3 gap-3"
-            />
-          </div>
-
-          {/* Right Column: Studio Form */}
-          <div className="bg-card/60 p-6 md:w-[42%]">
-            <div className="border-border/60 mb-5 border-b pb-3">
-              <h2 className="text-foreground text-base font-bold">
-                {t("titleLabel")}
-              </h2>
-              <p className="text-muted-foreground text-xs">
-                {t("descPlaceholder")}
-              </p>
-            </div>
-
-            <CreateAlbumForm />
-          </div>
-        </div>
+        <StudioUploadView />
       </div>
     </Layout>
   );

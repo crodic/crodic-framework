@@ -1,12 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import xior, { XiorError } from "xior";
-import { z } from "zod";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,15 +27,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { WhiteLabelLogo } from "@/lib/white-label";
+import {
+  createForgotPasswordFormSchema,
+  type ForgotPasswordFormValues,
+} from "./schema";
 
 export default function ForgotPasswordForm() {
   const t = useTranslations("Auth.forgotPassword");
 
-  const forgotPasswordFormSchema = z.object({
-    email: z.email(t("email")),
-  });
-
-  type ForgotPasswordFormValues = z.infer<typeof forgotPasswordFormSchema>;
+  const forgotPasswordFormSchema = useMemo(
+    () => createForgotPasswordFormSchema(t),
+    [t]
+  );
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordFormSchema),

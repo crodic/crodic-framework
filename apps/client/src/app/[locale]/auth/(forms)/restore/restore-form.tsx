@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, RotateCcw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import xior, { XiorError } from "xior";
-import { z } from "zod";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
 import { WhiteLabelLogo } from "@/lib/white-label";
+import { createRestoreFormSchema, type RestoreFormValues } from "./schema";
 
 export default function RestoreForm() {
   const t = useTranslations("Auth.restore");
@@ -35,19 +36,7 @@ export default function RestoreForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const restoreFormSchema = z
-    .object({
-      password: z.string().min(8, { message: t("validation.passwordMin") }),
-      confirmPassword: z
-        .string()
-        .min(8, { message: t("validation.passwordMin") }),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t("validation.passwordsMismatch"),
-      path: ["confirmPassword"],
-    });
-
-  type RestoreFormValues = z.infer<typeof restoreFormSchema>;
+  const restoreFormSchema = useMemo(() => createRestoreFormSchema(t), [t]);
 
   const form = useForm<RestoreFormValues>({
     resolver: zodResolver(restoreFormSchema),

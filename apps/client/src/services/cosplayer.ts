@@ -121,3 +121,75 @@ export const updateMyCosplayerProfile = async (
   );
   return data;
 };
+
+export const uploadMyCover = async (
+  file: File
+): Promise<{ coverUrl: string }> => {
+  const formData = new FormData();
+  formData.append("cover", file);
+  formData.append("file", file);
+  const { data } = await http.post<{ coverUrl: string }>(
+    "/api/v1/cosplayer/me/cover",
+    formData
+  );
+  return data;
+};
+
+export const uploadMyAvatar = async (
+  file: File
+): Promise<{ avatarUrl: string }> => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  formData.append("file", file);
+  const { data } = await http.post<{ avatarUrl: string }>(
+    "/api/v1/cosplayer/me/avatar",
+    formData
+  );
+  return data;
+};
+
+export const uploadMyMedia = async (
+  file: File,
+  folder = "posts"
+): Promise<{
+  url: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
+}> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", folder);
+  const { data } = await http.post<{
+    url: string;
+    originalName: string;
+    size: number;
+    mimeType: string;
+  }>("/api/v1/cosplayer/me/upload", formData);
+  return data;
+};
+
+export const getMyCharacters = async (): Promise<
+  CosplayerCharacterResDto[]
+> => {
+  const { data } = await http.get<CosplayerCharacterResDto[]>(
+    "/api/v1/cosplayer/me/characters"
+  );
+  return data || [];
+};
+
+export const addMyCharacter = async (dto: {
+  characterName: string;
+  seriesName: string;
+  coverImageUrl?: string;
+}): Promise<CosplayerCharacterResDto> => {
+  const { data } = await http.post<CosplayerCharacterResDto>(
+    "/api/v1/cosplayer/me/characters",
+    dto
+  );
+  return data;
+};
+
+export const deleteMyCharacter = async (id: string): Promise<void> => {
+  await http.delete(`/api/v1/cosplayer/me/characters/${id}`);
+};

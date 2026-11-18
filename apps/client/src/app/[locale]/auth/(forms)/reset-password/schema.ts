@@ -1,0 +1,18 @@
+import { z } from "zod";
+
+export const createResetPasswordFormSchema = (t: (key: any) => string) =>
+  z
+    .object({
+      password: z.string().min(8, { message: t("validation.passwordMin") }),
+      confirmPassword: z
+        .string()
+        .min(8, { message: t("validation.passwordMin") }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("validation.passwordsMismatch"),
+      path: ["confirmPassword"],
+    });
+
+export type ResetPasswordFormValues = z.infer<
+  ReturnType<typeof createResetPasswordFormSchema>
+>;

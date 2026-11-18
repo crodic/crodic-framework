@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import xior, { XiorError } from "xior";
-import { z } from "zod";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,28 +29,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { WhiteLabelLogo } from "@/lib/white-label";
+import { createSignUpFormSchema, type SignUpFormValues } from "./schema";
 
 export default function SignUpForm() {
   const t = useTranslations("Auth.signUp");
 
-  const signUpFormSchema = z
-    .object({
-      firstName: z
-        .string()
-        .min(1, { message: t("validation.firstNameRequired") }),
-      lastName: z.string().optional(),
-      email: z.email(t("validation.emailInvalid")),
-      password: z.string().min(8, { message: t("validation.passwordMin") }),
-      confirmPassword: z
-        .string()
-        .min(8, { message: t("validation.passwordMin") }),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t("validation.passwordsMismatch"),
-      path: ["confirmPassword"],
-    });
-
-  type SignUpFormValues = z.infer<typeof signUpFormSchema>;
+  const signUpFormSchema = useMemo(() => createSignUpFormSchema(t), [t]);
 
   const router = useRouter();
   const form = useForm<SignUpFormValues>({

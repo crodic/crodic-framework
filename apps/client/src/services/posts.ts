@@ -120,6 +120,17 @@ export const getPosts = async (
         if (key === "search") {
           searchParams.append("filter[search]", String(val));
           searchParams.append("search", String(val));
+        } else if (
+          [
+            "authorId",
+            "albumCategory",
+            "postType",
+            "isPublic",
+            "status",
+            "isFeaturedWork",
+          ].includes(key)
+        ) {
+          searchParams.append(`filter[${key}]`, String(val));
         } else {
           searchParams.append(key, String(val));
         }

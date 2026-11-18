@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
 import { ProfileHero } from "./profile-hero";
@@ -67,6 +67,12 @@ export function CosplayerProfileView({
   const [profile, setProfile] = useState<CosplayerDetailResDto>(initialProfile);
   const [viewMode, setViewMode] = useState<"owner" | "visitor">("owner");
   const [activeTab, setActiveTab] = useState(isOwner ? "following" : "albums");
+
+  useEffect(() => {
+    if (initialProfile && initialProfile.id) {
+      setProfile(initialProfile);
+    }
+  }, [initialProfile]);
 
   const effectiveOwnerMode = isOwner && viewMode === "owner";
 

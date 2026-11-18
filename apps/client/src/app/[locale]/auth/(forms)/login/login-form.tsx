@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { createLoginFormSchema, type LoginFormValues } from "./schema";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,12 +59,7 @@ export default function LoginForm() {
       : null
   ) as AuthCode | null;
 
-  const loginFormSchema = z.object({
-    email: z.string().min(1, t("email")),
-    password: z.string().min(1, t("password")),
-  });
-
-  type LoginFormValues = z.infer<typeof loginFormSchema>;
+  const loginFormSchema = useMemo(() => createLoginFormSchema(t), [t]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   KeyRound,
   Laptop,
@@ -9,7 +9,6 @@ import {
   Smartphone,
   Trash2,
 } from "lucide-react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -40,19 +39,7 @@ import {
   useSessions,
   useSetupPassword,
 } from "@/hooks/use-profile";
-
-const passwordFormSchema = z
-  .object({
-    currentPassword: z.string().optional(),
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(1, "Please confirm password"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+import { createPasswordFormSchema, type PasswordFormValues } from "./schema";
 
 export function SecuritySettings() {
   const t = useTranslations("Security");
@@ -68,8 +55,10 @@ export function SecuritySettings() {
 
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
+  const passwordSchema = useMemo(() => createPasswordFormSchema(t as any), [t]);
+
   const form = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordFormSchema),
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",

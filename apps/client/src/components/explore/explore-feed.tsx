@@ -17,7 +17,7 @@ import {
 } from "@/services/cosplayer";
 
 const EXPLORE_TAGS = [
-  { id: "all", label: "Tất cả" },
+  { id: "all", label: "All" },
   { id: "honkai", label: "Honkai: Star Rail" },
   { id: "genshin", label: "Genshin Impact" },
   { id: "wuthering", label: "Wuthering Waves" },

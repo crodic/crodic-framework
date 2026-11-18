@@ -6,6 +6,7 @@ import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
 import { CosplayerProfileView } from "@/components/cosplayer-profile/cosplayer-profile-view";
 import { getCosplayerBySlug } from "@/services/cosplayer";
+import { getPosts } from "@/services/posts";
 import type { WithContext, ProfilePage, Person } from "schema-dts";
 
 interface CosplayerPageProps {
@@ -85,6 +86,10 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
 
   try {
     const profile = await getCosplayerBySlug(slug);
+    const albumsRes = await getPosts({
+      authorId: profile.userId,
+      limit: 50,
+    }).catch(() => ({ data: [] }));
 
     // Rich SEO Schema (ProfilePage & Person)
     const jsonLd: WithContext<ProfilePage> = {
@@ -121,7 +126,7 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
         <div className="mx-auto max-w-[1440px] p-3.5 sm:p-6 lg:p-8">
           <CosplayerProfileView
             initialProfile={profile}
-            initialAlbums={[]}
+            initialAlbums={albumsRes.data || []}
             initialCharacters={profile.characters || []}
           />
         </div>

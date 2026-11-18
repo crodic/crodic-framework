@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useProfile } from "@/hooks/use-profile";
 import {
   getMyCosplayerProfile,
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
+import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { getUserFollowing, type FollowUserResDto } from "@/services/social";
+import {
+  getMyCollections,
+  type CollectionResDto,
+} from "@/services/collections";
+import type { FollowedCosplayer, SavedCollection } from "./profile-types";
 import { CosplayerProfileView } from "./cosplayer-profile-view";
 import { Compass, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -92,6 +99,47 @@ export function MyProfileContainer() {
       new Date().toISOString(),
   };
 
+  const { data: myPostsRes } = useQuery({
+    queryKey: ["my-posts", effectiveProfile.userId],
+    queryFn: () => getPosts({ authorId: effectiveProfile.userId, limit: 50 }),
+    enabled: !!effectiveProfile.userId,
+  });
+
+  const { data: myFollowingRes } = useQuery({
+    queryKey: ["my-following", effectiveProfile.userId],
+    queryFn: () => getUserFollowing(effectiveProfile.userId, { limit: 50 }),
+    enabled: !!effectiveProfile.userId,
+  });
+
+  const { data: myCollectionsRes } = useQuery({
+    queryKey: ["my-collections"],
+    queryFn: () => getMyCollections({ limit: 50 }),
+  });
+
+  const myFollowedCosplayers: FollowedCosplayer[] = useMemo(() => {
+    return (myFollowingRes?.data || []).map((user) => ({
+      id: user.id,
+      name: user.displayName,
+      handle: user.handle
+        ? `@${user.handle.replace(/^@/, "")}`
+        : `@user-${user.id}`,
+      avatarUrl: user.avatarUrl || "/landing/hero-banner.png",
+      isVerified: false,
+      previewPhoto: user.avatarUrl || "/landing/hero-banner.png",
+      isFollowing: true,
+    }));
+  }, [myFollowingRes]);
+
+  const mySavedCollections: SavedCollection[] = useMemo(() => {
+    return (myCollectionsRes?.data || []).map((col) => ({
+      id: col.id,
+      title: col.title,
+      count: col.itemsCount,
+      thumbnails: col.previewThumbnails || [],
+      updatedAt: col.updatedAt,
+    }));
+  }, [myCollectionsRes]);
+
   const isIncomplete =
     !effectiveProfile.bio &&
     (!effectiveProfile.specialties ||
@@ -136,11 +184,11 @@ export function MyProfileContainer() {
 
       <CosplayerProfileView
         initialProfile={effectiveProfile}
-        initialAlbums={[]}
+        initialAlbums={myPostsRes?.data || []}
         initialCharacters={effectiveProfile.characters || []}
-        initialFollowed={[]}
+        initialFollowed={myFollowedCosplayers}
         initialLikedWorks={[]}
-        initialCollections={[]}
+        initialCollections={mySavedCollections}
         isOwner={true}
       />
     </div>

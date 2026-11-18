@@ -7,11 +7,14 @@ import {
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
+import { FilesystemService } from '../../../filesystem/filesystem.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
@@ -51,6 +54,8 @@ export class CosplayerService {
     private readonly characterRepo: Repository<CosplayerCharacterEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @Optional()
+    private readonly filesystemService?: FilesystemService,
   ) {}
 
   /**
@@ -263,6 +268,114 @@ export class CosplayerService {
     });
 
     return this.toDetailDto(profile, characters);
+  }
+
+  /**
+   * Upload and persist profile cover image.
+   */
+  async uploadCover(
+    userId: AutoIncrementID,
+    file: Express.Multer.File,
+  ): Promise<{ coverUrl: string }> {
+    if (!this.filesystemService) {
+      throw new BadRequestException('Filesystem service not available');
+    }
+
+    const ext = file.originalname.includes('.')
+      ? file.originalname.substring(file.originalname.lastIndexOf('.'))
+      : '.jpg';
+    const filename = `covers/cover-user-${userId}-${Date.now()}${ext}`;
+
+    await this.filesystemService
+      .disk()
+      .put(filename, file.buffer, { mimeType: file.mimetype });
+
+    const coverUrl = this.filesystemService.disk().url(filename);
+
+    let profile = await this.profileRepo.findOne({ where: { userId } });
+    if (!profile) {
+      await this.getMyProfile(userId);
+      profile = await this.profileRepo.findOneOrFail({ where: { userId } });
+    }
+
+    profile.coverUrl = coverUrl;
+    await this.profileRepo.save(profile);
+
+    return { coverUrl };
+  }
+
+  /**
+   * Upload and persist profile avatar image.
+   */
+  async uploadAvatar(
+    userId: AutoIncrementID,
+    file: Express.Multer.File,
+  ): Promise<{ avatarUrl: string }> {
+    if (!this.filesystemService) {
+      throw new BadRequestException('Filesystem service not available');
+    }
+
+    const ext = file.originalname.includes('.')
+      ? file.originalname.substring(file.originalname.lastIndexOf('.'))
+      : '.jpg';
+    const filename = `avatars/avatar-user-${userId}-${Date.now()}${ext}`;
+
+    await this.filesystemService
+      .disk()
+      .put(filename, file.buffer, { mimeType: file.mimetype });
+
+    const avatarUrl = this.filesystemService.disk().url(filename);
+
+    let profile = await this.profileRepo.findOne({ where: { userId } });
+    if (!profile) {
+      await this.getMyProfile(userId);
+      profile = await this.profileRepo.findOneOrFail({ where: { userId } });
+    }
+
+    profile.avatarUrl = avatarUrl;
+    await this.profileRepo.save(profile);
+
+    // Also sync to UserEntity avatar
+    await this.userRepo.update({ id: userId }, { avatar: avatarUrl });
+
+    return { avatarUrl };
+  }
+
+  /**
+   * General media upload for authenticated users (e.g. photosets, artwork).
+   */
+  async uploadMedia(
+    userId: AutoIncrementID,
+    file: Express.Multer.File,
+    folder = 'posts',
+  ): Promise<{
+    url: string;
+    originalName: string;
+    size: number;
+    mimeType: string;
+  }> {
+    if (!this.filesystemService) {
+      throw new BadRequestException('Filesystem service not available');
+    }
+
+    const cleanFolder = (folder || 'posts').replace(/[^a-z0-9_-]/gi, '');
+    const ext = file.originalname.includes('.')
+      ? file.originalname.substring(file.originalname.lastIndexOf('.'))
+      : '.jpg';
+    const filename = `${cleanFolder}/user-${userId}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+
+    await this.filesystemService
+      .disk()
+      .put(filename, file.buffer, { mimeType: file.mimetype });
+
+    const url = this.filesystemService.disk().url(filename);
+
+    return {
+      url,
+      originalName: file.originalname,
+      size: file.size,
+      mimeType: file.mimetype,
+    };
   }
 
   // =================== CHARACTERS ===================

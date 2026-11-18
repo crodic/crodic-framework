@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Heart } from "lucide-react";
 import { LikedWork } from "./profile-types";
 import { useTranslations } from "next-intl";
+import { toggleLikePost } from "@/services/posts";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ProfileLikedWorksProps {
   initialLikedWorks: LikedWork[];
@@ -15,12 +18,27 @@ export function ProfileLikedWorks({
   initialLikedWorks,
 }: ProfileLikedWorksProps) {
   const t = useTranslations("Profile");
+  const queryClient = useQueryClient();
   const [likedList, setLikedList] = useState<LikedWork[]>(initialLikedWorks);
 
-  const handleUnlike = (id: string, e: React.MouseEvent) => {
+  useEffect(() => {
+    if (initialLikedWorks) {
+      setLikedList(initialLikedWorks);
+    }
+  }, [initialLikedWorks]);
+
+  const handleUnlike = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLikedList((prev) => prev.filter((item) => item.id !== id));
+    try {
+      await toggleLikePost(id);
+      setLikedList((prev) => prev.filter((item) => item.id !== id));
+      await queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+      await queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
+      toast.info(t("unlike"));
+    } catch {
+      // Keep state if failed
+    }
   };
 
   return (

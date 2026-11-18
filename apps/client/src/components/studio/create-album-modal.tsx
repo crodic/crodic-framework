@@ -50,7 +50,7 @@ export function CreateAlbumModal({
 
   const handleOpenChange = (val: boolean) => {
     if (val && !isAuthenticated) {
-      toast.info(t("publishError"));
+      toast.info(t("loginRequired"));
       router.push("/auth/login?from=/upload");
       return;
     }
@@ -117,6 +117,8 @@ export function CreateAlbumModal({
             <div className="border-border/60 border-t pt-4">
               <CreateAlbumForm
                 isMobile={true}
+                imagesPayload={imagesPayload}
+                coverIndex={coverIndex}
                 onSuccess={() => setIsOpen(false)}
                 onCancel={() => setIsOpen(false)}
               />
@@ -168,6 +170,8 @@ export function CreateAlbumModal({
               </div>
 
               <CreateAlbumForm
+                imagesPayload={imagesPayload}
+                coverIndex={coverIndex}
                 onSuccess={() => setIsOpen(false)}
                 onCancel={() => setIsOpen(false)}
               />

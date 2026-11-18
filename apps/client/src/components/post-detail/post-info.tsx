@@ -15,14 +15,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createPostCommentSchema, type PostCommentFormValues } from "./schema";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { cn } from "@/lib/utils";
 import { toggleLikePost, addPostComment } from "@/services/posts";
 import { toggleFollow } from "@/services/social";
+import {
+  getMyCollections,
+  createCollection,
+  addCollectionItem,
+} from "@/services/collections";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface PostInfoProps {
   post: PostDetailResDto;
@@ -34,6 +50,7 @@ export function PostInfo({
   comments: initialComments = [],
 }: PostInfoProps) {
   const t = useTranslations("Feed");
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
   const currentAuthorName = profile?.fullName || profile?.firstName || "You";
@@ -46,26 +63,99 @@ export function PostInfo({
   const [copiedShare, setCopiedShare] = useState(false);
   const [comments, setComments] =
     useState<PostCommentResDto[]>(initialComments);
-  const [newCommentText, setNewCommentText] = useState("");
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const authorHandle = post.author.handle.replace("@", "") || post.author.id;
 
-  const handleToggleFollow = async () => {
+  const form = useForm<PostCommentFormValues>({
+    resolver: zodResolver(
+      createPostCommentSchema(
+        t("inputCommentError") || "Please enter a comment"
+      )
+    ),
+    defaultValues: {
+      comment: "",
+    },
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: () => toggleLikePost(post.id),
+    onSuccess: (res) => {
+      setLikesCount(res.likesCount);
+      queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+    },
+    onError: () => {
+      setIsLiked((prev) => !prev);
+      setLikesCount((prev) => (isLiked ? prev + 1 : prev - 1));
+    },
+  });
+
+  const followMutation = useMutation({
+    mutationFn: () => toggleFollow(post.author.id),
+    onSuccess: (res) => {
+      setIsFollowing(res.following);
+      queryClient.invalidateQueries({ queryKey: ["my-following"] });
+    },
+    onError: () => {
+      setIsFollowing((prev) => !prev);
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (content: string) => addPostComment(post.id, content),
+    onSuccess: (created) => {
+      setComments((prev) => [created, ...prev]);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["post-comments", post.id] });
+      toast.success(t("commentSuccess"));
+    },
+    onError: () => {
+      toast.error(t("commentError"));
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (nextState: boolean) => {
+      const myCols = await getMyCollections({ limit: 1 });
+      let targetColId = myCols?.data?.[0]?.id;
+      if (!targetColId) {
+        const created = await createCollection({
+          title: "Saved Works",
+          isPublic: false,
+        });
+        targetColId = created.id;
+      }
+
+      if (nextState) {
+        await addCollectionItem(targetColId, { postId: post.id });
+      }
+      return { nextState };
+    },
+    onSuccess: ({ nextState }) => {
+      queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      if (nextState) {
+        toast.success(t("savedToCollection"));
+      } else {
+        toast.info(t("removedFromSaved"));
+      }
+    },
+    onError: () => {
+      setIsSaved((prev) => !prev);
+    },
+  });
+
+  const handleToggleFollow = () => {
     if (!isAuthenticated) {
       toast.info(t("loginToFollow"));
       return;
     }
     const next = !isFollowing;
     setIsFollowing(next);
-    try {
-      await toggleFollow(post.author.id);
-    } catch {
-      setIsFollowing(!next);
-    }
+    followMutation.mutate();
   };
 
-  const handleToggleLike = async () => {
+  const handleToggleLike = () => {
     if (!isAuthenticated) {
       toast.info(t("loginToLike"));
       return;
@@ -73,24 +163,17 @@ export function PostInfo({
     const next = !isLiked;
     setIsLiked(next);
     setLikesCount((prev) => (next ? prev + 1 : prev - 1));
-
-    try {
-      const res = await toggleLikePost(post.id);
-      setLikesCount(res.likesCount);
-    } catch {
-      setIsLiked(!next);
-      setLikesCount((prev) => (!next ? prev + 1 : prev - 1));
-    }
+    likeMutation.mutate();
   };
 
   const handleToggleSave = () => {
+    if (!isAuthenticated) {
+      toast.info(t("loginToSave"));
+      return;
+    }
     const nextState = !isSaved;
     setIsSaved(nextState);
-    if (nextState) {
-      toast.success(t("savedToCollection"));
-    } else {
-      toast.info(t("removedFromSaved"));
-    }
+    saveMutation.mutate(nextState);
   };
 
   const handleShare = () => {
@@ -102,26 +185,12 @@ export function PostInfo({
     }
   };
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCommentText.trim() || isSubmittingComment) return;
-
+  const onSubmitComment = (values: PostCommentFormValues) => {
     if (!isAuthenticated) {
       toast.info(t("loginToComment"));
       return;
     }
-
-    setIsSubmittingComment(true);
-    try {
-      const created = await addPostComment(post.id, newCommentText.trim());
-      setComments((prev) => [created, ...prev]);
-      setNewCommentText("");
-      toast.success(t("commentSuccess"));
-    } catch {
-      toast.error(t("commentError"));
-    } finally {
-      setIsSubmittingComment(false);
-    }
+    commentMutation.mutate(values.comment.trim());
   };
 
   const formattedLikes =
@@ -363,23 +432,37 @@ export function PostInfo({
         </div>
 
         {/* Comment input form */}
-        <form onSubmit={handleAddComment} className="flex items-center gap-2">
-          <Input
-            value={newCommentText}
-            onChange={(e) => setNewCommentText(e.target.value)}
-            placeholder={t("writeCommentPlaceholder")}
-            disabled={isSubmittingComment}
-            className="bg-muted/40 border-border/70 h-9 rounded-xl text-xs"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!newCommentText.trim() || isSubmittingComment}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 shrink-0 cursor-pointer rounded-xl px-3"
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmitComment)}
+            className="flex items-center gap-2"
           >
-            <Send className="size-3.5" />
-          </Button>
-        </form>
+            <FormField
+              control={form.control}
+              name="comment"
+              render={({ field }) => (
+                <FormItem className="flex-1 space-y-0">
+                  <FormControl>
+                    <Input
+                      placeholder={t("writeCommentPlaceholder")}
+                      disabled={commentMutation.isPending}
+                      className="bg-muted/40 border-border/70 h-9 rounded-xl text-xs"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={commentMutation.isPending}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 shrink-0 cursor-pointer rounded-xl px-3"
+            >
+              <Send className="size-3.5" />
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { z } from "zod";
+import React, { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -20,25 +19,20 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createPost } from "@/services/posts";
+import { uploadMyMedia } from "@/services/cosplayer";
 import { useTranslations } from "next-intl";
-
-const createAlbumSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  character: z.string().min(1, "Character is required"),
-  fandom: z.string().min(1, "Fandom is required"),
-  tags: z.array(z.string()).min(1, "Add at least 1 tag"),
-  description: z.string(),
-  isPublic: z.boolean(),
-  enableWatermark: z.boolean(),
-});
-
-export type CreateAlbumFormValues = z.infer<typeof createAlbumSchema>;
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@/i18n/navigation";
+import type { ImagePayload } from "@/components/form/types";
+import { getAlbumSchema, type CreateAlbumFormValues } from "./schema";
 
 export interface CreateAlbumFormProps {
   onSuccess?: (values: CreateAlbumFormValues) => void;
   onCancel?: () => void;
   className?: string;
   isMobile?: boolean;
+  imagesPayload?: ImagePayload[];
+  coverIndex?: number | null;
 }
 
 export function CreateAlbumForm({
@@ -46,15 +40,20 @@ export function CreateAlbumForm({
   onCancel,
   className,
   isMobile = false,
+  imagesPayload = [],
+  coverIndex = 0,
 }: CreateAlbumFormProps) {
   const t = useTranslations("Studio");
   const tCommon = useTranslations("Common");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [newTagInput, setNewTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
 
+  const albumSchema = useMemo(() => getAlbumSchema(t as any), [t]);
+
   const form = useForm<CreateAlbumFormValues>({
-    resolver: zodResolver(createAlbumSchema),
+    resolver: zodResolver(albumSchema),
     defaultValues: {
       title: "",
       character: "",
@@ -67,6 +66,67 @@ export function CreateAlbumForm({
   });
 
   const tags = form.watch("tags") || [];
+
+  const createPostMutation = useMutation({
+    mutationFn: async (values: CreateAlbumFormValues) => {
+      const newPayloads = (imagesPayload || []).filter(
+        (p): p is ImagePayload & { type: "new" } => p.type === "new"
+      );
+
+      const uploadedMediaList: {
+        mediaUrl: string;
+        sortOrder: number;
+        isCover: boolean;
+      }[] = [];
+
+      for (let i = 0; i < newPayloads.length; i++) {
+        const item = newPayloads[i];
+        if (!item?.file) continue;
+        const res = await uploadMyMedia(item.file, "posts");
+        uploadedMediaList.push({
+          mediaUrl: res.url,
+          sortOrder: item.order ?? i,
+          isCover: coverIndex === i || (coverIndex === null && i === 0),
+        });
+      }
+
+      const coverMedia = uploadedMediaList.find((m) => m.isCover);
+      const coverImageUrl = coverMedia
+        ? coverMedia.mediaUrl
+        : uploadedMediaList[0]?.mediaUrl;
+
+      const created = await createPost({
+        title: values.title,
+        caption: values.description,
+        postType: "photoset",
+        albumCategory: "series",
+        tags: values.tags,
+        coverImageUrl,
+        media: uploadedMediaList,
+      });
+
+      return { created, values };
+    },
+    onSuccess: ({ created, values }) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+
+      toast.success(t("publishSuccess"));
+      onSuccess?.(values);
+      if (created?.slug) {
+        router.push(`/post/${created.slug}`);
+      } else {
+        router.push("/profile");
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || t("publishError"));
+    },
+  });
+
+  const isSubmitting = createPostMutation.isPending;
 
   const handleAddTag = () => {
     const trimmed = newTagInput.trim().replace(/^#/, "");
@@ -89,22 +149,8 @@ export function CreateAlbumForm({
     );
   };
 
-  const onSubmit = async (values: CreateAlbumFormValues) => {
-    setIsSubmitting(true);
-    try {
-      await createPost({
-        title: values.title,
-        caption: values.description,
-        postType: "photoset",
-        tags: values.tags,
-      });
-      toast.success(t("publishSuccess"));
-      onSuccess?.(values);
-    } catch {
-      toast.error(t("publishError"));
-    } finally {
-      setIsSubmitting(false);
-    }
+  const onSubmit = (values: CreateAlbumFormValues) => {
+    createPostMutation.mutate(values);
   };
 
   return (

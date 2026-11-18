@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   Eye,
   Flag,
   Heart,
+  Loader2,
   MessageCircle,
   MoreVertical,
   Pencil,
@@ -38,7 +39,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import type { CosplayerDetailResDto } from "@/services/cosplayer";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createMessageFormSchema, type MessageFormValues } from "./schema";
+import {
+  uploadMyCover,
+  uploadMyAvatar,
+  type CosplayerDetailResDto,
+} from "@/services/cosplayer";
+import { toggleFollow, checkIsFollowing } from "@/services/social";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import { useTranslations } from "next-intl";
 
@@ -59,12 +77,13 @@ export function ProfileHero({
 }: ProfileHeroProps) {
   const t = useTranslations("Profile");
   const tCos = useTranslations("CosplayerProfile");
+  const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
-  const [hasLiked, setHasLiked] = useState(false);
+  const [followersCount, setFollowersCount] = useState(
+    profile.followersCount || 0
+  );
   const [likesCount, setLikesCount] = useState(profile.totalLikesCount || 0);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
-  const [messageText, setMessageText] = useState("");
-  const [messageSent, setMessageSent] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -73,29 +92,100 @@ export function ProfileHero({
 
   const isOwnerView = isOwner && viewMode === "owner";
 
-  const handleToggleFollow = () => {
-    setIsFollowing((prev) => !prev);
-  };
+  const messageForm = useForm<MessageFormValues>({
+    resolver: zodResolver(createMessageFormSchema(t)),
+    defaultValues: {
+      message: "",
+    },
+  });
 
-  const handleToggleLike = () => {
-    if (hasLiked) {
-      setLikesCount((prev) => prev - 1);
-      setHasLiked(false);
-    } else {
-      setLikesCount((prev) => prev + 1);
-      setHasLiked(true);
+  useEffect(() => {
+    setFollowersCount(profile.followersCount || 0);
+    setLikesCount(profile.totalLikesCount || 0);
+  }, [profile.followersCount, profile.totalLikesCount]);
+
+  useEffect(() => {
+    if (!isOwner && profile.userId) {
+      checkIsFollowing(profile.userId)
+        .then((res) => setIsFollowing(res))
+        .catch(() => {});
     }
+  }, [isOwner, profile.userId]);
+
+  const followMutation = useMutation({
+    mutationFn: (targetUserId: string) => toggleFollow(targetUserId),
+    onSuccess: (res) => {
+      setIsFollowing(res.following);
+      setFollowersCount(res.followersCount);
+      queryClient.invalidateQueries({ queryKey: ["my-following"] });
+      queryClient.invalidateQueries({ queryKey: ["my-cosplayer-profile"] });
+      toast.success(
+        res.following
+          ? tCos("followedSuccess", { name: profile.displayName })
+          : tCos("unfollowedSuccess", { name: profile.displayName })
+      );
+    },
+    onError: () => {
+      toast.error(tCos("followError"));
+    },
+  });
+
+  const coverMutation = useMutation({
+    mutationFn: uploadMyCover,
+    onSuccess: async (res) => {
+      if (onProfileUpdate) {
+        onProfileUpdate({ coverUrl: res.coverUrl });
+      }
+      await queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(tCos("editDialog.success"));
+    },
+    onError: () => {
+      toast.error(tCos("editDialog.saving"));
+    },
+  });
+
+  const avatarMutation = useMutation({
+    mutationFn: uploadMyAvatar,
+    onSuccess: async (res) => {
+      if (onProfileUpdate) {
+        onProfileUpdate({ avatarUrl: res.avatarUrl });
+      }
+      await queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      toast.success(tCos("editDialog.success"));
+    },
+    onError: () => {
+      toast.error(tCos("editDialog.saving"));
+    },
+  });
+
+  const isUploadingCover = coverMutation.isPending;
+  const isUploadingAvatar = avatarMutation.isPending;
+  const isFollowLoading = followMutation.isPending;
+
+  const handleToggleFollow = () => {
+    if (!profile.userId || followMutation.isPending) return;
+    followMutation.mutate(profile.userId);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!messageText.trim()) return;
-    setMessageSent(true);
-    setTimeout(() => {
-      setMessageSent(false);
-      setMessageText("");
+  const onSendMessageSubmit = (values: MessageFormValues) => {
+    if (profile.contactEmail) {
+      window.location.href = `mailto:${profile.contactEmail}?subject=${encodeURIComponent(
+        `Contact via Kosume from visitor`
+      )}&body=${encodeURIComponent(values.message)}`;
+      toast.success(t("sentSuccess"));
+      messageForm.reset();
       setIsMessageOpen(false);
-    }, 1500);
+    } else {
+      toast.info(t("sendMessageDesc"));
+      setIsMessageOpen(false);
+    }
   };
 
   const handleCopyProfileUrl = () => {
@@ -108,24 +198,22 @@ export function ProfileHero({
 
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && onProfileUpdate) {
-      const tempUrl = URL.createObjectURL(file);
-      onProfileUpdate({ coverUrl: tempUrl });
-    }
+    if (!file) return;
+    coverMutation.mutate(file);
+    if (e.target) e.target.value = "";
   };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && onProfileUpdate) {
-      const tempUrl = URL.createObjectURL(file);
-      onProfileUpdate({ avatarUrl: tempUrl });
-    }
+    if (!file) return;
+    avatarMutation.mutate(file);
+    if (e.target) e.target.value = "";
   };
 
   const formattedFollowers =
-    profile.followersCount >= 1000
-      ? `${(profile.followersCount / 1000).toFixed(1)}k`
-      : String(profile.followersCount || 0);
+    followersCount >= 1000
+      ? `${(followersCount / 1000).toFixed(1)}k`
+      : String(followersCount || 0);
 
   const formattedLikes =
     likesCount >= 1000
@@ -173,18 +261,26 @@ export function ProfileHero({
               type="button"
               size="sm"
               variant="secondary"
+              disabled={isUploadingCover}
               onClick={() => coverFileRef.current?.click()}
               className="h-8 cursor-pointer gap-1.5 rounded-xl border border-white/10 bg-black/60 px-3 text-xs font-semibold text-white shadow-md backdrop-blur-md hover:bg-black/85"
             >
-              <Camera className="size-3.5" />
+              {isUploadingCover ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Camera className="size-3.5" />
+              )}
               <span className="hidden sm:inline">
-                {tCos("editDialog.changeCover")}
+                {isUploadingCover
+                  ? tCos("editDialog.saving")
+                  : tCos("editDialog.changeCover")}
               </span>
             </Button>
             <input
               ref={coverFileRef}
               type="file"
               accept="image/*"
+              disabled={isUploadingCover}
               onChange={handleCoverUpload}
               className="hidden"
             />
@@ -218,17 +314,27 @@ export function ProfileHero({
               {isOwnerView && (
                 <button
                   type="button"
+                  disabled={isUploadingAvatar}
                   onClick={() => avatarFileRef.current?.click()}
-                  className="absolute inset-1 flex cursor-pointer items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-xs transition-opacity group-hover/avatar:opacity-100 hover:bg-black/85"
+                  className={`absolute inset-1 flex cursor-pointer items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs transition-opacity hover:bg-black/85 ${
+                    isUploadingAvatar
+                      ? "opacity-100"
+                      : "opacity-0 group-hover/avatar:opacity-100"
+                  }`}
                   aria-label={tCos("editDialog.changeAvatar")}
                 >
-                  <Camera className="size-5" />
+                  {isUploadingAvatar ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Camera className="size-5" />
+                  )}
                 </button>
               )}
               <input
                 ref={avatarFileRef}
                 type="file"
                 accept="image/*"
+                disabled={isUploadingAvatar}
                 onChange={handleAvatarUpload}
                 className="hidden"
               />
@@ -284,23 +390,13 @@ export function ProfileHero({
                   <span className="text-muted-foreground">Followers</span>
                 </span>
                 <span className="text-muted-foreground/40">•</span>
-                <button
-                  type="button"
-                  onClick={handleToggleLike}
-                  className="inline-flex items-center gap-1 transition-colors hover:text-rose-500"
-                >
-                  <Heart
-                    className={`size-3.5 ${
-                      hasLiked
-                        ? "fill-rose-500 text-rose-500"
-                        : "text-muted-foreground"
-                    }`}
-                  />
+                <span className="inline-flex items-center gap-1">
+                  <Heart className="size-3.5 fill-rose-500 text-rose-500" />
                   <strong className="text-foreground font-bold">
                     {formattedLikes}
                   </strong>{" "}
                   <span className="text-muted-foreground">Likes</span>
-                </button>
+                </span>
                 <span className="text-muted-foreground/40">•</span>
                 <span>
                   <strong className="text-foreground font-bold">
@@ -358,6 +454,7 @@ export function ProfileHero({
               <>
                 <Button
                   type="button"
+                  disabled={isFollowLoading}
                   onClick={handleToggleFollow}
                   className={`h-10 flex-1 cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all md:flex-initial ${
                     isFollowing
@@ -365,7 +462,9 @@ export function ProfileHero({
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                 >
-                  {isFollowing ? (
+                  {isFollowLoading ? (
+                    <Loader2 className="mr-1.5 size-4 animate-spin" />
+                  ) : isFollowing ? (
                     <>
                       <Check className="mr-1.5 size-4" />
                       {tCos("followingBtn")}
@@ -474,40 +573,47 @@ export function ProfileHero({
             <DialogDescription>{t("sendMessageDesc")}</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSendMessage} className="space-y-4 pt-2">
-            <Textarea
-              placeholder={t("sendMessagePlaceholder")}
-              rows={4}
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              className="resize-none rounded-xl"
-              required
-            />
+          <Form {...messageForm}>
+            <form
+              onSubmit={messageForm.handleSubmit(onSendMessageSubmit)}
+              className="space-y-4 pt-2"
+            >
+              <FormField
+                control={messageForm.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("sendMessagePlaceholder")}
+                        rows={4}
+                        className="resize-none rounded-xl"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {messageSent ? (
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-center text-sm font-medium text-emerald-500">
-                {t("sentSuccess")}
-              </div>
-            ) : null}
-
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsMessageOpen(false)}
-                className="rounded-xl"
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={!messageText.trim() || messageSent}
-                className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
-              >
-                {t("send")}
-              </Button>
-            </DialogFooter>
-          </form>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsMessageOpen(false)}
+                  className="rounded-xl"
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
+                >
+                  {t("send")}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>
