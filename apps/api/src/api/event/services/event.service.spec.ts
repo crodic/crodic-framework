@@ -30,6 +30,7 @@ describe('EventService', () => {
   let profileRepo: any;
   let userRepo: any;
   let dataSource: any;
+  let mockEm: any;
 
   beforeEach(async () => {
     eventRepo = {
@@ -107,21 +108,28 @@ describe('EventService', () => {
       }),
     };
 
-    dataSource = {
-      transaction: jest.fn().mockImplementation(async (cb) => {
-        const em = {
-          findOne: jest.fn(),
-          findOneOrFail: jest
-            .fn()
-            .mockResolvedValue({ id: id('1'), interestedCount: 1 }),
-          create: jest.fn().mockImplementation((_, dto) => dto),
-          save: jest.fn().mockResolvedValue({}),
-          delete: jest.fn().mockResolvedValue({}),
-          increment: jest.fn().mockResolvedValue({}),
-          decrement: jest.fn().mockResolvedValue({}),
+    mockEm = {
+      findOne: jest.fn(),
+      findOneOrFail: jest
+        .fn()
+        .mockResolvedValue({ id: id('1'), interestedCount: 1 }),
+      create: jest.fn().mockImplementation((_, dto) => dto),
+      save: jest.fn().mockImplementation(async (_, item) => {
+        const entity = item || _;
+        return {
+          id: id('20'),
+          status: EEventApplicationStatus.PENDING,
+          createdAt: new Date(),
+          ...entity,
         };
-        return cb(em);
       }),
+      delete: jest.fn().mockResolvedValue({ affected: 1 }),
+      increment: jest.fn().mockResolvedValue({}),
+      decrement: jest.fn().mockResolvedValue({}),
+    };
+
+    dataSource = {
+      transaction: jest.fn().mockImplementation(async (cb) => cb(mockEm)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -209,13 +217,14 @@ describe('EventService', () => {
   describe('participate & cancelParticipation', () => {
     it('creates participant record and increments participantsCount', async () => {
       eventRepo.findOne.mockResolvedValue({ id: id('1') });
-      participantRepo.findOne.mockResolvedValue(null);
+      mockEm.findOne.mockResolvedValue(null);
 
       const res = await service.participate(id('100'), id('1'), {});
 
       expect(res.participating).toBe(true);
-      expect(participantRepo.save).toHaveBeenCalled();
-      expect(eventRepo.increment).toHaveBeenCalledWith(
+      expect(mockEm.save).toHaveBeenCalled();
+      expect(mockEm.increment).toHaveBeenCalledWith(
+        EventEntity,
         { id: id('1') },
         'participantsCount',
         1,
@@ -223,12 +232,15 @@ describe('EventService', () => {
     });
 
     it('deletes participant record and decrements participantsCount', async () => {
-      participantRepo.findOne.mockResolvedValue({ id: id('10') });
+      mockEm.findOne.mockResolvedValue({ id: id('10') });
 
       await service.cancelParticipation(id('100'), id('1'));
 
-      expect(participantRepo.delete).toHaveBeenCalledWith({ id: id('10') });
-      expect(eventRepo.decrement).toHaveBeenCalledWith(
+      expect(mockEm.delete).toHaveBeenCalledWith(EventParticipantEntity, {
+        id: id('10'),
+      });
+      expect(mockEm.decrement).toHaveBeenCalledWith(
+        EventEntity,
         { id: id('1') },
         'participantsCount',
         1,
@@ -279,8 +291,9 @@ describe('EventService', () => {
       });
 
       expect(res.status).toBe(EEventApplicationStatus.PENDING);
-      expect(applicationRepo.save).toHaveBeenCalled();
-      expect(eventRepo.increment).toHaveBeenCalledWith(
+      expect(mockEm.save).toHaveBeenCalled();
+      expect(mockEm.increment).toHaveBeenCalledWith(
+        EventEntity,
         { id: id('1') },
         'applicationsCount',
         1,

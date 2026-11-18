@@ -35,6 +35,10 @@ export async function apiToggleVerifyUser(id: string) {
   return await http.patch(`/users/${id}/verify`)
 }
 
+export async function apiToggleCosplayerVerify(id: string) {
+  return await http.patch(`/users/${id}/cosplayer-verify`)
+}
+
 export async function apiCreateUser(data: UserCreateSchema) {
   return await http.post('/users', data)
 }

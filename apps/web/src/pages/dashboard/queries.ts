@@ -4,10 +4,12 @@ import http from '@/lib/http'
 export type AnalyticsOverview = {
   kpi: {
     totalUsers: number
+    verifiedUsers: number
     totalCosplayers: number
     verifiedCosplayers: number
     totalPosts: number
     featuredPosts: number
+    totalEvents: number
     activeEvents: number
     pendingReports: number
     pendingPosts: number

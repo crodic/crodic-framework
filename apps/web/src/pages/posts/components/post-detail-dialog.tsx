@@ -132,7 +132,9 @@ export function PostDetailDialog({
                   {t('posts.fields.category', 'Danh mục')}
                 </span>
                 <p className='font-medium capitalize'>
-                  {post.albumCategoryLabel || post.albumCategory}
+                  {t(`posts.categories.${post.albumCategory}`, {
+                    defaultValue: post.albumCategoryLabel || post.albumCategory,
+                  })}
                 </p>
               </div>
 

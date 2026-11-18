@@ -4,6 +4,7 @@ import i18n from '@/i18n'
 import {
   BadgeCheck,
   Calendar,
+  CheckCircle2,
   MailIcon,
   TextIcon,
   UserRoundCheckIcon,
@@ -156,24 +157,66 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
         />
       ),
       cell: ({ row }) => {
-        const isVerified = Boolean(row.original.verifiedAt)
-        return isVerified ? (
-          <Badge variant='outline-success' className='gap-1 text-xs'>
-            <BadgeCheck className='size-3 text-emerald-600' />
-            Đã xác minh
-          </Badge>
-        ) : (
-          <Badge variant='outline' className='text-muted-foreground text-xs'>
-            Chưa xác minh
-          </Badge>
+        const isEmailVerified = Boolean(row.original.verifiedAt)
+        const isCosplayerVerified = Boolean(
+          row.original.cosplayerProfile?.isVerified
+        )
+        return (
+          <div className='flex flex-col gap-1'>
+            {isEmailVerified ? (
+              <Badge variant='outline-success' className='gap-1 text-xs'>
+                <BadgeCheck className='size-3 text-emerald-600' />
+                {i18n.t('users.table.emailVerified', 'Email đã xác minh')}
+              </Badge>
+            ) : (
+              <Badge
+                variant='outline'
+                className='text-muted-foreground text-xs'
+              >
+                {i18n.t('users.table.emailUnverified', 'Chưa xác minh email')}
+              </Badge>
+            )}
+            {row.original.cosplayerProfile &&
+              (isCosplayerVerified ? (
+                <Badge
+                  variant='outline'
+                  className='gap-1 border-blue-500/40 text-xs text-blue-500'
+                >
+                  <CheckCircle2 className='size-3 text-blue-500' />
+                  {i18n.t(
+                    'users.table.cosplayerVerified',
+                    'Tích xanh Cosplayer'
+                  )}
+                </Badge>
+              ) : (
+                <Badge
+                  variant='outline'
+                  className='text-muted-foreground/70 text-xs'
+                >
+                  {i18n.t(
+                    'users.table.cosplayerUnverified',
+                    'Chưa duyệt tích xanh'
+                  )}
+                </Badge>
+              ))}
+          </div>
         )
       },
       meta: {
         variant: 'select',
         label: i18n.t('users.table.verified', 'Xác minh'),
         options: [
-          { label: 'Đã xác minh', value: 'verified' },
-          { label: 'Chưa xác minh', value: 'unverified' },
+          {
+            label: i18n.t('users.table.filterVerified', 'Đã xác minh email'),
+            value: 'verified',
+          },
+          {
+            label: i18n.t(
+              'users.table.filterUnverified',
+              'Chưa xác minh email'
+            ),
+            value: 'unverified',
+          },
         ],
       },
       enableColumnFilter: true,

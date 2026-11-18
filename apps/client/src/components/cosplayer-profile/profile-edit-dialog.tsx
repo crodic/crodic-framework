@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Camera, Check, Link as LinkIcon, User } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -26,17 +27,26 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { CosplayerDetailResDto } from "@/services/cosplayer";
 
-const profileEditSchema = z.object({
-  displayName: z.string().min(1, "Vui lòng nhập tên hiển thị"),
-  handle: z.string().min(1, "Vui lòng nhập tên người dùng (handle)"),
-  bio: z.string().optional(),
-  facebookUrl: z.string().optional(),
-  instagramUrl: z.string().optional(),
-  tiktokUrl: z.string().optional(),
-  twitterUrl: z.string().optional(),
-});
+const createProfileEditSchema = (t: (key: any) => string) =>
+  z.object({
+    displayName: z.string().min(1, t("valDisplayName")),
+    handle: z.string().min(1, t("valHandle")),
+    bio: z.string().optional(),
+    facebookUrl: z.string().optional(),
+    instagramUrl: z.string().optional(),
+    tiktokUrl: z.string().optional(),
+    twitterUrl: z.string().optional(),
+  });
 
-type ProfileEditFormValues = z.infer<typeof profileEditSchema>;
+type ProfileEditFormValues = {
+  displayName: string;
+  handle: string;
+  bio?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  twitterUrl?: string;
+};
 
 interface ProfileEditDialogProps {
   open: boolean;
@@ -51,12 +61,15 @@ export function ProfileEditDialog({
   profile,
   onSave,
 }: ProfileEditDialogProps) {
+  const t = useTranslations("CosplayerProfile.editDialog");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || "");
   const [coverUrl, setCoverUrl] = useState(profile.coverUrl || "");
   const [isSaved, setIsSaved] = useState(false);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const profileEditSchema = useMemo(() => createProfileEditSchema(t), [t]);
 
   const form = useForm<ProfileEditFormValues>({
     resolver: zodResolver(profileEditSchema),
@@ -127,7 +140,7 @@ export function ProfileEditDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold">
             <User className="text-primary size-5" />
-            Chỉnh sửa trang cá nhân
+            {t("title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -153,13 +166,13 @@ export function ProfileEditDialog({
                   />
                 ) : (
                   <div className="bg-muted text-muted-foreground flex size-full items-center justify-center text-xs">
-                    Chọn ảnh bìa
+                    {t("chooseCover")}
                   </div>
                 )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                   <span className="flex items-center gap-1.5 rounded-xl bg-black/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
                     <Camera className="size-4" />
-                    Đổi ảnh bìa
+                    {t("changeCover")}
                   </span>
                 </div>
               </div>
@@ -216,11 +229,11 @@ export function ProfileEditDialog({
                 render={({ field }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-muted-foreground text-xs font-semibold">
-                      Tên hiển thị / Nghệ danh
+                      {t("displayName")}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="VD: KIRIKO / SORA..."
+                        placeholder={t("displayNamePlaceholder")}
                         className="h-10 rounded-xl"
                         {...field}
                       />
@@ -236,11 +249,11 @@ export function ProfileEditDialog({
                 render={({ field }) => (
                   <FormItem className="space-y-1.5">
                     <FormLabel className="text-muted-foreground text-xs font-semibold">
-                      Tên người dùng (@handle)
+                      {t("handle")}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="@kirikocos"
+                        placeholder={t("handlePlaceholder")}
                         className="h-10 rounded-xl"
                         {...field}
                       />
@@ -258,11 +271,11 @@ export function ProfileEditDialog({
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
                   <FormLabel className="text-muted-foreground text-xs font-semibold">
-                    Tiểu sử / Bio
+                    {t("bio")}
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Viết một đoạn ngắn giới thiệu về bạn, fandom yêu thích..."
+                      placeholder={t("bioPlaceholder")}
                       rows={3}
                       className="resize-none rounded-xl text-sm"
                       {...field}
@@ -277,7 +290,7 @@ export function ProfileEditDialog({
             <div className="space-y-2 pt-1">
               <FormLabel className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold">
                 <LinkIcon className="text-primary size-3.5" />
-                <span>Liên kết mạng xã hội</span>
+                <span>{t("socialLinks")}</span>
               </FormLabel>
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <FormField
@@ -287,7 +300,7 @@ export function ProfileEditDialog({
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link Facebook cá nhân"
+                          placeholder={t("facebookPlaceholder")}
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -304,7 +317,7 @@ export function ProfileEditDialog({
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link Instagram"
+                          placeholder={t("instagramPlaceholder")}
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -321,7 +334,7 @@ export function ProfileEditDialog({
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link TikTok"
+                          placeholder={t("tiktokPlaceholder")}
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -338,7 +351,7 @@ export function ProfileEditDialog({
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Link Twitter / X"
+                          placeholder={t("twitterPlaceholder")}
                           className="h-9 rounded-xl text-xs"
                           {...field}
                         />
@@ -353,7 +366,7 @@ export function ProfileEditDialog({
             {isSaved && (
               <div className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-center text-xs font-semibold text-emerald-500">
                 <Check className="size-4" />
-                <span>Đã lưu thay đổi hồ sơ thành công!</span>
+                <span>{t("success")}</span>
               </div>
             )}
 
@@ -365,14 +378,14 @@ export function ProfileEditDialog({
                 onClick={() => onOpenChange(false)}
                 className="rounded-xl"
               >
-                Hủy
+                {t("cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isSaved}
                 className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-6 font-semibold"
               >
-                {isSaved ? "Đang lưu..." : "Lưu thay đổi"}
+                {isSaved ? t("saving") : t("save")}
               </Button>
             </DialogFooter>
           </form>

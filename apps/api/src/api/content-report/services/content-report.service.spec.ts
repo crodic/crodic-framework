@@ -90,6 +90,7 @@ describe('ContentReportService', () => {
 
       expect(res.status).toBe(EReportStatus.RESOLVED);
       expect(reportRepo.save).toHaveBeenCalled();
+      expect(mockReport.resolvedAt).toBeInstanceOf(Date);
     });
   });
 });

@@ -105,9 +105,6 @@ export class PostSummaryResDto {
   @ApiProperty({ enum: EAlbumCategory, example: EAlbumCategory.SERIES })
   albumCategory!: EAlbumCategory;
 
-  @ApiPropertyOptional({ example: 'Nhân vật & Series' })
-  albumCategoryLabel?: string | null;
-
   @ApiPropertyOptional({ example: 'Acheron' })
   characterName?: string | null;
 

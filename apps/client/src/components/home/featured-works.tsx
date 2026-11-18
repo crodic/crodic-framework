@@ -31,6 +31,31 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
   const coverUrl = post.coverImageUrl || "/logo.png";
   const likesDisplay =
     likesCount >= 1000 ? `${(likesCount / 1000).toFixed(1)}K` : `${likesCount}`;
+  type CategoryKey =
+    | "series"
+    | "general"
+    | "group"
+    | "premium"
+    | "studio"
+    | "event"
+    | "original"
+    | "casual";
+
+  const knownCategories: readonly string[] = [
+    "series",
+    "general",
+    "group",
+    "premium",
+    "studio",
+    "event",
+    "original",
+    "casual",
+  ];
+
+  const categoryLabel =
+    post.albumCategory && knownCategories.includes(post.albumCategory)
+      ? t(`categories.${post.albumCategory as CategoryKey}`)
+      : post.albumCategory || t("photoset");
 
   return (
     <Card className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/5 flex flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
@@ -50,7 +75,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
 
         {/* Top-Right Tag Badge */}
         <span className="absolute top-2.5 right-2.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md select-none">
-          {post.albumCategoryLabel || post.albumCategory || t("photoset")}
+          {categoryLabel}
         </span>
 
         {/* Bottom-Right Heart Like Badge */}

@@ -39,8 +39,16 @@ export interface PostSummaryResDto {
   title: string;
   caption?: string | null;
   postType: "photoset" | "single" | "video" | "reel";
-  albumCategory: "series" | "event" | "original" | "studio" | "casual";
-  albumCategoryLabel?: string | null;
+  albumCategory:
+    | "series"
+    | "general"
+    | "group"
+    | "premium"
+    | "studio"
+    | "event"
+    | "original"
+    | "casual"
+    | string;
   characterName?: string | null;
   fandomName?: string | null;
   coverImageUrl: string;

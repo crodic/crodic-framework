@@ -226,6 +226,26 @@ describe('UserService', () => {
     });
   });
 
+  describe('toggleCosplayerVerify', () => {
+    it('toggles cosplayer verification state independently', async () => {
+      const profile = { isVerified: false };
+      const user = new UserEntity({
+        id: '1' as any,
+        firstName: 'Jane',
+        cosplayerProfile: profile as any,
+      });
+
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
+      const profileRepo = { save: jest.fn().mockResolvedValue(profile) };
+      dataSourceMock.getRepository.mockReturnValue(profileRepo);
+
+      await service.toggleCosplayerVerify('1' as any);
+
+      expect(profile.isVerified).toBe(true);
+      expect(profileRepo.save).toHaveBeenCalledWith(profile);
+    });
+  });
+
   describe('remove', () => {
     it('soft removes the selected user and cleans up accounts and sessions', async () => {
       const user = new UserEntity({ id: '1' as any });

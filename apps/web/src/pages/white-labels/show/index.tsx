@@ -15,7 +15,7 @@ import {
   Paintbrush,
   Search,
   Share2,
-  Sparkles,
+  Wand2,
   Sun,
   Trash2,
 } from 'lucide-react'
@@ -236,7 +236,7 @@ export default function PageWhiteLabelShow() {
                 </Badge>
                 {item.isActive ? (
                   <Badge variant='solid-success' className='gap-1'>
-                    <Sparkles className='size-3' />
+                    <Wand2 className='size-3' />
                     {t('whiteLabels.show.activeBadge')}
                   </Badge>
                 ) : (
@@ -283,7 +283,7 @@ export default function PageWhiteLabelShow() {
                 disabled={activateMutation.isPending}
                 className='gap-1.5'
               >
-                <Sparkles className='size-4' />
+                <Wand2 className='size-4' />
                 {t('whiteLabels.show.activateTarget', { target: item.target })}
               </Button>
             )}
@@ -327,7 +327,7 @@ export default function PageWhiteLabelShow() {
                 value='brand'
                 className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
-                <Sparkles className='size-3.5 shrink-0 sm:size-4' />
+                <Wand2 className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
                   {t('whiteLabels.form.brandAssets')}
                 </span>

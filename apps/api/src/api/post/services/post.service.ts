@@ -31,13 +31,7 @@ import { PostCommentEntity } from '../entities/post-comment.entity';
 import { PostLikeEntity } from '../entities/post-like.entity';
 import { PostMediaEntity } from '../entities/post-media.entity';
 import { PostEntity } from '../entities/post.entity';
-
-const ALBUM_CATEGORY_LABELS: Record<EAlbumCategory, string> = {
-  [EAlbumCategory.GENERAL]: 'Album Tổng Hợp',
-  [EAlbumCategory.GROUP]: 'Nhóm & Doujin',
-  [EAlbumCategory.SERIES]: 'Nhân vật & Series',
-  [EAlbumCategory.PREMIUM]: 'Studio Cao Cấp',
-};
+import { CollectionItemEntity } from '../../collection/entities/collection-item.entity';
 
 function slugify(text: string): string {
   return text
@@ -131,12 +125,24 @@ export class PostService {
 
     const postIds = paginated.data.map((p) => p.id);
     let likedPostIds = new Set<string>();
+    let savedPostIds = new Set<string>();
 
     if (currentUserId && postIds.length > 0) {
-      const likes = await this.likeRepo.find({
-        where: { userId: currentUserId, postId: In(postIds) },
-      });
+      const [likes, savedItems] = await Promise.all([
+        this.likeRepo.find({
+          where: { userId: currentUserId, postId: In(postIds) },
+        }),
+        this.dataSource
+          .getRepository(CollectionItemEntity)
+          .createQueryBuilder('item')
+          .innerJoin('item.collection', 'col')
+          .where('col.userId = :userId', { userId: currentUserId })
+          .andWhere('item.postId IN (:...postIds)', { postIds })
+          .select(['item.postId AS "postId"'])
+          .getRawMany(),
+      ]);
       likedPostIds = new Set(likes.map((l) => String(l.postId)));
+      savedPostIds = new Set(savedItems.map((s) => String(s.postId)));
     }
 
     const authorIds = Array.from(
@@ -155,6 +161,7 @@ export class PostService {
         profile,
         likedPostIds.has(String(post.id)),
         previews,
+        savedPostIds.has(String(post.id)),
       );
     });
 
@@ -182,7 +189,7 @@ export class PostService {
       .increment({ id: post.id }, 'viewsCount', 1)
       .catch(() => undefined);
 
-    const [mediaList, profile, likeRecord] = await Promise.all([
+    const [mediaList, profile, likeRecord, savedItem] = await Promise.all([
       this.mediaRepo.find({
         where: { postId: post.id },
         order: { sortOrder: 'ASC', id: 'ASC' },
@@ -193,9 +200,24 @@ export class PostService {
             where: { userId: currentUserId, postId: post.id },
           })
         : null,
+      currentUserId
+        ? this.dataSource
+            .getRepository(CollectionItemEntity)
+            .createQueryBuilder('item')
+            .innerJoin('item.collection', 'col')
+            .where('col.userId = :userId', { userId: currentUserId })
+            .andWhere('item.postId = :postId', { postId: post.id })
+            .getOne()
+        : null,
     ]);
 
-    return this.toDetailDto(post, mediaList, profile, Boolean(likeRecord));
+    return this.toDetailDto(
+      post,
+      mediaList,
+      profile,
+      Boolean(likeRecord),
+      Boolean(savedItem),
+    );
   }
 
   /**
@@ -683,8 +705,11 @@ export class PostService {
       likesCount: 0,
     });
 
-    const saved = await this.commentRepo.save(comment);
-    await this.postRepo.increment({ id: postId }, 'commentsCount', 1);
+    const saved = await this.dataSource.transaction(async (em) => {
+      const savedComment = await em.save(PostCommentEntity, comment);
+      await em.increment(PostEntity, { id: postId }, 'commentsCount', 1);
+      return savedComment;
+    });
 
     const [user, profile] = await Promise.all([
       this.userRepo.findOne({ where: { id: userId } }),
@@ -732,8 +757,15 @@ export class PostService {
       );
     }
 
-    await this.commentRepo.delete({ id: commentId });
-    await this.postRepo.decrement({ id: comment.postId }, 'commentsCount', 1);
+    await this.dataSource.transaction(async (em) => {
+      await em.delete(PostCommentEntity, { id: commentId });
+      await em.decrement(
+        PostEntity,
+        { id: comment.postId },
+        'commentsCount',
+        1,
+      );
+    });
   }
 
   // =================== MAPPERS ===================
@@ -777,6 +809,7 @@ export class PostService {
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
     previewUrls?: string[],
+    isSaved = false,
   ): PostSummaryResDto {
     const collagePreviewUrls =
       previewUrls && previewUrls.length > 0
@@ -799,7 +832,6 @@ export class PostService {
       caption: post.caption ?? null,
       postType: post.postType,
       albumCategory: post.albumCategory,
-      albumCategoryLabel: ALBUM_CATEGORY_LABELS[post.albumCategory] ?? null,
       characterName: post.characterName ?? null,
       fandomName: post.fandomName ?? null,
       coverImageUrl: post.coverImageUrl,
@@ -834,7 +866,7 @@ export class PostService {
         role: post.author?.role,
       },
       isLikedByCurrentUser: isLiked,
-      isSavedByCurrentUser: false,
+      isSavedByCurrentUser: isSaved,
     };
   }
 
@@ -843,10 +875,11 @@ export class PostService {
     media: PostMediaEntity[],
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
+    isSaved = false,
   ): PostDetailResDto {
     const previewUrls = media.slice(0, 4).map((m) => m.url);
     return {
-      ...this.toSummaryDto(post, profile, isLiked, previewUrls),
+      ...this.toSummaryDto(post, profile, isLiked, previewUrls, isSaved),
       enableWatermark: post.enableWatermark,
       cosplayerCharacterId: post.cosplayerCharacterId ?? null,
       characterTagId: post.characterTagId ?? null,

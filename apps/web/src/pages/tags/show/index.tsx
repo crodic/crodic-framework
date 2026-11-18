@@ -13,7 +13,7 @@ import {
   GitMergeIcon,
   LanguagesIcon,
   LockIcon,
-  SparklesIcon,
+  Wand2Icon,
   TagIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -549,7 +549,7 @@ export function PageTagShow() {
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
                       <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-                        <SparklesIcon className='size-4.5' aria-hidden='true' />
+                        <Wand2Icon className='size-4.5' aria-hidden='true' />
                       </div>
                       <div>
                         <CardTitle className='text-base font-semibold'>
@@ -579,7 +579,7 @@ export function PageTagShow() {
                     <Empty className='p-8'>
                       <EmptyHeader>
                         <EmptyMedia variant='icon'>
-                          <SparklesIcon className='size-5' />
+                          <Wand2Icon className='size-5' />
                         </EmptyMedia>
                         <EmptyTitle className='text-sm'>
                           {t(

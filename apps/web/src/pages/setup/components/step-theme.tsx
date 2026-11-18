@@ -5,7 +5,7 @@ import {
   Palette,
   RotateCcw,
   Sliders,
-  Sparkles,
+  Wand2,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ThemeMode, ThemeStyles } from '@/lib/theme-builder/default-theme'
@@ -263,7 +263,7 @@ export function StepTheme({
             <div className='bg-muted/20 space-y-3 rounded-xl border p-4'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
-                  <Sparkles className='text-primary size-3.5' />
+                  <Wand2 className='text-primary size-3.5' />
                   <span className='text-foreground text-xs font-semibold'>
                     {t('setup.theme.previewTitle')}
                   </span>

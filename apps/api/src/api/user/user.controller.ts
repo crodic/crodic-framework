@@ -120,7 +120,7 @@ Response includes paginated data, metadata, and navigation links.`,
   @Patch(':id/verify')
   @ApiAuth({
     type: UserResDto,
-    summary: 'Toggle verification status for user (and cosplayer profile)',
+    summary: 'Toggle email verification status for user',
   })
   @ApiParam({ name: 'id', type: 'String' })
   @CheckPolicies((ability: AppAbility) =>
@@ -128,6 +128,20 @@ Response includes paginated data, metadata, and navigation links.`,
   )
   toggleVerify(@Param('id') id: AutoIncrementID): Promise<UserResDto> {
     return this.userService.toggleVerify(id);
+  }
+
+  @Patch(':id/cosplayer-verify')
+  @ApiAuth({
+    type: UserResDto,
+    summary:
+      'Toggle cosplayer verified badge (isVerified) for cosplayer profile',
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.User),
+  )
+  toggleCosplayerVerify(@Param('id') id: AutoIncrementID): Promise<UserResDto> {
+    return this.userService.toggleCosplayerVerify(id);
   }
 
   @Delete(':id')

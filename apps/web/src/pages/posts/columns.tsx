@@ -1,4 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table'
+import i18n from '@/i18n'
 import {
   Eye,
   Heart,
@@ -53,7 +54,10 @@ export function getPostsTableColumns({
       id: PostColumnKey.title,
       accessorFn: (row) => row.title,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Tác phẩm & Bộ ảnh' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('posts.columns.title', 'Tác phẩm & Bộ ảnh')}
+        />
       ),
       cell: ({ row }) => (
         <div className='flex max-w-[340px] items-center gap-3'>
@@ -79,7 +83,11 @@ export function getPostsTableColumns({
                 variant='outline'
                 className='px-1 py-0 text-[10px] uppercase'
               >
-                {row.original.albumCategoryLabel || row.original.albumCategory}
+                {i18n.t(`posts.categories.${row.original.albumCategory}`, {
+                  defaultValue:
+                    row.original.albumCategoryLabel ||
+                    row.original.albumCategory,
+                })}
               </Badge>
               {row.original.characterName && (
                 <span className='truncate'>
@@ -99,7 +107,10 @@ export function getPostsTableColumns({
       id: PostColumnKey.author,
       accessorFn: (row) => row.author.displayName,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Cosplayer / Tác giả' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('posts.columns.author', 'Cosplayer / Tác giả')}
+        />
       ),
       cell: ({ row }) => {
         const author = row.original.author
@@ -136,7 +147,10 @@ export function getPostsTableColumns({
       id: PostColumnKey.metrics,
       accessorFn: (row) => row.likesCount,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Tương tác' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('posts.columns.engagement', 'Tương tác')}
+        />
       ),
       cell: ({ row }) => (
         <div className='text-muted-foreground flex items-center gap-3 text-xs'>
@@ -164,7 +178,10 @@ export function getPostsTableColumns({
       id: PostColumnKey.isFeaturedWork,
       accessorFn: (row) => row.isFeaturedWork,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Nổi bật' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('posts.columns.featured', 'Nổi bật')}
+        />
       ),
       cell: ({ row }) => (
         <div className='flex items-center gap-2'>
@@ -185,34 +202,37 @@ export function getPostsTableColumns({
       id: PostColumnKey.status,
       accessorFn: (row) => row.status,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Trạng thái' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('posts.columns.status', 'Trạng thái')}
+        />
       ),
       cell: ({ row }) => {
         const status = row.original.status
         if (status === 'published') {
           return (
             <Badge className='border-emerald-500/20 bg-emerald-500/15 text-xs text-emerald-700 dark:text-emerald-300'>
-              Đã xuất bản
+              {i18n.t('posts.status.published', 'Đã xuất bản')}
             </Badge>
           )
         }
         if (status === 'pending_review') {
           return (
             <Badge className='border-amber-500/20 bg-amber-500/15 text-xs text-amber-700 dark:text-amber-300'>
-              Chờ duyệt
+              {i18n.t('posts.status.pending_review', 'Chờ duyệt')}
             </Badge>
           )
         }
         if (status === 'hidden') {
           return (
             <Badge className='border-rose-500/20 bg-rose-500/15 text-xs text-rose-700 dark:text-rose-300'>
-              Bị ẩn / Vi phạm
+              {i18n.t('posts.status.hidden', 'Bị ẩn / Vi phạm')}
             </Badge>
           )
         }
         return (
           <Badge variant='outline' className='text-muted-foreground text-xs'>
-            Bản nháp
+            {i18n.t('posts.status.draft', 'Bản nháp')}
           </Badge>
         )
       },
@@ -227,17 +247,19 @@ export function getPostsTableColumns({
             <DropdownMenuTrigger asChild>
               <Button variant='ghost' size='icon' className='size-8'>
                 <MoreHorizontal className='size-4' />
-                <span className='sr-only'>Hành động</span>
+                <span className='sr-only'>
+                  {i18n.t('common.actions', 'Hành động')}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
               <DropdownMenuItem onClick={() => onView(post)}>
                 <Eye className='mr-2 size-4' />
-                Xem chi tiết & Album
+                {i18n.t('posts.actions.view', 'Xem chi tiết & Album')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onStatusChange(post)}>
                 <ShieldAlert className='mr-2 size-4' />
-                Kiểm duyệt trạng thái
+                {i18n.t('posts.actions.moderate', 'Kiểm duyệt trạng thái')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -245,7 +267,7 @@ export function getPostsTableColumns({
                 onClick={() => onDelete(post)}
               >
                 <Trash2 className='mr-2 size-4' />
-                Xóa bài đăng
+                {i18n.t('posts.actions.delete', 'Xóa bài đăng')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

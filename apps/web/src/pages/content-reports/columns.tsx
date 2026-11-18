@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
+import i18n from '@/i18n'
 import {
   AlertCircle,
   CheckCircle2,
@@ -39,7 +40,10 @@ export function getContentReportsTableColumns({
       id: ReportColumnKey.targetType,
       accessorFn: (row) => row.targetType,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Đối tượng' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('contentReports.columns.targetType', 'Đối tượng')}
+        />
       ),
       cell: ({ row }) => {
         const type = row.original.targetType
@@ -48,25 +52,25 @@ export function getContentReportsTableColumns({
           { label: string; icon: any; className: string }
         > = {
           post: {
-            label: 'Bài viết',
+            label: i18n.t('contentReports.targets.post', 'Bài viết'),
             icon: ExternalLink,
             className:
               'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
           },
           user: {
-            label: 'Người dùng',
+            label: i18n.t('contentReports.targets.user', 'Người dùng'),
             icon: User,
             className:
               'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
           },
           comment: {
-            label: 'Bình luận',
+            label: i18n.t('contentReports.targets.comment', 'Bình luận'),
             icon: MessageSquare,
             className:
               'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
           },
           event: {
-            label: 'Sự kiện',
+            label: i18n.t('contentReports.targets.event', 'Sự kiện'),
             icon: AlertCircle,
             className:
               'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
@@ -94,12 +98,36 @@ export function getContentReportsTableColumns({
       },
       meta: {
         variant: 'select',
-        label: 'Đối tượng',
+        label: i18n.t('contentReports.columns.targetType', 'Đối tượng'),
         options: [
-          { label: 'Bài viết (Post)', value: 'post' },
-          { label: 'Người dùng (User)', value: 'user' },
-          { label: 'Bình luận (Comment)', value: 'comment' },
-          { label: 'Sự kiện (Event)', value: 'event' },
+          {
+            label: i18n.t(
+              'contentReports.targets.postOption',
+              'Bài viết (Post)'
+            ),
+            value: 'post',
+          },
+          {
+            label: i18n.t(
+              'contentReports.targets.userOption',
+              'Người dùng (User)'
+            ),
+            value: 'user',
+          },
+          {
+            label: i18n.t(
+              'contentReports.targets.commentOption',
+              'Bình luận (Comment)'
+            ),
+            value: 'comment',
+          },
+          {
+            label: i18n.t(
+              'contentReports.targets.eventOption',
+              'Sự kiện (Event)'
+            ),
+            value: 'event',
+          },
         ],
       },
       enableColumnFilter: true,

@@ -12,10 +12,12 @@ describe('AdminAnalyticsController', () => {
       getOverview: jest.fn().mockResolvedValue({
         kpi: {
           totalUsers: 100,
+          verifiedUsers: 80,
           totalCosplayers: 30,
           verifiedCosplayers: 10,
           totalPosts: 50,
           featuredPosts: 8,
+          totalEvents: 6,
           activeEvents: 4,
           pendingReports: 2,
           pendingPosts: 3,

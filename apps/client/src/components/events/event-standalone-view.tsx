@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   Building2,
@@ -238,19 +239,12 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                     className="border-border/70 bg-muted/20 hover:border-primary/50 group flex items-center gap-3 rounded-2xl border p-3 transition-all hover:-translate-y-0.5"
                   >
                     <div className="border-primary/40 relative size-10 shrink-0 overflow-hidden rounded-full border">
-                      {p.avatarUrl ? (
-                        <Image
-                          src={p.avatarUrl}
-                          alt={p.name}
-                          fill
-                          sizes="40px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="bg-primary/10 text-primary flex size-full items-center justify-center text-xs font-bold">
-                          {p.name.slice(0, 1).toUpperCase()}
-                        </div>
-                      )}
+                      <UserAvatar
+                        avatarUrl={p.avatarUrl}
+                        name={p.name}
+                        sizes="40px"
+                        fallbackClassName="text-xs"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">

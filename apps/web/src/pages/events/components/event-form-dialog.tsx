@@ -198,9 +198,14 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-[640px]'>
         <DialogHeader>
-          <DialogTitle>Tạo sự kiện / Cosplay Festival mới</DialogTitle>
+          <DialogTitle>
+            {t('events.form.title', 'Tạo sự kiện / Cosplay Festival mới')}
+          </DialogTitle>
           <DialogDescription>
-            Đăng thông tin lễ hội anime, cosplay, giao lưu cộng đồng.
+            {t(
+              'events.form.description',
+              'Đăng thông tin lễ hội anime, cosplay, giao lưu cộng đồng.'
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -215,10 +220,15 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='title'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel required>Tên sự kiện / Festival</FormLabel>
+                    <FormLabel required>
+                      {t('events.form.name', 'Tên sự kiện / Festival')}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='Vietnam Cosplay Expo 2026'
+                        placeholder={t(
+                          'events.form.namePlaceholder',
+                          'Vietnam Cosplay Expo 2026'
+                        )}
                         {...field}
                       />
                     </FormControl>
@@ -232,7 +242,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='startAt'
                 render={() => (
                   <FormItem>
-                    <FormLabel required>Ngày bắt đầu</FormLabel>
+                    <FormLabel required>
+                      {t('events.form.startDate', 'Ngày bắt đầu')}
+                    </FormLabel>
                     <Popover open={startOpen} onOpenChange={setStartOpen} modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -247,7 +259,10 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                             <CalendarIcon className='mr-2 size-4 opacity-70' />
                             {startDate
                               ? format(startDate, 'dd/MM/yyyy')
-                              : 'Chọn ngày bắt đầu'}
+                              : t(
+                                  'events.form.selectStartDate',
+                                  'Chọn ngày bắt đầu'
+                                )}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -278,7 +293,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='endAt'
                 render={() => (
                   <FormItem>
-                    <FormLabel>Ngày kết thúc</FormLabel>
+                    <FormLabel>
+                      {t('events.form.endDate', 'Ngày kết thúc')}
+                    </FormLabel>
                     <Popover open={endOpen} onOpenChange={setEndOpen} modal>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -293,7 +310,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                             <CalendarIcon className='mr-2 size-4 opacity-70' />
                             {endDate
                               ? format(endDate, 'dd/MM/yyyy')
-                              : 'Cùng ngày (1 ngày)'}
+                              : t('events.form.sameDay', 'Cùng ngày (1 ngày)')}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -317,7 +334,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
               />
 
               <div className='col-span-2 grid gap-2'>
-                <Label>Khung giờ diễn ra</Label>
+                <Label>{t('events.form.timeSlot', 'Khung giờ diễn ra')}</Label>
                 <Select
                   value={timeSlot}
                   onValueChange={(val) => {
@@ -328,7 +345,12 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                   <SelectTrigger className='w-full'>
                     <span className='flex items-center gap-2'>
                       <Clock className='size-4 opacity-70' />
-                      <SelectValue placeholder='Chọn khung giờ' />
+                      <SelectValue
+                        placeholder={t(
+                          'events.form.selectTimeSlot',
+                          'Chọn khung giờ'
+                        )}
+                      />
                     </span>
                   </SelectTrigger>
                   <SelectContent>
@@ -343,7 +365,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
 
               <div className='bg-muted/40 col-span-2 flex items-center justify-between rounded-lg border px-3 py-2 text-xs'>
                 <span className='text-muted-foreground'>
-                  Tự động hiển thị:{' '}
+                  {t('events.form.autoPreview', 'Tự động hiển thị:')}{' '}
                   <strong className='text-foreground'>
                     {previewDates.dateString}
                   </strong>
@@ -358,13 +380,20 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='locationLabel'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Tỉnh / Thành phố</FormLabel>
+                    <FormLabel required>
+                      {t('events.form.city', 'Tỉnh / Thành phố')}
+                    </FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className='w-full'>
                           <span className='flex items-center gap-2'>
                             <MapPin className='size-4 opacity-70' />
-                            <SelectValue placeholder='Chọn Tỉnh / Thành phố' />
+                            <SelectValue
+                              placeholder={t(
+                                'events.form.selectCity',
+                                'Chọn Tỉnh / Thành phố'
+                              )}
+                            />
                           </span>
                         </SelectTrigger>
                       </FormControl>
@@ -386,9 +415,17 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='venue'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Địa điểm cụ thể</FormLabel>
+                    <FormLabel required>
+                      {t('events.form.venue', 'Địa điểm cụ thể')}
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder='SECC Q.7, TP.HCM' {...field} />
+                      <Input
+                        placeholder={t(
+                          'events.form.venuePlaceholder',
+                          'SECC Q.7, TP.HCM'
+                        )}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -438,7 +475,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
               />
 
               <div className='grid gap-2'>
-                <Label>Hình thức vé vào cổng</Label>
+                <Label>
+                  {t('events.form.ticketMode', 'Hình thức vé vào cổng')}
+                </Label>
                 <Select
                   value={ticketMode}
                   onValueChange={(val: 'paid' | 'free') => {
@@ -459,8 +498,12 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                     </span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='paid'>Có bán vé</SelectItem>
-                    <SelectItem value='free'>Miễn phí vào cổng</SelectItem>
+                    <SelectItem value='paid'>
+                      {t('events.form.ticketPaid', 'Có bán vé')}
+                    </SelectItem>
+                    <SelectItem value='free'>
+                      {t('events.form.ticketFree', 'Miễn phí vào cổng')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -471,7 +514,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                   name='ticketPriceAmount'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Giá vé từ (VNĐ)</FormLabel>
+                      <FormLabel>
+                        {t('events.form.ticketPrice', 'Giá vé từ (VNĐ)')}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type='number'
@@ -493,8 +538,12 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 />
               ) : (
                 <div className='grid gap-2'>
-                  <Label>Hiển thị</Label>
-                  <Input value='Miễn phí vào cổng' disabled readOnly />
+                  <Label>{t('events.form.ticketDisplay', 'Hiển thị')}</Label>
+                  <Input
+                    value={t('events.form.ticketFree', 'Miễn phí vào cổng')}
+                    disabled
+                    readOnly
+                  />
                 </div>
               )}
 
@@ -503,7 +552,9 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 name='description'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel required>Mô tả sự kiện</FormLabel>
+                    <FormLabel required>
+                      {t('events.form.eventDescription', 'Mô tả sự kiện')}
+                    </FormLabel>
                     <FormControl>
                       <Textarea rows={3} {...field} />
                     </FormControl>
@@ -519,10 +570,13 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                   <FormItem className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
                       <FormLabel className='text-sm'>
-                        Lễ hội tiêu điểm
+                        {t('events.form.isFeatured', 'Lễ hội tiêu điểm')}
                       </FormLabel>
                       <p className='text-muted-foreground text-xs'>
-                        Ghim banner lớn trang chủ
+                        {t(
+                          'events.form.isFeaturedHelp',
+                          'Ghim banner lớn trang chủ'
+                        )}
                       </p>
                     </div>
                     <FormControl>
@@ -541,9 +595,14 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 render={({ field }) => (
                   <FormItem className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <FormLabel className='text-sm'>Mở đăng ký</FormLabel>
+                      <FormLabel className='text-sm'>
+                        {t('events.form.isRecruiting', 'Mở đăng ký')}
+                      </FormLabel>
                       <p className='text-muted-foreground text-xs'>
-                        Tuyển guest & cosplayer
+                        {t(
+                          'events.form.isRecruitingHelp',
+                          'Tuyển guest & cosplayer'
+                        )}
                       </p>
                     </div>
                     <FormControl>
@@ -564,10 +623,12 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 onClick={() => onOpenChange(false)}
                 disabled={createMutation.isPending}
               >
-                Hủy
+                {t('events.form.cancel', 'Hủy')}
               </Button>
               <Button type='submit' disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Đang tạo...' : 'Tạo sự kiện'}
+                {createMutation.isPending
+                  ? t('events.form.submitting', 'Đang tạo...')
+                  : t('events.form.submit', 'Tạo sự kiện')}
               </Button>
             </DialogFooter>
           </form>

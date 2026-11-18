@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, Edit2Icon, RotateCcw, Trash2Icon } from 'lucide-react'
+import {
+  BadgeCheck,
+  CheckCircle2,
+  Edit2Icon,
+  RotateCcw,
+  Trash2Icon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -14,7 +20,12 @@ import {
 } from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
-import { apiDeleteUser, apiRestoreUser, apiToggleVerifyUser } from './queries'
+import {
+  apiDeleteUser,
+  apiRestoreUser,
+  apiToggleCosplayerVerify,
+  apiToggleVerifyUser,
+} from './queries'
 import { type UserSchema } from './schema'
 
 export default function ComponentTableRowActions({
@@ -40,6 +51,20 @@ export default function ComponentTableRowActions({
       queryClient.invalidateQueries({ queryKey: ['users'] })
       toast.success(
         t('users.messages.verifyToggleSuccess', 'Verification status updated')
+      )
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const toggleCosplayerVerifyMutation = useMutation({
+    mutationFn: apiToggleCosplayerVerify,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success(
+        t(
+          'users.messages.cosplayerVerifyToggleSuccess',
+          'Cosplayer verification status updated'
+        )
       )
     },
     onError: restApiErrorHandler,
@@ -161,7 +186,7 @@ export default function ComponentTableRowActions({
           <Button
             variant='ghost'
             size='icon'
-            aria-label='Toggle verification'
+            aria-label='Toggle email verification'
             onClick={() => toggleVerifyMutation.mutate(row.original.id)}
             disabled={toggleVerifyMutation.isPending}
           >
@@ -177,10 +202,43 @@ export default function ComponentTableRowActions({
         </TooltipTrigger>
         <TooltipContent side='left'>
           {row.original.verifiedAt
-            ? t('users.actions.unverify', 'Hủy xác minh tài khoản')
-            : t('users.actions.verify', 'Xác minh tài khoản')}
+            ? t('users.actions.unverifyEmail', 'Hủy xác minh email')
+            : t('users.actions.verifyEmail', 'Xác minh email')}
         </TooltipContent>
       </Tooltip>
+
+      {row.original.cosplayerProfile && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant='ghost'
+              size='icon'
+              aria-label='Toggle Cosplayer verification'
+              onClick={() =>
+                toggleCosplayerVerifyMutation.mutate(row.original.id)
+              }
+              disabled={toggleCosplayerVerifyMutation.isPending}
+            >
+              <CheckCircle2
+                className={`size-4 ${
+                  row.original.cosplayerProfile.isVerified
+                    ? 'fill-blue-100 text-blue-500 dark:fill-blue-950'
+                    : 'text-muted-foreground'
+                }`}
+                aria-hidden='true'
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side='left'>
+            {row.original.cosplayerProfile.isVerified
+              ? t(
+                  'users.actions.unverifyCosplayer',
+                  'Thu hồi tích xanh Cosplayer'
+                )
+              : t('users.actions.verifyCosplayer', 'Duyệt tích xanh Cosplayer')}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       <Button
         variant='ghost'

@@ -15,6 +15,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import { UserEntity } from '../../user/entities/user.entity';
+import { CosplayerProfileUtil } from '../../cosplayer/utils/cosplayer-profile.util';
 import {
   EEventApplicationStatus,
   EEventStatus,
@@ -225,21 +226,30 @@ export class EventService {
       throw new NotFoundException(`Event #${eventId} not found`);
     }
 
-    let participant = await this.participantRepo.findOne({
-      where: { userId, eventId },
-    });
-    if (!participant) {
-      const profile = await this.profileRepo.findOne({ where: { userId } });
-
-      participant = this.participantRepo.create({
-        userId,
-        eventId,
-        roleLabel: profile?.roleBadge || 'Cosplayer',
-        sortOrder: 0,
+    await this.dataSource.transaction(async (em) => {
+      let participant = await em.findOne(EventParticipantEntity, {
+        where: { userId, eventId },
       });
-      await this.participantRepo.save(participant);
-      await this.eventRepo.increment({ id: eventId }, 'participantsCount', 1);
-    }
+      if (!participant) {
+        const profile = await em.findOne(CosplayerProfileEntity, {
+          where: { userId },
+        });
+
+        participant = em.create(EventParticipantEntity, {
+          userId,
+          eventId,
+          roleLabel: profile?.roleBadge || 'Cosplayer',
+          sortOrder: 0,
+        });
+        await em.save(EventParticipantEntity, participant);
+        await em.increment(
+          EventEntity,
+          { id: eventId },
+          'participantsCount',
+          1,
+        );
+      }
+    });
 
     return { participating: true };
   }
@@ -251,14 +261,16 @@ export class EventService {
     userId: AutoIncrementID,
     eventId: AutoIncrementID,
   ): Promise<void> {
-    const participant = await this.participantRepo.findOne({
-      where: { userId, eventId },
+    await this.dataSource.transaction(async (em) => {
+      const participant = await em.findOne(EventParticipantEntity, {
+        where: { userId, eventId },
+      });
+      if (!participant) {
+        return;
+      }
+      await em.delete(EventParticipantEntity, { id: participant.id });
+      await em.decrement(EventEntity, { id: eventId }, 'participantsCount', 1);
     });
-    if (!participant) {
-      return;
-    }
-    await this.participantRepo.delete({ id: participant.id });
-    await this.eventRepo.decrement({ id: eventId }, 'participantsCount', 1);
   }
 
   /**
@@ -301,10 +313,11 @@ export class EventService {
       status: EEventApplicationStatus.PENDING,
     });
 
-    const saved = await this.applicationRepo.save(app);
-    await this.eventRepo.increment({ id: eventId }, 'applicationsCount', 1);
-
-    return this.toApplicationDto(saved);
+    return await this.dataSource.transaction(async (em) => {
+      const saved = await em.save(EventApplicationEntity, app);
+      await em.increment(EventEntity, { id: eventId }, 'applicationsCount', 1);
+      return this.toApplicationDto(saved);
+    });
   }
 
   /**
@@ -515,29 +528,30 @@ export class EventService {
     const userIds = Array.from(
       new Set(participants.map((p) => p.userId).filter(Boolean)),
     );
-    const [profiles, users] =
+    const profileMap =
       userIds.length > 0
-        ? await Promise.all([
-            this.profileRepo.find({ where: { userId: In(userIds) } }),
-            this.userRepo.find({ where: { id: In(userIds) } }),
-          ])
-        : [[], []];
+        ? await CosplayerProfileUtil.loadProfilesMap(this.profileRepo, userIds)
+        : new Map<string, CosplayerProfileEntity>();
+    const users =
+      userIds.length > 0
+        ? await this.userRepo.find({ where: { id: In(userIds) } })
+        : [];
 
-    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
     const userMap = new Map(users.map((u) => [String(u.id), u]));
 
     return participants.map((p) => {
       const key = String(p.userId);
       const profile = profileMap.get(key);
       const user = userMap.get(key);
+      const display = CosplayerProfileUtil.formatDisplay(profile, user);
       return {
         id: p.id,
         eventId: p.eventId,
         userId: p.userId,
-        name: profile?.displayName || user?.fullName || `User #${p.userId}`,
-        avatarUrl: profile?.avatarUrl ?? user?.avatar ?? null,
-        isVerified: profile?.isVerified ?? false,
-        roleLabel: p.roleLabel ?? profile?.roleBadge ?? null,
+        name: display.displayName || `User #${p.userId}`,
+        avatarUrl: display.avatarUrl ?? user?.avatar ?? null,
+        isVerified: display.isVerified,
+        roleLabel: p.roleLabel ?? display.roleBadge ?? null,
         sortOrder: p.sortOrder,
       };
     });

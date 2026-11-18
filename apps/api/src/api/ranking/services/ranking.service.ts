@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { CosplayerProfileUtil } from '../../cosplayer/utils/cosplayer-profile.util';
 import { LeaderboardItemResDto } from '../dto/ranking-res.dto';
 import { LeaderboardSnapshotEntity } from '../entities/leaderboard-snapshot.entity';
 
@@ -66,11 +67,10 @@ export class RankingService {
     const userIds = Array.from(
       new Set(paginated.data.map((item) => item.userId)),
     );
-    const profiles =
-      userIds.length > 0
-        ? await this.profileRepo.find({ where: { userId: In(userIds) } })
-        : [];
-    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+    const profileMap = await CosplayerProfileUtil.loadProfilesMap(
+      this.profileRepo,
+      userIds,
+    );
 
     const mapped = paginated.data.map((item) =>
       this.toLeaderboardDto(item, profileMap.get(String(item.userId))),
@@ -82,13 +82,12 @@ export class RankingService {
     item: LeaderboardSnapshotEntity,
     profile?: CosplayerProfileEntity,
   ): LeaderboardItemResDto {
-    const displayName =
-      profile?.displayName || item.user?.fullName || `User #${item.userId}`;
-    const handle = profile
-      ? `@${profile.slug}`
-      : item.user?.username
-        ? `@${item.user.username}`
-        : `@user${item.userId}`;
+    const display = CosplayerProfileUtil.formatDisplay(profile, item.user);
+    const displayName = display.displayName || `User #${item.userId}`;
+    const handle =
+      display.handle ||
+      (item.user?.username ? `@${item.user.username}` : `@user${item.userId}`);
+    const portfolioHref = display.portfolioHref || `/cosplayer/${item.userId}`;
 
     return {
       id: item.id,
@@ -99,16 +98,14 @@ export class RankingService {
       postId: item.postId ?? null,
       displayName,
       handle,
-      roleLabel: profile?.roleBadge || 'Cosplayer',
-      avatarUrl: profile?.avatarUrl || item.user?.avatar || '',
-      isVerified: profile?.isVerified ?? false,
+      roleLabel: display.roleBadge || 'Cosplayer',
+      avatarUrl: display.avatarUrl || item.user?.avatar || '',
+      isVerified: display.isVerified,
       likesCount: Number(item.likesCount || 0),
       followersCount: Number(item.followersCount || 0),
       score: Number(item.score || 0),
       featuredProjects: item.featuredProjects || [],
-      portfolioHref: profile
-        ? `/cosplayer/${profile.slug}`
-        : `/cosplayer/${item.userId}`,
+      portfolioHref,
       filterCategory: item.filterCategory,
       periodKey: item.periodKey,
     };

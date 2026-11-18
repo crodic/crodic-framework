@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { Link } from "@/i18n/navigation";
 import {
   Building2,
@@ -181,19 +182,12 @@ export function EventDetailDialog({
                     className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
                   >
                     <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
-                      {p.avatarUrl ? (
-                        <Image
-                          src={p.avatarUrl}
-                          alt={p.name}
-                          fill
-                          sizes="24px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="bg-primary/10 text-primary flex size-full items-center justify-center text-[10px] font-bold">
-                          {p.name.slice(0, 1).toUpperCase()}
-                        </div>
-                      )}
+                      <UserAvatar
+                        avatarUrl={p.avatarUrl}
+                        name={p.name}
+                        sizes="24px"
+                        fallbackClassName="text-[10px]"
+                      />
                     </div>
                     <span className="text-foreground text-xs font-semibold">
                       {p.name}

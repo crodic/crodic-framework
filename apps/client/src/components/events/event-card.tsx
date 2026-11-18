@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { useTranslations } from "next-intl";
 import type { EventSummaryResDto } from "@/services/events";
 
@@ -72,19 +73,12 @@ export function EventCard({ event, onApply }: EventCardProps) {
                     className="ring-card relative size-5 overflow-hidden rounded-full ring-2 sm:size-5.5"
                     title={p.name}
                   >
-                    {p.avatarUrl ? (
-                      <Image
-                        src={p.avatarUrl}
-                        alt={p.name}
-                        fill
-                        sizes="22px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="bg-primary/10 text-primary flex size-full items-center justify-center text-[9px] font-bold">
-                        {p.name.slice(0, 1).toUpperCase()}
-                      </div>
-                    )}
+                    <UserAvatar
+                      avatarUrl={p.avatarUrl}
+                      name={p.name}
+                      sizes="22px"
+                      fallbackClassName="text-[9px]"
+                    />
                   </div>
                 ))}
               </div>

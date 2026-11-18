@@ -126,8 +126,11 @@ export class CollectionService {
       itemsCount: 0,
     });
 
-    const saved = await this.collectionRepo.save(col);
-    await this.userRepo.increment({ id: userId }, 'collectionsCount', 1);
+    const saved = await this.dataSource.transaction(async (em) => {
+      const inserted = await em.save(CollectionEntity, col);
+      await em.increment(UserEntity, { id: userId }, 'collectionsCount', 1);
+      return inserted;
+    });
     return this.toCollectionDto(saved, []);
   }
 
@@ -182,11 +185,13 @@ export class CollectionService {
     if (String(col.userId) !== String(userId)) {
       throw new ForbiddenException('You do not own this collection');
     }
-    await this.collectionRepo.softDelete({ id: collectionId });
-    const owner = await this.userRepo.findOne({ where: { id: userId } });
-    if (owner && Number(owner.collectionsCount) > 0) {
-      await this.userRepo.decrement({ id: userId }, 'collectionsCount', 1);
-    }
+    await this.dataSource.transaction(async (em) => {
+      await em.softDelete(CollectionEntity, { id: collectionId });
+      const owner = await em.findOne(UserEntity, { where: { id: userId } });
+      if (owner && Number(owner.collectionsCount) > 0) {
+        await em.decrement(UserEntity, { id: userId }, 'collectionsCount', 1);
+      }
+    });
   }
 
   /**
@@ -244,6 +249,9 @@ export class CollectionService {
         1,
       );
 
+      // Update post saves count atomically
+      await em.increment(PostEntity, { id: dto.postId }, 'savesCount', 1);
+
       return this.toItemDto(saved, post);
     });
   }
@@ -281,6 +289,9 @@ export class CollectionService {
         'itemsCount',
         1,
       );
+      if (item.postId) {
+        await em.decrement(PostEntity, { id: item.postId }, 'savesCount', 1);
+      }
     });
   }
 

@@ -2,14 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  HardDrive,
-  HelpCircle,
-  Save,
-  ShieldAlert,
-  Sliders,
-  Wallet,
-} from 'lucide-react'
+import { HardDrive, HelpCircle, Save, ShieldAlert, Sliders } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
@@ -284,64 +277,9 @@ export function PagePlatformSettings() {
               </Card>
             </div>
 
-            {/* Column 2: Booking policies & Support contacts */}
+            {/* Column 2: Support contacts */}
             <div className='space-y-6'>
-              {/* Section 2: Platform Fees */}
-              <Card>
-                <CardHeader>
-                  <div className='flex items-center gap-2'>
-                    <Wallet className='size-5 text-emerald-500' />
-                    <CardTitle>
-                      {t(
-                        'platformSettings.feeTitle',
-                        'Chính sách vận hành & Phí nền tảng'
-                      )}
-                    </CardTitle>
-                  </div>
-                  <CardDescription>
-                    {t(
-                      'platformSettings.feeDesc',
-                      'Cấu hình tỷ lệ phí vận hành dịch vụ trên hệ thống.'
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <FormField
-                    control={form.control}
-                    name='commission_platform_rate_percent'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t(
-                            'platformSettings.commissionRate',
-                            'Phí nền tảng (%)'
-                          )}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type='number'
-                            min={0}
-                            max={50}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {t(
-                            'platformSettings.commissionRateHelp',
-                            'Tỷ lệ % phí dịch vụ (VD: 5%)'
-                          )}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Section 4: Contact & Helpline */}
+              {/* Section 2: Contact & Helpline */}
               <Card>
                 <CardHeader>
                   <div className='flex items-center gap-2'>

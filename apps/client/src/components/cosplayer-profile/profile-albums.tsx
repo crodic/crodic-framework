@@ -128,9 +128,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                   {album.title}
                 </h3>
                 <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                  <span className="truncate">
-                    {album.albumCategoryLabel || album.albumCategory}
-                  </span>
+                  <span className="truncate">{album.albumCategory}</span>
                   <span className="flex shrink-0 items-center gap-1">
                     <Calendar className="size-3" />
                     {album.publishedAt
@@ -170,8 +168,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                     </p>
                   </div>
                   <Badge variant="outline" className="rounded-lg text-xs">
-                    {selectedAlbum.albumCategoryLabel ||
-                      selectedAlbum.albumCategory}
+                    {selectedAlbum.albumCategory}
                   </Badge>
                 </div>
               </DialogHeader>

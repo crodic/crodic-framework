@@ -83,6 +83,10 @@ describe('CollectionService', () => {
             .fn()
             .mockImplementation(async (_, item) => ({ ...item, id: id('10') })),
           delete: jest.fn().mockResolvedValue({}),
+          softDelete: jest.fn().mockResolvedValue({}),
+          findOne: jest
+            .fn()
+            .mockResolvedValue({ id: id('1'), collectionsCount: 1 }),
           increment: jest.fn().mockResolvedValue({}),
           decrement: jest.fn().mockResolvedValue({}),
         };
@@ -119,7 +123,18 @@ describe('CollectionService', () => {
 
       expect(res.title).toBe('My Favorites');
       expect(res.slug).toBe('my-favorites');
-      expect(collectionRepo.save).toHaveBeenCalled();
+      expect(dataSource.transaction).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteCollection', () => {
+    it('deletes collection within transaction', async () => {
+      collectionRepo.findOne.mockResolvedValue({
+        id: id('1'),
+        userId: id('100'),
+      });
+      await service.deleteCollection(id('100'), id('1'));
+      expect(dataSource.transaction).toHaveBeenCalled();
     });
   });
 

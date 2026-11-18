@@ -154,6 +154,7 @@ export class ContentReportService {
 
     report.status = dto.status;
     report.resolvedByAdminId = adminId;
+    report.resolvedAt = new Date();
     if (dto.resolutionNote !== undefined) {
       report.resolutionNote = dto.resolutionNote;
     }

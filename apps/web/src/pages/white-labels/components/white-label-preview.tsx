@@ -8,7 +8,7 @@ import {
   MailIcon,
   MoonIcon,
   ShieldCheckIcon,
-  SparklesIcon,
+  Wand2Icon,
   SunIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -121,7 +121,7 @@ export function WhiteLabelPreview({
               className='size-5 rounded object-contain'
             />
           ) : (
-            <SparklesIcon className='text-primary size-5' />
+            <Wand2Icon className='text-primary size-5' />
           )}
           <div>
             <div className='flex items-center gap-2'>

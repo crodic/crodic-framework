@@ -30,6 +30,7 @@ describe('PostService', () => {
   let userRepo: any;
   let profileRepo: any;
   let dataSource: any;
+  let mockEm: any;
 
   beforeEach(async () => {
     postRepo = {
@@ -106,26 +107,25 @@ describe('PostService', () => {
       decrement: jest.fn().mockResolvedValue(undefined),
     };
 
+    mockEm = {
+      findOne: jest.fn(),
+      findOneOrFail: jest
+        .fn()
+        .mockResolvedValue({ id: id('1'), likesCount: 1 }),
+      create: jest.fn().mockImplementation((_, dto) => dto),
+      save: jest
+        .fn()
+        .mockImplementation(async (_, item) =>
+          Array.isArray(item) ? item : { ...item, id: id('1') },
+        ),
+      delete: jest.fn().mockResolvedValue({}),
+      softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
+      increment: jest.fn().mockResolvedValue({}),
+      decrement: jest.fn().mockResolvedValue({}),
+    };
+
     dataSource = {
-      transaction: jest.fn().mockImplementation(async (cb) => {
-        const em = {
-          findOne: jest.fn(),
-          findOneOrFail: jest
-            .fn()
-            .mockResolvedValue({ id: id('1'), likesCount: 1 }),
-          create: jest.fn().mockImplementation((_, dto) => dto),
-          save: jest
-            .fn()
-            .mockImplementation(async (_, item) =>
-              Array.isArray(item) ? item : { ...item, id: id('1') },
-            ),
-          delete: jest.fn().mockResolvedValue({}),
-          softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
-          increment: jest.fn().mockResolvedValue({}),
-          decrement: jest.fn().mockResolvedValue({}),
-        };
-        return cb(em);
-      }),
+      transaction: jest.fn().mockImplementation(async (cb) => cb(mockEm)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -245,8 +245,10 @@ describe('PostService', () => {
         content: 'Tuyệt vời!',
       });
 
-      expect(commentRepo.save).toHaveBeenCalled();
-      expect(postRepo.increment).toHaveBeenCalledWith(
+      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(mockEm.save).toHaveBeenCalled();
+      expect(mockEm.increment).toHaveBeenCalledWith(
+        PostEntity,
         { id: id('1') },
         'commentsCount',
         1,

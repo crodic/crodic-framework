@@ -41,10 +41,12 @@ export function KosumeAnalyticsTab() {
     () =>
       data?.kpi || {
         totalUsers: 0,
+        verifiedUsers: 0,
         totalCosplayers: 0,
         verifiedCosplayers: 0,
         totalPosts: 0,
         featuredPosts: 0,
+        totalEvents: 0,
         activeEvents: 0,
         pendingReports: 0,
         pendingPosts: 0,
@@ -61,7 +63,7 @@ export function KosumeAnalyticsTab() {
       highlighted: {
         label: t(
           'dashboard.kosume.chartSeriesHighlighted',
-          'Xác minh / Nổi bật'
+          'Đã xác minh / Nổi bật / Đang mở'
         ),
         color: 'var(--chart-2)',
       },
@@ -74,7 +76,7 @@ export function KosumeAnalyticsTab() {
       {
         metric: t('dashboard.kosume.totalUsers', 'Người dùng & Fan'),
         total: kpi.totalUsers,
-        highlighted: kpi.totalCosplayers,
+        highlighted: kpi.verifiedUsers,
       },
       {
         metric: t('dashboard.kosume.cosplayers', 'Cosplayers Nền tảng'),
@@ -88,7 +90,7 @@ export function KosumeAnalyticsTab() {
       },
       {
         metric: t('dashboard.kosume.events', 'Sự kiện & Lễ hội'),
-        total: kpi.activeEvents,
+        total: kpi.totalEvents,
         highlighted: kpi.activeEvents,
       },
     ],

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,19 +38,26 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { applyEvent } from "@/services/events";
 
-const applyEventSchema = z.object({
-  fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
-  stageName: z.string().min(1, "Vui lòng nhập tên cosplay (Stage name)"),
-  category: z.string().min(1, "Vui lòng chọn hạng mục"),
-  phone: z.string().min(8, "Vui lòng nhập số điện thoại liên hệ"),
-  characterPlanned: z
-    .string()
-    .min(1, "Vui lòng nhập nhân vật dự kiến hóa thân"),
-  portfolioUrl: z.string().optional(),
-  notes: z.string().optional(),
-});
+const createApplyEventSchema = (tApply: (key: any) => string) =>
+  z.object({
+    fullName: z.string().min(1, tApply("valFullName")),
+    stageName: z.string().min(1, tApply("valStageName")),
+    category: z.string().min(1, tApply("valCategory")),
+    phone: z.string().min(8, tApply("valPhone")),
+    characterPlanned: z.string().min(1, tApply("valCharacter")),
+    portfolioUrl: z.string().optional(),
+    notes: z.string().optional(),
+  });
 
-type ApplyEventFormValues = z.infer<typeof applyEventSchema>;
+type ApplyEventFormValues = {
+  fullName: string;
+  stageName: string;
+  category: string;
+  phone: string;
+  characterPlanned: string;
+  portfolioUrl?: string;
+  notes?: string;
+};
 
 export interface EventApplyDialogProps {
   open: boolean;
@@ -69,6 +76,11 @@ export function EventApplyDialog({
   const router = useRouter();
   const t = useTranslations("Events");
   const tApply = useTranslations("Events.applyDialog");
+
+  const applyEventSchema = useMemo(
+    () => createApplyEventSchema(tApply),
+    [tApply]
+  );
 
   const handleOpenChange = (val: boolean) => {
     if (val) {
@@ -120,7 +132,7 @@ export function EventApplyDialog({
       form.reset();
       onOpenChange(false);
     } catch {
-      toast.error("Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại!");
+      toast.error(tApply("errorGeneric"));
     } finally {
       setIsSubmitting(false);
     }
@@ -149,7 +161,7 @@ export function EventApplyDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 pt-3"
           >
-            {/* Họ tên & Stage name */}
+            {/* Full Name & Stage Name */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -161,7 +173,7 @@ export function EventApplyDialog({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Nguyễn Văn A"
+                        placeholder={tApply("placeholderFullName")}
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -181,7 +193,7 @@ export function EventApplyDialog({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Kiriko / Sora..."
+                        placeholder={tApply("placeholderStageName")}
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -192,7 +204,7 @@ export function EventApplyDialog({
               />
             </div>
 
-            {/* Hạng mục ứng tuyển & Số điện thoại */}
+            {/* Application Category & Contact Phone */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -208,7 +220,9 @@ export function EventApplyDialog({
                     >
                       <FormControl>
                         <SelectTrigger className="h-9 rounded-xl text-xs">
-                          <SelectValue placeholder="Chọn hạng mục ứng tuyển" />
+                          <SelectValue
+                            placeholder={tApply("placeholderCategory")}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -244,7 +258,7 @@ export function EventApplyDialog({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="0912 345 678"
+                        placeholder={tApply("placeholderPhone")}
                         className="h-9 rounded-xl text-xs"
                         {...field}
                       />
@@ -255,7 +269,7 @@ export function EventApplyDialog({
               />
             </div>
 
-            {/* Nhân vật dự kiến hóa thân */}
+            {/* Planned Character */}
             <FormField
               control={form.control}
               name="characterPlanned"
@@ -266,7 +280,7 @@ export function EventApplyDialog({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="VD: Furina (Genshin Impact) / Acheron (Honkai)"
+                      placeholder={tApply("placeholderCharacter")}
                       className="h-9 rounded-xl text-xs"
                       {...field}
                     />
@@ -287,20 +301,20 @@ export function EventApplyDialog({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="https://facebook.com/... hoặc link Kosume profile"
+                      placeholder={tApply("placeholderPortfolio")}
                       className="h-9 rounded-xl text-xs"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription className="text-[10px]">
-                    Giúp BTC duyệt hồ sơ nhanh hơn
+                    {tApply("portfolioHelp")}
                   </FormDescription>
                   <FormMessage className="text-[11px]" />
                 </FormItem>
               )}
             />
 
-            {/* Ghi chú thêm */}
+            {/* Notes */}
             <FormField
               control={form.control}
               name="notes"
@@ -312,7 +326,7 @@ export function EventApplyDialog({
                   <FormControl>
                     <Textarea
                       rows={2}
-                      placeholder="Thông tin thêm về đạo cụ cồng kềnh, người hỗ trợ (handler)..."
+                      placeholder={tApply("placeholderNotes")}
                       className="resize-none rounded-xl text-xs"
                       {...field}
                     />

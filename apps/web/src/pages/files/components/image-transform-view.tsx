@@ -1,4 +1,4 @@
-import { RotateCcw, Sparkles } from 'lucide-react'
+import { RotateCcw, Wand2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -267,7 +267,7 @@ export function ImageTransformView({
           <div className='border-primary/20 bg-primary/5 rounded-lg border p-2.5'>
             <div className='mb-1 flex items-center justify-between gap-1'>
               <span className='text-primary flex items-center gap-1 text-[11px] font-semibold'>
-                <Sparkles className='size-3' />{' '}
+                <Wand2 className='size-3' />{' '}
                 {t('files.transform.activeTransforms', 'Active transforms:')}
               </span>
             </div>
@@ -283,7 +283,7 @@ export function ImageTransformView({
             className='h-8 flex-1 gap-1.5 text-xs'
             onClick={onApply}
           >
-            <Sparkles className='size-3.5' />
+            <Wand2 className='size-3.5' />
             {t('files.transform.view')}
           </Button>
           <Button

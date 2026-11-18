@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import { UserEntity } from '../../user/entities/user.entity';
+import { CosplayerProfileUtil } from '../../cosplayer/utils/cosplayer-profile.util';
 import {
   CreateSpotlightBannerReqDto,
   UpdateSpotlightBannerReqDto,
@@ -228,32 +229,25 @@ export class SpotlightService {
   private async loadProfileMap(
     userIds: AutoIncrementID[],
   ): Promise<Map<string, CosplayerProfileEntity>> {
-    const uniqueIds = Array.from(new Set(userIds.filter(Boolean)));
-    if (uniqueIds.length === 0) {
-      return new Map();
-    }
-    const profiles = await this.profileRepo.find({
-      where: { userId: In(uniqueIds) },
-    });
-    return new Map(profiles.map((p) => [String(p.userId), p]));
+    return CosplayerProfileUtil.loadProfilesMap(this.profileRepo, userIds);
   }
 
   private toBannerDto(
     b: SpotlightBannerEntity,
     profile?: CosplayerProfileEntity | null,
   ): SpotlightBannerResDto {
-    const name =
-      profile?.displayName ||
-      b.cosplayerUser?.fullName ||
-      `User #${b.cosplayerUserId}`;
-    const portfolioHref = profile
-      ? `/cosplayer/${profile.slug}`
-      : `/cosplayer/${b.cosplayerUserId}`;
+    const display = CosplayerProfileUtil.formatDisplay(
+      profile,
+      b.cosplayerUser,
+    );
+    const name = display.displayName || `User #${b.cosplayerUserId}`;
+    const portfolioHref =
+      display.portfolioHref || `/cosplayer/${b.cosplayerUserId}`;
 
     return {
       id: b.id,
       name,
-      isVerified: profile?.isVerified ?? false,
+      isVerified: display.isVerified,
       badge: b.badge,
       tagline: b.tagline,
       bannerImageUrl: b.bannerImageUrl,

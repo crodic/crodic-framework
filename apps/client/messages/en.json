@@ -565,7 +565,17 @@
       "booking": "Book Now",
       "noWorks": "No featured works yet",
       "album": "Album",
-      "photoset": "Photoset"
+      "photoset": "Photoset",
+      "categories": {
+        "series": "Characters & Series",
+        "general": "General Album",
+        "group": "Group & Doujin",
+        "premium": "Premium Studio",
+        "studio": "Studio",
+        "event": "Events & Festivals",
+        "original": "Original Concept",
+        "casual": "Casual"
+      }
     },
     "bookingWidget": {
       "title": "Cosplayers Open for Booking",
@@ -697,6 +707,20 @@
       "cancel": "Cancel",
       "submit": "Submit Application",
       "submitting": "Submitting...",
+      "placeholderFullName": "John Doe",
+      "placeholderStageName": "E.g.: KIRIKO",
+      "placeholderCategory": "Select application category",
+      "placeholderPhone": "+84 912 345 678",
+      "placeholderCharacter": "E.g.: Raiden Shogun (Genshin Impact)",
+      "placeholderPortfolio": "https://facebook.com/... or Kosume profile link",
+      "portfolioHelp": "Helps organizers review applications faster",
+      "placeholderNotes": "Additional info regarding bulky props, handlers...",
+      "errorGeneric": "An error occurred while submitting application. Please try again!",
+      "valFullName": "Please enter full name",
+      "valStageName": "Please enter cosplay stage name",
+      "valCategory": "Please select category",
+      "valPhone": "Please enter contact phone number",
+      "valCharacter": "Please enter planned character",
       "successTitle": "Application for event submitted successfully!",
       "successDesc": "The event organizers will contact you with further details."
     },
@@ -868,7 +892,31 @@
     },
     "followBtn": "Follow",
     "followingBtn": "Following",
-    "bookBtn": "Book Cosplay"
+    "bookBtn": "Book Cosplay",
+    "editDialog": {
+      "title": "Edit Profile",
+      "chooseCover": "Choose cover photo",
+      "changeCover": "Change cover",
+      "chooseAvatar": "Choose avatar",
+      "changeAvatar": "Change avatar",
+      "displayName": "Display Name / Stage Name",
+      "displayNamePlaceholder": "E.g.: KIRIKO / SORA...",
+      "handle": "Username (@handle)",
+      "handlePlaceholder": "@kirikocos",
+      "bio": "Bio / About",
+      "bioPlaceholder": "Write a short bio about yourself, favorite fandoms...",
+      "socialLinks": "Social Media Links",
+      "facebookPlaceholder": "Personal Facebook link",
+      "instagramPlaceholder": "Instagram link",
+      "tiktokPlaceholder": "TikTok link",
+      "twitterPlaceholder": "Twitter / X link",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "success": "Profile changes saved successfully!",
+      "valDisplayName": "Please enter display name",
+      "valHandle": "Please enter username (handle)"
+    }
   },
   "Notifications": {
     "title": "Your Notifications",

@@ -28,6 +28,7 @@ import { UpdateUserReqDto } from './dto/update-user.req.dto';
 import { UserResDto } from './dto/user.res.dto';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
+import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
 
 @Injectable()
 export class UserService {
@@ -198,15 +199,26 @@ export class UserService {
     });
 
     user.verifiedAt = user.verifiedAt ? null : new Date();
-    if (user.cosplayerProfile) {
-      user.cosplayerProfile.isVerified = !!user.verifiedAt;
-      await this.dataSource
-        .getRepository('cosplayer_profiles')
-        .save(user.cosplayerProfile);
-    }
-
     const saved = await this.userRepository.save(user);
     return saved.toDto(UserResDto);
+  }
+
+  async toggleCosplayerVerify(id: AutoIncrementID): Promise<UserResDto> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { id },
+      relations: ['cosplayerProfile'],
+    });
+
+    if (!user.cosplayerProfile) {
+      throw new NotFoundException('User does not have a cosplayer profile');
+    }
+
+    user.cosplayerProfile.isVerified = !user.cosplayerProfile.isVerified;
+    await this.dataSource
+      .getRepository(CosplayerProfileEntity)
+      .save(user.cosplayerProfile);
+
+    return user.toDto(UserResDto);
   }
 
   async remove(id: AutoIncrementID) {

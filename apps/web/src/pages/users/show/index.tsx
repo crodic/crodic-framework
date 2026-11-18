@@ -270,11 +270,14 @@ export function PageUserShow() {
                     </div>
                   </DescriptionItem>
                   <DescriptionItem
-                    label={t('users.show.verifiedStatus', 'Xác minh')}
+                    label={t(
+                      'users.show.emailVerifiedStatus',
+                      'Xác minh Email'
+                    )}
                     value={
                       data?.verifiedAt
-                        ? t('users.show.verified', 'Đã xác minh (Verified)')
-                        : t('users.show.unverified', 'Chưa xác minh')
+                        ? t('users.show.emailVerified', 'Đã xác minh Email')
+                        : t('users.show.emailUnverified', 'Chưa xác minh Email')
                     }
                   />
                   <DescriptionItem
@@ -316,6 +319,23 @@ export function PageUserShow() {
                     <DescriptionItem
                       label={t('users.show.rankingScore', 'Điểm xếp hạng')}
                       value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
+                    />
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerVerified',
+                        'Tích xanh Cosplayer'
+                      )}
+                      value={
+                        data.cosplayerProfile.isVerified
+                          ? t(
+                              'users.show.cosplayerVerifiedTrue',
+                              'Đã duyệt tích xanh (Verified)'
+                            )
+                          : t(
+                              'users.show.cosplayerVerifiedFalse',
+                              'Chưa duyệt tích xanh'
+                            )
+                      }
                     />
                   </Descriptions>
                 </CardContent>

@@ -16,7 +16,7 @@ import {
   RefreshCwIcon,
   SaveIcon,
   ShieldCheckIcon,
-  SparklesIcon,
+  Wand2Icon,
   XIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -1027,7 +1027,7 @@ export function TagForm({
               <CardHeader className='border-b px-5 py-4'>
                 <div className='flex items-center justify-between'>
                   <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
-                    <SparklesIcon
+                    <Wand2Icon
                       className='text-primary size-4'
                       aria-hidden='true'
                     />

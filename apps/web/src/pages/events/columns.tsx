@@ -1,4 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table'
+import i18n from '@/i18n'
 import {
   CalendarDays,
   CheckCircle2,
@@ -41,7 +42,10 @@ export function getEventsTableColumns({
       id: EventColumnKey.title,
       accessorFn: (row) => row.title,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Sự kiện & Địa điểm' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.title', 'Sự kiện & Địa điểm')}
+        />
       ),
       cell: ({ row }) => (
         <div className='flex max-w-[340px] items-center gap-3'>
@@ -146,19 +150,46 @@ export function getEventsTableColumns({
         }
         return (
           <Badge variant='secondary' className='text-xs'>
-            Bản nháp
+            {i18n.t('events.status.draft', 'Bản nháp')}
           </Badge>
         )
       },
       meta: {
         variant: 'select',
-        label: 'Trạng thái',
+        label: i18n.t('events.columns.status', 'Trạng thái'),
         options: [
-          { label: 'Sắp diễn ra (Upcoming)', value: 'upcoming' },
-          { label: 'Đang diễn ra (Ongoing)', value: 'ongoing' },
-          { label: 'Đã kết thúc (Completed)', value: 'completed' },
-          { label: 'Đã hủy (Cancelled)', value: 'cancelled' },
-          { label: 'Bản nháp (Draft)', value: 'draft' },
+          {
+            label: i18n.t(
+              'events.status.upcomingOption',
+              'Sắp diễn ra (Upcoming)'
+            ),
+            value: 'upcoming',
+          },
+          {
+            label: i18n.t(
+              'events.status.ongoingOption',
+              'Đang diễn ra (Ongoing)'
+            ),
+            value: 'ongoing',
+          },
+          {
+            label: i18n.t(
+              'events.status.completedOption',
+              'Đã kết thúc (Completed)'
+            ),
+            value: 'completed',
+          },
+          {
+            label: i18n.t(
+              'events.status.cancelledOption',
+              'Đã hủy (Cancelled)'
+            ),
+            value: 'cancelled',
+          },
+          {
+            label: i18n.t('events.status.draftOption', 'Bản nháp (Draft)'),
+            value: 'draft',
+          },
         ],
       },
       enableColumnFilter: true,
@@ -168,23 +199,31 @@ export function getEventsTableColumns({
       id: EventColumnKey.isRecruiting,
       accessorFn: (row) => (row.isRecruiting ? 'recruiting' : 'closed'),
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Đăng ký Guest' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.recruiting', 'Đăng ký Guest')}
+        />
       ),
       cell: ({ row }) =>
         row.original.isRecruiting ? (
           <Badge variant='outline-success' className='gap-1 text-xs'>
             <UserCheck className='size-3' />
-            Mở đăng ký
+            {i18n.t('events.recruiting.open', 'Mở đăng ký')}
           </Badge>
         ) : (
-          <span className='text-muted-foreground text-xs'>Đóng</span>
+          <span className='text-muted-foreground text-xs'>
+            {i18n.t('events.recruiting.closed', 'Đóng')}
+          </span>
         ),
       enableSorting: false,
     },
     {
       id: 'engagement',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Quan tâm / Tham gia' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.engagement', 'Quan tâm / Tham gia')}
+        />
       ),
       cell: ({ row }) => (
         <div className='flex items-center gap-3 text-xs'>
@@ -214,7 +253,7 @@ export function getEventsTableColumns({
             className='h-7 text-xs'
             onClick={() => onStatusChange(row.original)}
           >
-            Trạng thái
+            {i18n.t('events.actions.status', 'Trạng thái')}
           </Button>
           <Button
             size='sm'
@@ -222,7 +261,7 @@ export function getEventsTableColumns({
             className='text-destructive hover:bg-destructive/10 h-7 text-xs'
             onClick={() => onDelete(row.original)}
           >
-            Xóa
+            {i18n.t('events.actions.delete', 'Xóa')}
           </Button>
         </div>
       ),

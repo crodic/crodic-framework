@@ -245,10 +245,15 @@ export function SpotlightBannerDialog({
               name='badge'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Huy hiệu / Tiêu đề phụ</FormLabel>
+                  <FormLabel required>
+                    {t('spotlight.fields.badge', 'Huy hiệu / Tiêu đề phụ')}
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='Cosplayer Tiêu Điểm Tuần Này'
+                      placeholder={t(
+                        'spotlight.placeholders.badge',
+                        'Cosplayer Tiêu Điểm Tuần Này'
+                      )}
                       {...field}
                     />
                   </FormControl>
@@ -262,10 +267,15 @@ export function SpotlightBannerDialog({
               name='tagline'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Mô tả / Slogan</FormLabel>
+                  <FormLabel required>
+                    {t('spotlight.fields.tagline', 'Mô tả / Slogan')}
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='Vinh danh thành thương hiệu chuyên nghiệp'
+                      placeholder={t(
+                        'spotlight.placeholders.tagline',
+                        'Vinh danh thành thương hiệu chuyên nghiệp'
+                      )}
                       {...field}
                     />
                   </FormControl>
@@ -301,7 +311,12 @@ export function SpotlightBannerDialog({
               name='sortOrder'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Thứ tự sắp xếp (Nhỏ xếp trước)</FormLabel>
+                  <FormLabel required>
+                    {t(
+                      'spotlight.fields.sortOrder',
+                      'Thứ tự sắp xếp (Nhỏ xếp trước)'
+                    )}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type='number'
@@ -321,7 +336,7 @@ export function SpotlightBannerDialog({
                 <FormItem className='flex items-center justify-between rounded-lg border p-3'>
                   <div className='space-y-0.5'>
                     <FormLabel className='text-sm'>
-                      Kích hoạt hiển thị
+                      {t('spotlight.fields.isActive', 'Kích hoạt hiển thị')}
                     </FormLabel>
                   </div>
                   <FormControl>
@@ -341,10 +356,14 @@ export function SpotlightBannerDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
-                Hủy
+                {t('common.cancel', 'Hủy')}
               </Button>
               <Button type='submit' disabled={isPending}>
-                {isPending ? 'Đang lưu...' : isEdit ? 'Cập nhật' : 'Tạo mới'}
+                {isPending
+                  ? t('common.saving', 'Đang lưu...')
+                  : isEdit
+                    ? t('common.update', 'Cập nhật')
+                    : t('common.create', 'Tạo mới')}
               </Button>
             </DialogFooter>
           </form>
