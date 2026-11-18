@@ -6,7 +6,6 @@ import {
   Download,
   EyeOff,
   LogOut,
-  ShieldAlert,
   Tag,
   Trash2,
 } from "lucide-react";
@@ -20,8 +19,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { useTranslations } from "next-intl";
+import { useSignOut } from "@/hooks/use-profile";
 
 export function PrivacySettings() {
+  const t = useTranslations("Settings.privacy");
+  const signOutMutation = useSignOut();
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [mutedTags, setMutedTags] = useState<string[]>([
     "Spoiler",
@@ -33,6 +36,10 @@ export function PrivacySettings() {
     setMutedTags((prev) => prev.filter((t) => t !== tag));
   };
 
+  const handleSignOut = () => {
+    signOutMutation.mutate();
+  };
+
   return (
     <div className="space-y-6">
       {/* 1. Privacy Settings */}
@@ -40,21 +47,18 @@ export function PrivacySettings() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <EyeOff className="text-primary size-4" />
-            <span>Quyền riêng tư & Tương tác</span>
+            <span>{t("title")}</span>
           </CardTitle>
-          <CardDescription className="text-xs">
-            Kiểm soát thông tin hiển thị với cộng đồng Kosume.
-          </CardDescription>
+          <CardDescription className="text-xs">{t("desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3.5">
             <div className="space-y-0.5 pr-4">
               <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Hiển thị trạng thái hoạt động (Online Status)
+                {t("onlineStatus")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Cho phép bạn bè và cosplayer nhìn thấy chấm xanh khi bạn đang
-                trực tuyến.
+                {t("onlineStatusDesc")}
               </p>
             </div>
             <Switch
@@ -69,11 +73,10 @@ export function PrivacySettings() {
               <div className="space-y-0.5">
                 <p className="text-foreground flex items-center gap-1.5 text-xs font-semibold sm:text-sm">
                   <Tag className="text-primary size-3.5" />
-                  <span>Thẻ bị ẩn (Muted Tags)</span>
+                  <span>{t("mutedTags")}</span>
                 </p>
                 <p className="text-muted-foreground text-[11px]">
-                  Các bài viết chứa các thẻ này sẽ tự động ẩn khỏi bảng tin của
-                  bạn.
+                  {t("mutedTagsDesc")}
                 </p>
               </div>
             </div>
@@ -105,21 +108,20 @@ export function PrivacySettings() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <Download className="text-primary size-4" />
-            <span>Dữ liệu cá nhân</span>
+            <span>{t("dataManagement")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Xuất dữ liệu ảnh đã lưu, lịch sử tương tác và danh sách theo dõi của
-            bạn.
+            {t("dataManagementDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 gap-1.5 rounded-xl text-xs"
+            className="h-9 cursor-pointer gap-1.5 rounded-xl text-xs"
           >
             <Download className="size-3.5" />
-            <span>Tải xuống bản sao dữ liệu (JSON)</span>
+            <span>{t("downloadData")}</span>
           </Button>
         </CardContent>
       </Card>
@@ -129,49 +131,50 @@ export function PrivacySettings() {
         <CardHeader className="pb-3">
           <CardTitle className="text-destructive flex items-center gap-2 text-base font-bold">
             <AlertTriangle className="size-4" />
-            <span>Vùng nguy hiểm (Danger Zone)</span>
+            <span>{t("dangerZone")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Các tác vụ này ảnh hưởng trực tiếp đến trạng thái tài khoản của bạn.
+            {t("dangerZoneDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="bg-background border-border/60 flex items-center justify-between rounded-xl border p-3">
             <div>
               <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Đăng xuất khỏi thiết bị này
+                {t("signOutThisDevice")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng.
+                {t("signOutThisDeviceDesc")}
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="text-muted-foreground hover:text-foreground h-8 gap-1.5 rounded-xl text-xs"
+              onClick={handleSignOut}
+              disabled={signOutMutation.isPending}
+              className="text-muted-foreground hover:text-foreground h-8 cursor-pointer gap-1.5 rounded-xl text-xs"
             >
               <LogOut className="size-3.5" />
-              <span>Đăng xuất</span>
+              <span>{t("signOut")}</span>
             </Button>
           </div>
 
           <div className="bg-background border-destructive/30 flex items-center justify-between rounded-xl border p-3">
             <div>
               <p className="text-destructive text-xs font-semibold sm:text-sm">
-                Xóa tài khoản vĩnh viễn
+                {t("deleteAccount")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Tất cả bộ sưu tập, lịch sử và thông tin sẽ bị xóa hoàn toàn
-                không thể khôi phục.
+                {t("deleteAccountDesc")}
               </p>
             </div>
             <Button
               variant="destructive"
               size="sm"
-              className="h-8 gap-1.5 rounded-xl text-xs"
+              className="h-8 cursor-pointer gap-1.5 rounded-xl text-xs"
             >
               <Trash2 className="size-3.5" />
-              <span>Xóa tài khoản</span>
+              <span>{t("deleteAccountBtn")}</span>
             </Button>
           </div>
         </CardContent>

@@ -115,11 +115,12 @@ export function ExploreFeed() {
         <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
           <div className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs font-bold uppercase select-none">
             <Flame className="size-3.5 fill-rose-500 text-rose-500" />
-            <span className="hidden sm:inline">Xu hướng:</span>
+            <span className="hidden sm:inline">{t("trendingFandoms")}:</span>
           </div>
 
           {EXPLORE_TAGS.map((tag) => {
             const isSelected = selectedTag === tag.id;
+            const label = tag.id === "all" ? t("all") : tag.label;
             return (
               <button
                 key={tag.id}
@@ -132,7 +133,7 @@ export function ExploreFeed() {
                     : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border/40 border"
                 )}
               >
-                {tag.label}
+                {label}
               </button>
             );
           })}
@@ -145,11 +146,10 @@ export function ExploreFeed() {
           <div className="flex items-center gap-2">
             <Search className="text-primary size-4" />
             <span>
-              Kết quả cho:{" "}
-              <strong className="text-foreground font-bold">
-                &ldquo;{searchQuery}&rdquo;
-              </strong>{" "}
-              ({filteredItems.length} tác phẩm)
+              {t("searchResultsFor", {
+                query: searchQuery,
+                count: filteredItems.length,
+              })}
             </span>
           </div>
           <button

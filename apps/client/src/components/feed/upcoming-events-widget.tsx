@@ -12,6 +12,7 @@ import { useRouter } from "@/i18n/navigation";
 
 export function UpcomingEventsWidget() {
   const t = useTranslations("Feed");
+  const tEvents = useTranslations("Events");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const [interestMap, setInterestMap] = useState<Record<string, boolean>>({});
@@ -25,7 +26,7 @@ export function UpcomingEventsWidget() {
 
   const handleToggleInterest = async (id: string, title: string) => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để lưu sự kiện!");
+      toast.info(tEvents("loginRequired"));
       router.push("/auth/login?from=/feed");
       return;
     }
@@ -34,12 +35,12 @@ export function UpcomingEventsWidget() {
       const res = await toggleEventInterest(id);
       setInterestMap((prev) => ({ ...prev, [id]: res.interested }));
       if (res.interested) {
-        toast.success(`Đã lưu sự kiện "${title}" vào lịch của bạn!`);
+        toast.success(tEvents("savedEventSuccess", { title }));
       } else {
-        toast.info(`Đã bỏ quan tâm sự kiện "${title}"`);
+        toast.info(tEvents("uninterestedSuccess", { title }));
       }
     } catch {
-      toast.error("Có lỗi xảy ra khi lưu sự kiện.");
+      toast.error(tEvents("saveEventError"));
     }
   };
 

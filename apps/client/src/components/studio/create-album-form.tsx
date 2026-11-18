@@ -20,12 +20,13 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createPost } from "@/services/posts";
+import { useTranslations } from "next-intl";
 
 const createAlbumSchema = z.object({
-  title: z.string().min(1, "Vui lòng nhập tên Album"),
-  character: z.string().min(1, "Vui lòng nhập tên nhân vật"),
-  fandom: z.string().min(1, "Vui lòng nhập Fandom / Game"),
-  tags: z.array(z.string()).min(1, "Vui lòng thêm ít nhất 1 thẻ"),
+  title: z.string().min(1, "Title is required"),
+  character: z.string().min(1, "Character is required"),
+  fandom: z.string().min(1, "Fandom is required"),
+  tags: z.array(z.string()).min(1, "Add at least 1 tag"),
   description: z.string(),
   isPublic: z.boolean(),
   enableWatermark: z.boolean(),
@@ -46,6 +47,8 @@ export function CreateAlbumForm({
   className,
   isMobile = false,
 }: CreateAlbumFormProps) {
+  const t = useTranslations("Studio");
+  const tCommon = useTranslations("Common");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
@@ -95,12 +98,10 @@ export function CreateAlbumForm({
         postType: "photoset",
         tags: values.tags,
       });
-      toast.success(`Đã đăng album "${values.title}" thành công!`, {
-        description: `Tác phẩm với nhân vật ${values.character} (${values.fandom}) đã xuất bản.`,
-      });
+      toast.success(t("publishSuccess"));
       onSuccess?.(values);
     } catch {
-      toast.error("Có lỗi xảy ra khi tạo album. Vui lòng thử lại!");
+      toast.error(t("publishError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -120,11 +121,11 @@ export function CreateAlbumForm({
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  Tên Album
+                  {t("titleLabel")}
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Nhập tên album cosplay..."
+                    placeholder={t("titlePlaceholder")}
                     className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
                     {...field}
                   />
@@ -141,11 +142,11 @@ export function CreateAlbumForm({
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  Nhân vật
+                  {t("characterLabel")}
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Acheron, Kafka, Raiden Shogun..."
+                    placeholder={t("characterPlaceholder")}
                     className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
                     {...field}
                   />
@@ -162,11 +163,11 @@ export function CreateAlbumForm({
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  Fandom / Game
+                  {t("seriesLabel")}
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Honkai: Star Rail, Genshin Impact..."
+                    placeholder={t("seriesPlaceholder")}
                     className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
                     {...field}
                   />
@@ -183,7 +184,7 @@ export function CreateAlbumForm({
             render={() => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  Thẻ phân loại
+                  {t("tagCharacter")}
                 </FormLabel>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {tags.map((tag) => (
@@ -196,7 +197,7 @@ export function CreateAlbumForm({
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
                         className="hover:bg-primary/20 hover:text-primary-foreground ml-0.5 cursor-pointer rounded-full p-0.5 transition-colors"
-                        title={`Xóa thẻ #${tag}`}
+                        title={`Remove #${tag}`}
                       >
                         <X className="size-3" />
                       </button>
@@ -219,7 +220,7 @@ export function CreateAlbumForm({
                           }
                         }}
                         onBlur={handleAddTag}
-                        placeholder="Thẻ mới..."
+                        placeholder={t("tagCharacter")}
                         className="h-7 w-28 rounded-md px-2 text-xs"
                       />
                     </div>
@@ -232,7 +233,7 @@ export function CreateAlbumForm({
                       className="border-border/60 hover:border-primary/60 hover:text-primary h-7 cursor-pointer rounded-lg px-2 text-xs font-medium"
                     >
                       <Plus className="mr-1 size-3" />
-                      Thêm thẻ
+                      {t("tagCharacter")}
                     </Button>
                   )}
                 </div>
@@ -248,12 +249,12 @@ export function CreateAlbumForm({
             render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  Mô tả
+                  {t("descLabel")}
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={3}
-                    placeholder="Chia sẻ thêm thông tin về concept, địa điểm chụp, photo studio..."
+                    placeholder={t("descPlaceholder")}
                     className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 resize-none rounded-xl text-xs sm:text-sm"
                     {...field}
                   />
@@ -272,10 +273,10 @@ export function CreateAlbumForm({
                 <FormItem className="flex items-center justify-between gap-3 space-y-0">
                   <div className="space-y-0.5">
                     <FormLabel className="text-foreground cursor-pointer text-xs font-medium">
-                      Công tác gạt công tác (Công khai)
+                      {t("visibility.public")}
                     </FormLabel>
                     <FormDescription className="text-muted-foreground text-[11px]">
-                      Hiển thị công khai trên bảng tin và trang cá nhân
+                      {t("visibilityLabel")}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -295,10 +296,10 @@ export function CreateAlbumForm({
                 <FormItem className="border-border/40 flex items-center justify-between gap-3 space-y-0 border-t pt-2">
                   <div className="space-y-0.5">
                     <FormLabel className="text-foreground cursor-pointer text-xs font-medium">
-                      Đóng nút nét trên nhiệt (Watermark)
+                      Watermark
                     </FormLabel>
                     <FormDescription className="text-muted-foreground text-[11px]">
-                      Tự động chèn watermark bảo vệ bản quyền ảnh
+                      Kosume Watermark Protection
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -325,12 +326,12 @@ export function CreateAlbumForm({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Đang đăng tải album...
+                {t("submitting")}
               </>
             ) : (
               <>
                 <Upload className="mr-2 size-4" />
-                Đăng album
+                {t("submitBtn")}
               </>
             )}
           </Button>

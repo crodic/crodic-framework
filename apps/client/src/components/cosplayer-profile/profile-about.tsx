@@ -9,19 +9,21 @@ import {
   Ruler,
   User,
   ExternalLink,
-  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CosplayerDetailResDto } from "@/services/cosplayer";
+import { useTranslations } from "next-intl";
 
 interface ProfileAboutProps {
   profile: CosplayerDetailResDto;
 }
 
 export function ProfileAbout({ profile }: ProfileAboutProps) {
+  const t = useTranslations("Profile");
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       {/* Left 2 Columns: Bio, Specs & Skills */}
@@ -31,15 +33,11 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold sm:text-lg">
               <User className="text-primary size-4" />
-              Tiểu sử nghệ thuật
+              {t("aboutTab")}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-foreground/90 space-y-4 text-sm leading-relaxed">
-            <p>
-              {profile.artisticBio ||
-                profile.bio ||
-                `Xin chào! Mình là ${profile.displayName}, cosplayer trên Kosume Platform.`}
-            </p>
+            <p>{profile.artisticBio || profile.bio || t("emptyBio")}</p>
             {profile.awardsBadges && profile.awardsBadges.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {profile.awardsBadges.map((award, i) => (
@@ -64,28 +62,30 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-muted-foreground flex items-center gap-2 text-sm font-bold">
                 <Ruler className="text-primary size-4" />
-                Thông số & Kinh nghiệm
+                {t("experience")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2.5 text-xs sm:text-sm">
               <div className="border-border/40 flex items-center justify-between border-b py-1">
-                <span className="text-muted-foreground">Chiều cao:</span>
+                <span className="text-muted-foreground">{t("height")}:</span>
                 <span className="text-foreground font-semibold">
-                  {profile.heightLabel || "Chưa cập nhật"}
+                  {profile.heightLabel || "—"}
                 </span>
               </div>
               <div className="border-border/40 flex items-center justify-between border-b py-1">
-                <span className="text-muted-foreground">Kinh nghiệm:</span>
+                <span className="text-muted-foreground">
+                  {t("experience")}:
+                </span>
                 <span className="text-foreground font-semibold">
-                  {profile.experienceLabel || "Chưa cập nhật"}
+                  {profile.experienceLabel || "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">
-                  Khu vực nhận việc:
+                  {t("locationLabel")}:
                 </span>
                 <span className="text-foreground font-semibold">
-                  {profile.workArea || profile.locationLabel || "Toàn quốc"}
+                  {profile.workArea || profile.locationLabel || "—"}
                 </span>
               </div>
             </CardContent>
@@ -96,7 +96,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-muted-foreground flex items-center gap-2 text-sm font-bold">
                 <User className="text-primary size-4" />
-                Kỹ năng chuyên môn
+                {t("skills")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-1.5 pt-1">
@@ -112,9 +112,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                   </Badge>
                 ))
               ) : (
-                <span className="text-muted-foreground text-xs">
-                  Chưa cập nhật kỹ năng
-                </span>
+                <span className="text-muted-foreground text-xs">—</span>
               )}
             </CardContent>
           </Card>
@@ -127,7 +125,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold">
               <Mail className="text-primary size-4" />
-              Kênh liên hệ chính thức
+              {t("contact")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-xs sm:text-sm">
@@ -136,7 +134,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                 <Mail className="text-muted-foreground size-4 shrink-0" />
                 <div className="flex-1 truncate">
                   <span className="text-muted-foreground block text-[11px]">
-                    Email làm việc
+                    {t("emailLabel")}
                   </span>
                   <span className="text-foreground block truncate font-medium">
                     {profile.contactEmail}
@@ -150,7 +148,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                 <Phone className="text-muted-foreground size-4 shrink-0" />
                 <div className="flex-1 truncate">
                   <span className="text-muted-foreground block text-[11px]">
-                    Điện thoại / Zalo
+                    Phone
                   </span>
                   <span className="text-foreground font-medium">
                     {profile.contactPhone}
@@ -164,7 +162,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                 <MapPin className="text-muted-foreground size-4 shrink-0" />
                 <div>
                   <span className="text-muted-foreground block text-[11px]">
-                    Khu vực sinh sống
+                    {t("locationLabel")}
                   </span>
                   <span className="text-foreground font-medium">
                     {profile.locationLabel}
@@ -174,55 +172,60 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
             )}
 
             {/* Social links */}
-            <div className="space-y-2 pt-2">
-              <p className="text-muted-foreground text-xs font-semibold">
-                Mạng xã hội
-              </p>
-              {profile.facebookUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() => window.open(profile.facebookUrl!, "_blank")}
-                >
-                  <span>Facebook</span>
-                  <ExternalLink className="text-muted-foreground size-3.5" />
-                </Button>
-              )}
-              {profile.instagramUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() => window.open(profile.instagramUrl!, "_blank")}
-                >
-                  <span>Instagram</span>
-                  <ExternalLink className="text-muted-foreground size-3.5" />
-                </Button>
-              )}
-              {profile.tiktokUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() => window.open(profile.tiktokUrl!, "_blank")}
-                >
-                  <span>TikTok</span>
-                  <ExternalLink className="text-muted-foreground size-3.5" />
-                </Button>
-              )}
-              {profile.twitterUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() => window.open(profile.twitterUrl!, "_blank")}
-                >
-                  <span>Twitter / X</span>
-                  <ExternalLink className="text-muted-foreground size-3.5" />
-                </Button>
-              )}
-            </div>
+            {(profile.facebookUrl ||
+              profile.instagramUrl ||
+              profile.tiktokUrl ||
+              profile.twitterUrl) && (
+              <div className="space-y-2 pt-2">
+                <p className="text-muted-foreground text-xs font-semibold">
+                  Social Channels
+                </p>
+                {profile.facebookUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-full cursor-pointer justify-between rounded-xl text-xs"
+                    onClick={() => window.open(profile.facebookUrl!, "_blank")}
+                  >
+                    <span>Facebook</span>
+                    <ExternalLink className="text-muted-foreground size-3.5" />
+                  </Button>
+                )}
+                {profile.instagramUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-full cursor-pointer justify-between rounded-xl text-xs"
+                    onClick={() => window.open(profile.instagramUrl!, "_blank")}
+                  >
+                    <span>Instagram</span>
+                    <ExternalLink className="text-muted-foreground size-3.5" />
+                  </Button>
+                )}
+                {profile.tiktokUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-full cursor-pointer justify-between rounded-xl text-xs"
+                    onClick={() => window.open(profile.tiktokUrl!, "_blank")}
+                  >
+                    <span>TikTok</span>
+                    <ExternalLink className="text-muted-foreground size-3.5" />
+                  </Button>
+                )}
+                {profile.twitterUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-full cursor-pointer justify-between rounded-xl text-xs"
+                    onClick={() => window.open(profile.twitterUrl!, "_blank")}
+                  >
+                    <span>Twitter / X</span>
+                    <ExternalLink className="text-muted-foreground size-3.5" />
+                  </Button>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

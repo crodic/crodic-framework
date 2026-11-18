@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, Tag, Video, Send } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
@@ -18,8 +19,8 @@ export function CreatePostCard() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
 
-  const displayName = profile?.fullName || profile?.firstName || "Cosplayer";
-  const avatarUrl = profile?.avatar || "/landing/avatar-kiriko.jpg";
+  const displayName = profile?.fullName || profile?.firstName || "Creator";
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   const handleAction = () => {
     if (!isAuthenticated) {
@@ -34,15 +35,12 @@ export function CreatePostCard() {
     <div className="border-border/70 bg-card/70 hover:border-border rounded-2xl border p-4 shadow-xs backdrop-blur-xs transition-colors">
       <div className="flex items-center gap-3">
         {/* User Avatar */}
-        <div className="border-primary/30 relative size-10 shrink-0 overflow-hidden rounded-full border">
-          <Image
-            src={avatarUrl}
-            alt={displayName}
-            fill
-            sizes="40px"
-            className="object-cover"
-          />
-        </div>
+        <Avatar className="border-primary/30 size-10 shrink-0 border">
+          <AvatarImage src={profile?.avatar || ""} alt={displayName} />
+          <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
         {/* Fake input trigger */}
         <button

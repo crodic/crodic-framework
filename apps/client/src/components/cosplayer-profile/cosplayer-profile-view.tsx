@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslations } from "next-intl";
 import { ProfileHero } from "./profile-hero";
 import { ProfileAlbums } from "./profile-albums";
 import { ProfileCharacters } from "./profile-characters";
@@ -19,13 +20,13 @@ import type {
 import type { PostSummaryResDto } from "@/services/posts";
 
 const DEFAULT_EMPTY_PROFILE: CosplayerDetailResDto = {
-  id: "profile",
-  userId: "user-1",
-  slug: "profile",
-  displayName: "Cosplayer",
-  handle: "@cosplayer",
-  roleBadge: "Cosplayer",
-  locationLabel: "Việt Nam",
+  id: "",
+  userId: "",
+  slug: "",
+  displayName: "",
+  handle: "",
+  roleBadge: "",
+  locationLabel: "",
   isVerified: false,
   isCraftingCreator: false,
   followersCount: 0,
@@ -62,6 +63,7 @@ export function CosplayerProfileView({
   initialCollections = [],
   isOwner = false,
 }: CosplayerProfileViewProps) {
+  const t = useTranslations("Profile");
   const [profile, setProfile] = useState<CosplayerDetailResDto>(initialProfile);
   const [viewMode, setViewMode] = useState<"owner" | "visitor">("owner");
   const [activeTab, setActiveTab] = useState(isOwner ? "following" : "albums");
@@ -103,39 +105,39 @@ export function CosplayerProfileView({
         <div className="border-border/60 mb-6 border-b">
           <TabsList className="no-scrollbar h-auto w-full justify-start gap-4 rounded-none bg-transparent p-0 sm:gap-8">
             {effectiveOwnerMode ? (
-              /* OWNER TABS (Matching Mockup 2) */
+              /* OWNER TABS */
               <>
                 <TabsTrigger
                   value="following"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Đang theo dõi ({initialFollowed.length})
+                  {t("followingTab", { count: initialFollowed.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="liked"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Đã thích ({initialLikedWorks.length})
+                  {t("likedTab", { count: initialLikedWorks.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="collections"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Bộ sưu tập ({initialCollections.length})
+                  {t("collectionsTab", { count: initialCollections.length })}
                 </TabsTrigger>
                 {initialAlbums.length > 0 && (
                   <TabsTrigger
                     value="albums"
                     className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                   >
-                    Tác phẩm của tôi ({initialAlbums.length})
+                    {t("myWorksTab", { count: initialAlbums.length })}
                   </TabsTrigger>
                 )}
                 <TabsTrigger
                   value="about"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Giới thiệu
+                  {t("aboutTab")}
                 </TabsTrigger>
               </>
             ) : (
@@ -145,19 +147,21 @@ export function CosplayerProfileView({
                   value="albums"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Tất cả Album ({profile.albumsCount})
+                  {t("allAlbumsTab", {
+                    count: profile.albumsCount || initialAlbums.length,
+                  })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="characters"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Nhân vật & Series ({activeCharacters.length})
+                  {t("charactersTab", { count: activeCharacters.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Giới thiệu
+                  {t("aboutTab")}
                 </TabsTrigger>
               </>
             )}

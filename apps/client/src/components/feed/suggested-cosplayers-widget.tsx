@@ -15,6 +15,7 @@ import { useRouter } from "@/i18n/navigation";
 
 export function SuggestedCosplayersWidget() {
   const t = useTranslations("Feed");
+  const tCos = useTranslations("CosplayerProfile");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
@@ -28,7 +29,7 @@ export function SuggestedCosplayersWidget() {
 
   const handleToggleFollow = async (userId: string, name: string) => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để theo dõi cosplayer!");
+      toast.info(tCos("loginRequiredToFollow"));
       router.push("/auth/login?from=/feed");
       return;
     }
@@ -37,12 +38,12 @@ export function SuggestedCosplayersWidget() {
       const res = await toggleFollow(userId);
       setFollowingMap((prev) => ({ ...prev, [userId]: res.following }));
       if (res.following) {
-        toast.success(`Đã theo dõi ${name}`);
+        toast.success(tCos("followedSuccess", { name }));
       } else {
-        toast.info(`Đã hủy theo dõi ${name}`);
+        toast.info(tCos("unfollowedSuccess", { name }));
       }
     } catch {
-      toast.error("Có lỗi xảy ra khi cập nhật theo dõi.");
+      toast.error(tCos("followError"));
     }
   };
 

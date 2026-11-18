@@ -24,6 +24,7 @@ import { X } from "lucide-react";
 import { CreateAlbumForm } from "./create-album-form";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export interface CreateAlbumModalProps {
@@ -40,6 +41,8 @@ export function CreateAlbumModal({
   const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
   const router = useRouter();
+  const t = useTranslations("Studio");
+  const tCommon = useTranslations("Common");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const isControlled = typeof controlledOpen === "boolean";
@@ -47,7 +50,7 @@ export function CreateAlbumModal({
 
   const handleOpenChange = (val: boolean) => {
     if (val && !isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để đăng tải album tác phẩm!");
+      toast.info(t("publishError"));
       router.push("/auth/login?from=/upload");
       return;
     }
@@ -77,7 +80,7 @@ export function CreateAlbumModal({
       gridClassName={
         isMobile ? "grid-cols-4 gap-2" : "grid-cols-3 gap-2.5 sm:gap-3"
       }
-      className="w-full max-w-none"
+      className="max-none w-full"
     />
   );
 
@@ -89,16 +92,17 @@ export function CreateAlbumModal({
           <DrawerHeader className="border-border/60 flex flex-row items-center justify-between border-b px-4 py-3">
             <div>
               <DrawerTitle className="text-foreground text-left text-base font-bold">
-                Tải lên album mới
+                {t("createAlbumTitle")}
               </DrawerTitle>
               <p className="text-muted-foreground text-left text-xs">
-                Studio Upload Flow
+                {t("createAlbumDesc")}
               </p>
             </div>
             <DrawerClose asChild>
               <button
                 type="button"
                 className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1"
+                aria-label={tCommon("close")}
               >
                 <X className="size-5" />
               </button>
@@ -131,11 +135,11 @@ export function CreateAlbumModal({
         className="bg-card border-border/80 w-[94vw] max-w-4xl gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl sm:max-w-4xl lg:max-w-5xl xl:max-w-6xl"
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>Tải lên album mới</DialogTitle>
+          <DialogTitle>{t("createAlbumTitle")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex max-h-[88vh] flex-col overflow-hidden md:flex-row">
-          {/* Left Column: Lưới tải ảnh (58%) */}
+          {/* Left Column: Image grid (58%) */}
           <div className="border-border/60 flex flex-1 flex-col overflow-y-auto border-r p-6 md:w-[58%]">
             {sortableUploadSection}
           </div>
@@ -146,17 +150,17 @@ export function CreateAlbumModal({
               <div className="border-border/60 mb-5 flex items-center justify-between border-b pb-3.5">
                 <div>
                   <h2 className="text-foreground text-base font-bold sm:text-lg">
-                    Tên Album
+                    {t("createAlbumTitle")}
                   </h2>
                   <p className="text-muted-foreground text-xs">
-                    Điền thông tin để xuất bản tác phẩm cosplay
+                    {t("createAlbumDesc")}
                   </p>
                 </div>
                 <DialogClose asChild>
                   <button
                     type="button"
                     className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1 transition-colors"
-                    aria-label="Đóng"
+                    aria-label={tCommon("close")}
                   >
                     <X className="size-5" />
                   </button>

@@ -7,12 +7,14 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PostSummaryResDto } from "@/services/posts";
 import { toggleLikePost } from "@/services/posts";
+import { useTranslations } from "next-intl";
 
 interface AlbumCardProps {
   album: PostSummaryResDto;
 }
 
 export function AlbumCard({ album }: AlbumCardProps) {
+  const t = useTranslations("Landing.albums");
   const [isLiked, setIsLiked] = useState(album.isLikedByCurrentUser || false);
   const [likes, setLikes] = useState(album.likesCount);
 
@@ -67,7 +69,9 @@ export function AlbumCard({ album }: AlbumCardProps) {
                 ? "border-rose-500/50 bg-rose-500/20 text-rose-300"
                 : "bg-background/60 border-border/40 text-foreground hover:bg-background/80"
             )}
-            aria-label={`Thích album ${album.characterName || album.title}`}
+            aria-label={t("likeAlbumAria", {
+              name: album.characterName || album.title,
+            })}
           >
             <Heart
               className={cn(

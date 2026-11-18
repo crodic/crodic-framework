@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Check, Globe, Moon, Palette, Sun, Monitor } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -10,11 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { cn } from "@/lib/utils";
 
 export function AppearanceSettings() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations("Settings.appearance");
 
   useEffect(() => {
     setMounted(true);
@@ -22,16 +25,15 @@ export function AppearanceSettings() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Theme Selection matching Mockup 1 */}
+      {/* 1. Theme Selection */}
       <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <Palette className="text-primary size-4" />
-            <span>Giao diện Sáng / Tối</span>
+            <span>{t("themeTitle")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Tùy chỉnh tông màu giao diện phù hợp với sở thích và môi trường của
-            bạn.
+            {t("themeDesc")}
           </CardDescription>
         </CardHeader>
 
@@ -52,7 +54,7 @@ export function AppearanceSettings() {
                 <Sun className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">
-                Sáng (Light)
+                {t("light")}
               </span>
               {mounted && theme === "light" && (
                 <span className="bg-primary text-primary-foreground absolute top-2 right-2 flex size-4 items-center justify-center rounded-full">
@@ -76,7 +78,7 @@ export function AppearanceSettings() {
                 <Moon className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">
-                Tối (Dark)
+                {t("dark")}
               </span>
               {mounted && theme === "dark" && (
                 <span className="bg-primary text-primary-foreground absolute top-2 right-2 flex size-4 items-center justify-center rounded-full">
@@ -100,7 +102,7 @@ export function AppearanceSettings() {
                 <Monitor className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">
-                Theo hệ thống
+                {t("system")}
               </span>
               {mounted && theme === "system" && (
                 <span className="bg-primary text-primary-foreground absolute top-2 right-2 flex size-4 items-center justify-center rounded-full">
@@ -112,32 +114,19 @@ export function AppearanceSettings() {
         </CardContent>
       </Card>
 
-      {/* 2. Language Selection */}
+      {/* 2. Interactive Language Selection with Pills variant */}
       <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <Globe className="text-primary size-4" />
-            <span>Ngôn ngữ hiển thị</span>
+            <span>{t("languageTitle")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Chọn ngôn ngữ ưu tiên trên toàn bộ nền tảng Kosume.
+            {t("languageDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              type="button"
-              className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-4 py-2 text-xs font-bold shadow-xs"
-            >
-              Tiếng Việt (Mặc định)
-            </button>
-            <button
-              type="button"
-              className="border-border/70 bg-card hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer rounded-xl border px-4 py-2 text-xs font-medium"
-            >
-              English
-            </button>
-          </div>
+          <LanguageSwitcher variant="pills" />
         </CardContent>
       </Card>
     </div>

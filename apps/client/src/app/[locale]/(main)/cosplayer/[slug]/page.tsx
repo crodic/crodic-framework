@@ -31,7 +31,7 @@ export async function generateMetadata({
     );
 
     const coverUrl = profile.coverUrl || "/landing/hero-banner.png";
-    const avatarUrl = profile.avatarUrl || "/landing/avatar-kiriko.jpg";
+    const avatarUrl = profile.avatarUrl || coverUrl;
 
     return {
       title: {

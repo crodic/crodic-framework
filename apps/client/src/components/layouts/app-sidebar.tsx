@@ -58,7 +58,6 @@ export function AppSidebar() {
       case "home":
         return <Home className="size-4 shrink-0" />;
       case "compass":
-      case "sparkles":
         return <Compass className="size-4 shrink-0" />;
       case "star":
         return <Star className="size-4 shrink-0" />;

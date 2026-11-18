@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CollectionPhoto, SavedCollection } from "./profile-types";
+import { useTranslations } from "next-intl";
 
 interface ProfileSavedCollectionsProps {
   initialCollections: SavedCollection[];
@@ -36,6 +37,8 @@ export function ProfileSavedCollections({
   initialCollections,
   layout = "full",
 }: ProfileSavedCollectionsProps) {
+  const t = useTranslations("Profile");
+  const tCommon = useTranslations("Common");
   const [collections, setCollections] =
     useState<SavedCollection[]>(initialCollections);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -54,22 +57,17 @@ export function ProfileSavedCollections({
 
     const newCol: SavedCollection = {
       id: `col-${Date.now()}`,
-      title: `"${newTitle.trim()}"`,
+      title: newTitle.trim(),
       count: 0,
-      thumbnails: [
-        "/landing/art-acheron.jpg",
-        "/landing/art-raiden-1.jpg",
-        "/landing/art-kafka.jpg",
-        "/landing/cosplay-work-1.jpg",
-      ],
+      thumbnails: [],
       photos: [],
-      updatedAt: "Vừa tạo",
+      updatedAt: new Date().toLocaleDateString(),
     };
 
     setCollections((prev) => [newCol, ...prev]);
     setNewTitle("");
     setIsCreateOpen(false);
-    toast.success(`Đã tạo bộ sưu tập ${newCol.title}`);
+    toast.success(t("collectionCreated"));
   };
 
   const handleRemovePhoto = (photoId: string) => {
@@ -87,18 +85,18 @@ export function ProfileSavedCollections({
     setCollections((prev) =>
       prev.map((c) => (c.id === updatedCol.id ? updatedCol : c))
     );
-    toast.success("Đã xóa ảnh khỏi bộ sưu tập.");
   };
 
   const handleDeleteCollection = (collectionId: string) => {
     setCollections((prev) => prev.filter((c) => c.id !== collectionId));
     setSelectedCollection(null);
-    toast.success("Đã xóa bộ sưu tập.");
   };
 
   const handleShareCollection = (col: SavedCollection) => {
-    navigator.clipboard?.writeText?.(window.location.href);
-    toast.success(`Đã sao chép liên kết bộ sưu tập ${col.title}`);
+    if (typeof window !== "undefined") {
+      navigator.clipboard?.writeText?.(window.location.href);
+      toast.success(t("copyUrlSuccess"));
+    }
   };
 
   return (
@@ -114,8 +112,8 @@ export function ProfileSavedCollections({
           <FolderHeart className="text-primary size-4.5" />
           <span>
             {layout === "full"
-              ? `Bộ sưu tập đã lưu (${collections.length})`
-              : "Bộ sưu tập đã lưu"}
+              ? `${t("collectionsTab", { count: collections.length })}`
+              : t("collectionsTab", { count: collections.length })}
           </span>
         </h3>
         <Button
@@ -123,10 +121,10 @@ export function ProfileSavedCollections({
           variant="outline"
           size="sm"
           onClick={() => setIsCreateOpen(true)}
-          className="border-border/70 h-8 gap-1.5 rounded-xl px-3 text-xs font-semibold"
+          className="border-border/70 h-8 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold"
         >
           <Plus className="size-3.5" />
-          <span>Tạo mới</span>
+          <span>{t("createCollection")}</span>
         </Button>
       </div>
 
@@ -139,62 +137,66 @@ export function ProfileSavedCollections({
         )}
       >
         {collections.map((col) => {
+          const hasThumbs = col.thumbnails && col.thumbnails.length > 0;
+
           return (
             <div
               key={col.id}
               onClick={() => setSelectedCollection(col)}
               className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/10 relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border backdrop-blur-md transition-all duration-300 hover:shadow-xl"
             >
-              {/* Asymmetric 3-Panel Mosaic Banner (Bleeds to edges) */}
+              {/* Mosaic Banner or Clean Placeholder */}
               <div className="bg-muted relative aspect-[16/11] w-full overflow-hidden">
-                <div className="grid h-full grid-cols-3 gap-1 p-1">
-                  {/* Hero Left (2 cols) */}
-                  <div className="relative col-span-2 h-full overflow-hidden rounded-l-2xl">
-                    <Image
-                      src={col.thumbnails[0] || "/landing/art-acheron.jpg"}
-                      alt={col.title}
-                      fill
-                      sizes="(max-width: 640px) 70vw, (max-width: 1024px) 35vw, 25vw"
-                      className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
+                {hasThumbs ? (
+                  <div className="grid h-full grid-cols-3 gap-1 p-1">
+                    {/* Hero Left (2 cols) */}
+                    <div className="relative col-span-2 h-full overflow-hidden rounded-l-2xl">
+                      <Image
+                        src={col.thumbnails[0] || ""}
+                        alt={col.title}
+                        fill
+                        sizes="(max-width: 640px) 70vw, (max-width: 1024px) 35vw, 25vw"
+                        className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
 
-                  {/* Stacked Right (1 col, 2 rows) */}
-                  <div className="grid h-full grid-rows-2 gap-1">
-                    <div className="relative h-full overflow-hidden rounded-tr-2xl">
-                      <Image
-                        src={
-                          col.thumbnails[1] ||
-                          col.thumbnails[0] ||
-                          "/landing/art-kafka.jpg"
-                        }
-                        alt={col.title}
-                        fill
-                        sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="relative h-full overflow-hidden rounded-br-2xl">
-                      <Image
-                        src={
-                          col.thumbnails[2] ||
-                          col.thumbnails[0] ||
-                          "/landing/art-raiden-1.jpg"
-                        }
-                        alt={col.title}
-                        fill
-                        sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {/* Count Badge overlay on bottom-right thumbnail */}
-                      {col.count > 3 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 font-mono text-xs font-bold text-white/95 backdrop-blur-xs">
-                          +{col.count - 2}
-                        </div>
-                      )}
+                    {/* Stacked Right (1 col, 2 rows) */}
+                    <div className="grid h-full grid-rows-2 gap-1">
+                      <div className="relative h-full overflow-hidden rounded-tr-2xl">
+                        {col.thumbnails[1] && (
+                          <Image
+                            src={col.thumbnails[1]}
+                            alt={col.title}
+                            fill
+                            sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        )}
+                      </div>
+                      <div className="relative h-full overflow-hidden rounded-br-2xl">
+                        {col.thumbnails[2] && (
+                          <Image
+                            src={col.thumbnails[2]}
+                            alt={col.title}
+                            fill
+                            sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        )}
+                        {/* Count Badge overlay on bottom-right thumbnail */}
+                        {col.count > 3 && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 font-mono text-xs font-bold text-white/95 backdrop-blur-xs">
+                            +{col.count - 2}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-muted/40 flex h-full w-full items-center justify-center">
+                    <FolderHeart className="text-muted-foreground/30 size-12" />
+                  </div>
+                )}
 
                 {/* Subtle gradient vignette at bottom */}
                 <div className="from-card/80 pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t via-transparent to-transparent" />
@@ -203,7 +205,7 @@ export function ProfileSavedCollections({
                 <div className="bg-background/50 absolute inset-0 flex items-center justify-center opacity-0 backdrop-blur-xs transition-opacity duration-200 group-hover:opacity-100">
                   <span className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-lg">
                     <Images className="size-4" />
-                    Xem tất cả ảnh
+                    {t("viewAlbum")}
                   </span>
                 </div>
               </div>
@@ -218,7 +220,7 @@ export function ProfileSavedCollections({
                     <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
                       <span className="text-primary flex items-center gap-1 font-semibold">
                         <Images className="size-3.5" />
-                        {col.count} tác phẩm
+                        {t("photosCount", { count: col.count })}
                       </span>
                       {col.updatedAt && (
                         <>
@@ -240,9 +242,14 @@ export function ProfileSavedCollections({
         })}
       </div>
 
-      {/* ======================================================== */}
-      {/* Detail Dialog: Xem tất cả ảnh trong Bộ sưu tập          */}
-      {/* ======================================================== */}
+      {collections.length === 0 && (
+        <div className="text-muted-foreground py-16 text-center">
+          <FolderHeart className="mx-auto mb-2 size-8 opacity-40" />
+          <p className="text-sm font-medium">{t("emptyCollections")}</p>
+        </div>
+      )}
+
+      {/* Detail Dialog: View collection */}
       <Dialog
         open={Boolean(selectedCollection)}
         onOpenChange={(open) => {
@@ -258,64 +265,63 @@ export function ProfileSavedCollections({
                   <div className="space-y-1">
                     <DialogTitle className="flex items-center gap-2.5 text-xl font-bold tracking-tight sm:text-2xl">
                       <div className="bg-primary/15 text-primary flex size-8 items-center justify-center rounded-xl">
-                        <FolderHeart className="size-5" />
+                        <FolderHeart className="size-4.5" />
                       </div>
-                      <span>{selectedCollection.title}</span>
+                      <span>
+                        {selectedCollection.title.replace(/^"|"$/g, "")}
+                      </span>
                     </DialogTitle>
-                    <p className="text-muted-foreground text-xs sm:text-sm">
-                      {selectedCollection.photos?.length ||
-                        selectedCollection.count}{" "}
-                      ảnh cosplay đã lưu
-                      {selectedCollection.updatedAt &&
-                        ` • Cập nhật ${selectedCollection.updatedAt}`}
-                    </p>
+                    <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                      <span>
+                        {t("photosCount", { count: selectedCollection.count })}
+                      </span>
+                      {selectedCollection.updatedAt && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-3" />
+                            {selectedCollection.updatedAt}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <Button
+                      type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => handleShareCollection(selectedCollection)}
-                      className="border-border/80 h-8 gap-1.5 rounded-lg px-2.5 text-xs"
+                      className="border-border/70 h-8 gap-1.5 rounded-xl text-xs"
                     >
                       <Share2 className="size-3.5" />
-                      <span className="hidden sm:inline">Chia sẻ</span>
                     </Button>
                     <Button
-                      variant="outline"
+                      type="button"
+                      variant="destructive"
                       size="sm"
                       onClick={() =>
                         handleDeleteCollection(selectedCollection.id)
                       }
-                      className="border-border/80 text-muted-foreground hover:bg-destructive/10 hover:text-destructive h-8 gap-1.5 rounded-lg px-2.5 text-xs"
+                      className="h-8 gap-1.5 rounded-xl text-xs"
                     >
                       <Trash2 className="size-3.5" />
-                      <span className="hidden sm:inline">Xóa bộ sưu tập</span>
                     </Button>
                   </div>
                 </div>
               </DialogHeader>
 
-              {/* Photos Gallery Grid */}
+              {/* Photos Grid */}
               <div className="flex-1 overflow-y-auto p-5 sm:p-6">
-                {!selectedCollection.photos ||
-                selectedCollection.photos.length === 0 ? (
-                  <div className="border-border/70 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
-                    <FolderHeart className="text-muted-foreground mb-3 size-10" />
-                    <p className="text-foreground text-sm font-semibold">
-                      Chưa có tác phẩm nào trong bộ sưu tập này
-                    </p>
-                    <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-                      Hãy duyệt qua các trang Bảng tin, Khám phá hoặc Hồ sơ
-                      cosplayer để lưu lại những tác phẩm bạn yêu thích.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                {selectedCollection.photos &&
+                selectedCollection.photos.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
                     {selectedCollection.photos.map((photo) => (
                       <div
                         key={photo.id}
-                        className="group border-border/70 bg-card/60 relative aspect-[3/4] overflow-hidden rounded-2xl border shadow-xs"
+                        onClick={() => setActivePhoto(photo)}
+                        className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
                       >
                         <Image
                           src={photo.src}
@@ -324,49 +330,25 @@ export function ProfileSavedCollections({
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-t from-black/80 via-black/30 to-transparent p-3 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
-                          {/* Top Actions */}
-                          <div className="flex justify-end gap-1.5">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemovePhoto(photo.id);
-                              }}
-                              className="size-7 rounded-lg bg-black/40 text-white hover:bg-red-500/80"
-                              title="Xóa khỏi bộ sưu tập"
-                              aria-label="Xóa khỏi bộ sưu tập"
-                            >
-                              <X className="size-3.5" />
-                            </Button>
-                          </div>
-
-                          {/* Bottom Info & Zoom */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="truncate text-xs font-bold text-white drop-shadow-xs">
-                                {photo.title}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] text-white/80">
-                              <span>by {photo.authorName}</span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setActivePhoto(photo)}
-                                className="h-6 gap-1 rounded-md bg-white/20 px-1.5 text-[10px] text-white hover:bg-white/30"
-                              >
-                                <Maximize2 className="size-2.5" />
-                                <span>Phóng to</span>
-                              </Button>
-                            </div>
-                          </div>
+                        <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemovePhoto(photo.id);
+                            }}
+                            className="hover:bg-destructive flex size-7 items-center justify-center rounded-lg bg-black/70 text-white backdrop-blur-xs transition-colors"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
                         </div>
                       </div>
                     ))}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground py-16 text-center">
+                    <Images className="mx-auto mb-2 size-8 opacity-40" />
+                    <p className="text-sm font-medium">{t("emptyAlbums")}</p>
                   </div>
                 )}
               </div>
@@ -375,9 +357,7 @@ export function ProfileSavedCollections({
         </DialogContent>
       </Dialog>
 
-      {/* ======================================================== */}
-      {/* Lightbox Modal: Xem ảnh full size                       */}
-      {/* ======================================================== */}
+      {/* Lightbox Modal: View single photo */}
       <Dialog
         open={Boolean(activePhoto)}
         onOpenChange={(open) => {
@@ -419,25 +399,23 @@ export function ProfileSavedCollections({
         </DialogContent>
       </Dialog>
 
-      {/* ======================================================== */}
-      {/* Create Collection Dialog                                */}
-      {/* ======================================================== */}
+      {/* Create Collection Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FolderHeart className="text-primary size-5" />
-              Tạo bộ sưu tập mới
+              {t("createCollection")}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateCollection} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="text-muted-foreground text-xs font-semibold">
-                Tên bộ sưu tập
+                {t("collectionTitle")}
               </label>
               <Input
-                placeholder='Ví dụ: "Ảnh Honkai siêu đỉnh", "Lookbook 2026"...'
+                placeholder={t("collectionPlaceholder")}
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 className="h-10 rounded-xl"
@@ -452,14 +430,14 @@ export function ProfileSavedCollections({
                 onClick={() => setIsCreateOpen(false)}
                 className="rounded-xl"
               >
-                Hủy
+                {tCommon("cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={!newTitle.trim()}
-                className="bg-primary text-primary-foreground rounded-xl font-semibold"
+                className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
               >
-                Tạo thư mục
+                {t("createCollection")}
               </Button>
             </DialogFooter>
           </form>

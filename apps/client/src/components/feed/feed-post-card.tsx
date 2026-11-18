@@ -33,11 +33,12 @@ import { useAuthStore } from "@/store/use-auth-store";
 import { toggleLikePost, addPostComment } from "@/services/posts";
 import { useTranslations } from "next-intl";
 
-const commentSchema = z.object({
-  comment: z.string().min(1, "Vui lòng nhập nội dung"),
-});
+const createCommentSchema = (errorMsg: string) =>
+  z.object({
+    comment: z.string().min(1, errorMsg),
+  });
 
-type CommentFormValues = z.infer<typeof commentSchema>;
+type CommentFormValues = { comment: string };
 
 export interface FeedPostCardProps {
   post: PostSummaryResDto;
@@ -82,6 +83,11 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
     ? new Date(post.publishedAt).toLocaleDateString()
     : "";
 
+  const commentSchema = React.useMemo(
+    () => createCommentSchema(t("inputCommentError")),
+    [t]
+  );
+
   const form = useForm<CommentFormValues>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -91,7 +97,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
 
   const handleToggleLike = async () => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để thích bài viết!");
+      toast.info(t("loginToLike"));
       return;
     }
     const nextState = !isLiked;
@@ -110,9 +116,9 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
     const nextState = !isBookmarked;
     setIsBookmarked(nextState);
     if (nextState) {
-      toast.success("Đã lưu bài viết vào bộ sưu tập cá nhân!");
+      toast.success(t("savedToCollection"));
     } else {
-      toast.info("Đã xóa khỏi danh sách đã lưu");
+      toast.info(t("removedFromSaved"));
     }
   };
 
@@ -121,13 +127,13 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
       navigator.clipboard?.writeText(
         window.location.origin + `/post/${postSlugOrId}`
       );
-      toast.success("Đã sao chép liên kết bài viết vào clipboard!");
+      toast.success(t("copiedShareLink"));
     }
   };
 
   const handleAddComment = async (content: string) => {
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để bình luận!");
+      toast.info(t("loginToComment"));
       return;
     }
 
@@ -138,12 +144,12 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         authorName: created.author?.displayName || currentAuthorName,
         authorAvatarUrl: created.author?.avatarUrl || currentAuthorAvatar,
         content: created.content,
-        createdAt: "Vừa xong",
+        createdAt: t("justNow"),
       };
       setComments((prev) => [newComment, ...prev]);
-      toast.success("Đã đăng bình luận!");
+      toast.success(t("commentSuccess"));
     } catch {
-      toast.error("Có lỗi xảy ra khi đăng bình luận.");
+      toast.error(t("commentError"));
     }
   };
 
@@ -222,7 +228,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
               <button
                 type="button"
                 className="text-muted-foreground hover:bg-muted/60 hover:text-foreground cursor-pointer rounded-lg p-1.5 transition-colors"
-                aria-label="Tùy chọn bài viết"
+                aria-label={t("optionsAria")}
               >
                 <MoreHorizontal className="size-5" />
               </button>
@@ -233,14 +239,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 className="cursor-pointer text-xs"
               >
                 <Share2 className="mr-2 size-4" />
-                <span>Sao chép liên kết</span>
+                <span>{t("copyLink")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleToggleBookmark}
                 className="cursor-pointer text-xs"
               >
                 <Bookmark className="mr-2 size-4" />
-                <span>{isBookmarked ? "Bỏ lưu bài viết" : "Lưu bài viết"}</span>
+                <span>{isBookmarked ? t("unsavePost") : t("savePost")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -256,7 +262,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 onClick={() => setIsCaptionExpanded(!isCaptionExpanded)}
                 className="text-primary ml-1 cursor-pointer font-semibold transition-colors hover:underline"
               >
-                {isCaptionExpanded ? "Thu gọn" : "Xem thêm"}
+                {isCaptionExpanded ? t("showLess") : t("showMore")}
               </button>
             )}
           </p>
@@ -433,12 +439,12 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 ? "text-primary font-semibold"
                 : "hover:bg-muted/60 hover:text-foreground"
             }`}
-            title={isBookmarked ? "Bỏ lưu" : "Lưu vào bộ sưu tập"}
+            title={isBookmarked ? t("unsavePost") : t("savePost")}
           >
             <Bookmark
               className={`size-4 ${isBookmarked ? "fill-primary text-primary" : ""}`}
             />
-            <span className="hidden sm:inline">Lưu</span>
+            <span className="hidden sm:inline">{t("saved")}</span>
           </button>
         </div>
 

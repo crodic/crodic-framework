@@ -5,27 +5,39 @@ import Image from "next/image";
 import { BadgeCheck, Check, Plus } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { CosplayerSummaryResDto } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
+import { useTranslations } from "next-intl";
 
 interface CosplayerCardProps {
   cosplayer: CosplayerSummaryResDto;
 }
 
 export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
+  const t = useTranslations("CosplayerProfile");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const [following, setFollowing] = useState(false);
+
+  const initials =
+    cosplayer.displayName
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "C";
 
   const handleToggleFollow = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để theo dõi cosplayer!");
+      toast.info(t("loginRequiredToFollow"));
       router.push("/auth/login?from=/landing");
       return;
     }
@@ -34,14 +46,16 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
       const res = await toggleFollow(cosplayer.userId);
       setFollowing(res.following);
       if (res.following) {
-        toast.success(`Đã theo dõi ${cosplayer.displayName}`);
+        toast.success(t("followedSuccess", { name: cosplayer.displayName }));
       } else {
-        toast.info(`Đã hủy theo dõi ${cosplayer.displayName}`);
+        toast.info(t("unfollowedSuccess", { name: cosplayer.displayName }));
       }
     } catch {
-      toast.error("Có lỗi xảy ra khi cập nhật theo dõi.");
+      toast.error(t("followError"));
     }
   };
+
+  const previewImage = cosplayer.coverUrl || cosplayer.avatarUrl;
 
   return (
     <div className="group border-border/70 bg-card/60 hover:border-primary/50 hover:bg-card/80 hover:shadow-primary/5 flex flex-col justify-between rounded-2xl border p-4 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
@@ -52,15 +66,18 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
           className="flex min-w-0 items-center gap-2.5"
         >
           {/* Avatar with subtle ring */}
-          <div className="border-border/80 bg-muted/50 relative size-10 shrink-0 overflow-hidden rounded-full border">
-            <Image
-              src={cosplayer.avatarUrl || "/placeholder-avatar.png"}
-              alt={cosplayer.displayName}
-              fill
-              sizes="40px"
-              className="object-cover"
-            />
-          </div>
+          <Avatar className="border-border/80 size-10 shrink-0 border">
+            {cosplayer.avatarUrl && (
+              <AvatarImage
+                src={cosplayer.avatarUrl}
+                alt={cosplayer.displayName}
+                className="object-cover"
+              />
+            )}
+            <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
 
           {/* Name & Followers */}
           <div className="min-w-0">
@@ -71,12 +88,12 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
               {cosplayer.isVerified && (
                 <BadgeCheck
                   className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400"
-                  aria-label="Đã xác minh"
+                  aria-label={t("verifiedBadge")}
                 />
               )}
             </div>
             <p className="text-muted-foreground truncate text-xs">
-              {cosplayer.followersCount.toLocaleString()} followers
+              {t("followers", { count: cosplayer.followersCount })}
             </p>
           </div>
         </Link>
@@ -96,12 +113,12 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
           {following ? (
             <span className="flex items-center gap-1">
               <Check className="size-3" />
-              Đã theo dõi
+              {t("followingBtn")}
             </span>
           ) : (
             <span className="flex items-center gap-1">
               <Plus className="size-3" />
-              Theo dõi
+              {t("followBtn")}
             </span>
           )}
         </Button>
@@ -113,17 +130,21 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
         className="mt-3.5 block"
       >
         <div className="border-border/40 bg-muted/40 relative aspect-[16/9] w-full overflow-hidden rounded-xl border">
-          <Image
-            src={
-              cosplayer.coverUrl ||
-              cosplayer.avatarUrl ||
-              "/placeholder-avatar.png"
-            }
-            alt={cosplayer.displayName}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-          />
+          {previewImage ? (
+            <Image
+              src={previewImage}
+              alt={cosplayer.displayName}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="from-primary/10 to-muted flex size-full items-center justify-center bg-gradient-to-br">
+              <span className="text-primary/40 text-2xl font-black">
+                {initials}
+              </span>
+            </div>
+          )}
           <div className="from-background/90 via-background/20 absolute inset-0 bg-gradient-to-t to-transparent" />
           <div className="absolute right-2 bottom-2 left-2 flex flex-wrap gap-1">
             {cosplayer.roleBadge && (

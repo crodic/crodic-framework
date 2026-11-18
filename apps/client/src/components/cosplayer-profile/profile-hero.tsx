@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { CosplayerDetailResDto } from "@/services/cosplayer";
 import { ProfileEditDialog } from "./profile-edit-dialog";
+import { useTranslations } from "next-intl";
 
 interface ProfileHeroProps {
   profile: CosplayerDetailResDto;
@@ -56,6 +57,8 @@ export function ProfileHero({
   onToggleViewMode,
   viewMode = "owner",
 }: ProfileHeroProps) {
+  const t = useTranslations("Profile");
+  const tCos = useTranslations("CosplayerProfile");
   const [isFollowing, setIsFollowing] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(profile.totalLikesCount || 0);
@@ -137,16 +140,16 @@ export function ProfileHero({
           <div className="flex items-center gap-2">
             <Eye className="text-primary size-4" />
             <span className="text-foreground font-medium">
-              Bạn đang xem trang cá nhân dưới dạng khách xem (View as visitor).
+              {t("viewModeVisitor")}
             </span>
           </div>
           <Button
             size="sm"
             variant="outline"
             onClick={onToggleViewMode}
-            className="bg-background h-7 rounded-lg px-2.5 text-xs font-semibold"
+            className="bg-background h-7 cursor-pointer rounded-lg px-2.5 text-xs font-semibold"
           >
-            Quay lại chế độ chính chủ
+            {t("viewModeOwner")}
           </Button>
         </div>
       )}
@@ -174,7 +177,9 @@ export function ProfileHero({
               className="h-8 cursor-pointer gap-1.5 rounded-xl border border-white/10 bg-black/60 px-3 text-xs font-semibold text-white shadow-md backdrop-blur-md hover:bg-black/85"
             >
               <Camera className="size-3.5" />
-              <span className="hidden sm:inline">Chỉnh sửa ảnh bìa</span>
+              <span className="hidden sm:inline">
+                {tCos("editDialog.changeCover")}
+              </span>
             </Button>
             <input
               ref={coverFileRef}
@@ -215,7 +220,7 @@ export function ProfileHero({
                   type="button"
                   onClick={() => avatarFileRef.current?.click()}
                   className="absolute inset-1 flex cursor-pointer items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-xs transition-opacity group-hover/avatar:opacity-100 hover:bg-black/85"
-                  aria-label="Thay đổi ảnh đại diện"
+                  aria-label={tCos("editDialog.changeAvatar")}
                 >
                   <Camera className="size-5" />
                 </button>
@@ -238,7 +243,7 @@ export function ProfileHero({
                 {profile.isVerified && (
                   <BadgeCheck
                     className="size-6 shrink-0 fill-sky-400 text-sky-400"
-                    aria-label="Đã xác minh"
+                    aria-label={tCos("verifiedBadge")}
                   />
                 )}
                 {profile.roleBadge && (
@@ -318,7 +323,7 @@ export function ProfileHero({
                   className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-1 gap-1.5 rounded-xl px-4 font-semibold shadow-sm md:flex-initial"
                 >
                   <Pencil className="size-4" />
-                  <span>Chỉnh sửa trang cá nhân</span>
+                  <span>{t("editProfile")}</span>
                 </Button>
 
                 {onToggleViewMode && (
@@ -326,11 +331,13 @@ export function ProfileHero({
                     type="button"
                     variant="outline"
                     onClick={onToggleViewMode}
-                    className="border-border/80 hover:bg-accent h-10 gap-1.5 rounded-xl px-3 text-xs font-medium"
-                    title="Xem trang với tư cách khách vãng lai"
+                    className="border-border/80 hover:bg-accent h-10 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-medium"
+                    title={t("viewModeVisitor")}
                   >
                     <Eye className="size-4" />
-                    <span className="hidden sm:inline">Xem dạng khách</span>
+                    <span className="hidden sm:inline">
+                      {t("viewModeVisitor")}
+                    </span>
                   </Button>
                 )}
 
@@ -339,7 +346,7 @@ export function ProfileHero({
                   variant="outline"
                   size="icon"
                   className="border-border/80 size-10 shrink-0 rounded-xl"
-                  aria-label="Cài đặt tài khoản"
+                  aria-label="Settings"
                 >
                   <Link href="/settings">
                     <Settings className="size-4" />
@@ -352,7 +359,7 @@ export function ProfileHero({
                 <Button
                   type="button"
                   onClick={handleToggleFollow}
-                  className={`h-10 flex-1 rounded-xl px-5 font-semibold shadow-sm transition-all md:flex-initial ${
+                  className={`h-10 flex-1 cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all md:flex-initial ${
                     isFollowing
                       ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -361,12 +368,12 @@ export function ProfileHero({
                   {isFollowing ? (
                     <>
                       <Check className="mr-1.5 size-4" />
-                      Đang theo dõi
+                      {tCos("followingBtn")}
                     </>
                   ) : (
                     <>
                       <Plus className="mr-1.5 size-4" />
-                      Theo dõi
+                      {tCos("followBtn")}
                     </>
                   )}
                 </Button>
@@ -375,10 +382,10 @@ export function ProfileHero({
                   type="button"
                   variant="outline"
                   onClick={() => setIsMessageOpen(true)}
-                  className="border-border/80 hover:bg-accent h-10 flex-1 rounded-xl px-4 font-medium transition-colors md:flex-initial"
+                  className="border-border/80 hover:bg-accent h-10 flex-1 cursor-pointer rounded-xl px-4 font-medium transition-colors md:flex-initial"
                 >
                   <MessageCircle className="text-primary mr-1.5 size-4" />
-                  Nhắn tin
+                  {t("sendMessage")}
                 </Button>
               </>
             )}
@@ -390,8 +397,8 @@ export function ProfileHero({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="border-border/80 size-10 shrink-0 rounded-xl"
-                  aria-label="Tùy chọn khác"
+                  className="border-border/80 size-10 shrink-0 cursor-pointer rounded-xl"
+                  aria-label="Options"
                 >
                   <MoreVertical className="size-4" />
                 </Button>
@@ -402,7 +409,7 @@ export function ProfileHero({
                   className="cursor-pointer"
                 >
                   <Copy className="mr-2 size-4" />
-                  {copiedLink ? "Đã sao chép link!" : "Sao chép liên kết"}
+                  {copiedLink ? t("copyUrlSuccess") : t("copyUrlSuccess")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
@@ -418,7 +425,7 @@ export function ProfileHero({
                   className="cursor-pointer"
                 >
                   <Share2 className="mr-2 size-4" />
-                  Chia sẻ hồ sơ
+                  {t("copyUrlSuccess")}
                 </DropdownMenuItem>
                 {profile.facebookUrl && (
                   <DropdownMenuItem
@@ -426,7 +433,7 @@ export function ProfileHero({
                     className="cursor-pointer"
                   >
                     <ExternalLink className="mr-2 size-4" />
-                    Trang Facebook ngoài
+                    Facebook
                   </DropdownMenuItem>
                 )}
                 {!isOwner && (
@@ -434,7 +441,7 @@ export function ProfileHero({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
                       <Flag className="mr-2 size-4" />
-                      Báo cáo tài khoản
+                      {t("reportCosplayer")}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -462,17 +469,14 @@ export function ProfileHero({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="text-primary size-5" />
-              Gửi tin nhắn đến {profile.displayName}
+              {t("sendMessage")}
             </DialogTitle>
-            <DialogDescription>
-              Liên hệ trao đổi về dự án cosplay, sự kiện hoặc giao lưu nghệ
-              thuật.
-            </DialogDescription>
+            <DialogDescription>{t("sendMessageDesc")}</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSendMessage} className="space-y-4 pt-2">
             <Textarea
-              placeholder="Nhập nội dung tin nhắn hoặc thông tin dự án..."
+              placeholder={t("sendMessagePlaceholder")}
               rows={4}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
@@ -482,7 +486,7 @@ export function ProfileHero({
 
             {messageSent ? (
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-center text-sm font-medium text-emerald-500">
-                ✓ Tin nhắn đã được gửi thành công đến {profile.displayName}!
+                {t("sentSuccess")}
               </div>
             ) : null}
 
@@ -493,14 +497,14 @@ export function ProfileHero({
                 onClick={() => setIsMessageOpen(false)}
                 className="rounded-xl"
               >
-                Hủy
+                {t("cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={!messageText.trim() || messageSent}
-                className="bg-primary text-primary-foreground rounded-xl font-semibold"
+                className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
               >
-                Gửi tin nhắn
+                {t("send")}
               </Button>
             </DialogFooter>
           </form>

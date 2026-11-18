@@ -10,8 +10,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { useTranslations } from "next-intl";
 
 export function NotificationsSettings() {
+  const t = useTranslations("Settings.notifications");
   const [notifyNewPost, setNotifyNewPost] = useState(true);
   const [notifyInteractions, setNotifyInteractions] = useState(true);
   const [notifyFestivals, setNotifyFestivals] = useState(false);
@@ -22,10 +24,10 @@ export function NotificationsSettings() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <Bell className="text-primary size-4" />
-            <span>Thông báo trên hệ thống</span>
+            <span>{t("systemTitle")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Tùy chọn nhận thông báo đẩy khi có hoạt động mới trên Kosume.
+            {t("systemDesc")}
           </CardDescription>
         </CardHeader>
 
@@ -33,11 +35,10 @@ export function NotificationsSettings() {
           <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
             <div className="space-y-0.5 pr-4">
               <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Tác phẩm mới từ Cosplayer đang theo dõi
+                {t("newPostTitle")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Nhận thông báo ngay khi Kiriko, Soriko hoặc cosplayer bạn follow
-                đăng photoset mới.
+                {t("newPostDesc")}
               </p>
             </div>
             <Switch
@@ -49,11 +50,10 @@ export function NotificationsSettings() {
           <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
             <div className="space-y-0.5 pr-4">
               <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Tương tác bình luận & lượt thích
+                {t("interactionsTitle")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Thông báo khi có ai đó phản hồi bình luận hoặc thả tim cho bộ
-                sưu tập của bạn.
+                {t("interactionsDesc")}
               </p>
             </div>
             <Switch
@@ -68,21 +68,20 @@ export function NotificationsSettings() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-bold">
             <Mail className="text-primary size-4" />
-            <span>Thông báo qua Email</span>
+            <span>{t("emailTitle")}</span>
           </CardTitle>
           <CardDescription className="text-xs">
-            Nhận tin tức tổng hợp và thông tin vé Festival qua hộp thư điện tử.
+            {t("emailDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
             <div className="space-y-0.5 pr-4">
               <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Bản tin Sự kiện & Festival Cosplay hàng tuần
+                {t("eventsTitle")}
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Gửi lịch trình festival tại Hà Nội & TP.HCM vào mỗi sáng thứ
-                Hai.
+                {t("eventsDesc")}
               </p>
             </div>
             <Switch

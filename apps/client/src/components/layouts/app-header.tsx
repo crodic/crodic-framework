@@ -25,15 +25,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile, useSignOut } from "@/hooks/use-profile";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function AppHeader() {
   const router = useRouter();
+  const t = useTranslations("Navigation");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
@@ -47,9 +50,10 @@ export function AppHeader() {
     profile?.fullName ||
     (profile?.firstName
       ? `${profile.firstName} ${profile.lastName || ""}`.trim()
-      : "Hải Anh");
-  const displayEmail = profile?.email || "haianh.cos@visel.click";
-  const displayAvatar = profile?.avatar || "/landing/avatar-acheron.jpg";
+      : profile?.email?.split("@")[0] || t("guest")) ||
+    t("guest");
+  const displayEmail = profile?.email || "";
+  const displayAvatar = profile?.avatar || "";
   const initials =
     displayName
       .split(" ")
@@ -57,15 +61,15 @@ export function AppHeader() {
       .filter(Boolean)
       .slice(0, 2)
       .join("")
-      .toUpperCase() || "CS";
+      .toUpperCase() || "U";
 
   const handleLogout = () => {
     signOutMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success("Đã đăng xuất thành công");
+        toast.success(t("logoutSuccess"));
       },
       onError: () => {
-        toast.error("Đăng xuất thất bại, vui lòng thử lại");
+        toast.error(t("logoutError"));
       },
     });
   };
@@ -110,7 +114,7 @@ export function AppHeader() {
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm cosplayer, dự án, series..."
+            placeholder={t("searchPlaceholder")}
             className="border-border/70 bg-card/60 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-9 w-full rounded-xl pr-8 pl-9 text-xs transition-colors sm:text-sm"
           />
           {searchQuery && (
@@ -133,7 +137,7 @@ export function AppHeader() {
           size="icon"
           onClick={() => setMobileSearchOpen(true)}
           className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground size-8.5 cursor-pointer rounded-lg sm:size-9 md:hidden"
-          aria-label="Tìm kiếm"
+          aria-label={t("search")}
         >
           <Search className="size-4" />
         </Button>
@@ -147,15 +151,18 @@ export function AppHeader() {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
               >
                 <Plus className="size-4 shrink-0" />
-                <span>Đăng album</span>
+                <span>{t("postAlbum")}</span>
               </Button>
             }
           />
         )}
 
-        {/* Theme mode toggle - Desktop only */}
-        <div className="hidden md:block">
-          <ModeToggle className="border-border/70 bg-card/60 size-9 rounded-lg" />
+        {/* Language Switcher & Theme Mode Toggle */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <LanguageSwitcher />
+          <div className="hidden md:block">
+            <ModeToggle className="border-border/70 bg-card/60 size-9 rounded-lg" />
+          </div>
         </div>
 
         {isHydrating ? (
@@ -169,7 +176,7 @@ export function AppHeader() {
               size="icon"
               asChild
               className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground relative size-8.5 cursor-pointer rounded-lg sm:size-9"
-              aria-label="Thông báo"
+              aria-label={t("notifications")}
             >
               <Link href="/notifications">
                 <Bell className="size-4" />
@@ -182,7 +189,7 @@ export function AppHeader() {
               variant="outline"
               size="icon"
               className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hidden size-9 cursor-pointer rounded-lg md:inline-flex"
-              aria-label="Tin nhắn"
+              aria-label={t("messages")}
             >
               <MessageSquare className="size-4" />
             </Button>
@@ -215,9 +222,11 @@ export function AppHeader() {
                     <p className="text-foreground truncate text-sm font-bold">
                       {displayName}
                     </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {displayEmail}
-                    </p>
+                    {displayEmail && (
+                      <p className="text-muted-foreground truncate text-xs">
+                        {displayEmail}
+                      </p>
+                    )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -227,7 +236,7 @@ export function AppHeader() {
                 >
                   <Link href="/profile" className="flex items-center gap-2">
                     <UserIcon className="text-primary size-4" />
-                    <span>Portfolio của tôi</span>
+                    <span>{t("portfolio")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -236,7 +245,7 @@ export function AppHeader() {
                 >
                   <Link href="/settings" className="flex items-center gap-2">
                     <Settings className="text-primary size-4" />
-                    <span>Cài đặt & Studio</span>
+                    <span>{t("settings")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -245,7 +254,7 @@ export function AppHeader() {
                   className="text-destructive focus:text-destructive cursor-pointer rounded-lg text-xs"
                 >
                   <LogOut className="mr-2 size-4" />
-                  <span>Đăng xuất</span>
+                  <span>{t("logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -259,14 +268,14 @@ export function AppHeader() {
               asChild
               className="text-muted-foreground hover:text-foreground h-9 cursor-pointer rounded-lg text-xs font-semibold sm:text-sm"
             >
-              <Link href="/auth/login">Đăng nhập</Link>
+              <Link href="/auth/login">{t("signIn")}</Link>
             </Button>
             <Button
               size="sm"
               asChild
               className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs sm:px-4 sm:text-sm"
             >
-              <Link href="/auth/sign-up">Đăng ký</Link>
+              <Link href="/auth/sign-up">{t("signUp")}</Link>
             </Button>
           </div>
         )}

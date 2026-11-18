@@ -3,18 +3,23 @@
 import React from "react";
 import { Flame } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-const POPULAR_TAGS = [
-  { name: "HonkaiStarRail", count: "12.4K", isHot: true },
-  { name: "GenshinImpact", count: "28.5K", isHot: true },
-  { name: "Acheron", count: "8.2K", isHot: true },
-  { name: "Cyberpunk2077", count: "5.1K" },
-  { name: "CosplayFestival", count: "14.2K", isHot: true },
-  { name: "PropCrafting", count: "3.8K" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { getTags, type TagSummaryResDto } from "@/services/tags";
+import type { PaginatedResponse } from "@repo/query-builder";
+import { useRouter } from "@/i18n/navigation";
 
 export function TrendingTagsBar() {
   const t = useTranslations("Feed");
+  const router = useRouter();
+
+  const { data: tagsResponse } = useQuery<PaginatedResponse<TagSummaryResDto>>({
+    queryKey: ["feed-trending-tags"],
+    queryFn: () => getTags({ limit: 8, sort: "-trendingScore" }),
+  });
+
+  const tags = tagsResponse?.data || [];
+
+  if (!tags || tags.length === 0) return null;
 
   return (
     <div className="space-y-2">
@@ -24,16 +29,19 @@ export function TrendingTagsBar() {
       </div>
 
       <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
-        {POPULAR_TAGS.map((tag) => (
+        {tags.map((tag: TagSummaryResDto) => (
           <button
-            key={tag.name}
+            key={tag.id}
             type="button"
+            onClick={() =>
+              router.push(`/explore?q=${encodeURIComponent(tag.name)}`)
+            }
             className="border-border/70 bg-card/60 hover:bg-primary/15 hover:border-primary/40 hover:text-primary text-muted-foreground inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors select-none"
           >
             <span>#{tag.name}</span>
-            {tag.count && (
+            {tag.usageCount > 0 && (
               <span className="text-muted-foreground/80 text-[10px]">
-                {tag.count}
+                {tag.usageCount.toLocaleString()}
               </span>
             )}
           </button>

@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { BadgeCheck, Check, Plus, Users } from "lucide-react";
+import { BadgeCheck, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FollowedCosplayer } from "./profile-types";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface ProfileFollowedProps {
@@ -13,6 +14,8 @@ interface ProfileFollowedProps {
 }
 
 export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
+  const t = useTranslations("Profile");
+  const tCos = useTranslations("CosplayerProfile");
   const [followedList, setFollowedList] =
     useState<FollowedCosplayer[]>(initialFollowed);
 
@@ -24,28 +27,27 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
     );
   };
 
-  const getCosplayerSlug = (name: string) => {
-    const lower = name.toLowerCase();
-    if (lower.includes("soriko")) return "haianh";
-    if (lower.includes("kiriko")) return "haianh";
-    return "haianh";
+  const getCosplayerSlug = (cosplayer: FollowedCosplayer) => {
+    return (
+      (cosplayer as any).slug ||
+      cosplayer.handle?.replace(/^@/, "").trim() ||
+      cosplayer.id
+    );
   };
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-xs sm:text-sm">
-          Đang theo dõi{" "}
-          <strong className="text-foreground font-bold">
-            {followedList.filter((f) => f.isFollowing).length}
-          </strong>{" "}
-          cosplayer
+          {t("followingCountText", {
+            count: followedList.filter((f) => f.isFollowing).length,
+          })}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {followedList.map((cosplayer) => {
-          const slug = getCosplayerSlug(cosplayer.name);
+          const slug = getCosplayerSlug(cosplayer);
 
           return (
             <div
@@ -68,15 +70,14 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
 
                 {/* Floating Followers Count Badge */}
                 {cosplayer.followersCount && (
-                  <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white/90 backdrop-blur-md">
-                    <Users className="text-primary size-3" />
-                    <span>{cosplayer.followersCount}</span>
-                  </div>
+                  <span className="border-border/60 bg-background/80 text-foreground absolute top-3 right-3 rounded-full border px-2.5 py-0.5 text-[11px] font-bold backdrop-blur-md">
+                    {cosplayer.followersCount}
+                  </span>
                 )}
               </Link>
 
-              {/* 2. Overlapping Avatar & Cosplayer Info */}
-              <div className="relative px-4.5 pt-0 pb-4.5">
+              {/* 2. Card Body */}
+              <div className="relative flex flex-1 flex-col justify-between p-4 sm:p-5">
                 {/* Overlapping Avatar */}
                 <div className="-mt-8 mb-3 flex items-end justify-between">
                   <Link href={`/cosplayer/${slug}`} className="relative block">
@@ -92,7 +93,7 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
                   </Link>
                 </div>
 
-                {/* Name & Handle (Full width, no more @kiri... truncation!) */}
+                {/* Name & Handle */}
                 <Link
                   href={`/cosplayer/${slug}`}
                   className="group/name block space-y-0.5"
@@ -126,12 +127,12 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
                     {cosplayer.isFollowing ? (
                       <>
                         <Check className="text-primary mr-1.5 size-3.5" />
-                        <span>Đang theo dõi</span>
+                        <span>{tCos("followingBtn")}</span>
                       </>
                     ) : (
                       <>
                         <Plus className="mr-1.5 size-3.5" />
-                        <span>Theo dõi</span>
+                        <span>{tCos("followBtn")}</span>
                       </>
                     )}
                   </Button>

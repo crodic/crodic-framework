@@ -70,7 +70,12 @@ export const getCosplayers = async (
   if (query) {
     for (const [key, val] of Object.entries(query)) {
       if (val !== undefined && val !== null) {
-        searchParams.append(key, String(val));
+        if (key === "search") {
+          searchParams.append("filter[search]", String(val));
+          searchParams.append("search", String(val));
+        } else {
+          searchParams.append(key, String(val));
+        }
       }
     }
   }

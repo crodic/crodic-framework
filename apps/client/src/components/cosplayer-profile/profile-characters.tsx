@@ -5,21 +5,20 @@ import Image from "next/image";
 import { Images, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CosplayerCharacterResDto } from "@/services/cosplayer";
+import { useTranslations } from "next-intl";
 
 interface ProfileCharactersProps {
   characters: CosplayerCharacterResDto[];
 }
 
 export function ProfileCharacters({ characters }: ProfileCharactersProps) {
+  const t = useTranslations("Profile");
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-xs sm:text-sm">
-          Tổng cộng{" "}
-          <strong className="text-foreground">
-            {characters.length} nhân vật
-          </strong>{" "}
-          & series đã hoàn thành
+          {t("completedCharacters", { count: characters.length })}
         </p>
       </div>
 
@@ -49,7 +48,7 @@ export function ProfileCharacters({ characters }: ProfileCharactersProps) {
                   className="flex items-center gap-1 rounded-md border-white/10 bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-md sm:text-xs"
                 >
                   <Images className="size-3" />
-                  <span>{char.photosCount} photos</span>
+                  <span>{t("photosCount", { count: char.photosCount })}</span>
                 </Badge>
               </div>
 

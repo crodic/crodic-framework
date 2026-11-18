@@ -15,6 +15,8 @@ import { ChevronRight, Menu } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export function LandingNavbar() {
   const t = useTranslations("Landing.nav");
@@ -45,7 +47,7 @@ export function LandingNavbar() {
         <Link
           href="/landing"
           className="group focus-visible:ring-ring flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
-          aria-label="Kosume Trang chủ"
+          aria-label={t("homeAria")}
         >
           <span className="text-2xl font-black tracking-tight transition-transform duration-200 group-hover:scale-[1.02]">
             <span className="text-primary">Cos</span>
@@ -57,7 +59,7 @@ export function LandingNavbar() {
         {/* Desktop Navigation Links */}
         <nav
           className="hidden items-center gap-1 md:flex lg:gap-2"
-          aria-label="Điều hướng chính"
+          aria-label={t("mainNavAria")}
         >
           {LANDING_NAV_LINKS.map((link) => (
             <a
@@ -71,7 +73,10 @@ export function LandingNavbar() {
         </nav>
 
         {/* Action Buttons */}
-        <div className="hidden items-center gap-3 sm:flex">
+        <div className="hidden items-center gap-2.5 sm:flex">
+          <LanguageSwitcher />
+          <ModeToggle className="border-border/70 bg-card/40 size-9 rounded-full" />
+
           <Button
             asChild
             variant="ghost"
@@ -92,6 +97,7 @@ export function LandingNavbar() {
 
         {/* Mobile Navigation Trigger */}
         <div className="flex items-center gap-2 sm:hidden">
+          <LanguageSwitcher />
           <Button
             asChild
             size="sm"
@@ -106,7 +112,7 @@ export function LandingNavbar() {
                 variant="outline"
                 size="icon"
                 className="border-border/80 bg-card/60 size-9 rounded-lg"
-                aria-label="Mở menu"
+                aria-label={t("toggleMenuAria")}
               >
                 <Menu className="size-5" />
               </Button>

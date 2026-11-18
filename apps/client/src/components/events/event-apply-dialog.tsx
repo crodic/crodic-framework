@@ -99,7 +99,7 @@ export function EventApplyDialog({
     defaultValues: {
       fullName: "",
       stageName: "",
-      category: "Guest Cosplayer / Khách mời",
+      category: "guest",
       phone: "",
       characterPlanned: "",
       portfolioUrl: "",
@@ -226,19 +226,19 @@ export function EventApplyDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Guest Cosplayer / Khách mời">
+                        <SelectItem value="guest">
                           {tApply("categoryGuest")}
                         </SelectItem>
-                        <SelectItem value="Thí sinh Cosplay Contest">
+                        <SelectItem value="contest">
                           {tApply("categoryContest")}
                         </SelectItem>
-                        <SelectItem value="Artist / Gian hàng ấn phẩm">
+                        <SelectItem value="artist">
                           {tApply("categoryArtist")}
                         </SelectItem>
-                        <SelectItem value="Diễn giả / Hướng dẫn Workshop">
+                        <SelectItem value="workshop">
                           {tApply("categoryWorkshop")}
                         </SelectItem>
-                        <SelectItem value="Staff hỗ trợ kỹ thuật">
+                        <SelectItem value="staff">
                           {tApply("categoryStaff")}
                         </SelectItem>
                       </SelectContent>

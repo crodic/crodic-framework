@@ -17,6 +17,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { NotificationsSettings } from "./notifications-settings";
 import { ConnectedAccountsSettings } from "./connected-accounts-settings";
 import { PrivacySettings } from "./privacy-settings";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type SettingsSection =
@@ -24,20 +25,23 @@ type SettingsSection =
 
 interface NavItem {
   id: SettingsSection;
-  label: string;
+  labelKey:
+    "security" | "appearance" | "notifications" | "connected" | "privacy";
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const SETTINGS_NAV: NavItem[] = [
-  { id: "security", label: "Bảo mật tài khoản", icon: ShieldCheck },
-  { id: "appearance", label: "Giao diện Sáng/Tối", icon: Palette },
-  { id: "notifications", label: "Cài đặt Thông báo", icon: Bell },
-  { id: "connected", label: "Liên kết tài khoản", icon: LinkIcon },
-  { id: "privacy", label: "Quyền riêng tư & Dữ liệu", icon: EyeOff },
+  { id: "security", labelKey: "security", icon: ShieldCheck },
+  { id: "appearance", labelKey: "appearance", icon: Palette },
+  { id: "notifications", labelKey: "notifications", icon: Bell },
+  { id: "connected", labelKey: "connected", icon: LinkIcon },
+  { id: "privacy", labelKey: "privacy", icon: EyeOff },
 ];
 
 export function SettingsView() {
   const router = useRouter();
+  const t = useTranslations("Settings");
+  const tNav = useTranslations("Navigation");
   const [activeSection, setActiveSection] =
     useState<SettingsSection>("security");
 
@@ -51,7 +55,7 @@ export function SettingsView() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Page Header matching Mockup 1 */}
+      {/* Page Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button
@@ -62,11 +66,11 @@ export function SettingsView() {
             className="text-muted-foreground hover:text-foreground h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs"
           >
             <ArrowLeft className="size-4" />
-            <span className="font-semibold">Quay lại</span>
+            <span className="font-semibold">{t("back")}</span>
           </Button>
 
           <h1 className="text-foreground text-xl font-extrabold tracking-tight sm:text-2xl">
-            Cài đặt & Thiết lập
+            {t("title")}
           </h1>
         </div>
 
@@ -79,7 +83,7 @@ export function SettingsView() {
         >
           <Link href="/profile">
             <User className="text-primary size-3.5" />
-            <span>Hồ sơ cá nhân</span>
+            <span>{tNav("profile")}</span>
           </Link>
         </Button>
       </div>
@@ -106,20 +110,20 @@ export function SettingsView() {
                   )}
                 >
                   <Icon className="size-3.5" />
-                  <span>{item.label}</span>
+                  <span>{t(`nav.${item.labelKey}`)}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Desktop Left Sub-nav Card (Matching Mockup 1) */}
+          {/* Desktop Left Sub-nav Card */}
           <div className="border-border/70 bg-card/60 hidden space-y-1 rounded-2xl border p-2 shadow-xs md:block">
             <Link
               href="/profile"
               className="text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors"
             >
               <User className="text-primary size-4" />
-              <span>Hồ sơ cá nhân (Chỉnh sửa)</span>
+              <span>{tNav("profile")}</span>
             </Link>
 
             <div className="bg-border/50 mx-2 my-1 h-px" />
@@ -146,7 +150,7 @@ export function SettingsView() {
                       isActive ? "text-primary" : "text-muted-foreground"
                     )}
                   />
-                  <span>{item.label}</span>
+                  <span>{t(`nav.${item.labelKey}`)}</span>
                 </button>
               );
             })}

@@ -1,5 +1,10 @@
 "use client";
 
+import React, { useTransition } from "react";
+import { useParams } from "next/navigation";
+import { Locale, useLocale, useTranslations } from "next-intl";
+import { US, VN } from "country-flag-icons/react/3x2";
+import { Check, Globe } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -7,12 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { Locale, useLocale, useTranslations } from "next-intl";
-import { useParams } from "next/navigation";
-import { useTransition } from "react";
-import { US, VN } from "country-flag-icons/react/3x2";
+import { cn } from "@/lib/utils";
 
 const flags: Record<Locale, typeof US> = {
   en: US,
@@ -29,7 +38,19 @@ function stripLocalePrefix(pathname: string, locale: string): string {
   return pathname;
 }
 
-export default function LanguageSwitcher() {
+export interface LanguageSwitcherProps {
+  variant?: "dropdown" | "select" | "pills";
+  className?: string;
+  triggerClassName?: string;
+  align?: "start" | "end" | "center";
+}
+
+export function LanguageSwitcher({
+  variant = "dropdown",
+  className,
+  triggerClassName,
+  align = "end",
+}: LanguageSwitcherProps) {
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -38,8 +59,8 @@ export default function LanguageSwitcher() {
   const t = useTranslations("Languages");
 
   function onSelectChange(selectedLocale: string) {
+    if (selectedLocale === locale) return;
     const nextLocale = selectedLocale as Locale;
-    // Defensive check to avoid duplicate prefix if pathname already has locale segment
     const cleanPathname = stripLocalePrefix(pathname, locale);
 
     startTransition(() => {
@@ -53,26 +74,113 @@ export default function LanguageSwitcher() {
     });
   }
 
-  return (
-    <Select value={locale} onValueChange={onSelectChange} disabled={isPending}>
-      <SelectTrigger className="w-full max-w-48">
-        <SelectValue placeholder="Select a language" />
-      </SelectTrigger>
-      <SelectContent position="popper" align="start">
-        {routing.locales.map((cur) => {
-          const Flag = flags[cur as "en" | "vi"] as React.ComponentType<{
-            title?: string;
-            className?: string;
-          }>;
+  const CurrentFlag = flags[locale as "en" | "vi"];
 
+  if (variant === "pills") {
+    return (
+      <div className={cn("flex flex-wrap gap-2.5", className)}>
+        {routing.locales.map((cur) => {
+          const Flag = flags[cur as "en" | "vi"];
+          const isSelected = locale === cur;
           return (
-            <SelectItem value={cur} key={cur}>
-              {Flag && <Flag title={cur} className="size-4" />}
-              {t(cur as "en" | "vi")}
-            </SelectItem>
+            <button
+              key={cur}
+              type="button"
+              disabled={isPending}
+              onClick={() => onSelectChange(cur)}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold shadow-xs transition-all select-none",
+                isSelected
+                  ? "bg-primary text-primary-foreground shadow-primary/20 ring-primary/30 ring-2"
+                  : "border-border/70 bg-card hover:bg-muted text-muted-foreground hover:text-foreground border opacity-80 hover:opacity-100",
+                isPending && "pointer-events-none opacity-60"
+              )}
+            >
+              {Flag && <Flag className="size-4 shrink-0 rounded-xs" />}
+              <span>{t(cur as "en" | "vi")}</span>
+              {isSelected && <Check className="size-3.5" />}
+            </button>
           );
         })}
-      </SelectContent>
-    </Select>
+      </div>
+    );
+  }
+
+  if (variant === "select") {
+    return (
+      <Select
+        value={locale}
+        onValueChange={onSelectChange}
+        disabled={isPending}
+      >
+        <SelectTrigger className={cn("w-full max-w-48", triggerClassName)}>
+          <SelectValue placeholder="Select a language" />
+        </SelectTrigger>
+        <SelectContent position="popper" align={align}>
+          {routing.locales.map((cur) => {
+            const Flag = flags[cur as "en" | "vi"];
+            return (
+              <SelectItem value={cur} key={cur}>
+                {Flag && <Flag title={cur} className="size-4" />}
+                {t(cur as "en" | "vi")}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isPending}
+          aria-label={t(locale as "en" | "vi")}
+          className={cn(
+            "border-border/70 bg-background/80 hover:bg-muted/60 h-9 shrink-0 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs font-semibold transition-colors",
+            className,
+            triggerClassName
+          )}
+        >
+          {CurrentFlag ? (
+            <CurrentFlag className="size-4 shrink-0 rounded-xs" />
+          ) : (
+            <Globe className="size-4 shrink-0" />
+          )}
+          <span className="text-[11px] font-bold tracking-wider uppercase">
+            {locale}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} className="min-w-[150px]">
+        {routing.locales.map((cur) => {
+          const Flag = flags[cur as "en" | "vi"];
+          const isSelected = locale === cur;
+          return (
+            <DropdownMenuItem
+              key={cur}
+              onClick={() => onSelectChange(cur)}
+              className="flex cursor-pointer items-center gap-2.5 py-2 text-xs font-medium"
+            >
+              {Flag && (
+                <Flag title={cur} className="size-4 shrink-0 rounded-xs" />
+              )}
+              <span>{t(cur as "en" | "vi")}</span>
+              {isSelected && (
+                <Check
+                  className="text-primary ms-auto size-3.5"
+                  aria-hidden="true"
+                />
+              )}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
+
+export default LanguageSwitcher;

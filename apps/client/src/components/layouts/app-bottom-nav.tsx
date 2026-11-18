@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Link } from "@/i18n/navigation";
-import { usePathname } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { Bell, Compass, Home, LogIn, User, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/use-auth-store";
 
@@ -16,25 +16,26 @@ interface BottomNavItem {
 
 export function AppBottomNav() {
   const pathname = usePathname();
+  const t = useTranslations("Navigation");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const navItems: BottomNavItem[] = isAuthenticated
     ? [
-        { label: "Trang chủ", href: "/", icon: Home },
-        { label: "Bảng tin", href: "/feed", icon: Users },
-        { label: "Khám phá", href: "/explore", icon: Compass },
-        { label: "Cá nhân", href: "/profile", icon: User },
+        { label: t("home"), href: "/", icon: Home },
+        { label: t("feed"), href: "/feed", icon: Users },
+        { label: t("explore"), href: "/explore", icon: Compass },
+        { label: t("personalGroup"), href: "/profile", icon: User },
       ]
     : [
-        { label: "Trang chủ", href: "/", icon: Home },
-        { label: "Khám phá", href: "/explore", icon: Compass },
-        { label: "Đăng nhập", href: "/auth/login", icon: LogIn },
+        { label: t("home"), href: "/", icon: Home },
+        { label: t("explore"), href: "/explore", icon: Compass },
+        { label: t("signIn"), href: "/auth/login", icon: LogIn },
       ];
 
   return (
     <nav
       className="bg-background/95 border-border/70 fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t px-4 py-1.5 shadow-lg backdrop-blur-md md:hidden"
-      aria-label="Điều hướng di động"
+      aria-label={t("exploreGroup")}
     >
       {navItems.map((item) => {
         const isActive =

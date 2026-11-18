@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, X, User } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface LightboxAuthor {
   name: string;
@@ -32,6 +33,7 @@ export function PhotoLightbox({
   author,
   caption,
 }: PhotoLightboxProps) {
+  const t = useTranslations("Common");
   const total = images.length;
   const currentImage = images[currentIndex] || images[0];
 
@@ -78,7 +80,7 @@ export function PhotoLightbox({
         {/* Fullscreen Content: True 100vw x 100vh with no CSS translate offsets */}
         <DialogPrimitive.Content className="fixed inset-0 z-[101] flex h-dvh w-screen flex-col justify-between overflow-hidden p-0 outline-none select-none">
           <DialogPrimitive.Title className="sr-only">
-            Xem ảnh toàn màn hình
+            {t("fullscreenPhoto")}
           </DialogPrimitive.Title>
 
           {/* 1. Lightbox Top Header Bar */}
@@ -129,8 +131,8 @@ export function PhotoLightbox({
                 size="icon"
                 onClick={onClose}
                 className="size-9 cursor-pointer rounded-full bg-white/10 text-white hover:bg-white/25 hover:text-white"
-                title="Đóng toàn màn hình (Esc)"
-                aria-label="Đóng"
+                title={t("closeFullscreen")}
+                aria-label={t("close")}
               >
                 <X className="size-5" />
               </Button>
@@ -145,7 +147,7 @@ export function PhotoLightbox({
                 type="button"
                 onClick={handlePrev}
                 className="group hover:bg-primary absolute left-3 z-30 flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white/80 backdrop-blur-md transition-all hover:scale-110 hover:text-white sm:left-6 sm:size-13"
-                aria-label="Ảnh trước (Phím mũi tên trái)"
+                aria-label={t("prevPhoto")}
               >
                 <ChevronLeft className="size-6 sm:size-7" />
               </button>
@@ -173,7 +175,7 @@ export function PhotoLightbox({
                 type="button"
                 onClick={handleNext}
                 className="group hover:bg-primary absolute right-3 z-30 flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white/80 backdrop-blur-md transition-all hover:scale-110 hover:text-white sm:right-6 sm:size-13"
-                aria-label="Ảnh tiếp theo (Phím mũi tên phải)"
+                aria-label={t("nextPhoto")}
               >
                 <ChevronRight className="size-6 sm:size-7" />
               </button>
@@ -201,7 +203,7 @@ export function PhotoLightbox({
                         ? "border-primary ring-primary/60 scale-105 shadow-sm ring-2"
                         : "border-white/20 opacity-50 hover:opacity-100"
                     )}
-                    aria-label={`Chuyển đến ảnh ${idx + 1}`}
+                    aria-label={t("jumpToPhoto", { index: idx + 1 })}
                   >
                     <Image
                       src={img}
