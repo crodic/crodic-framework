@@ -2,17 +2,13 @@
 
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useProfile } from "@/hooks/use-profile";
 import {
   getMyCosplayerProfile,
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
-import { getPosts, type PostSummaryResDto } from "@/services/posts";
-import { getUserFollowing, type FollowUserResDto } from "@/services/social";
-import {
-  getMyCollections,
-  type CollectionResDto,
-} from "@/services/collections";
+import { getPosts } from "@/services/posts";
+import { getUserFollowing } from "@/services/social";
+import { getMyCollections } from "@/services/collections";
 import type { FollowedCosplayer, SavedCollection } from "./profile-types";
 import { CosplayerProfileView } from "./cosplayer-profile-view";
 import { Compass, Loader2 } from "lucide-react";
@@ -24,91 +20,28 @@ export function MyProfileContainer() {
   const t = useTranslations("Common");
   const tOnboarding = useTranslations("Onboarding");
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
-  const { data: userProfile, isLoading: isUserLoading } = useProfile();
 
+  // 1. Fetch current user cosplayer profile from real backend API
   const { data: cosplayerProfile, isLoading: isCosplayerLoading } =
     useQuery<CosplayerDetailResDto>({
       queryKey: ["my-cosplayer-profile"],
       queryFn: getMyCosplayerProfile,
       staleTime: 1000 * 60 * 2,
-      retry: 1,
     });
 
-  const isLoading = isUserLoading || isCosplayerLoading;
+  const userId = cosplayerProfile?.userId;
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
-        <Loader2 className="text-primary size-8 animate-spin" />
-        <p className="text-muted-foreground text-sm font-medium">
-          {t("loading")}
-        </p>
-      </div>
-    );
-  }
-
-  // Derive active profile from actual account credentials, zero mock data!
-  const effectiveProfile: CosplayerDetailResDto = {
-    id: cosplayerProfile?.id || userProfile?.id || "profile",
-    userId: userProfile?.id || cosplayerProfile?.userId || "",
-    slug: cosplayerProfile?.slug || userProfile?.email?.split("@")[0] || "me",
-    displayName:
-      cosplayerProfile?.displayName ||
-      userProfile?.fullName ||
-      (userProfile?.firstName
-        ? `${userProfile.firstName} ${userProfile.lastName || ""}`.trim()
-        : userProfile?.email?.split("@")[0] || "User"),
-    handle:
-      cosplayerProfile?.handle ||
-      (userProfile?.email ? `@${userProfile.email.split("@")[0]}` : "@user"),
-    roleBadge: cosplayerProfile?.roleBadge || "Member",
-    avatarUrl: cosplayerProfile?.avatarUrl || userProfile?.avatar || null,
-    coverUrl: cosplayerProfile?.coverUrl || null,
-    bio: cosplayerProfile?.bio || "",
-    artisticBio: cosplayerProfile?.artisticBio || "",
-    locationLabel: cosplayerProfile?.locationLabel || "",
-    workArea: cosplayerProfile?.workArea || "",
-    isVerified: cosplayerProfile?.isVerified || false,
-    isCraftingCreator: cosplayerProfile?.isCraftingCreator || false,
-    followersCount: cosplayerProfile?.followersCount || 0,
-    totalLikesCount: cosplayerProfile?.totalLikesCount || 0,
-    albumsCount: cosplayerProfile?.albumsCount || 0,
-    charactersCount: cosplayerProfile?.charactersCount || 0,
-    rankingScore: cosplayerProfile?.rankingScore || 0,
-    specialties: cosplayerProfile?.specialties || [],
-    skills: cosplayerProfile?.skills || [],
-    awardsBadges: cosplayerProfile?.awardsBadges || [],
-    followingCount: cosplayerProfile?.followingCount || 0,
-    collectionsCount: cosplayerProfile?.collectionsCount || 0,
-    heightLabel: cosplayerProfile?.heightLabel || "",
-    experienceLabel: cosplayerProfile?.experienceLabel || "",
-    contactEmail: cosplayerProfile?.contactEmail || userProfile?.email || "",
-    contactPhone: cosplayerProfile?.contactPhone || "",
-    facebookUrl: cosplayerProfile?.facebookUrl || null,
-    instagramUrl: cosplayerProfile?.instagramUrl || null,
-    tiktokUrl: cosplayerProfile?.tiktokUrl || null,
-    twitterUrl: cosplayerProfile?.twitterUrl || null,
-    characters: cosplayerProfile?.characters || [],
-    createdAt:
-      cosplayerProfile?.createdAt ||
-      userProfile?.createdAt ||
-      new Date().toISOString(),
-    updatedAt:
-      cosplayerProfile?.updatedAt ||
-      userProfile?.updatedAt ||
-      new Date().toISOString(),
-  };
-
+  // 2. Fetch associated posts, following, collections using real userId
   const { data: myPostsRes } = useQuery({
-    queryKey: ["my-posts", effectiveProfile.userId],
-    queryFn: () => getPosts({ authorId: effectiveProfile.userId, limit: 50 }),
-    enabled: !!effectiveProfile.userId,
+    queryKey: ["my-posts", userId],
+    queryFn: () => getPosts({ authorId: userId!, limit: 50 }),
+    enabled: !!userId,
   });
 
   const { data: myFollowingRes } = useQuery({
-    queryKey: ["my-following", effectiveProfile.userId],
-    queryFn: () => getUserFollowing(effectiveProfile.userId, { limit: 50 }),
-    enabled: !!effectiveProfile.userId,
+    queryKey: ["my-following", userId],
+    queryFn: () => getUserFollowing(userId!, { limit: 50 }),
+    enabled: !!userId,
   });
 
   const { data: myCollectionsRes } = useQuery({
@@ -116,6 +49,7 @@ export function MyProfileContainer() {
     queryFn: () => getMyCollections({ limit: 50 }),
   });
 
+  // 3. Transform lists
   const myFollowedCosplayers: FollowedCosplayer[] = useMemo(() => {
     return (myFollowingRes?.data || []).map((user) => ({
       id: user.id,
@@ -140,10 +74,26 @@ export function MyProfileContainer() {
     }));
   }, [myCollectionsRes]);
 
+  // 4. Loading state AFTER all hooks
+  if (isCosplayerLoading) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
+        <Loader2 className="text-primary size-8 animate-spin" />
+        <p className="text-muted-foreground text-sm font-medium">
+          {t("loading")}
+        </p>
+      </div>
+    );
+  }
+
+  if (!cosplayerProfile) {
+    return null;
+  }
+
   const isIncomplete =
-    !effectiveProfile.bio &&
-    (!effectiveProfile.specialties ||
-      effectiveProfile.specialties.length === 0);
+    !cosplayerProfile.bio &&
+    (!cosplayerProfile.specialties ||
+      cosplayerProfile.specialties.length === 0);
 
   return (
     <div className="space-y-6">
@@ -183,9 +133,9 @@ export function MyProfileContainer() {
       )}
 
       <CosplayerProfileView
-        initialProfile={effectiveProfile}
+        initialProfile={cosplayerProfile}
         initialAlbums={myPostsRes?.data || []}
-        initialCharacters={effectiveProfile.characters || []}
+        initialCharacters={cosplayerProfile.characters || []}
         initialFollowed={myFollowedCosplayers}
         initialLikedWorks={[]}
         initialCollections={mySavedCollections}
@@ -194,4 +144,5 @@ export function MyProfileContainer() {
     </div>
   );
 }
+
 export default MyProfileContainer;
