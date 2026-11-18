@@ -395,11 +395,11 @@ export function PageAdminShow() {
                 </DescriptionItem>
                 <DescriptionItem
                   label={t('adminUsers.show.createdAt')}
-                  value={format(data.createdAt, 'dd/MM/yyyy HH:mm aa')}
+                  value={format(new Date(data.createdAt), 'dd/MM/yyyy HH:mm')}
                 />
                 <DescriptionItem
                   label={t('adminUsers.show.updatedAt')}
-                  value={format(data.updatedAt, 'dd/MM/yyyy HH:mm aa')}
+                  value={format(new Date(data.updatedAt), 'dd/MM/yyyy HH:mm')}
                 />
               </Descriptions>
             </CardContent>

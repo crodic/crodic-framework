@@ -25,6 +25,7 @@ const userFilterParsers = {
   [ColumnKey.createdAt]: parseAsArrayOf(parseAsInteger, ','),
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
+  [ColumnKey.role]: parseAsString,
   status: parseAsString,
 } as const
 
@@ -52,6 +53,10 @@ export function PageUserOverview() {
         .ilike('email', filter.email)
         .ilike('fullName', filter.fullName)
         .eq('id', filter.id)
+
+      if (filter.role) {
+        builder.eq('role', filter.role)
+      }
 
       if (filter.status) {
         builder.eq('status', filter.status)

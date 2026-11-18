@@ -56,14 +56,35 @@ export class SettingSeedService {
         ...value,
       };
       await this.settingRepository.save(existingSetting);
-      return;
+    } else {
+      await this.settingRepository.save(
+        this.settingRepository.create({
+          key: appSetting.key,
+          value,
+        }),
+      );
     }
 
-    await this.settingRepository.save(
-      this.settingRepository.create({
-        key: appSetting.key,
-        value,
-      }),
-    );
+    const defaultKosume = {
+      max_photos_per_album: 50,
+      max_file_size_mb: 25,
+      auto_approve_posts: true,
+      commission_platform_rate_percent: 5,
+      banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
+      support_email: 'support@kosume.com',
+      support_hotline: '1900-KOSUME',
+    };
+
+    const existingKosume = await this.settingRepository.findOne({
+      where: { key: SettingKeys.KOSUME },
+    });
+    if (!existingKosume) {
+      await this.settingRepository.save(
+        this.settingRepository.create({
+          key: SettingKeys.KOSUME,
+          value: defaultKosume,
+        }),
+      );
+    }
   }
 }

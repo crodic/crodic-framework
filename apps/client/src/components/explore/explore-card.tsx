@@ -4,27 +4,35 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { BadgeCheck, Bookmark, Heart } from "lucide-react";
-import { ExploreItem } from "./explore-types";
+import type { PostSummaryResDto } from "@/services/posts";
+import { toggleLikePost } from "@/services/posts";
 import { cn } from "@/lib/utils";
 
 interface ExploreCardProps {
-  item: ExploreItem;
+  item: PostSummaryResDto;
 }
 
 export function ExploreCard({ item }: ExploreCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likes, setLikes] = useState(item.likesCount);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(item.isLikedByCurrentUser ?? false);
+  const [likesCount, setLikesCount] = useState(item.likesCount);
+  const [isBookmarked, setIsBookmarked] = useState(
+    item.isSavedByCurrentUser ?? false
+  );
 
-  const handleLike = (e: React.MouseEvent) => {
+  const postSlugOrId = item.slug || item.id;
+  const authorHandle = item.author.handle.replace("@", "") || item.author.id;
+
+  const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked((prev) => !prev);
-    if (!isLiked) {
-      const num = parseFloat(item.likesCount);
-      setLikes(isNaN(num) ? "2.5K" : `${(num + 0.1).toFixed(1)}K`);
-    } else {
-      setLikes(item.likesCount);
+    const next = !isLiked;
+    setIsLiked(next);
+    setLikesCount((prev) => (next ? prev + 1 : prev - 1));
+    try {
+      await toggleLikePost(item.id);
+    } catch {
+      setIsLiked(!next);
+      setLikesCount((prev) => (!next ? prev + 1 : prev - 1));
     }
   };
 
@@ -34,16 +42,21 @@ export function ExploreCard({ item }: ExploreCardProps) {
     setIsBookmarked((prev) => !prev);
   };
 
+  const formattedLikes =
+    likesCount >= 1000
+      ? `${(likesCount / 1000).toFixed(1)}k`
+      : String(likesCount);
+
   return (
     <div className="group flex cursor-pointer flex-col">
       {/* Top Image Thumbnail */}
       <Link
-        href={`/post/${item.id}`}
+        href={`/post/${postSlugOrId}`}
         className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/5 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-all duration-300 group-hover:shadow-md"
       >
         <Image
-          src={item.image}
-          alt={item.character}
+          src={item.coverImageUrl}
+          alt={item.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
@@ -53,32 +66,38 @@ export function ExploreCard({ item }: ExploreCardProps) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </Link>
 
-      {/* Line 1: Character Title */}
-      <Link href={`/post/${item.id}`} className="block">
+      {/* Line 1: Character / Post Title */}
+      <Link href={`/post/${postSlugOrId}`} className="block">
         <h3 className="text-foreground group-hover:text-primary mt-2 truncate text-sm font-bold transition-colors">
-          {item.character}
+          {item.title}
         </h3>
       </Link>
 
       {/* Line 2: Author info on left, Like & Bookmark on right */}
       <div className="text-muted-foreground mt-1 flex items-center justify-between gap-2 text-xs">
-        {/* Left: Cosplayer Avatar & Name (Links to public cosplayer profile) */}
+        {/* Left: Cosplayer Avatar & Name */}
         <Link
-          href={`/cosplayer/${item.author.name.toLowerCase() === "soriko" ? "soriko" : "kiriko"}`}
+          href={`/cosplayer/${authorHandle}`}
           onClick={(e) => e.stopPropagation()}
           className="group/author flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-85"
         >
           <div className="border-border/80 bg-muted relative size-4.5 shrink-0 overflow-hidden rounded-full border">
-            <Image
-              src={item.author.avatarUrl}
-              alt={item.author.name}
-              fill
-              sizes="18px"
-              className="object-cover"
-            />
+            {item.author.avatarUrl ? (
+              <Image
+                src={item.author.avatarUrl}
+                alt={item.author.displayName}
+                fill
+                sizes="18px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[9px] font-bold">
+                {item.author.displayName.slice(0, 1)}
+              </div>
+            )}
           </div>
           <span className="text-muted-foreground group-hover/author:text-primary max-w-[85px] truncate text-xs font-medium transition-colors sm:max-w-[110px]">
-            {item.author.name}
+            {item.author.displayName}
           </span>
           {item.author.isVerified && (
             <BadgeCheck
@@ -94,17 +113,15 @@ export function ExploreCard({ item }: ExploreCardProps) {
             type="button"
             onClick={handleLike}
             className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium transition-colors select-none hover:text-rose-400"
-            aria-label={`Thích ${item.character}`}
+            aria-label={`Thích ${item.title}`}
           >
             <Heart
               className={cn(
                 "size-3",
-                isLiked
-                  ? "fill-rose-500 text-rose-500"
-                  : "fill-rose-500/80 text-rose-500"
+                isLiked ? "fill-rose-500 text-rose-500" : "text-rose-500"
               )}
             />
-            <span>{likes}</span>
+            <span>{formattedLikes}</span>
           </button>
 
           <button

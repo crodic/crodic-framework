@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { useForm, useWatch, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ImageIcon, RotateCcw, Save, Sparkles, Trash2 } from 'lucide-react'
+import { ImageIcon, RotateCcw, Save, Wand2, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
@@ -147,7 +147,7 @@ function WebsiteSettingsForm({
           <CardHeader>
             <div className='flex items-start gap-3'>
               <div className='bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-md'>
-                <Sparkles className='size-4' />
+                <Wand2 className='size-4' />
               </div>
               <div>
                 <CardTitle>{t('settings.website.brandIdentity')}</CardTitle>
@@ -211,7 +211,7 @@ function WebsiteSettingsForm({
           <CardHeader>
             <div className='flex items-start gap-3'>
               <div className='bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-md'>
-                <Sparkles className='size-4' />
+                <Wand2 className='size-4' />
               </div>
               <div>
                 <CardTitle>{t('settings.website.seoMetadata')}</CardTitle>

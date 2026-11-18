@@ -17,12 +17,11 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { NotificationItem, NotificationType } from "./notifications-types";
+import type { NotificationResDto } from "@/services/notifications";
 
 interface NotificationItemCardProps {
-  notification: NotificationItem;
+  notification: NotificationResDto;
   onMarkAsRead: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -32,7 +31,7 @@ export function NotificationItemCard({
   onMarkAsRead,
   onDelete,
 }: NotificationItemCardProps) {
-  const getNotificationIcon = (type: NotificationType) => {
+  const getNotificationIcon = (type: string) => {
     switch (type) {
       case "like":
         return {
@@ -50,13 +49,6 @@ export function NotificationItemCard({
         return {
           icon: <UserPlus className="size-3.5 text-violet-400" />,
           badgeBg: "bg-violet-500/15 border-violet-500/30 text-violet-400",
-        };
-      case "booking_request":
-      case "booking_accepted":
-      case "job_approved":
-        return {
-          icon: <Calendar className="size-3.5 text-amber-400" />,
-          badgeBg: "bg-amber-500/15 border-amber-500/30 text-amber-400",
         };
       case "badge_awarded":
         return {
@@ -77,6 +69,9 @@ export function NotificationItemCard({
   };
 
   const { icon, badgeBg } = getNotificationIcon(notification.type);
+  const formattedTime = notification.createdAt
+    ? new Date(notification.createdAt).toLocaleDateString()
+    : "";
 
   return (
     <div
@@ -89,15 +84,15 @@ export function NotificationItemCard({
     >
       {/* Left Avatar / Icon indicator */}
       <div className="relative shrink-0">
-        {notification.actor ? (
+        {notification.actorName ? (
           <Avatar className="border-border/80 size-11 rounded-xl border shadow-xs sm:size-12">
             <AvatarImage
-              src={notification.actor.avatarUrl}
-              alt={notification.actor.name}
+              src={notification.actorAvatarUrl || ""}
+              alt={notification.actorName}
               className="object-cover"
             />
             <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
-              {notification.actor.name.slice(0, 2).toUpperCase()}
+              {notification.actorName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         ) : (
@@ -120,21 +115,25 @@ export function NotificationItemCard({
       {/* Middle Content */}
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
-          {notification.actor && (
+          {notification.actorName && (
             <span className="text-foreground text-sm font-bold tracking-tight">
-              {notification.actor.name}
+              {notification.actorName}
             </span>
           )}
-          {notification.actor?.isVerified && (
+          {notification.actorIsVerified && (
             <CheckCircle2 className="fill-primary text-primary-foreground size-3.5" />
           )}
           <span className="text-foreground/90 text-sm font-semibold">
             {notification.title}
           </span>
-          <span className="text-muted-foreground/40 text-xs">•</span>
-          <span className="text-muted-foreground text-xs font-medium">
-            {notification.timeAgo}
-          </span>
+          {formattedTime && (
+            <>
+              <span className="text-muted-foreground/40 text-xs">•</span>
+              <span className="text-muted-foreground text-xs font-medium">
+                {formattedTime}
+              </span>
+            </>
+          )}
           {!notification.isRead && (
             <span className="bg-primary ring-primary/20 inline-flex size-2 rounded-full ring-4" />
           )}
@@ -144,7 +143,7 @@ export function NotificationItemCard({
           {notification.description}
         </p>
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         {notification.actionUrl && (
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <Button
@@ -152,31 +151,18 @@ export function NotificationItemCard({
               size="sm"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-lg px-3 text-xs font-semibold shadow-xs"
             >
-              <Link href={notification.actionUrl}>
-                {notification.actionLabel || "Xem chi tiết"}
-              </Link>
+              <Link href={notification.actionUrl}>Xem chi tiết</Link>
             </Button>
-
-            {notification.secondaryActionLabel && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border/80 hover:bg-destructive/10 hover:text-destructive h-8 cursor-pointer rounded-lg px-3 text-xs font-medium"
-                onClick={() => onDelete(notification.id)}
-              >
-                {notification.secondaryActionLabel}
-              </Button>
-            )}
           </div>
         )}
       </div>
 
       {/* Right Thumbnail & Actions */}
       <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end">
-        {notification.previewImage && (
+        {notification.previewImageUrl && (
           <div className="border-border/70 relative size-14 shrink-0 overflow-hidden rounded-xl border shadow-xs sm:size-16">
             <Image
-              src={notification.previewImage}
+              src={notification.previewImageUrl}
               alt="Preview"
               fill
               className="object-cover transition-transform group-hover:scale-105"

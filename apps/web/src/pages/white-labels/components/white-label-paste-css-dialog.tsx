@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Code2Icon, SparklesIcon } from 'lucide-react'
+import { Code2Icon, Wand2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ThemeMode } from '@/lib/theme-builder/default-theme'
 import { Button } from '@/components/ui/button'
@@ -105,7 +105,7 @@ export function WhiteLabelPasteCssDialog({
               className='h-6 px-2 text-[11px]'
               onClick={loadSampleCss}
             >
-              <SparklesIcon className='text-primary me-1 size-3' />
+              <Wand2Icon className='text-primary me-1 size-3' />
               Load Sample CSS
             </Button>
           </div>

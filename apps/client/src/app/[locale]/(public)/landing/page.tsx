@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { HeroBanner } from "@/components/landing/hero-banner";
 import { FeaturesHighlight } from "@/components/landing/features-highlight";
@@ -16,16 +16,18 @@ interface LandingPageProps {
 export async function generateMetadata({
   params,
 }: LandingPageProps): Promise<Metadata> {
-  const { locale: _locale } = await params;
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Landing" });
+
+  const title = t("metaTitle");
+  const description = t("metaDescription");
 
   return {
-    title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
-    description:
-      "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+    title,
+    description,
     openGraph: {
-      title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
-      description:
-        "Nền tảng mạng xã hội và Portfolio chất lượng cao dành cho cộng đồng Cosplayer và Fandom.",
+      title,
+      description,
       type: "website",
       images: [
         {
@@ -38,9 +40,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
-      description:
-        "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm.",
+      title,
+      description,
       images: ["/landing/hero-banner.png"],
     },
   };

@@ -28,6 +28,7 @@ import { UpdateUserReqDto } from './dto/update-user.req.dto';
 import { UserResDto } from './dto/user.res.dto';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
+import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
 
 @Injectable()
 export class UserService {
@@ -71,14 +72,16 @@ export class UserService {
     }
 
     const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      searchableColumns: ['email', 'id', 'fullName'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt', 'role'],
+      searchableColumns: ['email', 'id', 'fullName', 'username'],
       defaultSortBy: [['id', 'DESC']],
-      relations: [],
+      relations: ['cosplayerProfile'],
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         fullName: [FilterOperator.ILIKE],
         email: [FilterOperator.ILIKE],
+        username: [FilterOperator.ILIKE],
+        role: [FilterOperator.EQ, FilterOperator.IN],
         id: [FilterOperator.EQ],
       },
     });
@@ -149,6 +152,7 @@ export class UserService {
     assert(id, 'id is required');
     const user = await this.userRepository.findOneOrFail({
       where: { id },
+      relations: ['cosplayerProfile'],
       withDeleted: true,
     });
 
@@ -158,10 +162,63 @@ export class UserService {
   async update(id: AutoIncrementID, updateUserDto: UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    user.firstName = updateUserDto.firstName;
-    user.lastName = updateUserDto.lastName;
+    if (updateUserDto.firstName !== undefined) {
+      user.firstName = updateUserDto.firstName;
+    }
+    if (updateUserDto.lastName !== undefined) {
+      user.lastName = updateUserDto.lastName;
+    }
+    if (updateUserDto.role !== undefined) {
+      user.role = updateUserDto.role;
+    }
+    if (updateUserDto.username !== undefined) {
+      user.username = updateUserDto.username;
+    }
 
     await this.userRepository.save(user);
+
+    if (updateUserDto.username) {
+      const cleanUsername = updateUserDto.username
+        .replace(/^@+/, '')
+        .trim()
+        .toLowerCase();
+      if (cleanUsername) {
+        await this.dataSource
+          .getRepository('cosplayer_profiles')
+          .update({ userId: id }, { slug: cleanUsername });
+      }
+    }
+
+    return user.toDto(UserResDto);
+  }
+
+  async toggleVerify(id: AutoIncrementID): Promise<UserResDto> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { id },
+      relations: ['cosplayerProfile'],
+    });
+
+    user.verifiedAt = user.verifiedAt ? null : new Date();
+    const saved = await this.userRepository.save(user);
+    return saved.toDto(UserResDto);
+  }
+
+  async toggleCosplayerVerify(id: AutoIncrementID): Promise<UserResDto> {
+    const user = await this.userRepository.findOneOrFail({
+      where: { id },
+      relations: ['cosplayerProfile'],
+    });
+
+    if (!user.cosplayerProfile) {
+      throw new NotFoundException('User does not have a cosplayer profile');
+    }
+
+    user.cosplayerProfile.isVerified = !user.cosplayerProfile.isVerified;
+    await this.dataSource
+      .getRepository(CosplayerProfileEntity)
+      .save(user.cosplayerProfile);
+
+    return user.toDto(UserResDto);
   }
 
   async remove(id: AutoIncrementID) {

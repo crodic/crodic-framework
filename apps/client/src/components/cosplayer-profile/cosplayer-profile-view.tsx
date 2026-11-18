@@ -9,27 +9,44 @@ import { ProfileAbout } from "./profile-about";
 import { ProfileFollowed } from "./profile-followed";
 import { ProfileLikedWorks } from "./profile-liked-works";
 import { ProfileSavedCollections } from "./profile-saved-collections";
-import {
-  KIRIKO_PROFILE,
-  KIRIKO_ALBUMS,
-  KIRIKO_CHARACTERS,
-  MOCK_FOLLOWED_COSPLAYERS,
-  MOCK_LIKED_WORKS,
-  MOCK_SAVED_COLLECTIONS,
-} from "./profile-data";
-import {
-  CosplayerProfileData,
-  CosplayerAlbum,
-  CosplayerCharacter,
+import type {
+  CosplayerDetailResDto,
+  CosplayerCharacterResDto,
   FollowedCosplayer,
   LikedWork,
   SavedCollection,
 } from "./profile-types";
+import type { PostSummaryResDto } from "@/services/posts";
+
+const DEFAULT_EMPTY_PROFILE: CosplayerDetailResDto = {
+  id: "profile",
+  userId: "user-1",
+  slug: "profile",
+  displayName: "Cosplayer",
+  handle: "@cosplayer",
+  roleBadge: "Cosplayer",
+  locationLabel: "Việt Nam",
+  isVerified: false,
+  isCraftingCreator: false,
+  followersCount: 0,
+  totalLikesCount: 0,
+  albumsCount: 0,
+  charactersCount: 0,
+  rankingScore: 0,
+  specialties: [],
+  skills: [],
+  awardsBadges: [],
+  followingCount: 0,
+  collectionsCount: 0,
+  characters: [],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
 
 interface CosplayerProfileViewProps {
-  initialProfile?: CosplayerProfileData;
-  initialAlbums?: CosplayerAlbum[];
-  initialCharacters?: CosplayerCharacter[];
+  initialProfile?: CosplayerDetailResDto;
+  initialAlbums?: PostSummaryResDto[];
+  initialCharacters?: CosplayerCharacterResDto[];
   initialFollowed?: FollowedCosplayer[];
   initialLikedWorks?: LikedWork[];
   initialCollections?: SavedCollection[];
@@ -37,21 +54,21 @@ interface CosplayerProfileViewProps {
 }
 
 export function CosplayerProfileView({
-  initialProfile = KIRIKO_PROFILE,
-  initialAlbums = KIRIKO_ALBUMS,
-  initialCharacters = KIRIKO_CHARACTERS,
-  initialFollowed = MOCK_FOLLOWED_COSPLAYERS,
-  initialLikedWorks = MOCK_LIKED_WORKS,
-  initialCollections = MOCK_SAVED_COLLECTIONS,
+  initialProfile = DEFAULT_EMPTY_PROFILE,
+  initialAlbums = [],
+  initialCharacters = [],
+  initialFollowed = [],
+  initialLikedWorks = [],
+  initialCollections = [],
   isOwner = false,
 }: CosplayerProfileViewProps) {
-  const [profile, setProfile] = useState<CosplayerProfileData>(initialProfile);
+  const [profile, setProfile] = useState<CosplayerDetailResDto>(initialProfile);
   const [viewMode, setViewMode] = useState<"owner" | "visitor">("owner");
   const [activeTab, setActiveTab] = useState(isOwner ? "following" : "albums");
 
   const effectiveOwnerMode = isOwner && viewMode === "owner";
 
-  const handleProfileUpdate = (updated: Partial<CosplayerProfileData>) => {
+  const handleProfileUpdate = (updated: Partial<CosplayerDetailResDto>) => {
     setProfile((prev) => ({
       ...prev,
       ...updated,
@@ -60,30 +77,31 @@ export function CosplayerProfileView({
 
   const handleToggleViewMode = () => {
     setViewMode((prev) => (prev === "owner" ? "visitor" : "owner"));
+    setActiveTab((prev) =>
+      prev === "following" || prev === "liked" || prev === "collections"
+        ? "albums"
+        : prev
+    );
   };
 
+  const activeCharacters =
+    initialCharacters.length > 0 ? initialCharacters : profile.characters || [];
+
   return (
-    <div className="w-full space-y-6 sm:space-y-8">
-      {/* 1. Hero Section: Panoramic Cover, Circular Avatar, Bio, Follow/Message or Owner Actions */}
+    <div className="space-y-6 sm:space-y-8">
+      {/* 1. Header Hero Banner, Avatar, Details & Actions */}
       <ProfileHero
         profile={profile}
         isOwner={isOwner}
-        viewMode={viewMode}
         onProfileUpdate={handleProfileUpdate}
-        onToggleViewMode={handleToggleViewMode}
+        onToggleViewMode={isOwner ? handleToggleViewMode : undefined}
+        viewMode={viewMode}
       />
 
-      {/* 2. Content Tabs */}
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full space-y-6"
-      >
-        <div className="border-border/60 border-b pb-px">
-          <TabsList
-            variant="line"
-            className="h-11 w-full scrollbar-none justify-start gap-4 overflow-x-auto p-0 sm:gap-8"
-          >
+      {/* 2. Main Content Tabs Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="border-border/60 mb-6 border-b">
+          <TabsList className="no-scrollbar h-auto w-full justify-start gap-4 rounded-none bg-transparent p-0 sm:gap-8">
             {effectiveOwnerMode ? (
               /* OWNER TABS (Matching Mockup 2) */
               <>
@@ -97,7 +115,7 @@ export function CosplayerProfileView({
                   value="liked"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Đã yêu thích ({initialLikedWorks.length})
+                  Đã thích ({initialLikedWorks.length})
                 </TabsTrigger>
                 <TabsTrigger
                   value="collections"
@@ -121,19 +139,19 @@ export function CosplayerProfileView({
                 </TabsTrigger>
               </>
             ) : (
-              /* VISITOR TABS (Matching Mockup 1) */
+              /* VISITOR TABS */
               <>
                 <TabsTrigger
                   value="albums"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Tất cả Album ({profile.stats.albumsCount})
+                  Tất cả Album ({profile.albumsCount})
                 </TabsTrigger>
                 <TabsTrigger
                   value="characters"
                   className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
-                  Nhân vật & Series ({profile.stats.charactersCount})
+                  Nhân vật & Series ({activeCharacters.length})
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
@@ -146,10 +164,9 @@ export function CosplayerProfileView({
           </TabsList>
         </div>
 
-        {/* OWNER VIEW: Clean full-width tabs layout without redundant sidebar widget */}
+        {/* OWNER VIEW */}
         {effectiveOwnerMode ? (
           <div className="space-y-6">
-            {/* Tab: Following */}
             <TabsContent
               value="following"
               className="mt-0 focus-visible:outline-none"
@@ -157,7 +174,6 @@ export function CosplayerProfileView({
               <ProfileFollowed initialFollowed={initialFollowed} />
             </TabsContent>
 
-            {/* Tab: Liked Works */}
             <TabsContent
               value="liked"
               className="mt-0 focus-visible:outline-none"
@@ -165,7 +181,6 @@ export function CosplayerProfileView({
               <ProfileLikedWorks initialLikedWorks={initialLikedWorks} />
             </TabsContent>
 
-            {/* Tab: Collections */}
             <TabsContent
               value="collections"
               className="mt-0 focus-visible:outline-none"
@@ -175,18 +190,16 @@ export function CosplayerProfileView({
               />
             </TabsContent>
 
-            {/* Tab: Albums */}
             <TabsContent
               value="albums"
               className="mt-0 focus-visible:outline-none"
             >
               <ProfileAlbums
                 albums={initialAlbums}
-                cosplayerName={profile.name}
+                cosplayerName={profile.displayName}
               />
             </TabsContent>
 
-            {/* Tab: About */}
             <TabsContent
               value="about"
               className="mt-0 focus-visible:outline-none"
@@ -197,26 +210,23 @@ export function CosplayerProfileView({
         ) : (
           /* VISITOR VIEW */
           <>
-            {/* Tab 1: Albums */}
             <TabsContent
               value="albums"
               className="mt-0 focus-visible:outline-none"
             >
               <ProfileAlbums
                 albums={initialAlbums}
-                cosplayerName={profile.name}
+                cosplayerName={profile.displayName}
               />
             </TabsContent>
 
-            {/* Tab 2: Characters & Series */}
             <TabsContent
               value="characters"
               className="mt-0 focus-visible:outline-none"
             >
-              <ProfileCharacters characters={initialCharacters} />
+              <ProfileCharacters characters={activeCharacters} />
             </TabsContent>
 
-            {/* Tab 3: About */}
             <TabsContent
               value="about"
               className="mt-0 focus-visible:outline-none"

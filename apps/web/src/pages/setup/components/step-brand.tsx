@@ -1,5 +1,5 @@
 import { useWatch, type UseFormReturn } from 'react-hook-form'
-import { ArrowRight, Globe, Sparkles } from 'lucide-react'
+import { ArrowRight, Globe, Wand2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -90,7 +90,7 @@ export function StepBrand({ form, siteBrandValue, onNext }: StepBrandProps) {
           {/* Simulated browser tab preview */}
           <div className='bg-background border-border/80 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs shadow-2xs'>
             <div className='bg-primary/20 flex size-4 items-center justify-center rounded-xs'>
-              <Sparkles className='text-primary size-2.5' />
+              <Wand2 className='text-primary size-2.5' />
             </div>
             <span className='truncate font-medium'>
               {brandDisplay || 'My Platform'} — Admin Portal

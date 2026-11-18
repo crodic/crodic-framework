@@ -1,0 +1,74 @@
+import { z } from 'zod'
+
+export const EventColumnKey = {
+  id: 'id',
+  title: 'title',
+  venue: 'venue',
+  locationLabel: 'locationLabel',
+  dateString: 'dateString',
+  startAt: 'startAt',
+  status: 'status',
+  isFeaturedFestival: 'isFeaturedFestival',
+  isRecruiting: 'isRecruiting',
+  participantsCount: 'participantsCount',
+  interestedCount: 'interestedCount',
+  createdAt: 'createdAt',
+} as const
+
+export const eventStatusEnum = z.enum([
+  'draft',
+  'upcoming',
+  'ongoing',
+  'completed',
+  'cancelled',
+])
+export type EventStatus = z.infer<typeof eventStatusEnum>
+
+export const eventSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  dayLabel: z.string(),
+  monthLabel: z.string(),
+  yearLabel: z.string().nullish(),
+  dateString: z.string(),
+  startAt: z.string(),
+  endAt: z.string().nullish(),
+  locationLabel: z.string(),
+  organizerName: z.string().nullish(),
+  venue: z.string(),
+  imageUrl: z.string(),
+  bannerImageUrl: z.string().nullish(),
+  description: z.string().optional(),
+  ticketPriceLabel: z.string().nullish(),
+  ticketPriceAmount: z.number().nullish(),
+  isRecruiting: z.boolean().default(false),
+  isFeaturedFestival: z.boolean().default(false),
+  status: z.enum(['draft', 'upcoming', 'ongoing', 'completed', 'cancelled']),
+  participantsCount: z.number().default(0),
+  interestedCount: z.number().default(0),
+  applicationsCount: z.number().default(0),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+})
+
+export type Event = z.infer<typeof eventSchema>
+
+export const eventFormSchema = z.object({
+  title: z.string().min(3, 'Tên sự kiện phải từ 3 ký tự'),
+  startAt: z.string().min(1, 'Thời gian bắt đầu là bắt buộc'),
+  endAt: z.string().optional(),
+  locationLabel: z.string().min(1, 'Tỉnh / Thành phố là bắt buộc'),
+  organizerName: z.string().optional(),
+  venue: z.string().min(2, 'Địa điểm tổ chức là bắt buộc'),
+  imageUrl: z
+    .string()
+    .url('Ảnh đại diện sự kiện phải là URL hợp lệ (bắt đầu bằng https://...)'),
+  description: z.string().min(5, 'Mô tả sự kiện là bắt buộc'),
+  ticketPriceAmount: z.number().min(0).optional(),
+  status: z.enum(['draft', 'upcoming', 'ongoing', 'completed', 'cancelled']),
+  isFeaturedFestival: z.boolean(),
+  isRecruiting: z.boolean(),
+})
+
+export type EventFormValues = z.infer<typeof eventFormSchema>

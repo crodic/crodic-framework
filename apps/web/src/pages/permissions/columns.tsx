@@ -79,7 +79,7 @@ export function getPermissionsTableColumns(): ColumnDef<PermissionSchema>[] {
       },
       cell: ({ row }) => (
         <p className='truncate'>
-          {format(row.original.updatedAt, 'dd/MM/yyyy HH:mm aa')}
+          {format(new Date(row.original.updatedAt), 'dd/MM/yyyy HH:mm')}
         </p>
       ),
       enableColumnFilter: false,

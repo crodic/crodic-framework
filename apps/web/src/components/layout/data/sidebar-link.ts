@@ -15,6 +15,11 @@ import {
   BookMarked,
   MapPin,
   Tags,
+  CalendarDays,
+  ShieldAlert,
+  GalleryHorizontalEnd,
+  Image as ImageIcon,
+  Sliders,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -110,6 +115,41 @@ export const sidebarLink: SidebarData = {
           url: '/locations',
           icon: MapPin,
           permission: 'LOCATION',
+        },
+      ],
+    },
+    {
+      title: 'navigation.kosume.title',
+      items: [
+        {
+          title: 'navigation.kosume.reports',
+          url: '/content-reports',
+          icon: ShieldAlert,
+          permission: 'CONTENT_REPORT',
+        },
+        {
+          title: 'navigation.kosume.events',
+          url: '/events',
+          icon: CalendarDays,
+          permission: 'EVENT',
+        },
+        {
+          title: 'navigation.kosume.posts',
+          url: '/posts',
+          icon: ImageIcon,
+          permission: 'POST',
+        },
+        {
+          title: 'navigation.kosume.spotlight',
+          url: '/spotlight-banners',
+          icon: GalleryHorizontalEnd,
+          permission: 'SPOTLIGHT',
+        },
+        {
+          title: 'navigation.kosume.settings',
+          url: '/platform-settings',
+          icon: Sliders,
+          permission: 'SETTING',
         },
       ],
     },

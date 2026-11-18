@@ -17,7 +17,7 @@ import {
   PaletteIcon,
   SearchIcon,
   ShieldCheckIcon,
-  SparklesIcon,
+  Wand2Icon,
   TerminalIcon,
   UsersIcon,
   XIcon,
@@ -605,10 +605,7 @@ export function PageHelpCenter() {
             variant='secondary'
             className='gap-1.5 px-3 py-1 text-xs font-semibold shadow-2xs'
           >
-            <SparklesIcon
-              className='text-primary size-3.5'
-              aria-hidden='true'
-            />
+            <Wand2Icon className='text-primary size-3.5' aria-hidden='true' />
             {t('helpCenter.badge', 'Cẩm nang Vận hành Hệ thống')}
           </Badge>
 

@@ -1,24 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { RankingTimeFilter } from "./ranking-types";
-import { MOCK_LEADERBOARD_LIST, MOCK_PODIUM_DATA } from "./ranking-data";
 import { RankingFilterBar } from "./ranking-filter-bar";
 import { RankingPodium } from "./ranking-podium";
 import { RankingTable } from "./ranking-table";
+import { getLeaderboard, type LeaderboardItemResDto } from "@/services/ranking";
 
 export function RankingView() {
+  const t = useTranslations("Ranking");
   const [selectedFilter, setSelectedFilter] =
     useState<RankingTimeFilter>("week");
 
-  // Active podium items based on selected tab
-  const activePodiumItems =
-    MOCK_PODIUM_DATA[selectedFilter] || MOCK_PODIUM_DATA.week;
+  const { data: rankingResponse, isLoading } = useQuery({
+    queryKey: ["public-rankings", selectedFilter],
+    queryFn: () => getLeaderboard(selectedFilter),
+  });
+
+  const { podiumItems, tableItems } = useMemo(() => {
+    const rawItems: LeaderboardItemResDto[] = rankingResponse?.data || [];
+    const sorted = [...rawItems].sort((a, b) => a.rank - b.rank);
+    const podium = sorted.filter((item) => item.rank <= 3);
+    const table = sorted.filter((item) => item.rank > 3);
+
+    return { podiumItems: podium, tableItems: table };
+  }, [rankingResponse]);
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
       {/* 1. Time / Category Filter Pills */}
-      <section aria-label="Bộ lọc thời gian và danh mục bảng xếp hạng">
+      <section aria-label={t("title")}>
         <RankingFilterBar
           selectedFilter={selectedFilter}
           onSelectFilter={setSelectedFilter}
@@ -26,14 +40,26 @@ export function RankingView() {
       </section>
 
       {/* 2. Top 3 Podium Cards */}
-      <section aria-label="Top 3 Cosplayer nổi bật">
-        <RankingPodium podiumItems={activePodiumItems} />
-      </section>
+      {isLoading ? (
+        <div className="flex min-h-[240px] items-center justify-center">
+          <Loader2 className="text-primary size-8 animate-spin" />
+        </div>
+      ) : (
+        <>
+          {podiumItems.length > 0 && (
+            <section aria-label="Top 3 Cosplayer">
+              <RankingPodium podiumItems={podiumItems} />
+            </section>
+          )}
 
-      {/* 3. Leaderboard Table (#4 to #10+) */}
-      <section aria-label="Danh sách chi tiết bảng xếp hạng">
-        <RankingTable items={MOCK_LEADERBOARD_LIST} />
-      </section>
+          {/* 3. Leaderboard Table (#4+) */}
+          {tableItems.length > 0 && (
+            <section aria-label="Bảng xếp hạng">
+              <RankingTable items={tableItems} />
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { type SVGProps } from 'react'
-import { Check, CircleCheck, RotateCcw, Settings, Sparkles } from 'lucide-react'
+import { Check, CircleCheck, RotateCcw, Settings, Wand2 } from 'lucide-react'
 import { RadioGroup } from 'radix-ui'
 import { useTranslation } from 'react-i18next'
 import { IconDir } from '@/assets/custom/icon-dir'
@@ -376,7 +376,7 @@ function WhiteLabelConfig() {
       <div className='bg-muted/30 flex items-center justify-between rounded-lg border p-3'>
         <div className='space-y-0.5'>
           <div className='flex items-center gap-1.5 text-xs font-semibold'>
-            <Sparkles className='text-primary size-3.5' />
+            <Wand2 className='text-primary size-3.5' />
             <span>{t('configDrawer.enableWhiteLabel')}</span>
           </div>
           <p className='text-muted-foreground text-[11px]'>

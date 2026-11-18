@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
-  ArrowLeft,
+  Building2,
   Calendar,
   Check,
   Clock,
@@ -15,401 +16,312 @@ import {
   Send,
   Share2,
   ShieldAlert,
-  Sparkles,
   Ticket,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { EventItem } from "./events-types";
+import type { EventDetailResDto, EventSummaryResDto } from "@/services/events";
 import { EventApplyDialog } from "./event-apply-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
-import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface EventStandaloneViewProps {
-  event: EventItem;
+  event: EventDetailResDto | EventSummaryResDto;
 }
 
 export function EventStandaloneView({ event }: EventStandaloneViewProps) {
-  const router = useRouter();
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
+  const router = useRouter();
+  const t = useTranslations("Events");
+  const tDetail = useTranslations("Events.detail");
+  const tStandalone = useTranslations("Events.standalone");
 
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/events");
-    }
-  };
+  const detail = event as EventDetailResDto;
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(window.location.href);
-      toast.success("Đã sao chép liên kết sự kiện vào clipboard!");
+      toast.success(tDetail("shareSuccess"));
     }
   };
 
   const handleApplyClick = () => {
     if (isHydrating) return;
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
-      router.push(`/auth/login?from=/events/${event.id}`);
+      toast.info(t("loginRequired"));
+      router.push(`/auth/login?from=/events/${event.slug || event.id}`);
       return;
     }
     setIsApplyOpen(true);
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
-      {/* 1. Top Navigation & Breadcrumb */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button
-          type="button"
-          onClick={handleBack}
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer gap-2 rounded-xl text-xs font-semibold sm:text-sm"
-        >
-          <ArrowLeft className="size-4" />
-          <span>Quay lại sự kiện</span>
-        </Button>
+    <div className="space-y-6 sm:space-y-8">
+      {/* 1. HERO BANNER HEADER */}
+      <div className="border-border/80 bg-card/60 relative overflow-hidden rounded-3xl border shadow-xl">
+        <div className="relative h-64 w-full sm:h-80 md:h-96 lg:h-[420px]">
+          <Image
+            src={event.bannerImageUrl || event.imageUrl}
+            alt={event.title}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="from-background via-background/60 sm:via-background/40 absolute inset-0 bg-gradient-to-t to-transparent" />
+          <div className="from-background/90 via-background/40 absolute inset-0 bg-gradient-to-r to-transparent" />
 
-        <div className="text-muted-foreground hidden items-center gap-2 text-xs md:flex">
-          <Link href="/" className="hover:text-primary transition-colors">
-            Trang chủ
-          </Link>
-          <span>/</span>
-          <Link href="/events" className="hover:text-primary transition-colors">
-            Sự kiện
-          </Link>
-          <span>/</span>
-          <span className="text-foreground max-w-[200px] truncate font-semibold">
-            {event.title}
-          </span>
-        </div>
-      </div>
+          {/* Top Floating Badges */}
+          <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between sm:top-6 sm:right-6 sm:left-6">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-black/85 px-3 py-1.5 text-center text-white shadow-xl backdrop-blur-md sm:px-4 sm:py-2">
+              <span className="text-xl leading-none font-black sm:text-3xl">
+                {event.dayLabel}
+              </span>
+              <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase sm:text-xs">
+                {event.monthLabel}
+              </span>
+            </div>
 
-      {/* 2. Cinematic Hero Banner */}
-      <div className="border-border/80 relative h-[320px] w-full overflow-hidden rounded-3xl border shadow-2xl sm:h-[420px] lg:h-[480px]">
-        <Image
-          src={event.image}
-          alt={event.title}
-          fill
-          priority
-          sizes="(max-width: 1600px) 100vw, 1600px"
-          className="object-cover"
-        />
-        {/* Cinematic dark violet vignette gradient */}
-        <div className="from-background via-background/60 absolute inset-0 bg-gradient-to-t to-transparent" />
-        <div className="from-background/80 absolute inset-0 hidden bg-gradient-to-r via-transparent to-transparent sm:block" />
+            <div className="flex items-center gap-2">
+              <div className="border-primary/30 bg-primary text-primary-foreground rounded-full border px-3 py-1 text-xs font-bold shadow-lg">
+                {event.locationLabel}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="h-8 rounded-full border-white/20 bg-black/60 px-3 text-xs text-white backdrop-blur-md hover:bg-black/80"
+              >
+                <Share2 className="mr-1.5 size-3.5" />
+                <span className="hidden sm:inline">{tDetail("share")}</span>
+              </Button>
+            </div>
+          </div>
 
-        {/* Floating Date Emblem */}
-        <div className="border-primary/30 absolute top-4 left-4 z-10 flex flex-col items-center justify-center rounded-2xl border bg-black/85 px-3.5 py-2 text-center text-white shadow-2xl backdrop-blur-md sm:top-6 sm:left-6 sm:px-4 sm:py-2.5">
-          <span className="text-primary text-2xl leading-none font-black sm:text-3xl">
-            {event.day}
-          </span>
-          <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase sm:text-xs">
-            {event.month}
-          </span>
-        </div>
+          {/* Bottom Title & Quick Info */}
+          <div className="absolute right-4 bottom-4 left-4 z-10 space-y-2 sm:right-8 sm:bottom-8 sm:left-8 sm:space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {event.isRecruiting && (
+                <span className="bg-primary/90 text-primary-foreground flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-bold shadow-sm">
+                  <Flame className="size-3.5 fill-amber-300 text-amber-300" />
+                  <span>{tStandalone("statusRecruitingLive")}</span>
+                </span>
+              )}
+              {event.categories &&
+                event.categories.map((c) => (
+                  <span
+                    key={c}
+                    className="rounded-full border border-white/20 bg-black/50 px-2.5 py-0.5 text-xs font-medium text-white/90 backdrop-blur-xs"
+                  >
+                    {c}
+                  </span>
+                ))}
+            </div>
 
-        {/* Floating Location & Category Badges */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2 sm:top-6 sm:right-6">
-          <span className="border-primary/40 bg-primary/90 text-primary-foreground rounded-full border px-3.5 py-1 text-xs font-bold shadow-lg backdrop-blur-xs">
-            {event.location}
-          </span>
-          {event.categories && event.categories[0] && (
-            <span className="hidden rounded-full border border-white/20 bg-black/75 px-3 py-1 text-xs font-semibold text-white/90 backdrop-blur-xs sm:inline-flex">
-              {event.categories[0]}
-            </span>
-          )}
-        </div>
+            <h1 className="text-foreground text-2xl font-black tracking-tight drop-shadow-md sm:text-3xl md:text-4xl lg:text-5xl">
+              {event.title}
+            </h1>
 
-        {/* Title, Venue & Quick Meta at bottom of banner */}
-        <div className="absolute right-4 bottom-5 left-4 z-10 space-y-2 sm:right-8 sm:bottom-8 sm:left-8">
-          <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-xl sm:text-4xl lg:text-5xl">
-            {event.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs text-white/90 sm:text-sm">
-            <span className="flex items-center gap-1.5 font-medium drop-shadow-sm">
-              <MapPin className="text-primary size-4 shrink-0" />
-              <span>{event.venue}</span>
-            </span>
-            <span className="text-white/40">•</span>
-            <span className="flex items-center gap-1.5 font-medium drop-shadow-sm">
-              <Calendar className="text-primary size-4 shrink-0" />
-              <span>Ngày {event.dateString}</span>
-            </span>
+            <div className="text-foreground/90 flex flex-wrap items-center gap-4 text-xs font-semibold sm:text-sm">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="text-primary size-4" />
+                <span>{event.venue}</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="text-primary size-4" />
+                <span>{event.dateString}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Main 2-Column Responsive Layout */}
-      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-        {/* ======================================================== */}
-        {/* LEFT COLUMN: Event Details & Program (8 cols)            */}
-        {/* ======================================================== */}
-        <div className="space-y-8 lg:col-span-8">
+      {/* 2. TWO-COLUMN LAYOUT: Content & Sidebar */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+        {/* LEFT COLUMN: Main Information (8 cols) */}
+        <div className="space-y-6 lg:col-span-8">
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-            <div className="border-border/70 bg-card/70 flex items-center gap-3.5 rounded-2xl border p-4 shadow-xs backdrop-blur-md">
-              <div className="bg-primary/10 text-primary border-primary/20 flex size-11 shrink-0 items-center justify-center rounded-xl border">
-                <Calendar className="size-5.5" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="border-border/70 bg-card/70 flex items-center gap-3 rounded-2xl border p-4 shadow-xs backdrop-blur-md">
+              <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <Calendar className="size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-xs font-medium">
-                  Thời gian diễn ra
+                <p className="text-muted-foreground text-[11px] font-medium">
+                  {tDetail("time")}
                 </p>
-                <p className="text-foreground text-sm font-bold sm:text-base">
+                <p className="text-foreground text-xs font-bold sm:text-sm">
                   {event.dateString}
                 </p>
               </div>
             </div>
 
-            <div className="border-border/70 bg-card/70 flex items-center gap-3.5 rounded-2xl border p-4 shadow-xs backdrop-blur-md">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
-                <Ticket className="size-5.5" />
+            <div className="border-border/70 bg-card/70 flex items-center gap-3 rounded-2xl border p-4 shadow-xs backdrop-blur-md">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                <Ticket className="size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-xs font-medium">
-                  Giá vé vào cổng
+                <p className="text-muted-foreground text-[11px] font-medium">
+                  {tDetail("ticketPrice")}
                 </p>
-                <p className="text-foreground text-sm font-bold sm:text-base">
-                  {event.ticketPrice || "Miễn phí"}
+                <p className="text-foreground text-xs font-bold sm:text-sm">
+                  {event.ticketPriceLabel || tDetail("freeTicket")}
                 </p>
               </div>
             </div>
 
-            <div className="border-border/70 bg-card/70 col-span-2 flex items-center gap-3.5 rounded-2xl border p-4 shadow-xs backdrop-blur-md sm:col-span-1">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-400">
-                <Flame className="size-5.5" />
+            <div className="border-border/70 bg-card/70 col-span-2 flex items-center gap-3 rounded-2xl border p-4 shadow-xs backdrop-blur-md sm:col-span-1">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                <Flame className="size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-xs font-medium">
-                  Trạng thái tuyển
+                <p className="text-muted-foreground text-[11px] font-medium">
+                  {tDetail("status")}
                 </p>
-                <p className="text-primary flex items-center gap-1.5 text-xs font-bold sm:text-sm">
-                  <span className="relative flex size-2">
-                    <span className="bg-primary absolute inline-flex size-full animate-ping rounded-full opacity-75" />
-                    <span className="bg-primary relative inline-flex size-2 rounded-full" />
-                  </span>
-                  {event.isRecruiting ? "Đang mở tuyển" : "Đã chốt danh sách"}
+                <p className="text-primary text-xs font-bold sm:text-sm">
+                  {event.isRecruiting
+                    ? tDetail("statusRecruiting")
+                    : tDetail("statusClosed")}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Section: Giới thiệu sự kiện */}
-          <div className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-8">
+          {/* About & Description Section */}
+          <div className="border-border/70 bg-card/70 space-y-3 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-7">
             <div className="flex items-center gap-2">
-              <div className="bg-primary/10 text-primary border-primary/20 flex size-8 items-center justify-center rounded-lg border">
-                <Sparkles className="size-4.5" />
+              <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+                <Info className="size-4.5" />
               </div>
               <h2 className="text-foreground text-lg font-bold sm:text-xl">
-                Giới thiệu sự kiện
+                {tDetail("about")}
               </h2>
             </div>
-
-            <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-line sm:text-base">
-              {event.description}
+            <p className="text-foreground/85 text-xs leading-relaxed whitespace-pre-line sm:text-sm sm:leading-7">
+              {detail.description || event.title}
             </p>
-
-            {/* Highlights Grid */}
-            <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
-              <div className="border-border/60 bg-muted/20 space-y-1 rounded-2xl border p-4">
-                <h4 className="text-foreground flex items-center gap-1.5 text-xs font-bold sm:text-sm">
-                  <Check className="text-primary size-4" />
-                  Quy mô 500+ Cosplayer
-                </h4>
-                <p className="text-muted-foreground text-xs">
-                  Giao lưu và check-in cùng hàng trăm cosplayer chuyên nghiệp và
-                  cộng đồng fan anime/game.
-                </p>
+            {event.organizerName && (
+              <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-2xl border p-3.5">
+                <Building2 className="text-primary size-4 shrink-0" />
+                <div>
+                  <p className="text-muted-foreground text-[11px] font-medium">
+                    {tDetail("organizer")}
+                  </p>
+                  <p className="text-foreground text-xs font-bold sm:text-sm">
+                    {event.organizerName}
+                  </p>
+                </div>
               </div>
-
-              <div className="border-border/60 bg-muted/20 space-y-1 rounded-2xl border p-4">
-                <h4 className="text-foreground flex items-center gap-1.5 text-xs font-bold sm:text-sm">
-                  <Check className="text-primary size-4" />
-                  Photobooth Ánh Sáng Studio
-                </h4>
-                <p className="text-muted-foreground text-xs">
-                  Trang bị sẵn khu vực chụp ảnh studio với hệ thống đèn neon
-                  cyberpunk đa sắc màu.
-                </p>
-              </div>
-
-              <div className="border-border/60 bg-muted/20 space-y-1 rounded-2xl border p-4">
-                <h4 className="text-foreground flex items-center gap-1.5 text-xs font-bold sm:text-sm">
-                  <Check className="text-primary size-4" />
-                  Sân Khấu Catwalk & Âm Nhạc
-                </h4>
-                <p className="text-muted-foreground text-xs">
-                  Biểu diễn vũ đạo, catwalk runway và chung kết cosplay contest
-                  với giải thưởng hấp dẫn.
-                </p>
-              </div>
-
-              <div className="border-border/60 bg-muted/20 space-y-1 rounded-2xl border p-4">
-                <h4 className="text-foreground flex items-center gap-1.5 text-xs font-bold sm:text-sm">
-                  <Check className="text-primary size-4" />
-                  Khu Gian Hàng Artist & Đạo Cụ
-                </h4>
-                <p className="text-muted-foreground text-xs">
-                  Khám phá hơn 50 gian hàng art print, phụ kiện trang phục, tóc
-                  giả và đạo cụ handmade.
-                </p>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Section: Cosplayers & Khách mời tham gia */}
-          <div className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-8">
-            <div className="flex items-center justify-between">
+          {/* Featured Guests / Cosplayers */}
+          {event.participants && event.participants.length > 0 && (
+            <div className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-7">
               <div className="flex items-center gap-2">
-                <div className="bg-primary/10 text-primary border-primary/20 flex size-8 items-center justify-center rounded-lg border">
+                <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
                   <Users className="size-4.5" />
                 </div>
                 <h2 className="text-foreground text-lg font-bold sm:text-xl">
-                  Cosplayers & Khách mời tiêu điểm
+                  {tDetail("guests")}
                 </h2>
               </div>
-
-              <span className="text-primary text-xs font-semibold">
-                {event.participants.length} khách mời
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {event.participants.map((p) => (
-                <div
-                  key={p.id}
-                  className="group border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30 flex items-center justify-between rounded-2xl border p-3 transition-all"
-                >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                {event.participants.map((p) => (
                   <Link
+                    key={p.id}
                     href={`/cosplayer/${p.name.toLowerCase()}`}
-                    className="flex min-w-0 items-center gap-3"
+                    className="border-border/70 bg-muted/20 hover:border-primary/50 group flex items-center gap-3 rounded-2xl border p-3 transition-all hover:-translate-y-0.5"
                   >
-                    <div className="border-primary/40 ring-primary/20 relative size-12 shrink-0 overflow-hidden rounded-full border-2 ring-2 transition-transform group-hover:scale-105">
-                      <Image
-                        src={p.avatarUrl}
-                        alt={p.name}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
+                    <div className="border-primary/40 relative size-10 shrink-0 overflow-hidden rounded-full border">
+                      <UserAvatar
+                        avatarUrl={p.avatarUrl}
+                        name={p.name}
+                        sizes="40px"
+                        fallbackClassName="text-xs"
                       />
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1">
-                        <span className="text-foreground group-hover:text-primary truncate text-sm font-bold transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-foreground group-hover:text-primary truncate text-xs font-bold">
                           {p.name}
                         </span>
                         {p.isVerified && (
-                          <Check className="text-primary size-3.5 shrink-0 stroke-[3]" />
+                          <Check className="text-primary size-3 shrink-0 stroke-[3]" />
                         )}
                       </div>
-                      <p className="text-muted-foreground truncate text-[11px]">
-                        Guest Cosplayer
+                      <p className="text-muted-foreground text-[11px]">
+                        {p.roleLabel || tStandalone("specialGuest")}
                       </p>
                     </div>
                   </Link>
-
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="ghost"
-                    className="text-primary hover:bg-primary/10 h-8 rounded-xl px-2.5 text-xs"
-                  >
-                    <Link href={`/cosplayer/${p.name.toLowerCase()}`}>
-                      Hồ sơ
-                    </Link>
-                  </Button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Section: Lịch trình hoạt động chi tiết */}
-          {event.schedule && event.schedule.length > 0 && (
-            <div className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-8">
+          {/* Timeline / Schedule */}
+          {detail.schedule && detail.schedule.length > 0 && (
+            <div className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-7">
               <div className="flex items-center gap-2">
-                <div className="bg-primary/10 text-primary border-primary/20 flex size-8 items-center justify-center rounded-lg border">
+                <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
                   <Clock className="size-4.5" />
                 </div>
                 <h2 className="text-foreground text-lg font-bold sm:text-xl">
-                  Lịch trình hoạt động sự kiện
+                  {tDetail("schedule")}
                 </h2>
               </div>
-
-              <div className="before:bg-border/80 relative space-y-6 pl-6 before:absolute before:top-2 before:bottom-2 before:left-2 before:w-0.5">
-                {event.schedule.map((item, idx) => (
-                  <div key={idx} className="relative flex items-start gap-4">
-                    {/* Glowing timeline dot */}
-                    <span className="bg-background border-primary absolute top-1.5 -left-6 flex size-4 items-center justify-center rounded-full border-2">
-                      <span className="bg-primary size-1.5 rounded-full" />
+              <div className="border-border/60 bg-muted/10 divide-border/50 divide-y rounded-2xl border">
+                {detail.schedule.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-4 p-3.5 text-xs sm:text-sm"
+                  >
+                    <span className="bg-primary/20 text-primary shrink-0 rounded-md px-2.5 py-1 font-bold">
+                      {item.time}
                     </span>
-
-                    <div className="border-border/60 bg-muted/20 hover:border-border flex-1 rounded-2xl border p-4 transition-colors">
-                      <span className="bg-primary/15 text-primary inline-block rounded-lg px-2.5 py-0.5 font-mono text-xs font-bold">
-                        {item.time}
-                      </span>
-                      <h4 className="text-foreground mt-1 text-sm font-bold sm:text-base">
-                        {item.activity}
-                      </h4>
-                    </div>
+                    <span className="text-foreground/90 pt-0.5">
+                      {item.activity}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Section: Quy định & Lưu ý an toàn */}
-          <div className="border-border/70 bg-card/70 space-y-3 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-8">
+          {/* Rules / Regulations */}
+          <div className="border-border/70 bg-card/70 space-y-3 rounded-3xl border p-6 shadow-xs backdrop-blur-md sm:p-7">
             <div className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-400">
                 <ShieldAlert className="size-4.5" />
               </div>
               <h2 className="text-foreground text-lg font-bold sm:text-xl">
-                Quy định & Lưu ý dành cho Cosplayer
+                {tStandalone("rules")}
               </h2>
             </div>
-
-            <ul className="text-foreground/80 list-disc space-y-2 pl-5 text-xs leading-relaxed sm:text-sm">
-              <li>
-                <strong>Đạo cụ vũ khí:</strong> Chỉ chấp nhận đạo cụ làm bằng
-                xốp EVA, nhựa dẻo, gỗ nhẹ hoặc giấy bồi. Nghiêm cấm mang vũ khí
-                kim loại sắc nhọn hoặc vật liệu dễ gây thương tích.
-              </li>
-              <li>
-                <strong>Trang phục hóa thân:</strong> Đảm bảo văn minh, lịch sự,
-                có trang bị quần lót bảo hộ và phù hợp với thuần phong mỹ tục
-                nơi công cộng.
-              </li>
-              <li>
-                <strong>Chụp ảnh & Giao lưu:</strong> Luôn hỏi ý kiến cosplayer
-                trước khi xin chụp ảnh hoặc quay video phỏng vấn.
-              </li>
-            </ul>
+            <p className="text-foreground/80 text-xs leading-relaxed sm:text-sm">
+              {tStandalone("rulesDesc")}
+            </p>
           </div>
         </div>
 
-        {/* ======================================================== */}
-        {/* RIGHT COLUMN: Sticky Registration & Venue Card (4 cols)  */}
-        {/* ======================================================== */}
+        {/* RIGHT COLUMN: Sticky Registration & Venue Card (4 cols) */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:col-span-4">
           {/* Card 1: Registration & Tickets */}
           <div className="border-primary/40 bg-card/90 shadow-primary/5 space-y-5 rounded-3xl border p-6 shadow-xl backdrop-blur-xl">
             <div className="space-y-1">
               <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                Vé vào cổng & Tham gia
+                {tDetail("ticketPrice")}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-primary text-2xl font-black sm:text-3xl">
-                  {event.ticketPrice || "Miễn phí"}
+                  {event.ticketPriceLabel || tDetail("freeTicket")}
                 </span>
-                <span className="text-muted-foreground text-xs">/ người</span>
               </div>
             </div>
 
@@ -417,15 +329,16 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
             <div className="border-border/70 bg-muted/30 space-y-1.5 rounded-2xl border p-3.5">
               <div className="flex items-center justify-between text-xs font-semibold">
                 <span className="text-muted-foreground">
-                  Đợt tuyển Cosplayer
+                  {tDetail("status")}
                 </span>
                 <span className="text-primary font-bold">
-                  {event.isRecruiting ? "Đang mở nhận đơn" : "Đã đủ số lượng"}
+                  {event.isRecruiting
+                    ? tStandalone("statusRecruitingLive")
+                    : tDetail("statusClosed")}
                 </span>
               </div>
               <p className="text-muted-foreground text-[11px] leading-relaxed">
-                Các hạng mục: Guest Cosplayer, Sân khấu Catwalk, Gian hàng
-                Artist và Hỗ trợ sự kiện.
+                {tStandalone("applyCardDesc")}
               </p>
             </div>
 
@@ -439,18 +352,14 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                   className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl text-sm font-bold shadow-lg transition-transform active:scale-95 disabled:opacity-50"
                 >
                   <Send className="mr-2 size-4" />
-                  <span>
-                    {isHydrating
-                      ? "Đang tải dữ liệu phiên..."
-                      : "Ứng tuyển tham gia sự kiện"}
-                  </span>
+                  <span>{isHydrating ? "..." : tDetail("applyBtn")}</span>
                 </Button>
               ) : (
                 <Button
                   disabled
                   className="h-11 w-full rounded-xl text-sm font-semibold opacity-60"
                 >
-                  Đã chốt danh sách ứng tuyển
+                  {tDetail("statusClosed")}
                 </Button>
               )}
 
@@ -461,29 +370,8 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                 className="border-border/80 text-foreground hover:bg-muted h-10 w-full cursor-pointer rounded-xl text-xs font-semibold"
               >
                 <Share2 className="mr-2 size-3.5" />
-                <span>Chia sẻ liên kết sự kiện</span>
+                <span>{tDetail("share")}</span>
               </Button>
-            </div>
-
-            {/* Organizer Note */}
-            <div className="border-border/60 flex items-center gap-3 border-t pt-4">
-              <div className="border-primary/30 relative size-9 shrink-0 overflow-hidden rounded-full border">
-                <Image
-                  src="/favicon.png"
-                  alt="Kosume"
-                  fill
-                  sizes="36px"
-                  className="object-contain p-1"
-                />
-              </div>
-              <div>
-                <p className="text-foreground text-xs font-bold">
-                  Kosume Event Network
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Đối tác tổ chức lễ hội Cosplay
-                </p>
-              </div>
             </div>
           </div>
 
@@ -491,15 +379,12 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
           <div className="border-border/70 bg-card/70 space-y-3.5 rounded-3xl border p-6 shadow-xs backdrop-blur-md">
             <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
               <MapPin className="text-primary size-4" />
-              <span>Địa điểm tổ chức</span>
+              <span>{event.locationLabel}</span>
             </h3>
 
             <div className="space-y-1">
               <p className="text-foreground text-xs font-bold sm:text-sm">
                 {event.venue}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                Khu vực: {event.location}
               </p>
             </div>
 
@@ -511,20 +396,20 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
             >
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  event.venue + " " + event.location
+                  event.venue + " " + event.locationLabel
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <ExternalLink className="mr-1.5 size-3.5" />
-                <span>Xem trên Google Maps</span>
+                <span>Google Maps</span>
               </a>
             </Button>
           </div>
         </aside>
       </div>
 
-      {/* Application Form Dialog (guarded by auth check) */}
+      {/* Application Form Dialog */}
       <EventApplyDialog
         open={isApplyOpen}
         onOpenChange={setIsApplyOpen}

@@ -12,6 +12,17 @@ export enum AppSubjects {
   Tag = 'TAG',
   TagEncyclopedia = 'TAG_ENCYCLOPEDIA',
 
+  // Kosume Domain Subjects
+  Cosplayer = 'COSPLAYER',
+  Post = 'POST',
+  Brand = 'BRAND',
+  Job = 'JOB',
+  Event = 'EVENT',
+  Booking = 'BOOKING',
+  Spotlight = 'SPOTLIGHT',
+  ContentReport = 'CONTENT_REPORT',
+  Ranking = 'RANKING',
+
   All = 'all',
 }
 
@@ -349,6 +360,241 @@ export const ALL_PERMISSIONS = [
     'Tag Encyclopedia Management',
     'Delete tag encyclopedias',
     'Delete tag wiki encyclopedia articles.',
+  ),
+
+  // Cosplayer
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Cosplayer,
+    'Cosplayer Management',
+    'View cosplayer profiles',
+    'View cosplayer profiles, rate cards, and portrayed characters.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Cosplayer,
+    'Cosplayer Management',
+    'Update cosplayer profiles',
+    'Edit cosplayer profile information and toggle verified status.',
+  ),
+  permissionMeta(
+    AppActions.Publish,
+    AppSubjects.Cosplayer,
+    'Cosplayer Management',
+    'Verify cosplayers',
+    'Grant or revoke official verified cosplayer badge.',
+  ),
+
+  // Post / Album
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Post,
+    'Post & Album Management',
+    'View posts and albums',
+    'View artworks, albums, photosets, and comments.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Post,
+    'Post & Album Management',
+    'Update posts',
+    'Edit post visibility, status, and featured flag.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Post,
+    'Post & Album Management',
+    'Delete posts',
+    'Remove infringing or inappropriate posts and comments.',
+  ),
+  permissionMeta(
+    AppActions.Publish,
+    AppSubjects.Post,
+    'Post & Album Management',
+    'Feature posts',
+    'Feature artworks on homepage and explore podiums.',
+  ),
+
+  // Brand
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Brand,
+    'Brand Management',
+    'View brands',
+    'View recruiter brands and studios.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Brand,
+    'Brand Management',
+    'Create brands',
+    'Register corporate brands and verified studios.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Brand,
+    'Brand Management',
+    'Update brands',
+    'Edit brand information and toggle verified studio badge.',
+  ),
+  permissionMeta(
+    AppActions.Publish,
+    AppSubjects.Brand,
+    'Brand Management',
+    'Verify brands',
+    'Grant or revoke official verified brand badge.',
+  ),
+
+  // Job
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Job,
+    'Job Management',
+    'View jobs',
+    'View recruitment listings and applicant submissions.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Job,
+    'Job Management',
+    'Create jobs',
+    'Post recruitment listings on behalf of clients or brands.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Job,
+    'Job Management',
+    'Update jobs',
+    'Edit job details, review status, and featured placement.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Job,
+    'Job Management',
+    'Delete jobs',
+    'Remove expired or prohibited job listings.',
+  ),
+  permissionMeta(
+    AppActions.Publish,
+    AppSubjects.Job,
+    'Job Management',
+    'Approve jobs',
+    'Approve pending job listings to open status.',
+  ),
+
+  // Event
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Event,
+    'Event Management',
+    'View events',
+    'View cosplay festivals, schedules, and guest applications.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Event,
+    'Event Management',
+    'Create events',
+    'Publish new cosplay events, conventions, and festivals.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Event,
+    'Event Management',
+    'Update events',
+    'Edit event information, hero banners, and schedules.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Event,
+    'Event Management',
+    'Delete events',
+    'Remove or cancel cosplay events.',
+  ),
+  permissionMeta(
+    AppActions.Publish,
+    AppSubjects.Event,
+    'Event Management',
+    'Feature events',
+    'Feature events in top carousel banner.',
+  ),
+
+  // Booking
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Booking,
+    'Booking Management',
+    'View booking requests',
+    'Monitor direct booking inquiries and platform dispute logs.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Booking,
+    'Booking Management',
+    'Moderate bookings',
+    'Manage or intervene in booking status and disputes.',
+  ),
+
+  // Spotlight
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Spotlight,
+    'Spotlight Management',
+    'View spotlights',
+    'View spotlight slides and homepage featured creator cards.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Spotlight,
+    'Spotlight Management',
+    'Create spotlights',
+    'Create spotlight hero banner slides.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Spotlight,
+    'Spotlight Management',
+    'Update spotlights',
+    'Edit spotlight ordering and activation toggles.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Spotlight,
+    'Spotlight Management',
+    'Delete spotlights',
+    'Remove spotlight slides.',
+  ),
+
+  // Content Report
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.ContentReport,
+    'Content Moderation',
+    'View reports',
+    'View community reports against posts, users, or comments.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.ContentReport,
+    'Content Moderation',
+    'Resolve reports',
+    'Review, resolve, or dismiss moderation reports.',
+  ),
+
+  // Ranking
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Ranking,
+    'Ranking Management',
+    'View rankings',
+    'View leaderboard score snapshots and recalculation history.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Ranking,
+    'Ranking Management',
+    'Manage rankings',
+    'Trigger leaderboard recalculation and adjust ranking weights.',
   ),
 
   // SUPER

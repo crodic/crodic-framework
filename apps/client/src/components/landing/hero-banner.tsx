@@ -1,13 +1,27 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { HERO_STATS } from "./landing-data";
+import { useTranslations } from "next-intl";
+import { HERO_STATS } from "@/config/landing";
 
 export function HeroBanner() {
+  const t = useTranslations("Landing.hero");
+
+  const statLabels: Record<
+    string,
+    "stats.cosplayers" | "stats.artworks" | "stats.engagements"
+  > = {
+    cosplayers: "stats.cosplayers",
+    artworks: "stats.artworks",
+    engagements: "stats.engagements",
+  };
+
   return (
     <section className="bg-background relative overflow-hidden pt-8 pb-14 sm:pt-12 sm:pb-20">
-      {/* Hero Background Image directly from the official CDN URL provided */}
+      {/* Hero Background Image */}
       <div
         className="pointer-events-none absolute inset-y-0 right-0 z-0 w-full overflow-hidden select-none lg:w-[68%]"
         aria-hidden="true"
@@ -31,17 +45,15 @@ export function HeroBanner() {
         <div className="flex min-h-[420px] flex-col justify-center sm:min-h-[460px] lg:min-h-[500px]">
           <div className="max-w-xl py-6 text-left sm:py-10 lg:max-w-2xl">
             <h1 className="text-foreground text-4xl leading-[1.14] font-black tracking-tight sm:text-5xl lg:text-6xl">
-              Nơi Đam Mê <br />
+              {t("titleLead")} <br />
               <span className="text-primary drop-shadow-[0_0_35px_var(--color-primary)]">
                 Cosplay
               </span>{" "}
-              Tỏa Sáng
+              {t("titleTrail")}
             </h1>
 
             <p className="text-muted-foreground mt-5 max-w-lg text-sm leading-relaxed sm:mt-6 sm:text-base lg:text-lg">
-              Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các
-              cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm
-              waifu/fandom yêu thích.
+              {t("subtitle")}
             </p>
 
             {/* Action Buttons */}
@@ -51,7 +63,7 @@ export function HeroBanner() {
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-11 cursor-pointer rounded-lg px-6 text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] sm:h-12 sm:px-7 sm:text-base"
               >
-                <a href="#albums">Khám phá ngay</a>
+                <a href="#albums">{t("exploreNow")}</a>
               </Button>
 
               <Button
@@ -60,7 +72,7 @@ export function HeroBanner() {
                 variant="outline"
                 className="border-border/80 bg-card/60 hover:bg-muted text-foreground h-11 cursor-pointer rounded-lg px-6 text-sm font-medium backdrop-blur-sm transition-all hover:scale-[1.02] sm:h-12 sm:px-7 sm:text-base"
               >
-                <Link href="/auth/sign-up">Đăng ký thành viên</Link>
+                <Link href="/auth/sign-up">{t("signUp")}</Link>
               </Button>
             </div>
           </div>
@@ -70,12 +82,12 @@ export function HeroBanner() {
         <div className="border-border/20 mt-8 border-t pt-6 sm:mt-12 sm:pt-8">
           <div className="mx-auto grid max-w-2xl grid-cols-3 gap-4 text-center sm:max-w-3xl sm:gap-8">
             {HERO_STATS.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center">
+              <div key={stat.key} className="flex flex-col items-center">
                 <span className="text-foreground text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
                   {stat.value}
                 </span>
                 <span className="text-muted-foreground mt-1 text-xs font-medium sm:text-sm">
-                  {stat.label}
+                  {t(statLabels[stat.key] || "stats.cosplayers")}
                 </span>
               </div>
             ))}

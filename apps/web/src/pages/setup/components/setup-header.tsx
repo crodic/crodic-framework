@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Wand2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import LanguageSelect from '@/components/common/language-select'
@@ -21,7 +21,7 @@ export function SetupHeader() {
             variant='outline'
             className='bg-primary/5 text-primary border-primary/20 hidden text-xs font-medium sm:inline-flex'
           >
-            <Sparkles className='mr-1 size-3' />
+            <Wand2 className='mr-1 size-3' />
             {t('setup.badge')}
           </Badge>
         </div>

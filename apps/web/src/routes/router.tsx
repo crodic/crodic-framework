@@ -206,6 +206,31 @@ const PageTagEncyclopediaOverview = lazy(() =>
     default: m.PageTagEncyclopediaOverview,
   }))
 )
+const PageContentReportsOverview = lazy(() =>
+  import('@/pages/content-reports').then((m) => ({
+    default: m.PageContentReportsOverview,
+  }))
+)
+const PageEventsOverview = lazy(() =>
+  import('@/pages/events').then((m) => ({
+    default: m.PageEventsOverview,
+  }))
+)
+const PageSpotlightBannersOverview = lazy(() =>
+  import('@/pages/spotlight-banners').then((m) => ({
+    default: m.PageSpotlightBannersOverview,
+  }))
+)
+const PagePostsOverview = lazy(() =>
+  import('@/pages/posts').then((m) => ({
+    default: m.PagePostsOverview,
+  }))
+)
+const PagePlatformSettings = lazy(() =>
+  import('@/pages/platform-settings').then((m) => ({
+    default: m.PagePlatformSettings,
+  }))
+)
 
 const appRoutes: RouteObject[] = [
   {
@@ -605,6 +630,46 @@ const appRoutes: RouteObject[] = [
             ),
           },
         ],
+      },
+      {
+        path: '/content-reports',
+        element: (
+          <RouteAuthorize action='read' subject='CONTENT_REPORT'>
+            <PageContentReportsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/events',
+        element: (
+          <RouteAuthorize action='read' subject='EVENT'>
+            <PageEventsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/spotlight-banners',
+        element: (
+          <RouteAuthorize action='read' subject='SPOTLIGHT'>
+            <PageSpotlightBannersOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/posts',
+        element: (
+          <RouteAuthorize action='read' subject='POST'>
+            <PagePostsOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/platform-settings',
+        element: (
+          <RouteAuthorize action='read' subject='SETTING'>
+            <PagePlatformSettings />
+          </RouteAuthorize>
+        ),
       },
       {
         path: 'logs',

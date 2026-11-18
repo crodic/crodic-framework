@@ -12,7 +12,7 @@
     "techStack": "Công nghệ",
     "tags": "Tags & Bách khoa",
     "mutedTags": "Tag đã ẩn (NG)",
-    "profile": "Hồ sơ",
+    "profile": "Hồ sơ của tôi",
     "accountSettings": "Cài đặt tài khoản",
     "signIn": "Đăng nhập",
     "signUp": "Bắt đầu ngay",
@@ -20,100 +20,81 @@
     "docs": "Tài liệu",
     "github": "GitHub",
     "platform": "Nền tảng",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "exploreGroup": "Khám phá",
+    "personalGroup": "Cá nhân",
+    "jobs": "Booking & Tuyển dụng",
+    "feed": "Bảng tin",
+    "explore": "Khám phá",
+    "ranking": "Bảng xếp hạng",
+    "events": "Sự kiện & Festival",
+    "settings": "Cài đặt & Studio"
   },
   "Landing": {
-    "metaTitle": "Khởi đầu dự án Full-Stack Monorepo với Next.js 15 & Turborepo",
-    "metaDescription": "Bộ khung boilerplate full-stack chuẩn doanh nghiệp với Next.js 15 App Router, NestJS, TailwindCSS v4, TypeORM và TanStack Query.",
-    "hero": {
-      "badge": "Full-Stack Monorepo Boilerplate",
-      "title": "Kiến trúc Full-Stack hiện đại chuẩn Doanh nghiệp",
-      "subtitle": "Mẫu monorepo sẵn sàng cho sản phẩm thực tế với Next.js 15 App Router, NestJS API, PostgreSQL TypeORM, TailwindCSS v4, TanStack Query và bảo mật hoàn chỉnh.",
-      "getStarted": "Bắt đầu miễn phí",
-      "exploreProfile": "Khám phá Hồ sơ",
-      "viewGithub": "Mã nguồn GitHub"
+    "metaTitle": "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
+    "metaDescription": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+    "nav": {
+      "explore": "Khám phá",
+      "community": "Cộng đồng",
+      "events": "Sự kiện",
+      "ranking": "Bảng xếp hạng",
+      "signIn": "Đăng nhập",
+      "signUp": "Tham gia ngay"
     },
-    "techStack": {
-      "badge": "Công nghệ hiện đại",
-      "title": "Hệ sinh thái công nghệ tiêu chuẩn",
-      "subtitle": "Mỗi thư viện và công cụ đều được chọn lọc kỹ lưỡng vì hiệu năng cao, tốc độ phát triển và khả năng bảo trì lâu dài."
+    "hero": {
+      "titleLead": "Nơi Đam Mê",
+      "titleTrail": "Tỏa Sáng",
+      "subtitle": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+      "exploreNow": "Khám phá ngay",
+      "signUp": "Đăng ký thành viên",
+      "stats": {
+        "cosplayers": "Cosplayers",
+        "artworks": "Tác phẩm",
+        "engagements": "Lượt tương tác"
+      }
     },
     "features": {
-      "badge": "Điểm nhấn kiến trúc",
-      "title": "Tất cả những gì bạn cần để ra mắt nhanh hơn",
-      "subtitle": "Áp dụng clean architecture, phân chia module rõ ràng và thiết kế có khả năng mở rộng được tích hợp sẵn từ lõi.",
+      "title": "Tính năng nổi bật",
       "items": {
-        "monorepo": {
-          "title": "Turborepo & pnpm Workspace",
-          "description": "Điều phối monorepo hiệu năng cao với remote caching, duy nhất một file lockfile và chia sẻ cấu hình dùng chung."
+        "portfolio": {
+          "title": "Portfolio Chuyên Nghiệp",
+          "description": "Đăng album chất lượng cao, chọn ảnh bìa tự do, tối đa 20 ảnh."
         },
-        "auth": {
-          "title": "Xác thực thông minh & Dynamic Route Guards",
-          "description": "Bảo vệ route tự động theo cấu trúc thư mục với Route Groups, quản lý phiên làm việc qua HTTP-only cookie, tự động refresh token ngầm và Alert cảnh báo hết hạn thông minh."
+        "smart-search": {
+          "title": "Tìm Kiếm Thông Minh (Pixiv-style)",
+          "description": "Bộ lọc tags cực mạnh theo fandom, waifu, phong cách."
         },
-        "forms": {
-          "title": "Kiểm tra biểu mẫu chặt chẽ",
-          "description": "Form an toàn kiểu dữ liệu với React Hook Form kết hợp Zod schema và thông báo phản hồi Sonner toast."
-        },
-        "query": {
-          "title": "TanStack React Query",
-          "description": "Lưu trữ cache ở client, prefetch dữ liệu ngầm, cập nhật lạc quan (optimistic updates) và tự động làm mới cache."
-        },
-        "i18n": {
-          "title": "Đa ngôn ngữ hoàn chỉnh",
-          "description": "Định tuyến đa ngôn ngữ tích hợp sẵn qua next-intl (Tiếng Việt & Tiếng Anh), tối ưu SEO và không bị giật bố cục."
-        },
-        "design": {
-          "title": "TailwindCSS v4 & Radix UI",
-          "description": "Hệ thống UI component tiếp cận chuẩn quốc tế, bố cục responsive, chuyển đổi giao diện Sáng/Tối và hiệu ứng mượt mà."
+        "community": {
+          "title": "Kết Nối Cộng Đồng",
+          "description": "Thả tim, bookmark, tương tác cùng IDOL và tham gia các sự kiện."
         }
       }
     },
-    "portal": {
-      "badge": "Tích Hợp Sẵn Admin Portal",
-      "title": "Cổng Quản Trị Doanh Nghiệp Toàn Diện",
-      "subtitle": "Sở hữu ngay dashboard quản trị xây dựng bằng Vite + React sẵn sàng sử dụng. Quản lý người dùng, phân quyền chi tiết, nhật ký hoạt động và tùy biến thương hiệu mà không cần code lại từ đầu.",
-      "openPortal": "Khám Phá Admin Portal",
-      "features": {
-        "users": {
-          "title": "Quản Lý Người Dùng & Admin",
-          "description": "Quản lý toàn diện vòng đời tài khoản, trạng thái xác thực email và phân cấp nhiều tài khoản quản trị."
-        },
-        "rbac": {
-          "title": "Phân Quyền CASL & RBAC",
-          "description": "Ma trận quyền hạn chi tiết và kiểm tra quyền động bảo đảm an toàn dữ liệu trên từng chức năng."
-        },
-        "whiteLabel": {
-          "title": "White-Label Tùy Biến Thương Hiệu",
-          "description": "Tự do cấu hình logo, favicon, thẻ SEO meta và chủ đề màu sắc theo từng thương hiệu hoặc khách hàng."
-        },
-        "audit": {
-          "title": "Nhật Ký Hoạt Động & Kiểm Toán",
-          "description": "Theo dõi lịch sử thao tác của admin trong thời gian thực, nhật ký gửi email và kiểm toán bảo mật."
-        }
-      },
-      "preview": {
-        "title": "Crodic Admin Control Center",
-        "systemOnline": "Hệ Thống Sẵn Sàng",
-        "stats": {
-          "totalUsers": "Tổng User",
-          "activeAdmins": "Admin Hoạt Động",
-          "auditEvents": "Sự Kiện Nhật Ký",
-          "systemHealth": "Độ Ổn Định"
-        },
-        "recentUsersTitle": "Người Dùng Mới Đăng Ký",
-        "roleAdmin": "Quản trị viên",
-        "roleMember": "Thành viên",
-        "statusActive": "Hoạt động",
-        "statusVerified": "Đã xác thực"
-      }
+    "cosplayers": {
+      "title": "Cosplayer Nổi Bật Tuần Này",
+      "follow": "Theo dõi",
+      "following": "Đã theo dõi"
+    },
+    "albums": {
+      "title": "Khám Phá Album",
+      "like": "Thích"
     },
     "cta": {
-      "badge": "Bắt đầu phát triển",
-      "title": "Sẵn sàng xây dựng dự án tiếp theo của bạn?",
-      "subtitle": "Clone repository, tùy biến các domain models của bạn và tự tin triển khai lên môi trường thực tế chỉ trong vài phút.",
-      "button": "Bắt đầu ngay bây giờ",
-      "github": "Ghé thăm GitHub"
+      "title": "Bạn đã sẵn sàng tham gia thế giới Kosume?",
+      "subtitle": "Vũ kịch mở ngàn kích thích thị giác. Nơi từng khung hình là một tuyệt tác nghệ thuật.",
+      "joinNow": "Tham gia ngay (Đăng ký)",
+      "viewWorks": "Xem các tác phẩm"
+    },
+    "footer": {
+      "description": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+      "links": {
+        "about": "Về chúng tôi",
+        "features": "Tính năng",
+        "events": "Sự kiện",
+        "privacy": "Quy định & Bảo mật",
+        "contact": "Liên hệ",
+        "ranking": "Bảng xếp hạng"
+      }
     }
   },
   "Profile": {
@@ -307,18 +288,18 @@
   "Auth": {
     "layout": {
       "welcome": "Chào mừng đến với Kosume",
-      "tagline": "Không gian sáng tạo & Nền tảng Booking Cosplay Chuyên nghiệp",
-      "description": "Kết nối hơn 50.000+ Cosplayers, Photographers, Prop-crafters và các Nhà phát hành Game hàng đầu (HoYoverse, VNG, Garena) trên toàn quốc.",
+      "tagline": "Không gian sáng tạo & Cộng đồng Cosplay Chuyên nghiệp",
+      "description": "Kết nối hàng chục nghìn Cosplayers, Photographers, Prop-crafters và người hâm mộ Anime/Game trên toàn quốc.",
       "operational": "Hệ thống hoạt động 99.9%",
       "feature1Title": "Hồ sơ & Visual Portfolio",
       "feature1Desc": "Quản lý visual shoots, character tags và showcase album chuẩn độ phân giải cao.",
-      "feature2Title": "Booking & Hợp đồng Bảo đảm",
-      "feature2Desc": "Nhận job sự kiện, lookbook và đại sứ thương hiệu với thanh toán minh bạch, bảo vệ quyền lợi.",
+      "feature2Title": "Kết nối & Tương tác Cộng đồng",
+      "feature2Desc": "Theo dõi cosplayer yêu thích, lưu giữ bộ sưu tập và bình luận tác phẩm nổi bật.",
       "feature3Title": "Bảng xếp hạng & Festival",
-      "feature3Desc": "Vinh danh cống hiến nghệ thuật, vé mời festival cosplay và cơ hội hợp tác độc quyền.",
+      "feature3Desc": "Vinh danh cống hiến nghệ thuật, cập nhật lịch lễ hội cosplay và sự kiện giao lưu.",
       "statUptime": "50K+ Cosplayers",
-      "statLatency": "1.2K+ Job hoàn tất",
-      "statScale": "100% Uy tín & Bảo đảm"
+      "statLatency": "10K+ Bộ ảnh",
+      "statScale": "100+ Lễ hội ACG"
     },
     "login": {
       "metaTitle": "Đăng nhập",
@@ -570,5 +551,402 @@
     "light": "Sáng",
     "dark": "Tối",
     "system": "Hệ thống"
+  },
+  "Home": {
+    "spotlight": {
+      "viewPortfolio": "Xem Portfolio",
+      "contactBooking": "Liên hệ Booking",
+      "verified": "Đã xác minh",
+      "noBanners": "Chưa có tiêu điểm nổi bật"
+    },
+    "featuredWorks": {
+      "title": "Tác phẩm mới nổi bật",
+      "viewProject": "Xem dự án",
+      "booking": "Booking",
+      "noWorks": "Chưa có tác phẩm nào",
+      "album": "Album",
+      "photoset": "Photoset",
+      "categories": {
+        "series": "Nhân vật & Series",
+        "general": "Album Tổng Hợp",
+        "group": "Nhóm & Doujin",
+        "premium": "Studio Cao Cấp",
+        "studio": "Studio",
+        "event": "Sự kiện & Festival",
+        "original": "Nguyên tác (Original)",
+        "casual": "Đời thường (Casual)"
+      }
+    },
+    "bookingWidget": {
+      "title": "Cosplayer đang nhận Booking",
+      "booking": "Booking",
+      "saved": "Đã lưu",
+      "noCosplayers": "Không có cosplayer nào"
+    },
+    "recruitmentWidget": {
+      "title": "Dự án đang tuyển mẫu/craft",
+      "searchPlaceholder": "Tìm dự án tuyển mẫu, cosplayer...",
+      "noJobs": "Không tìm thấy dự án nào"
+    }
+  },
+  "Jobs": {
+    "title": "Kết nối thương hiệu & nhận Job chuyên nghiệp",
+    "postJobBtn": "Đăng tin tuyển dụng",
+    "filterTitle": "Bộ lọc tin tuyển dụng",
+    "listTitle": "Danh sách tin tuyển dụng",
+    "filter": {
+      "all": "Tất cả",
+      "lookbook": "Chụp ảnh Lookbook",
+      "event": "Sự kiện & Festival",
+      "crafting": "Gia công & Props",
+      "game_ads": "Quảng cáo Game",
+      "hcm": "TP. Hồ Chí Minh",
+      "hanoi": "Hà Nội"
+    },
+    "emptyTitle": "Chưa có tin tuyển dụng phù hợp",
+    "emptyDesc": "Không tìm thấy tin tuyển dụng nào theo bộ lọc đã chọn. Hãy thử chọn danh mục khác.",
+    "viewAllBtn": "Xem tất cả tin tuyển dụng",
+    "card": {
+      "budget": "Thù lao",
+      "deadline": "Hạn chót",
+      "requirements": "Yêu cầu",
+      "viewDetails": "Chi tiết",
+      "applyNow": "Ứng tuyển ngay",
+      "applied": "Đã nộp hồ sơ",
+      "verified": "Đã xác minh"
+    },
+    "detail": {
+      "title": "Chi tiết tin tuyển dụng",
+      "organization": "Đơn vị tuyển dụng",
+      "location": "Địa điểm",
+      "deadline": "Hạn nộp hồ sơ",
+      "budget": "Mức thù lao",
+      "description": "Mô tả công việc",
+      "requirements": "Yêu cầu ứng viên",
+      "perks": "Quyền lợi & Đãi ngộ",
+      "contact": "Email liên hệ",
+      "applyBtn": "Ứng tuyển vị trí này",
+      "shareSuccess": "Đã sao chép liên kết tuyển dụng!",
+      "close": "Đóng"
+    },
+    "applyDialog": {
+      "title": "Ứng tuyển: {jobTitle}",
+      "desc": "Gửi thông tin và hồ sơ cosplay của bạn trực tiếp tới bộ phận casting của {brandName}.",
+      "fullName": "Họ và tên",
+      "stageName": "Nghệ danh Cosplay (Stage Name)",
+      "contact": "Số điện thoại / Zalo",
+      "portfolioUrl": "Link Portfolio / Trang cá nhân",
+      "experience": "Kinh nghiệm cosplay & dự án tiêu biểu",
+      "message": "Lời nhắn gửi thương hiệu",
+      "submit": "Gửi hồ sơ ứng tuyển",
+      "submitting": "Đang gửi hồ sơ...",
+      "successTitle": "Nộp hồ sơ thành công!",
+      "successDesc": "Hồ sơ của bạn đã được chuyển tới bộ phận tuyển dụng của {brandName}.",
+      "loginRequired": "Vui lòng đăng nhập để ứng tuyển Job này!"
+    },
+    "postDialog": {
+      "title": "Đăng tin tuyển dụng / Casting Call",
+      "desc": "Xuất bản tin tuyển mẫu, cosplayer hoặc chuyên gia chế tác đạo cụ lên Kosume.",
+      "brandName": "Tên thương hiệu / Studio",
+      "jobTitle": "Tiêu đề tin tuyển dụng",
+      "category": "Danh mục",
+      "budget": "Mức thù lao / Ngân sách dự kiến",
+      "location": "Địa điểm làm việc",
+      "deadline": "Hạn nhận hồ sơ",
+      "requirements": "Yêu cầu ứng viên",
+      "description": "Mô tả công việc",
+      "contactEmail": "Email nhận hồ sơ",
+      "submit": "Xuất bản tin tuyển dụng",
+      "submitting": "Đang xuất bản...",
+      "successTitle": "Đăng tin tuyển dụng thành công!",
+      "successDesc": "Tin của bạn đã được xuất bản lên bảng tin tuyển dụng Kosume."
+    }
+  },
+  "Events": {
+    "title": "Sự kiện & Festival Cosplay Nổi Bật",
+    "desc": "Khám phá các lễ hội anime, triển lãm game và cuộc thi cosplay sắp diễn ra trên toàn quốc.",
+    "filterAll": "Tất cả sự kiện",
+    "filterFestival": "Lễ hội & Expo",
+    "filterPhotoshoot": "Offline Photoshoot",
+    "filterContest": "Cuộc thi Cosplay",
+    "filterWorkshop": "Workshop Chế tác",
+    "emptyTitle": "Chưa có sự kiện nào",
+    "emptyDesc": "Không có sự kiện nào trong danh mục này hiện tại.",
+    "viewAllBtn": "Xem tất cả sự kiện",
+    "interested": "Quan tâm",
+    "interestedCount": "{count} quan tâm",
+    "participantsCount": "{count} tham gia",
+    "viewDetails": "Xem chi tiết",
+    "ticketPrice": "Giá vé",
+    "freeTicket": "Miễn phí vé vào cổng",
+    "participateBtn": "Đăng ký tham gia",
+    "participated": "Đã đăng ký tham gia",
+    "applyGuestBtn": "Ứng tuyển Guest Cosplayer",
+    "loginRequired": "Vui lòng đăng nhập để thực hiện thao tác này!",
+    "spotlightBadge": "Sự kiện Tiêu Điểm 2026",
+    "participatedBy": "Tham gia bởi:",
+    "verified": "Đã xác minh",
+    "applyNow": "Ứng tuyển",
+    "applyDialog": {
+      "badge": "Đăng ký biểu diễn / Casting Call",
+      "title": "Ứng tuyển tham gia sự kiện",
+      "desc": "Điền thông tin hồ sơ của bạn để ban tổ chức xét duyệt vai trò và xếp lịch trình.",
+      "fullName": "Họ và tên",
+      "stageName": "Tên Cosplay (Stage Name)",
+      "category": "Hạng mục ứng tuyển",
+      "categoryGuest": "Guest Cosplayer / Khách mời",
+      "categoryStaff": "Staff hỗ trợ kỹ thuật",
+      "categoryStage": "Biểu diễn sân khấu / Catwalk",
+      "categoryWorkshop": "Diễn giả / Hướng dẫn Workshop",
+      "categoryContest": "Thí sinh Cosplay Contest",
+      "categoryArtist": "Artist / Gian hàng ấn phẩm",
+      "phone": "Số điện thoại liên hệ",
+      "character": "Nhân vật dự kiến hóa thân",
+      "portfolio": "Link Portfolio / Trang cá nhân",
+      "notes": "Ghi chú & Đạo cụ đặc biệt",
+      "cancel": "Hủy",
+      "submit": "Gửi đơn ứng tuyển",
+      "submitting": "Đang gửi đơn...",
+      "placeholderFullName": "Nguyễn Văn A",
+      "placeholderStageName": "VD: KIRIKO",
+      "placeholderCategory": "Chọn hạng mục ứng tuyển",
+      "placeholderPhone": "0912 345 678",
+      "placeholderCharacter": "VD: Raiden Shogun (Genshin Impact)",
+      "placeholderPortfolio": "https://facebook.com/... hoặc link Kosume profile",
+      "portfolioHelp": "Giúp BTC duyệt hồ sơ nhanh hơn",
+      "placeholderNotes": "Thông tin thêm về đạo cụ cồng kềnh, người hỗ trợ (handler)...",
+      "errorGeneric": "Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại!",
+      "valFullName": "Vui lòng nhập họ và tên",
+      "valStageName": "Vui lòng nhập tên cosplay (Stage name)",
+      "valCategory": "Vui lòng chọn hạng mục",
+      "valPhone": "Vui lòng nhập số điện thoại liên hệ",
+      "valCharacter": "Vui lòng nhập nhân vật dự kiến hóa thân",
+      "successTitle": "Đã gửi đơn ứng tuyển tham gia sự kiện thành công!",
+      "successDesc": "Ban tổ chức sự kiện sẽ liên hệ qua thông tin bạn đã cung cấp."
+    },
+    "detail": {
+      "time": "Thời gian",
+      "ticketPrice": "Giá vé vào cổng",
+      "freeTicket": "Miễn phí",
+      "status": "Trạng thái",
+      "statusRecruiting": "Đang tuyển Cosplayer",
+      "statusClosed": "Đã chốt danh sách",
+      "about": "Giới thiệu sự kiện",
+      "organizer": "Đơn vị tổ chức",
+      "guests": "Cosplayers & Khách mời tham gia",
+      "schedule": "Lịch trình hoạt động",
+      "share": "Chia sẻ",
+      "shareSuccess": "Đã sao chép liên kết sự kiện!",
+      "close": "Đóng",
+      "applyBtn": "Ứng tuyển tham gia"
+    },
+    "standalone": {
+      "backBtn": "Quay lại sự kiện",
+      "statusRecruitingLive": "Đang mở tuyển",
+      "highlights": "Điểm nhấn nổi bật",
+      "guestCount": "{count} khách mời",
+      "specialGuest": "Khách mời đặc biệt",
+      "applyCardTitle": "Tham gia cùng sự kiện",
+      "applyCardDesc": "Bạn muốn trở thành khách mời cosplayer, người biểu diễn hoặc gian hàng nghệ nhân tại sự kiện?",
+      "rules": "Quy định & Lưu ý sự kiện",
+      "rulesDesc": "Vui lòng tuân thủ quy tắc ứng xử văn minh, kiểm tra an toàn đạo cụ (không mang vũ khí sắc nhọn) và bảo quản tư trang cá nhân."
+    }
+  },
+  "Ranking": {
+    "title": "Bảng Xếp Hạng Cosplayer Việt Nam",
+    "desc": "Bảng vinh danh những cosplayer nổi bật, có cống hiến xuất sắc và được cộng đồng yêu thích nhất.",
+    "loginRequired": "Vui lòng đăng nhập để theo dõi cosplayer!",
+    "filter": {
+      "week": "Top Tuần",
+      "month": "Top Tháng",
+      "all": "Tổng Thể",
+      "projects": "Dự Án Nổi Bật",
+      "crafting": "Chế Tác & Props"
+    },
+    "podium": {
+      "viewPortfolio": "Xem Portfolio",
+      "view": "Xem",
+      "likes": "Yêu thích",
+      "followers": "Followers",
+      "verified": "Đã xác minh"
+    },
+    "table": {
+      "rank": "Hạng",
+      "cosplayer": "Cosplayer",
+      "stats": "Chỉ số",
+      "score": "Điểm Kosume",
+      "likesCol": "Lượt thích",
+      "featuredProjects": "Dự án tiêu biểu",
+      "featured": "Dự án tiêu biểu",
+      "action": "Hành động",
+      "viewPortfolio": "Xem Portfolio",
+      "likes": "{count} lượt thích",
+      "followers": "{count} người theo dõi",
+      "follow": "Theo dõi",
+      "following": "Đang theo dõi",
+      "followSuccess": "Đã theo dõi",
+      "unfollowSuccess": "Đã hủy theo dõi",
+      "trendUp": "Tăng hạng",
+      "trendDown": "Giảm hạng",
+      "trendSame": "Giữ nguyên hạng",
+      "verified": "Đã xác minh"
+    },
+    "empty": "Chưa có dữ liệu bảng xếp hạng"
+  },
+  "Feed": {
+    "title": "Bảng Tin Cộng Đồng Cosplay",
+    "filterAll": "Tất cả",
+    "filterFollowing": "Đang theo dõi",
+    "filterTrending": "Thịnh hành",
+    "suggestedCosplayers": "Cosplayer gợi ý",
+    "upcomingEvents": "Sự kiện sắp diễn ra",
+    "trendingTags": "Thẻ xu hướng",
+    "follow": "Theo dõi",
+    "following": "Đang theo dõi",
+    "like": "Thích",
+    "comment": "Bình luận",
+    "share": "Chia sẻ",
+    "viewAllComments": "Xem tất cả {count} bình luận",
+    "writeCommentPlaceholder": "Viết bình luận cho bài viết...",
+    "sendComment": "Gửi bình luận",
+    "emptyFeed": "Chưa có bài viết nào trong bảng tin.",
+    "recentActivity": "Hoạt động gần đây",
+    "fromFollowing": "Từ người bạn đang theo dõi",
+    "createPlaceholder": "Bạn có tác phẩm cosplay mới? Đăng nhập ngay để chia sẻ cùng cộng đồng...",
+    "createPlaceholderAuth": "{name} ơi, hôm nay bạn có ảnh cosplay mới gì không?",
+    "photoAlbum": "Ảnh / Album",
+    "videoReel": "Video / Reel",
+    "tagCosplayer": "Gắn thẻ",
+    "postBtn": "Đăng",
+    "viewAll": "Xem tất cả",
+    "latest": "Mới nhất",
+    "interested": "Quan tâm",
+    "saved": "Đã lưu",
+    "loginToFollow": "Vui lòng đăng nhập để theo dõi tác giả!",
+    "loginToLike": "Vui lòng đăng nhập để thích tác phẩm!",
+    "savedToCollection": "Đã lưu vào bộ sưu tập cá nhân!",
+    "removedFromSaved": "Đã xóa khỏi danh sách đã lưu",
+    "copiedShareLink": "Đã sao chép liên kết vào clipboard!",
+    "loginToComment": "Vui lòng đăng nhập để bình luận!",
+    "commentSuccess": "Đã đăng bình luận!",
+    "commentError": "Có lỗi xảy ra khi đăng bình luận.",
+    "collaboratorsTitle": "Ekip thực hiện",
+    "collaboratorRoles": {
+      "photographer": "Nhiếp ảnh",
+      "mua": "Trang điểm (MUA)",
+      "cosplayer": "Cosplayer",
+      "prop_maker": "Đạo cụ",
+      "retoucher": "Hậu kỳ",
+      "staff": "Hỗ trợ"
+    }
+  },
+  "Explore": {
+    "title": "Khám Phá Vũ Trụ Cosplay",
+    "searchPlaceholder": "Tìm kiếm tác phẩm, cosplayer, nhân vật...",
+    "allCategory": "Tất cả",
+    "featuredCosplayers": "Cosplayer nổi bật",
+    "hotEvents": "Sự kiện nóng",
+    "noResults": "Không tìm thấy kết quả phù hợp",
+    "clearSearch": "Xóa bộ lọc tìm kiếm",
+    "tabs": {
+      "all": "Tất cả",
+      "works": "Tác phẩm",
+      "cosplayers": "Cosplayers",
+      "characters": "Nhân vật / Series"
+    }
+  },
+  "CosplayerProfile": {
+    "bio": "Tiểu sử",
+    "experience": "{years} năm kinh nghiệm",
+    "rating": "Đánh giá",
+    "reviews": "{count} đánh giá",
+    "followers": "{count} người theo dõi",
+    "following": "{count} đang theo dõi",
+    "views": "{count} lượt xem",
+    "availableForBooking": "Đang nhận Booking",
+    "busy": "Tạm ngưng nhận lịch",
+    "tabs": {
+      "works": "Tác phẩm",
+      "services": "Bảng giá dịch vụ",
+      "characters": "Nhân vật đã hóa thân",
+      "about": "Giới thiệu"
+    },
+    "services": {
+      "priceLabel": "Giá dịch vụ",
+      "duration": "Thời lượng",
+      "bookNow": "Đặt lịch ngay",
+      "negotiable": "Có thương lượng",
+      "units": {
+        "hour": "giờ",
+        "session": "buổi",
+        "day": "ngày",
+        "event": "sự kiện",
+        "set": "set ảnh",
+        "project": "dự án",
+        "item": "sản phẩm"
+      }
+    },
+    "characters": {
+      "photosCount": "{count} ảnh",
+      "series": "Series: {name}"
+    },
+    "followBtn": "Theo dõi",
+    "followingBtn": "Đang theo dõi",
+    "bookBtn": "Đặt lịch Cosplay",
+    "editDialog": {
+      "title": "Chỉnh sửa trang cá nhân",
+      "chooseCover": "Chọn ảnh bìa",
+      "changeCover": "Đổi ảnh bìa",
+      "chooseAvatar": "Chọn ảnh đại diện",
+      "changeAvatar": "Đổi ảnh đại diện",
+      "displayName": "Tên hiển thị / Nghệ danh",
+      "displayNamePlaceholder": "VD: KIRIKO / SORA...",
+      "handle": "Tên người dùng (@handle)",
+      "handlePlaceholder": "@kirikocos",
+      "bio": "Tiểu sử / Bio",
+      "bioPlaceholder": "Viết một đoạn ngắn giới thiệu về bạn, fandom yêu thích...",
+      "socialLinks": "Liên kết mạng xã hội",
+      "facebookPlaceholder": "Link Facebook cá nhân",
+      "instagramPlaceholder": "Link Instagram",
+      "tiktokPlaceholder": "Link TikTok",
+      "twitterPlaceholder": "Link Twitter / X",
+      "cancel": "Hủy",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu...",
+      "success": "Đã lưu thay đổi hồ sơ thành công!",
+      "valDisplayName": "Vui lòng nhập tên hiển thị",
+      "valHandle": "Vui lòng nhập tên người dùng (handle)"
+    }
+  },
+  "Notifications": {
+    "title": "Thông Báo Của Bạn",
+    "desc": "Theo dõi các hoạt động tương tác và tin tức hệ thống mới nhất.",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "markAllSuccess": "Đã đánh dấu tất cả thông báo là đã đọc",
+    "unreadFilter": "Chưa đọc ({count})",
+    "tabs": {
+      "all": "Tất cả",
+      "unread": "Chưa đọc",
+      "social": "Tương tác",
+      "system": "Hệ thống"
+    },
+    "emptyTitle": "Không có thông báo nào",
+    "emptyDesc": "Các hoạt động tương tác và tin tức hệ thống sẽ hiển thị tại đây.",
+    "settings": "Cài đặt thông báo",
+    "newCount": "{count} mới",
+    "errorOccurred": "Có lỗi xảy ra",
+    "deleteSuccess": "Đã xóa thông báo."
+  },
+  "Common": {
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra. Vui lòng thử lại!",
+    "empty": "Chưa có dữ liệu",
+    "search": "Tìm kiếm",
+    "filter": "Bộ lọc",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "close": "Đóng",
+    "back": "Quay lại"
   }
 }

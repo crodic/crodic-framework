@@ -1,4 +1,4 @@
-import { FileText, Lock, Scale, Server, Shield, Sparkles } from 'lucide-react'
+import { FileText, Lock, Scale, Server, Shield, Wand2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { LegalLayout } from './legal-layout'
@@ -105,7 +105,7 @@ export function TermsPage() {
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
             <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-              <Sparkles className='size-4' />
+              <Wand2 className='size-4' />
             </div>
             <h2>
               {isVi

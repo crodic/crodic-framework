@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   Calendar,
@@ -18,12 +19,13 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { EventItem } from "./events-types";
+import type { EventSummaryResDto, EventDetailResDto } from "@/services/events";
 import { EventApplyDialog } from "./event-apply-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
+import { useTranslations } from "next-intl";
 
 export interface EventDetailModalProps {
-  event: EventItem;
+  event: EventDetailResDto | EventSummaryResDto;
 }
 
 export function EventDetailModal({ event }: EventDetailModalProps) {
@@ -32,6 +34,10 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
+  const t = useTranslations("Events");
+  const tDetail = useTranslations("Events.detail");
+
+  const detail = event as EventDetailResDto;
 
   const handleClose = () => {
     setIsOpen(false);
@@ -41,15 +47,15 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(window.location.href);
-      toast.success("Đã sao chép liên kết sự kiện!");
+      toast.success(tDetail("shareSuccess"));
     }
   };
 
   const handleApplyClick = () => {
     if (isHydrating) return;
     if (!isAuthenticated) {
-      toast.info("Vui lòng đăng nhập để ứng tuyển tham gia sự kiện!");
-      router.push(`/auth/login?from=/events/${event.id}`);
+      toast.info(t("loginRequired"));
+      router.push(`/auth/login?from=/events/${event.slug || event.id}`);
       return;
     }
     setIsApplyOpen(true);
@@ -64,10 +70,10 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
         >
           <DialogTitle className="sr-only">{event.title}</DialogTitle>
 
-          {/* 1. Header Poster Image (shrink-0, pinned at top) */}
+          {/* 1. Header Poster Image */}
           <div className="relative h-48 w-full shrink-0 overflow-hidden sm:h-64">
             <Image
-              src={event.image}
+              src={event.bannerImageUrl || event.imageUrl}
               alt={event.title}
               fill
               priority
@@ -79,24 +85,24 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
             {/* Date Badge */}
             <div className="absolute top-4 left-4 z-10 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-black/85 px-3 py-1.5 text-center text-white shadow-xl backdrop-blur-md">
               <span className="text-xl leading-none font-black sm:text-2xl">
-                {event.day}
+                {event.dayLabel}
               </span>
               <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase sm:text-xs">
-                {event.month}
+                {event.monthLabel}
               </span>
             </div>
 
             {/* Location Badge & Close Button */}
             <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
               <div className="border-primary/30 bg-primary/90 text-primary-foreground rounded-full border px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-xs">
-                {event.location}
+                {event.locationLabel}
               </div>
 
               <button
                 type="button"
                 onClick={handleClose}
                 className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/75 text-white shadow-md backdrop-blur-md transition-all hover:bg-black/95 active:scale-95"
-                aria-label="Đóng popup sự kiện"
+                aria-label={tDetail("close")}
               >
                 <X className="size-4" />
               </button>
@@ -114,14 +120,16 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
             </div>
           </div>
 
-          {/* 2. Scrollable Body Info (flex-1 min-h-0 overflow-y-auto) */}
+          {/* 2. Scrollable Body Info */}
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
             {/* Quick info badges row */}
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
               <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-2xl border p-3">
-                <Calendar className="text-primary size-4.5 shrink-0" />
+                <Calendar className="text-primary size-4 shrink-0" />
                 <div>
-                  <p className="text-muted-foreground text-[10px]">Thời gian</p>
+                  <p className="text-muted-foreground text-[10px]">
+                    {tDetail("time")}
+                  </p>
                   <p className="text-foreground text-xs font-bold">
                     {event.dateString}
                   </p>
@@ -129,88 +137,88 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
               </div>
 
               <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-2xl border p-3">
-                <Ticket className="size-4.5 shrink-0 text-emerald-400" />
+                <Ticket className="size-4 shrink-0 text-emerald-400" />
                 <div>
                   <p className="text-muted-foreground text-[10px]">
-                    Giá vé vào cổng
+                    {tDetail("ticketPrice")}
                   </p>
                   <p className="text-foreground text-xs font-bold">
-                    {event.ticketPrice || "Miễn phí"}
+                    {event.ticketPriceLabel || tDetail("freeTicket")}
                   </p>
                 </div>
               </div>
 
               <div className="border-border/60 bg-muted/20 col-span-2 flex items-center gap-2.5 rounded-2xl border p-3 sm:col-span-1">
-                <Flame className="size-4.5 shrink-0 text-amber-400" />
+                <Flame className="size-4 shrink-0 text-amber-400" />
                 <div>
                   <p className="text-muted-foreground text-[10px]">
-                    Trạng thái
+                    {tDetail("status")}
                   </p>
                   <p className="text-primary text-xs font-bold">
                     {event.isRecruiting
-                      ? "Đang tuyển Cosplayer"
-                      : "Đã chốt danh sách"}
+                      ? tDetail("statusRecruiting")
+                      : tDetail("statusClosed")}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Description */}
-            <div className="space-y-1.5">
-              <h3 className="text-foreground text-sm font-bold">
-                Giới thiệu sự kiện
-              </h3>
-              <p className="text-foreground/85 text-xs leading-relaxed sm:text-sm">
-                {event.description}
-              </p>
-            </div>
-
-            {/* Participants cosplayers */}
-            <div className="space-y-2">
-              <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
-                <Users className="text-primary size-4" />
-                <span>Cosplayers & Khách mời tham gia</span>
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                {event.participants.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/cosplayer/${p.name.toLowerCase()}`}
-                    className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
-                  >
-                    <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
-                      <Image
-                        src={p.avatarUrl}
-                        alt={p.name}
-                        fill
-                        sizes="24px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <span className="text-foreground text-xs font-semibold">
-                      {p.name}
-                    </span>
-                    {p.isVerified && (
-                      <Check className="text-primary size-3 stroke-[3]" />
-                    )}
-                  </Link>
-                ))}
+            {detail.description && (
+              <div className="space-y-1.5">
+                <h3 className="text-foreground text-sm font-bold">
+                  {tDetail("about")}
+                </h3>
+                <p className="text-foreground/85 text-xs leading-relaxed sm:text-sm">
+                  {detail.description}
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Participants / Cosplayers Khách mời */}
+            {event.participants && event.participants.length > 0 && (
+              <div className="space-y-2.5">
+                <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
+                  <Users className="text-primary size-4" />
+                  <span>{tDetail("guests")}</span>
+                </h3>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {event.participants.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/cosplayer/${p.name.toLowerCase()}`}
+                      className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
+                    >
+                      <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
+                        <UserAvatar
+                          avatarUrl={p.avatarUrl}
+                          name={p.name}
+                          sizes="24px"
+                          fallbackClassName="text-[10px]"
+                        />
+                      </div>
+                      <span className="text-foreground text-xs font-semibold">
+                        {p.name}
+                      </span>
+                      {p.isVerified && (
+                        <Check className="text-primary size-3 stroke-[3]" />
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Schedule Timeline */}
-            {event.schedule && event.schedule.length > 0 && (
-              <div className="space-y-2">
+            {detail.schedule && detail.schedule.length > 0 && (
+              <div className="space-y-2.5">
                 <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
                   <Clock className="text-primary size-4" />
-                  <span>Lịch trình hoạt động</span>
+                  <span>{tDetail("schedule")}</span>
                 </h3>
-                <div className="border-border/60 bg-muted/10 space-y-2 rounded-2xl border p-3 sm:p-4">
-                  {event.schedule.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-2.5 text-xs sm:text-sm"
-                    >
+                <div className="border-border/60 bg-muted/10 space-y-2 rounded-2xl border p-3.5">
+                  {detail.schedule.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-3 text-xs">
                       <span className="bg-primary/20 text-primary shrink-0 rounded-md px-2 py-0.5 font-bold">
                         {item.time}
                       </span>
@@ -224,48 +232,50 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
             )}
           </div>
 
-          {/* 3. Footer Actions (shrink-0, pinned at bottom) */}
-          <div className="border-border/60 bg-card/90 flex shrink-0 items-center justify-between border-t p-4 backdrop-blur-md">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="border-border/70 cursor-pointer rounded-xl text-xs font-semibold"
-            >
-              <Share2 className="mr-1.5 size-3.5" />
-              <span>Chia sẻ</span>
-            </Button>
-
-            <div className="flex items-center gap-2">
+          {/* 3. Footer Action Buttons */}
+          <div className="border-border/70 bg-card/80 shrink-0 border-t p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-3">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={handleClose}
-                className="cursor-pointer rounded-xl text-xs font-medium"
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="border-border/80 h-9 cursor-pointer rounded-xl px-3 text-xs font-semibold"
               >
-                Đóng
+                <Share2 className="mr-1.5 size-3.5" />
+                <span>{tDetail("share")}</span>
               </Button>
 
-              {event.isRecruiting && (
+              <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  onClick={handleApplyClick}
-                  disabled={isHydrating}
-                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md disabled:opacity-50"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClose}
+                  className="h-9 cursor-pointer rounded-xl text-xs font-medium"
                 >
-                  <Send className="mr-1.5 size-3.5" />
-                  <span>
-                    {isHydrating ? "Đang tải..." : "Ứng tuyển tham gia"}
-                  </span>
+                  {tDetail("close")}
                 </Button>
-              )}
+
+                {event.isRecruiting && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleApplyClick}
+                    disabled={isHydrating}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    <Send className="mr-1.5 size-3.5" />
+                    <span>{isHydrating ? "..." : tDetail("applyBtn")}</span>
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Application Form Dialog (guarded by auth check) */}
+      {/* Application Form Dialog */}
       <EventApplyDialog
         open={isApplyOpen}
         onOpenChange={setIsApplyOpen}

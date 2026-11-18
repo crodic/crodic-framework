@@ -2,38 +2,46 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { AlbumItem } from "./landing-types";
 import { Heart } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import type { PostSummaryResDto } from "@/services/posts";
+import { toggleLikePost } from "@/services/posts";
 
 interface AlbumCardProps {
-  album: AlbumItem;
+  album: PostSummaryResDto;
 }
 
 export function AlbumCard({ album }: AlbumCardProps) {
-  const [isLiked, setIsLiked] = useState(album.liked || false);
+  const [isLiked, setIsLiked] = useState(album.isLikedByCurrentUser || false);
   const [likes, setLikes] = useState(album.likesCount);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    setIsLiked((prev) => !prev);
-    // Simple optimistic counter toggle
-    if (!isLiked) {
-      setLikes("2.5K");
-    } else {
-      setLikes(album.likesCount);
+    const nextLiked = !isLiked;
+    setIsLiked(nextLiked);
+    setLikes((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
+    try {
+      await toggleLikePost(album.id);
+    } catch {
+      setIsLiked(!nextLiked);
+      setLikes((prev) => (!nextLiked ? prev + 1 : Math.max(0, prev - 1)));
     }
   };
 
   return (
-    <div className="group border-border/60 bg-muted/20 hover:border-primary/80 hover:shadow-primary/25 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-500 hover:shadow-2xl sm:aspect-[9/13]">
+    <Link
+      href={`/post/${album.slug || album.id}`}
+      className="group border-border/60 bg-muted/20 hover:border-primary/80 hover:shadow-primary/25 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-500 hover:shadow-2xl sm:aspect-[9/13]"
+    >
       {/* Background artwork cover */}
       <Image
-        src={album.coverUrl}
-        alt={`${album.characterName} cosplay album`}
+        src={album.coverImageUrl || "/placeholder-avatar.png"}
+        alt={`${album.characterName || album.title} cosplay album`}
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
       />
 
       {/* Dark gradient overlay for contrast and atmospheric feel */}
@@ -59,7 +67,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
                 ? "border-rose-500/50 bg-rose-500/20 text-rose-300"
                 : "bg-background/60 border-border/40 text-foreground hover:bg-background/80"
             )}
-            aria-label={`Thích album ${album.characterName}`}
+            aria-label={`Thích album ${album.characterName || album.title}`}
           >
             <Heart
               className={cn(
@@ -69,7 +77,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
                   : "fill-rose-500/80 text-rose-500"
               )}
             />
-            <span>{likes}</span>
+            <span>{likes.toLocaleString()}</span>
           </button>
         </div>
 
@@ -78,20 +86,20 @@ export function AlbumCard({ album }: AlbumCardProps) {
           {/* Avatar */}
           <div className="border-primary/40 bg-muted relative size-6 shrink-0 overflow-hidden rounded-full border">
             <Image
-              src={album.avatarUrl}
-              alt={album.characterName}
+              src={album.author?.avatarUrl || "/placeholder-avatar.png"}
+              alt={album.author?.displayName || "Author"}
               fill
               sizes="24px"
               className="object-cover"
             />
           </div>
 
-          {/* Character Name */}
+          {/* Character Name / Title */}
           <span className="text-foreground group-hover:text-primary truncate text-sm font-bold tracking-wide transition-colors">
-            {album.characterName}
+            {album.characterName || album.title}
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

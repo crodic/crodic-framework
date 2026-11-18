@@ -2,28 +2,38 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { EVENT_FILTER_TAGS } from "./events-data";
+import { useTranslations } from "next-intl";
 
 export interface EventsFilterBarProps {
   selectedTagId: string;
   onSelectTag: (tagId: string) => void;
 }
 
+const FILTER_ITEMS = [
+  { id: "all", labelKey: "filterAll" },
+  { id: "festival", labelKey: "filterFestival" },
+  { id: "photoshoot", labelKey: "filterPhotoshoot" },
+  { id: "contest", labelKey: "filterContest" },
+  { id: "workshop", labelKey: "filterWorkshop" },
+] as const;
+
 export function EventsFilterBar({
   selectedTagId,
   onSelectTag,
 }: EventsFilterBarProps) {
+  const t = useTranslations("Events");
+
   return (
     <div className="relative w-full">
       <div className="flex [scrollbar-width:none] scrollbar-none items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] sm:pb-0">
-        {EVENT_FILTER_TAGS.map((tag) => {
-          const isSelected = selectedTagId === tag.id;
+        {FILTER_ITEMS.map((item) => {
+          const isSelected = selectedTagId === item.id;
 
           return (
             <button
-              key={tag.id}
+              key={item.id}
               type="button"
-              onClick={() => onSelectTag(tag.id)}
+              onClick={() => onSelectTag(item.id)}
               className={cn(
                 "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all sm:text-sm",
                 isSelected
@@ -31,7 +41,7 @@ export function EventsFilterBar({
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/50 border"
               )}
             >
-              {tag.label}
+              {t(item.labelKey)}
             </button>
           );
         })}

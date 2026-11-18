@@ -8,7 +8,7 @@ import {
   FileTextIcon,
   GlobeIcon,
   Share2Icon,
-  SparklesIcon,
+  Wand2Icon,
   TrashIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -353,7 +353,7 @@ export function PageCmsPageShow() {
                   value='seo'
                   className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
                 >
-                  <SparklesIcon className='text-primary size-4 shrink-0' />
+                  <Wand2Icon className='text-primary size-4 shrink-0' />
                   <span className='truncate'>
                     {t('cmsPages.show.seoPreview', 'SEO & Social Preview')}
                   </span>

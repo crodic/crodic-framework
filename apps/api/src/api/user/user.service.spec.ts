@@ -20,7 +20,7 @@ describe('UserService', () => {
   let userSessionRepositoryValue: Partial<
     Record<keyof Repository<UserSessionEntity>, jest.Mock>
   >;
-  let dataSourceMock: { transaction: jest.Mock };
+  let dataSourceMock: { transaction: jest.Mock; getRepository: jest.Mock };
   let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
 
   beforeAll(async () => {
@@ -41,6 +41,10 @@ describe('UserService', () => {
       delete: jest.fn(),
     };
     dataSourceMock = {
+      getRepository: jest.fn().mockReturnValue({
+        save: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
+      }),
       transaction: jest.fn().mockImplementation(async (cb) => {
         const managerMock = {
           getRepository: jest.fn().mockImplementation((entity) => {
@@ -174,6 +178,7 @@ describe('UserService', () => {
 
       expect(userRepositoryValue.findOneOrFail).toHaveBeenCalledWith({
         where: { id: '1' },
+        relations: ['cosplayerProfile'],
         withDeleted: true,
       });
       expect(result).toEqual(expect.objectContaining({ email: user.email }));
@@ -200,6 +205,44 @@ describe('UserService', () => {
       expect(user.firstName).toBe('New');
       expect(user.lastName).toBe('Person');
       expect(userRepositoryValue.save).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('toggleVerify', () => {
+    it('toggles verification state', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        firstName: 'Jane',
+        verifiedAt: null,
+      });
+
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
+      userRepositoryValue.save.mockResolvedValue(user);
+
+      const result = await service.toggleVerify('1' as any);
+
+      expect(user.verifiedAt).toBeInstanceOf(Date);
+      expect(userRepositoryValue.save).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('toggleCosplayerVerify', () => {
+    it('toggles cosplayer verification state independently', async () => {
+      const profile = { isVerified: false };
+      const user = new UserEntity({
+        id: '1' as any,
+        firstName: 'Jane',
+        cosplayerProfile: profile as any,
+      });
+
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
+      const profileRepo = { save: jest.fn().mockResolvedValue(profile) };
+      dataSourceMock.getRepository.mockReturnValue(profileRepo);
+
+      await service.toggleCosplayerVerify('1' as any);
+
+      expect(profile.isVerified).toBe(true);
+      expect(profileRepo.save).toHaveBeenCalledWith(profile);
     });
   });
 

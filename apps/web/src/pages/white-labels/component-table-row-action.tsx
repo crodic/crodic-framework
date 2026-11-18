@@ -6,7 +6,7 @@ import {
   EyeIcon,
   MoreHorizontalIcon,
   PowerOffIcon,
-  SparklesIcon,
+  Wand2Icon,
   Trash2Icon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -237,7 +237,7 @@ export default function ComponentTableRowActions({
                   onClick={() => setActivationTarget('activate')}
                   disabled={isPending}
                 >
-                  <SparklesIcon className='size-4' />
+                  <Wand2Icon className='size-4' />
                   {t('whiteLabels.actions.setAsActive', {
                     defaultValue: 'Set as Active',
                   })}{' '}

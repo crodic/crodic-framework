@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { SearchIcon, SparklesIcon } from 'lucide-react'
+import { SearchIcon, Wand2Icon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
 import ComponentTableRowActions from './component-table-row-action'
@@ -144,7 +144,7 @@ export const columns: ColumnDef<WhiteLabelSchema>[] = [
 
       return isActive ? (
         <Badge variant='solid-success' className='gap-1'>
-          <SparklesIcon className='size-3' />
+          <Wand2Icon className='size-3' />
           Active
         </Badge>
       ) : (

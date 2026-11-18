@@ -7,7 +7,7 @@ import {
   Globe,
   Loader2,
   Lock,
-  Sparkles,
+  Wand2,
   Upload,
   Video,
   X,
@@ -247,7 +247,7 @@ export function UploadDialog({
                 htmlFor='optimize-image'
                 className='text-foreground flex cursor-pointer items-center gap-1.5 text-xs font-medium'
               >
-                <Sparkles className='text-primary size-3.5' />
+                <Wand2 className='text-primary size-3.5' />
                 <span>
                   {t('files.upload.optimizeImage', 'Tối ưu hóa hình ảnh')}
                 </span>

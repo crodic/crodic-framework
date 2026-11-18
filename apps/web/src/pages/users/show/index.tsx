@@ -217,7 +217,9 @@ export function PageUserShow() {
             <CardContent>
               <div className='flex flex-col items-center gap-4'>
                 <Avatar className='inline-block size-24'>
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarFallback>
+                    {data?.fullName?.slice(0, 2)?.toUpperCase() || 'US'}
+                  </AvatarFallback>
                   <AvatarImage
                     src={data?.avatar ?? undefined}
                     alt={data?.fullName}
@@ -228,48 +230,118 @@ export function PageUserShow() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('users.show.cardTitle')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Descriptions>
-                <DescriptionItem
-                  label={t('users.show.email')}
-                  value={data?.email}
-                />
-                <DescriptionItem
-                  label={t('users.show.fullName')}
-                  value={data?.fullName}
-                />
-                <DescriptionItem label={t('common.status', 'Status')}>
-                  <div className='mt-2 flex flex-wrap gap-1'>
-                    {isDeleted ? (
-                      <Badge variant='destructive' className='text-xs'>
-                        {t('common.status.deleted', 'Deleted')}
+          <div className='flex flex-col gap-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('users.show.cardTitle')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Descriptions>
+                  <DescriptionItem
+                    label={t('users.show.email')}
+                    value={data?.email}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.fullName')}
+                    value={data?.fullName}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.username', 'Username')}
+                    value={data?.username ? `@${data.username}` : '—'}
+                  />
+                  <DescriptionItem label={t('users.show.role', 'Vai trò')}>
+                    <div className='mt-1'>
+                      <Badge variant='outline' className='text-xs uppercase'>
+                        {data?.role || 'fan'}
                       </Badge>
-                    ) : (
-                      <Badge variant='outline-success' className='text-xs'>
-                        {t('common.status.active', 'Active')}
-                      </Badge>
+                    </div>
+                  </DescriptionItem>
+                  <DescriptionItem label={t('users.show.status', 'Trạng thái')}>
+                    <div className='mt-2 flex flex-wrap gap-1'>
+                      {isDeleted ? (
+                        <Badge variant='destructive' className='text-xs'>
+                          {t('common.status.deleted', 'Deleted')}
+                        </Badge>
+                      ) : (
+                        <Badge variant='outline-success' className='text-xs'>
+                          {t('common.status.active', 'Active')}
+                        </Badge>
+                      )}
+                    </div>
+                  </DescriptionItem>
+                  <DescriptionItem
+                    label={t(
+                      'users.show.emailVerifiedStatus',
+                      'Xác minh Email'
                     )}
-                  </div>
-                </DescriptionItem>
-                <DescriptionItem
-                  label={t('users.show.emailVerified')}
-                  value={data?.verifiedAt ? 'Active' : 'Inactive'}
-                />
-                <DescriptionItem
-                  label={t('users.show.createdAt')}
-                  value={format(data.createdAt, 'dd/MM/yyyy HH:mm aa')}
-                />
-                <DescriptionItem
-                  label={t('users.show.updatedAt')}
-                  value={format(data.updatedAt, 'dd/MM/yyyy HH:mm aa')}
-                />
-              </Descriptions>
-            </CardContent>
-          </Card>
+                    value={
+                      data?.verifiedAt
+                        ? t('users.show.emailVerified', 'Đã xác minh Email')
+                        : t('users.show.emailUnverified', 'Chưa xác minh Email')
+                    }
+                  />
+                  <DescriptionItem
+                    label={t('users.show.createdAt')}
+                    value={format(new Date(data.createdAt), 'dd/MM/yyyy HH:mm')}
+                  />
+                  <DescriptionItem
+                    label={t('users.show.updatedAt')}
+                    value={format(new Date(data.updatedAt), 'dd/MM/yyyy HH:mm')}
+                  />
+                </Descriptions>
+              </CardContent>
+            </Card>
+
+            {data?.role === 'cosplayer' && data?.cosplayerProfile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {t('users.show.cosplayerProfileTitle', 'Hồ sơ Cosplayer')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Descriptions>
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerDisplayName',
+                        'Tên hiển thị'
+                      )}
+                      value={data.cosplayerProfile.displayName}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerBadge', 'Huy hiệu')}
+                      value={data.cosplayerProfile.roleBadge || 'Cosplayer'}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerSlug', 'Đường dẫn (Slug)')}
+                      value={`/${data.cosplayerProfile.slug}`}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.rankingScore', 'Điểm xếp hạng')}
+                      value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
+                    />
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerVerified',
+                        'Tích xanh Cosplayer'
+                      )}
+                      value={
+                        data.cosplayerProfile.isVerified
+                          ? t(
+                              'users.show.cosplayerVerifiedTrue',
+                              'Đã duyệt tích xanh (Verified)'
+                            )
+                          : t(
+                              'users.show.cosplayerVerifiedFalse',
+                              'Chưa duyệt tích xanh'
+                            )
+                      }
+                    />
+                  </Descriptions>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </Main>
     </>

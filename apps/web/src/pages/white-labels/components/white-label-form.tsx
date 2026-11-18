@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, Paintbrush, Save, Search, Sparkles } from 'lucide-react'
+import { Eye, Paintbrush, Save, Search, Wand2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -245,7 +245,7 @@ export function WhiteLabelForm({
                 value='brand'
                 className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
-                <Sparkles className='size-3.5 shrink-0 sm:size-4' />
+                <Wand2 className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
                   {t('whiteLabels.form.brandAssets')}
                 </span>

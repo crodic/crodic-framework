@@ -86,7 +86,7 @@ export function getCmsPagesTableColumns(): ColumnDef<CmsPageSchema>[] {
         <DataTableColumnHeader column={column} label='Updated At' />
       ),
       cell: ({ row }) => (
-        <p>{format(new Date(row.original.updatedAt), 'dd/MM/yyyy HH:mm aa')}</p>
+        <p>{format(new Date(row.original.updatedAt), 'dd/MM/yyyy HH:mm')}</p>
       ),
     },
   ]

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ShieldCheck, Sparkles, Workflow } from 'lucide-react'
+import { ShieldCheck, Wand2, Workflow } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useAuthStore } from '@/stores/auth-store'
@@ -120,7 +120,7 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
 
             <div className='flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-md transition-colors hover:bg-white/[0.07]'>
               <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400'>
-                <Sparkles className='size-5' />
+                <Wand2 className='size-5' />
               </div>
               <div className='min-w-0 flex-1'>
                 <p className='text-sm font-semibold text-white'>

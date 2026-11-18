@@ -2,8 +2,10 @@
 
 import React from "react";
 import Image from "next/image";
+import { UserAvatar } from "@/components/common/user-avatar";
 import { Link } from "@/i18n/navigation";
 import {
+  Building2,
   Calendar,
   Check,
   Clock,
@@ -13,7 +15,6 @@ import {
   Share2,
   Ticket,
   Users,
-  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -23,13 +24,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { EventItem } from "./events-types";
+import { useTranslations } from "next-intl";
+import type { EventSummaryResDto, EventDetailResDto } from "@/services/events";
 
 export interface EventDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  event: EventItem | null;
-  onApply: (event: EventItem) => void;
+  event: EventSummaryResDto | EventDetailResDto | null;
+  onApply: (event: EventSummaryResDto | EventDetailResDto) => void;
 }
 
 export function EventDetailDialog({
@@ -38,12 +40,15 @@ export function EventDetailDialog({
   event,
   onApply,
 }: EventDetailDialogProps) {
+  const tDetail = useTranslations("Events.detail");
   if (!event) return null;
+
+  const detail = event as EventDetailResDto;
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(window.location.href);
-      toast.success("Đã sao chép liên kết sự kiện!");
+      toast.success(tDetail("shareSuccess"));
     }
   };
 
@@ -57,7 +62,7 @@ export function EventDetailDialog({
         {/* 1. Header Poster Image */}
         <div className="relative h-48 w-full overflow-hidden sm:h-64">
           <Image
-            src={event.image}
+            src={event.bannerImageUrl || event.imageUrl}
             alt={event.title}
             fill
             sizes="(max-width: 768px) 100vw, 700px"
@@ -67,15 +72,17 @@ export function EventDetailDialog({
 
           {/* Date Badge */}
           <div className="absolute top-4 left-4 z-10 flex flex-col items-center justify-center rounded-xl bg-black/85 px-3 py-1.5 text-center text-white shadow-xl backdrop-blur-md">
-            <span className="text-xl leading-none font-black">{event.day}</span>
+            <span className="text-xl leading-none font-black">
+              {event.dayLabel}
+            </span>
             <span className="text-muted-foreground text-[10px] font-bold uppercase">
-              {event.month}
+              {event.monthLabel}
             </span>
           </div>
 
           {/* Location Badge */}
           <div className="bg-primary/90 text-primary-foreground absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-xs">
-            {event.location}
+            {event.locationLabel}
           </div>
 
           {/* Title on bottom of image */}
@@ -97,7 +104,9 @@ export function EventDetailDialog({
             <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-xl border p-3">
               <Calendar className="text-primary size-4 shrink-0" />
               <div>
-                <p className="text-muted-foreground text-[10px]">Thời gian</p>
+                <p className="text-muted-foreground text-[10px]">
+                  {tDetail("time")}
+                </p>
                 <p className="text-foreground text-xs font-bold">
                   {event.dateString}
                 </p>
@@ -108,10 +117,10 @@ export function EventDetailDialog({
               <Ticket className="size-4 shrink-0 text-emerald-400" />
               <div>
                 <p className="text-muted-foreground text-[10px]">
-                  Giá vé vào cổng
+                  {tDetail("ticketPrice")}
                 </p>
                 <p className="text-foreground text-xs font-bold">
-                  {event.ticketPrice || "Miễn phí"}
+                  {event.ticketPriceLabel || tDetail("freeTicket")}
                 </p>
               </div>
             </div>
@@ -119,68 +128,88 @@ export function EventDetailDialog({
             <div className="border-border/60 bg-muted/20 col-span-2 flex items-center gap-2.5 rounded-xl border p-3 sm:col-span-1">
               <Flame className="size-4 shrink-0 text-amber-400" />
               <div>
-                <p className="text-muted-foreground text-[10px]">Trạng thái</p>
+                <p className="text-muted-foreground text-[10px]">
+                  {tDetail("status")}
+                </p>
                 <p className="text-primary text-xs font-bold">
                   {event.isRecruiting
-                    ? "Đang tuyển Cosplayer"
-                    : "Đã chốt danh sách"}
+                    ? tDetail("statusRecruiting")
+                    : tDetail("statusClosed")}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-1.5">
-            <h3 className="text-foreground text-sm font-bold">
-              Giới thiệu sự kiện
-            </h3>
-            <p className="text-foreground/80 text-xs leading-relaxed sm:text-sm">
-              {event.description}
-            </p>
-          </div>
+          {detail.description && (
+            <div className="space-y-1.5">
+              <h3 className="text-foreground text-sm font-bold">
+                {tDetail("about")}
+              </h3>
+              <p className="text-foreground/80 text-xs leading-relaxed sm:text-sm">
+                {detail.description}
+              </p>
+            </div>
+          )}
+
+          {/* Organizer */}
+          {event.organizerName && (
+            <div className="border-border/60 bg-muted/20 flex items-center gap-2.5 rounded-xl border p-3">
+              <Building2 className="text-primary size-4 shrink-0" />
+              <div>
+                <p className="text-muted-foreground text-[10px]">
+                  {tDetail("organizer")}
+                </p>
+                <p className="text-foreground text-xs font-bold">
+                  {event.organizerName}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Participants cosplayers */}
-          <div className="space-y-2">
-            <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
-              <Users className="text-primary size-4" />
-              <span>Cosplayers & Khách mời tham gia</span>
-            </h3>
-            <div className="flex flex-wrap items-center gap-3">
-              {event.participants.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/cosplayer/${p.name.toLowerCase()}`}
-                  className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
-                >
-                  <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
-                    <Image
-                      src={p.avatarUrl}
-                      alt={p.name}
-                      fill
-                      sizes="24px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <span className="text-foreground text-xs font-semibold">
-                    {p.name}
-                  </span>
-                  {p.isVerified && (
-                    <Check className="text-primary size-3 stroke-[3]" />
-                  )}
-                </Link>
-              ))}
+          {event.participants && event.participants.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
+                <Users className="text-primary size-4" />
+                <span>{tDetail("guests")}</span>
+              </h3>
+              <div className="flex flex-wrap items-center gap-3">
+                {event.participants.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/cosplayer/${p.name.toLowerCase()}`}
+                    className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
+                  >
+                    <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
+                      <UserAvatar
+                        avatarUrl={p.avatarUrl}
+                        name={p.name}
+                        sizes="24px"
+                        fallbackClassName="text-[10px]"
+                      />
+                    </div>
+                    <span className="text-foreground text-xs font-semibold">
+                      {p.name}
+                    </span>
+                    {p.isVerified && (
+                      <Check className="text-primary size-3 stroke-[3]" />
+                    )}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Schedule Timeline */}
-          {event.schedule && event.schedule.length > 0 && (
+          {detail.schedule && detail.schedule.length > 0 && (
             <div className="space-y-2.5">
               <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
                 <Clock className="text-primary size-4" />
-                <span>Lịch trình hoạt động</span>
+                <span>{tDetail("schedule")}</span>
               </h3>
               <div className="border-border/60 bg-muted/10 space-y-2 rounded-2xl border p-3.5">
-                {event.schedule.map((item, idx) => (
+                {detail.schedule.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3 text-xs">
                     <span className="bg-primary/20 text-primary shrink-0 rounded-md px-2 py-0.5 font-bold">
                       {item.time}
@@ -204,7 +233,7 @@ export function EventDetailDialog({
               className="border-border/70 rounded-xl text-xs font-semibold"
             >
               <Share2 className="mr-1.5 size-3.5" />
-              <span>Chia sẻ</span>
+              <span>{tDetail("share")}</span>
             </Button>
 
             <div className="flex items-center gap-2">
@@ -214,7 +243,7 @@ export function EventDetailDialog({
                 onClick={() => onOpenChange(false)}
                 className="rounded-xl text-xs"
               >
-                Đóng
+                {tDetail("close")}
               </Button>
               {event.isRecruiting && (
                 <Button
@@ -226,7 +255,7 @@ export function EventDetailDialog({
                   className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md"
                 >
                   <Send className="mr-1.5 size-3.5" />
-                  <span>Ứng tuyển tham gia</span>
+                  <span>{tDetail("applyBtn")}</span>
                 </Button>
               )}
             </div>

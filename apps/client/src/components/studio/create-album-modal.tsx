@@ -22,7 +22,6 @@ import type { ImagePayload } from "@/components/form/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { CreateAlbumForm } from "./create-album-form";
-import { INITIAL_MOCK_ALBUM_IMAGES } from "./album-types";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
@@ -69,7 +68,7 @@ export function CreateAlbumModal({
     <SortableImageUpload
       variant="studio"
       showInlineAddSlot={true}
-      existingImages={INITIAL_MOCK_ALBUM_IMAGES}
+      existingImages={[]}
       value={imagesPayload}
       onChange={setImagesPayload}
       coverIndex={coverIndex}

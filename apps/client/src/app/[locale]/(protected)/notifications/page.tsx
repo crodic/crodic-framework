@@ -19,7 +19,7 @@ export async function generateMetadata({
   return {
     title: `Thông báo | ${siteName}`,
     description:
-      "Quản lý và cập nhật những thông báo, tương tác và yêu cầu booking mới nhất trên Kosume.",
+      "Quản lý và cập nhật những thông báo và tương tác mới nhất trên Kosume.",
   };
 }
 

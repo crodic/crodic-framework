@@ -11,23 +11,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CosplayerAlbum } from "./profile-types";
-import { PROFILE_ALBUM_FILTERS } from "./profile-data";
+import type { PostSummaryResDto } from "@/services/posts";
+
+const PROFILE_ALBUM_FILTERS = [
+  { id: "all", label: "Tất cả album" },
+  { id: "series", label: "Series" },
+  { id: "studio", label: "Studio" },
+  { id: "event", label: "Event" },
+  { id: "original", label: "Original" },
+];
 
 interface ProfileAlbumsProps {
-  albums: CosplayerAlbum[];
+  albums: PostSummaryResDto[];
   cosplayerName: string;
 }
 
 export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedAlbum, setSelectedAlbum] = useState<CosplayerAlbum | null>(
+  const [selectedAlbum, setSelectedAlbum] = useState<PostSummaryResDto | null>(
     null
   );
 
   const filteredAlbums = albums.filter((album) => {
     if (activeFilter === "all") return true;
-    return album.category === activeFilter;
+    return album.albumCategory === activeFilter;
   });
 
   return (
@@ -53,21 +60,21 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
         })}
       </div>
 
-      {/* 2. Responsive Album Grid: 4 cols on desktop, 2 cols on mobile */}
+      {/* 2. Responsive Album Grid */}
       <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
         {filteredAlbums.map((album) => {
           return (
             <Link
               key={album.id}
-              href={`/post/${album.id}`}
+              href={`/post/${album.slug || album.id}`}
               className="group flex cursor-pointer flex-col space-y-2 rounded-2xl transition-all duration-300"
             >
               {/* Card Thumbnail Container */}
               <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[4/5] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
-                {album.isCollage && album.collageImages ? (
+                {album.isCollage && album.collagePreviewUrls?.length > 0 ? (
                   /* 2x2 Collage preview */
                   <div className="bg-muted/20 grid size-full grid-cols-2 grid-rows-2 gap-1 p-1">
-                    {album.collageImages.slice(0, 4).map((img, idx) => (
+                    {album.collagePreviewUrls.slice(0, 4).map((img, idx) => (
                       <div
                         key={idx}
                         className="bg-muted relative size-full overflow-hidden rounded-md sm:rounded-lg"
@@ -86,7 +93,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                   /* Single photo preview */
                   <div className="relative size-full">
                     <Image
-                      src={album.coverImage}
+                      src={album.coverImageUrl}
                       alt={album.title}
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -121,10 +128,12 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                   {album.title}
                 </h3>
                 <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                  <span className="truncate">{album.categoryLabel}</span>
+                  <span className="truncate">{album.albumCategory}</span>
                   <span className="flex shrink-0 items-center gap-1">
                     <Calendar className="size-3" />
-                    {album.updatedAt}
+                    {album.publishedAt
+                      ? new Date(album.publishedAt).toLocaleDateString()
+                      : ""}
                   </span>
                 </div>
               </div>
@@ -156,11 +165,10 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                     </DialogTitle>
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       Bởi {cosplayerName} • {selectedAlbum.photosCount} hình ảnh
-                      • Cập nhật {selectedAlbum.updatedAt}
                     </p>
                   </div>
                   <Badge variant="outline" className="rounded-lg text-xs">
-                    {selectedAlbum.categoryLabel}
+                    {selectedAlbum.albumCategory}
                   </Badge>
                 </div>
               </DialogHeader>
@@ -169,7 +177,9 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
               <div className="max-h-[70vh] space-y-4 overflow-y-auto p-4 sm:p-6">
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {(
-                    selectedAlbum.collageImages || [selectedAlbum.coverImage]
+                    selectedAlbum.collagePreviewUrls || [
+                      selectedAlbum.coverImageUrl,
+                    ]
                   ).map((photo, idx) => (
                     <div
                       key={idx}

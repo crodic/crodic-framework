@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { cn, decodeToken } from "@/lib/utils";
-import { Award, Briefcase, Camera, Sparkles, Star, Users } from "lucide-react";
+import { Award, Briefcase, Camera, Star, Users } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
@@ -74,7 +74,7 @@ export default async function AuthLayout({
                   Kosume
                 </span>
                 <p className="text-xs text-purple-300/70">
-                  Cosplay Creative Hub & Booking
+                  Cosplay Creative Hub &amp; Community
                 </p>
               </div>
             </Link>

@@ -2,17 +2,56 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import {
   BooleanField,
   ClassField,
+  ClassFieldOptional,
+  EnumField,
   JsonField,
+  NumberField,
   StringField,
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { EUserRole } from '../constants/user.constant';
+
+@Exclude()
+export class UserCosplayerSummaryResDto {
+  @StringField()
+  @Expose()
+  slug!: string;
+
+  @StringField()
+  @Expose()
+  displayName!: string;
+
+  @StringFieldOptional()
+  @Expose()
+  roleBadge?: string | null;
+
+  @BooleanField()
+  @Expose()
+  isVerified!: boolean;
+
+  @BooleanField()
+  @Expose()
+  isAcceptingBooking!: boolean;
+
+  @NumberField()
+  @Expose()
+  rankingScore!: number;
+}
 
 @Exclude()
 export class UserResDto {
   @StringField()
   @Expose()
   id!: AutoIncrementID;
+
+  @StringFieldOptional()
+  @Expose()
+  username?: string | null;
+
+  @EnumField(() => EUserRole)
+  @Expose()
+  role!: EUserRole;
 
   @StringField()
   @Expose()
@@ -46,6 +85,11 @@ export class UserResDto {
   @Transform(({ value }) => !!value)
   @Expose()
   verifiedAt?: boolean;
+
+  @ClassFieldOptional(() => UserCosplayerSummaryResDto)
+  @Type(() => UserCosplayerSummaryResDto)
+  @Expose()
+  cosplayerProfile?: UserCosplayerSummaryResDto | null;
 
   @ClassField(() => Date)
   @Expose()

@@ -1,7 +1,14 @@
 import { format } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
 import i18n from '@/i18n'
-import { Calendar, MailIcon, TextIcon, UserRoundCheckIcon } from 'lucide-react'
+import {
+  BadgeCheck,
+  Calendar,
+  CheckCircle2,
+  MailIcon,
+  TextIcon,
+  UserRoundCheckIcon,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
@@ -84,7 +91,14 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
         />
       ),
       cell: ({ row }) => (
-        <div className='truncate'>{row.original.fullName}</div>
+        <div className='truncate'>
+          <div className='font-medium'>{row.original.fullName}</div>
+          {row.original.username && (
+            <div className='text-muted-foreground text-xs'>
+              @{row.original.username}
+            </div>
+          )}
+        </div>
       ),
       meta: {
         label: i18n.t('users.table.fullName'),
@@ -95,6 +109,117 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
       enableSorting: false,
       enableColumnFilter: true,
       enableHiding: false,
+    },
+    {
+      id: ColumnKey.role,
+      accessorFn: (row) => row.role,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('users.table.role', 'Vai trò')}
+        />
+      ),
+      cell: ({ row }) => {
+        const role = row.original.role
+        if (role === 'cosplayer') {
+          return (
+            <Badge className='border-purple-200 bg-purple-600/15 text-xs text-purple-700 dark:border-purple-800 dark:bg-purple-500/20 dark:text-purple-300'>
+              Cosplayer{' '}
+              {row.original.cosplayerProfile?.rankingScore
+                ? `(${row.original.cosplayerProfile.rankingScore}đ)`
+                : ''}
+            </Badge>
+          )
+        }
+        return (
+          <Badge variant='outline' className='text-xs'>
+            Fan
+          </Badge>
+        )
+      },
+      meta: {
+        variant: 'select',
+        label: i18n.t('users.table.role', 'Vai trò'),
+        options: [
+          { label: 'Fan', value: 'fan' },
+          { label: 'Cosplayer', value: 'cosplayer' },
+        ],
+      },
+      enableColumnFilter: true,
+    },
+    {
+      id: ColumnKey.verifiedAt,
+      accessorFn: (row) => (row.verifiedAt ? 'verified' : 'unverified'),
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('users.table.verified', 'Xác minh')}
+        />
+      ),
+      cell: ({ row }) => {
+        const isEmailVerified = Boolean(row.original.verifiedAt)
+        const isCosplayerVerified = Boolean(
+          row.original.cosplayerProfile?.isVerified
+        )
+        return (
+          <div className='flex flex-col gap-1'>
+            {isEmailVerified ? (
+              <Badge variant='outline-success' className='gap-1 text-xs'>
+                <BadgeCheck className='size-3 text-emerald-600' />
+                {i18n.t('users.table.emailVerified', 'Email đã xác minh')}
+              </Badge>
+            ) : (
+              <Badge
+                variant='outline'
+                className='text-muted-foreground text-xs'
+              >
+                {i18n.t('users.table.emailUnverified', 'Chưa xác minh email')}
+              </Badge>
+            )}
+            {row.original.cosplayerProfile &&
+              (isCosplayerVerified ? (
+                <Badge
+                  variant='outline'
+                  className='gap-1 border-blue-500/40 text-xs text-blue-500'
+                >
+                  <CheckCircle2 className='size-3 text-blue-500' />
+                  {i18n.t(
+                    'users.table.cosplayerVerified',
+                    'Tích xanh Cosplayer'
+                  )}
+                </Badge>
+              ) : (
+                <Badge
+                  variant='outline'
+                  className='text-muted-foreground/70 text-xs'
+                >
+                  {i18n.t(
+                    'users.table.cosplayerUnverified',
+                    'Chưa duyệt tích xanh'
+                  )}
+                </Badge>
+              ))}
+          </div>
+        )
+      },
+      meta: {
+        variant: 'select',
+        label: i18n.t('users.table.verified', 'Xác minh'),
+        options: [
+          {
+            label: i18n.t('users.table.filterVerified', 'Đã xác minh email'),
+            value: 'verified',
+          },
+          {
+            label: i18n.t(
+              'users.table.filterUnverified',
+              'Chưa xác minh email'
+            ),
+            value: 'unverified',
+          },
+        ],
+      },
+      enableColumnFilter: true,
     },
     {
       id: ColumnKey.status,
@@ -150,7 +275,7 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
         icon: Calendar,
       },
       cell: ({ row }) => (
-        <p>{format(row.original.createdAt, 'dd/MM/yyyy HH:mm aa')}</p>
+        <p>{format(new Date(row.original.createdAt), 'dd/MM/yyyy HH:mm')}</p>
       ),
       enableColumnFilter: true,
     },

@@ -3,7 +3,6 @@
 import React from "react";
 import {
   Award,
-  Calendar,
   Mail,
   MapPin,
   Phone,
@@ -16,10 +15,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CosplayerProfileData } from "./profile-types";
+import type { CosplayerDetailResDto } from "@/services/cosplayer";
 
 interface ProfileAboutProps {
-  profile: CosplayerProfileData;
+  profile: CosplayerDetailResDto;
 }
 
 export function ProfileAbout({ profile }: ProfileAboutProps) {
@@ -37,28 +36,24 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           </CardHeader>
           <CardContent className="text-foreground/90 space-y-4 text-sm leading-relaxed">
             <p>
-              Xin chào! Mình là <strong>{profile.name}</strong>, một cosplayer
-              tự do hoạt động từ năm 2021 tại Hà Nội. Với niềm đam mê dành cho
-              anime, manga và các tựa game nổi tiếng như Genshin Impact, Honkai
-              Star Rail, và vũ trụ Fate.
+              {profile.artisticBio ||
+                profile.bio ||
+                `Xin chào! Mình là ${profile.displayName}, cosplayer trên Kosume Platform.`}
             </p>
-            <p>
-              Mỗi bộ ảnh cosplay đối với mình không chỉ là hóa trang đơn thuần,
-              mà là hành trình tái hiện trọn vẹn thần thái, câu chuyện và cảm
-              xúc của nhân vật từ thế giới 2D ra đời thực. Mình tự tay nghiên
-              cứu chế tác đạo cụ (crafting props) và trau chuốt từng chi tiết
-              phục trang để mang lại trải nghiệm mãn nhãn nhất cho khán giả.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Badge variant="secondary" className="gap-1 rounded-lg py-1">
-                <Award className="size-3 text-amber-500" />
-                Top 3 Cosplay Contest Winter Fest 2024
-              </Badge>
-              <Badge variant="secondary" className="gap-1 rounded-lg py-1">
-                <ShieldCheck className="size-3 text-sky-500" />
-                Kosume Verified Creator
-              </Badge>
-            </div>
+            {profile.awardsBadges && profile.awardsBadges.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {profile.awardsBadges.map((award, i) => (
+                  <Badge
+                    key={i}
+                    variant="secondary"
+                    className="gap-1 rounded-lg py-1"
+                  >
+                    <Award className="size-3 text-amber-500" />
+                    {award}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -76,13 +71,13 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
               <div className="border-border/40 flex items-center justify-between border-b py-1">
                 <span className="text-muted-foreground">Chiều cao:</span>
                 <span className="text-foreground font-semibold">
-                  {profile.details.height}
+                  {profile.heightLabel || "Chưa cập nhật"}
                 </span>
               </div>
               <div className="border-border/40 flex items-center justify-between border-b py-1">
                 <span className="text-muted-foreground">Kinh nghiệm:</span>
                 <span className="text-foreground font-semibold">
-                  {profile.details.experienceYears}
+                  {profile.experienceLabel || "Chưa cập nhật"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-1">
@@ -90,7 +85,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                   Khu vực nhận việc:
                 </span>
                 <span className="text-foreground font-semibold">
-                  Hà Nội & Toàn quốc
+                  {profile.workArea || profile.locationLabel || "Toàn quốc"}
                 </span>
               </div>
             </CardContent>
@@ -105,58 +100,25 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-1.5 pt-1">
-              {profile.details.skills.map((skill) => (
-                <Badge
-                  key={skill}
-                  variant="outline"
-                  className="bg-background rounded-lg px-2.5 py-1 text-xs font-medium"
-                >
-                  <CheckCircle2 className="mr-1 size-3 text-emerald-500" />
-                  {skill}
-                </Badge>
-              ))}
+              {profile.skills && profile.skills.length > 0 ? (
+                profile.skills.map((skill) => (
+                  <Badge
+                    key={skill}
+                    variant="outline"
+                    className="border-border/80 bg-muted/30 rounded-lg text-xs font-medium"
+                  >
+                    <CheckCircle2 className="text-primary mr-1 size-3" />
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-muted-foreground text-xs">
+                  Chưa cập nhật kỹ năng
+                </span>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Services & Rate Sheet */}
-        <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Calendar className="text-primary size-4" />
-              Dịch vụ Booking & Hợp tác
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="bg-muted/40 border-border/40 flex items-center justify-between rounded-xl border p-3">
-              <div>
-                <p className="text-foreground text-sm font-bold">
-                  Chụp Photoset Studio / Ngoại cảnh
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Phục trang chuẩn bị tỉ mỉ, diễn xuất theo concept yêu cầu
-                </p>
-              </div>
-              <span className="text-primary bg-primary/10 rounded-md px-2.5 py-1 text-xs font-semibold">
-                Theo thỏa thuận
-              </span>
-            </div>
-
-            <div className="bg-muted/40 border-border/40 flex items-center justify-between rounded-xl border p-3">
-              <div>
-                <p className="text-foreground text-sm font-bold">
-                  Khách mời Event / Biểu diễn Sân khấu Festival
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Tham gia giao lưu, ký tặng người hâm mộ, catwalk và phỏng vấn
-                </p>
-              </div>
-              <span className="text-primary bg-primary/10 rounded-md px-2.5 py-1 text-xs font-semibold">
-                Nhận lịch trước 2 tuần
-              </span>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Right Column: Contact & Social Channels */}
@@ -169,19 +131,21 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-xs sm:text-sm">
-            <div className="bg-muted/30 flex items-center gap-3 rounded-xl p-2.5">
-              <Mail className="text-muted-foreground size-4 shrink-0" />
-              <div className="flex-1 truncate">
-                <span className="text-muted-foreground block text-[11px]">
-                  Email làm việc
-                </span>
-                <span className="text-foreground block truncate font-medium">
-                  {profile.contact.email}
-                </span>
+            {profile.contactEmail && (
+              <div className="bg-muted/30 flex items-center gap-3 rounded-xl p-2.5">
+                <Mail className="text-muted-foreground size-4 shrink-0" />
+                <div className="flex-1 truncate">
+                  <span className="text-muted-foreground block text-[11px]">
+                    Email làm việc
+                  </span>
+                  <span className="text-foreground block truncate font-medium">
+                    {profile.contactEmail}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
-            {profile.contact.phone && (
+            {profile.contactPhone && (
               <div className="bg-muted/30 flex items-center gap-3 rounded-xl p-2.5">
                 <Phone className="text-muted-foreground size-4 shrink-0" />
                 <div className="flex-1 truncate">
@@ -189,63 +153,72 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                     Điện thoại / Zalo
                   </span>
                   <span className="text-foreground font-medium">
-                    {profile.contact.phone}
+                    {profile.contactPhone}
                   </span>
                 </div>
               </div>
             )}
 
-            <div className="bg-muted/30 flex items-center gap-3 rounded-xl p-2.5">
-              <MapPin className="text-muted-foreground size-4 shrink-0" />
-              <div>
-                <span className="text-muted-foreground block text-[11px]">
-                  Khu vực sinh sống
-                </span>
-                <span className="text-foreground font-medium">
-                  {profile.location}
-                </span>
+            {profile.locationLabel && (
+              <div className="bg-muted/30 flex items-center gap-3 rounded-xl p-2.5">
+                <MapPin className="text-muted-foreground size-4 shrink-0" />
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">
+                    Khu vực sinh sống
+                  </span>
+                  <span className="text-foreground font-medium">
+                    {profile.locationLabel}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Social links */}
             <div className="space-y-2 pt-2">
               <p className="text-muted-foreground text-xs font-semibold">
                 Mạng xã hội
               </p>
-              {profile.contact.facebook && (
+              {profile.facebookUrl && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() =>
-                    window.open(profile.contact.facebook, "_blank")
-                  }
+                  onClick={() => window.open(profile.facebookUrl!, "_blank")}
                 >
-                  <span>Facebook cá nhân</span>
+                  <span>Facebook</span>
                   <ExternalLink className="text-muted-foreground size-3.5" />
                 </Button>
               )}
-              {profile.contact.instagram && (
+              {profile.instagramUrl && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() =>
-                    window.open(profile.contact.instagram, "_blank")
-                  }
+                  onClick={() => window.open(profile.instagramUrl!, "_blank")}
                 >
-                  <span>Instagram @kirikocos</span>
+                  <span>Instagram</span>
                   <ExternalLink className="text-muted-foreground size-3.5" />
                 </Button>
               )}
-              {profile.contact.tiktok && (
+              {profile.tiktokUrl && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-9 w-full justify-between rounded-xl text-xs"
-                  onClick={() => window.open(profile.contact.tiktok, "_blank")}
+                  onClick={() => window.open(profile.tiktokUrl!, "_blank")}
                 >
-                  <span>TikTok Channel</span>
+                  <span>TikTok</span>
+                  <ExternalLink className="text-muted-foreground size-3.5" />
+                </Button>
+              )}
+              {profile.twitterUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-full justify-between rounded-xl text-xs"
+                  onClick={() => window.open(profile.twitterUrl!, "_blank")}
+                >
+                  <span>Twitter / X</span>
                   <ExternalLink className="text-muted-foreground size-3.5" />
                 </Button>
               )}
