@@ -175,6 +175,8 @@ describe('EventService', () => {
         status: EEventStatus.UPCOMING,
         startAt: new Date('2025-12-24T09:00:00Z'),
         schedule: [{ time: '09:00', activity: 'Opening' }],
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
       participantRepo.find.mockResolvedValue([
         {

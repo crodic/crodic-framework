@@ -48,7 +48,7 @@ export const eventSchema = z.object({
   participantsCount: z.number().default(0),
   interestedCount: z.number().default(0),
   applicationsCount: z.number().default(0),
-  createdAt: z.string(),
+  createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 })
 

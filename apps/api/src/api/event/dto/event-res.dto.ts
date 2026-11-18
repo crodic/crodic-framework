@@ -130,6 +130,12 @@ export class EventSummaryResDto {
 
   @ApiPropertyOptional({ example: false })
   isParticipatingByCurrentUser?: boolean;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
 }
 
 export class EventDetailResDto extends EventSummaryResDto {
@@ -144,12 +150,6 @@ export class EventDetailResDto extends EventSummaryResDto {
 
   @ApiProperty({ type: () => [EventParticipantResDto] })
   participants!: EventParticipantResDto[];
-
-  @ApiProperty()
-  createdAt!: Date;
-
-  @ApiProperty()
-  updatedAt!: Date;
 }
 
 export class EventApplicationResDto {

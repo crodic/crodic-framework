@@ -601,6 +601,8 @@ export class EventService {
       applicationsCount: Number(e.applicationsCount || 0),
       isInterestedByCurrentUser: isInterested,
       isParticipatingByCurrentUser: isParticipating,
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
     };
   }
 
@@ -615,8 +617,6 @@ export class EventService {
       description: e.description,
       schedule: e.schedule || [],
       participants,
-      createdAt: e.createdAt,
-      updatedAt: e.updatedAt,
     };
   }
 
