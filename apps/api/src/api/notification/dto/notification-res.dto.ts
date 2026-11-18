@@ -50,12 +50,6 @@ export class NotificationResDto {
   @ApiPropertyOptional({ example: '/posts/acheron-cosplay-photoshoot' })
   actionUrl?: string | null;
 
-  @ApiPropertyOptional({ example: 'Xem bài viết' })
-  actionLabel?: string | null;
-
-  @ApiPropertyOptional()
-  secondaryActionLabel?: string | null;
-
   @ApiPropertyOptional({
     example:
       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300',

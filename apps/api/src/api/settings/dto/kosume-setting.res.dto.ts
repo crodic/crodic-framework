@@ -14,9 +14,6 @@ export class KosumeSettingResDto {
   @BooleanField()
   auto_approve_posts!: boolean;
 
-  @BooleanField()
-  auto_approve_jobs!: boolean;
-
   @NumberField({ min: 0, max: 100 })
   commission_platform_rate_percent!: number;
 

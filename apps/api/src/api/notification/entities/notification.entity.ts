@@ -70,23 +70,6 @@ export class NotificationEntity extends AbstractEntity {
   })
   actorUser?: Relation<UserEntity> | null;
 
-  @Column({ name: 'actor_name', type: 'varchar', length: 120, nullable: true })
-  actorName?: string | null;
-
-  @Column({
-    name: 'actor_avatar_url',
-    type: 'varchar',
-    length: 500,
-    nullable: true,
-  })
-  actorAvatarUrl?: string | null;
-
-  @Column({ name: 'actor_role', type: 'varchar', length: 80, nullable: true })
-  actorRole?: string | null;
-
-  @Column({ name: 'actor_is_verified', type: 'boolean', default: false })
-  actorIsVerified!: boolean;
-
   @Column({ length: 220 })
   title!: string;
 
@@ -95,17 +78,6 @@ export class NotificationEntity extends AbstractEntity {
 
   @Column({ name: 'action_url', type: 'varchar', length: 300, nullable: true })
   actionUrl?: string | null;
-
-  @Column({ name: 'action_label', type: 'varchar', length: 80, nullable: true })
-  actionLabel?: string | null;
-
-  @Column({
-    name: 'secondary_action_label',
-    type: 'varchar',
-    length: 80,
-    nullable: true,
-  })
-  secondaryActionLabel?: string | null;
 
   @Column({
     name: 'preview_image_url',

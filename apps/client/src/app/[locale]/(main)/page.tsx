@@ -5,8 +5,8 @@ import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
 import { SpotlightBanner } from "@/components/home/spotlight-banner";
 import { FeaturedWorks } from "@/components/home/featured-works";
-import { BookingWidget } from "@/components/home/booking-widget";
-import { RecruitmentWidget } from "@/components/home/recruitment-widget";
+import { SuggestedCosplayersWidget } from "@/components/feed/suggested-cosplayers-widget";
+import { UpcomingEventsWidget } from "@/components/feed/upcoming-events-widget";
 import type { WithContext, WebSite } from "schema-dts";
 
 interface RootPageProps {
@@ -33,7 +33,7 @@ export async function generateMetadata({
   const description =
     whiteLabel?.metaDescription ||
     whiteLabel?.siteTagline ||
-    "Tập trung xây dựng thương hiệu cho Cosplayer - Nơi phô diễn tác phẩm và kết nối booking chuyên nghiệp.";
+    "Cộng đồng Cosplayer Việt Nam - Nơi chia sẻ bộ ảnh, theo dõi nghệ sĩ và kết nối sự kiện.";
 
   const canonicalUrl = whiteLabel?.canonicalUrl || `${baseUrl}/${locale}`;
   const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
@@ -110,8 +110,8 @@ export default async function RootPage({ params }: RootPageProps) {
 
           {/* Right Widget Column (25-30% on desktop) */}
           <div className="space-y-5 xl:col-span-4 2xl:col-span-3">
-            <BookingWidget />
-            <RecruitmentWidget />
+            <SuggestedCosplayersWidget />
+            <UpcomingEventsWidget />
           </div>
         </div>
       </div>

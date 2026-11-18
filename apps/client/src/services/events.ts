@@ -4,9 +4,9 @@ import type { PaginatedResponse } from "@repo/query-builder";
 export interface EventParticipantResDto {
   id: string;
   eventId: string;
-  userId?: string | null;
+  userId: string;
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string | null;
   isVerified: boolean;
   roleLabel?: string | null;
   sortOrder: number;
@@ -23,9 +23,7 @@ export interface EventSummaryResDto {
   startAt: string;
   endAt?: string | null;
   locationLabel: string;
-  locationFilterCode: string;
   cityId?: string | null;
-  brandId?: string | null;
   organizerUserId?: string | null;
   organizerName?: string | null;
   venue: string;
@@ -35,9 +33,7 @@ export interface EventSummaryResDto {
   ticketPriceAmount?: number | null;
   isRecruiting: boolean;
   isFeaturedFestival: boolean;
-  registrationCta?: string | null;
   categories: string[];
-  filterTags: string[];
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
   participantsCount: number;
   interestedCount: number;

@@ -39,7 +39,7 @@ export class SpotlightAdminController {
     summary: 'List all spotlight banners with filters and sorting for Admin',
     isQueryBuilder: true,
     queryBuilderOptions: {
-      filters: ['name', 'badge', AllowedFilter.exact('isActive')],
+      filters: ['search', 'badge', AllowedFilter.exact('isActive')],
       sorts: ['sortOrder', 'createdAt', 'updatedAt'],
       defaultSort: 'sortOrder',
     },

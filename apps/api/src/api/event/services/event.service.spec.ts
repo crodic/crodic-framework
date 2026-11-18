@@ -7,6 +7,8 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import {
   EEventApplicationStatus,
   EEventStatus,
@@ -25,6 +27,8 @@ describe('EventService', () => {
   let participantRepo: any;
   let applicationRepo: any;
   let interestRepo: any;
+  let profileRepo: any;
+  let userRepo: any;
   let dataSource: any;
 
   beforeEach(async () => {
@@ -48,20 +52,16 @@ describe('EventService', () => {
     applicationRepo = {
       find: jest.fn().mockResolvedValue([]),
       findOne: jest.fn(),
-      create: jest
-        .fn()
-        .mockImplementation((dto) => ({
-          ...dto,
-          id: id('20'),
-          createdAt: new Date(),
-        })),
-      save: jest
-        .fn()
-        .mockImplementation(async (item) => ({
-          ...item,
-          id: id('20'),
-          createdAt: new Date(),
-        })),
+      create: jest.fn().mockImplementation((dto) => ({
+        ...dto,
+        id: id('20'),
+        createdAt: new Date(),
+      })),
+      save: jest.fn().mockImplementation(async (item) => ({
+        ...item,
+        id: id('20'),
+        createdAt: new Date(),
+      })),
     };
 
     interestRepo = {
@@ -70,6 +70,41 @@ describe('EventService', () => {
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('30') })),
       save: jest.fn().mockResolvedValue({ id: id('30') }),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+
+    profileRepo = {
+      find: jest.fn().mockResolvedValue([
+        {
+          userId: id('100'),
+          displayName: 'KIRIKO',
+          avatarUrl: 'url',
+          isVerified: true,
+          roleBadge: 'Cosplayer',
+        },
+      ]),
+      findOne: jest.fn().mockResolvedValue({
+        id: id('100'),
+        userId: id('100'),
+        displayName: 'KIRIKO',
+        avatarUrl: 'url',
+        isVerified: true,
+        roleBadge: 'Cosplayer',
+      }),
+    };
+
+    userRepo = {
+      find: jest.fn().mockResolvedValue([
+        {
+          id: id('100'),
+          fullName: 'KIRIKO',
+          avatar: 'url',
+        },
+      ]),
+      findOne: jest.fn().mockResolvedValue({
+        id: id('100'),
+        fullName: 'KIRIKO',
+        avatar: 'url',
+      }),
     };
 
     dataSource = {
@@ -86,15 +121,6 @@ describe('EventService', () => {
           decrement: jest.fn().mockResolvedValue({}),
         };
         return cb(em);
-      }),
-      getRepository: jest.fn().mockReturnValue({
-        findOne: jest
-          .fn()
-          .mockResolvedValue({
-            id: id('100'),
-            displayName: 'KIRIKO',
-            avatarUrl: 'url',
-          }),
       }),
     };
 
@@ -115,6 +141,14 @@ describe('EventService', () => {
           provide: getRepositoryToken(EventInterestEntity),
           useValue: interestRepo,
         },
+        {
+          provide: getRepositoryToken(CosplayerProfileEntity),
+          useValue: profileRepo,
+        },
+        {
+          provide: getRepositoryToken(UserEntity),
+          useValue: userRepo,
+        },
       ],
     }).compile();
 
@@ -127,24 +161,19 @@ describe('EventService', () => {
         id: id('1'),
         slug: 'winter-fest',
         title: 'Winter Fest',
-        dayLabel: '24',
-        monthLabel: '12',
-        dateString: '24 Dec',
         locationLabel: 'HCM',
-        locationFilterCode: 'hcm',
         venue: 'SECC',
         imageUrl: 'url',
         status: EEventStatus.UPCOMING,
-        startAt: new Date(),
+        startAt: new Date('2025-12-24T09:00:00Z'),
         schedule: [{ time: '09:00', activity: 'Opening' }],
       });
       participantRepo.find.mockResolvedValue([
         {
           id: id('10'),
           eventId: id('1'),
-          name: 'KIRIKO',
-          avatarUrl: 'url',
-          isVerified: true,
+          userId: id('100'),
+          roleLabel: 'Guest',
           sortOrder: 0,
         },
       ]);
@@ -152,7 +181,9 @@ describe('EventService', () => {
       const res = await service.findBySlug('winter-fest');
 
       expect(res.slug).toBe('winter-fest');
+      expect(res.dayLabel).toBe('24');
       expect(res.participants).toHaveLength(1);
+      expect(res.participants[0].name).toBe('KIRIKO');
     });
 
     it('throws NotFoundException when event not found', async () => {

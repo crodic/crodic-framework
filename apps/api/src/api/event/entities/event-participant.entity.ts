@@ -16,7 +16,6 @@ import { UserEntity } from '../../user/entities/user.entity';
 @Index('IDX_event_participants_event_sort', ['eventId', 'sortOrder'])
 @Index('UQ_event_participants_event_user', ['eventId', 'userId'], {
   unique: true,
-  where: '"user_id" IS NOT NULL',
 })
 export class EventParticipantEntity extends AbstractEntity {
   constructor(data?: Partial<EventParticipantEntity>) {
@@ -42,24 +41,15 @@ export class EventParticipantEntity extends AbstractEntity {
   })
   event?: Relation<EventEntity>;
 
-  @Column({ name: 'user_id', type: 'bigint', nullable: true })
-  userId?: AutoIncrementID | null;
+  @Column({ name: 'user_id', type: 'bigint' })
+  userId!: AutoIncrementID;
 
-  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'user_id',
     foreignKeyConstraintName: 'FK_event_participants_user_id',
   })
-  user?: Relation<UserEntity> | null;
-
-  @Column({ length: 150 })
-  name!: string;
-
-  @Column({ name: 'avatar_url', length: 500 })
-  avatarUrl!: string;
-
-  @Column({ name: 'is_verified', type: 'boolean', default: false })
-  isVerified!: boolean;
+  user?: Relation<UserEntity>;
 
   @Column({ name: 'role_label', type: 'varchar', length: 100, nullable: true })
   roleLabel?: string | null;

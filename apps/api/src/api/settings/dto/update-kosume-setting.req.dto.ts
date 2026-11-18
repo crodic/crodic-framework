@@ -15,9 +15,6 @@ export class UpdateKosumeSettingReqDto {
   @BooleanFieldOptional()
   auto_approve_posts?: boolean;
 
-  @BooleanFieldOptional()
-  auto_approve_jobs?: boolean;
-
   @NumberFieldOptional({ min: 0, max: 100 })
   commission_platform_rate_percent?: number;
 

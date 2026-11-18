@@ -65,22 +65,6 @@ export class CreateEventReqDto {
   @Trim()
   title!: string;
 
-  @StringField({ maxLength: 10 })
-  @Trim()
-  dayLabel!: string;
-
-  @StringField({ maxLength: 20 })
-  @Trim()
-  monthLabel!: string;
-
-  @StringFieldOptional({ maxLength: 10 })
-  @Trim()
-  yearLabel?: string;
-
-  @StringField({ maxLength: 40 })
-  @Trim()
-  dateString!: string;
-
   @DateField()
   startAt!: Date;
 
@@ -91,15 +75,8 @@ export class CreateEventReqDto {
   @Trim()
   locationLabel!: string;
 
-  @StringFieldOptional({ maxLength: 40, default: 'hcm' })
-  @Trim()
-  locationFilterCode?: string;
-
   @StringFieldOptional()
   cityId?: AutoIncrementID;
-
-  @StringFieldOptional()
-  brandId?: AutoIncrementID;
 
   @StringFieldOptional()
   organizerUserId?: AutoIncrementID;
@@ -122,10 +99,6 @@ export class CreateEventReqDto {
   @Trim()
   description!: string;
 
-  @StringFieldOptional({ maxLength: 100 })
-  @Trim()
-  ticketPriceLabel?: string;
-
   @NumberFieldOptional({ min: 0 })
   ticketPriceAmount?: number;
 
@@ -135,18 +108,11 @@ export class CreateEventReqDto {
   @BooleanFieldOptional()
   isFeaturedFestival?: boolean;
 
-  @StringFieldOptional({ maxLength: 120 })
-  @Trim()
-  registrationCta?: string;
-
   @ArrayFieldOptional(EventScheduleItemInputDto)
   schedule?: EventScheduleItemInputDto[];
 
   @StringFieldOptional({ each: true })
   categories?: string[];
-
-  @StringFieldOptional({ each: true })
-  filterTags?: string[];
 
   @EnumFieldOptional(() => EEventStatus, { default: EEventStatus.UPCOMING })
   status?: EEventStatus;
@@ -156,22 +122,6 @@ export class UpdateEventReqDto {
   @StringFieldOptional({ maxLength: 220 })
   @Trim()
   title?: string;
-
-  @StringFieldOptional({ maxLength: 10 })
-  @Trim()
-  dayLabel?: string;
-
-  @StringFieldOptional({ maxLength: 20 })
-  @Trim()
-  monthLabel?: string;
-
-  @StringFieldOptional({ maxLength: 10 })
-  @Trim()
-  yearLabel?: string;
-
-  @StringFieldOptional({ maxLength: 40 })
-  @Trim()
-  dateString?: string;
 
   @DateFieldOptional()
   startAt?: Date;
@@ -183,15 +133,8 @@ export class UpdateEventReqDto {
   @Trim()
   locationLabel?: string;
 
-  @StringFieldOptional({ maxLength: 40 })
-  @Trim()
-  locationFilterCode?: string;
-
   @StringFieldOptional()
   cityId?: AutoIncrementID;
-
-  @StringFieldOptional()
-  brandId?: AutoIncrementID;
 
   @StringFieldOptional()
   organizerUserId?: AutoIncrementID;
@@ -214,10 +157,6 @@ export class UpdateEventReqDto {
   @Trim()
   description?: string;
 
-  @StringFieldOptional({ maxLength: 100 })
-  @Trim()
-  ticketPriceLabel?: string;
-
   @NumberFieldOptional({ min: 0 })
   ticketPriceAmount?: number;
 
@@ -227,18 +166,11 @@ export class UpdateEventReqDto {
   @BooleanFieldOptional()
   isFeaturedFestival?: boolean;
 
-  @StringFieldOptional({ maxLength: 120 })
-  @Trim()
-  registrationCta?: string;
-
   @ArrayFieldOptional(EventScheduleItemInputDto)
   schedule?: EventScheduleItemInputDto[];
 
   @StringFieldOptional({ each: true })
   categories?: string[];
-
-  @StringFieldOptional({ each: true })
-  filterTags?: string[];
 
   @EnumFieldOptional(() => EEventStatus)
   status?: EEventStatus;

@@ -19,7 +19,6 @@ export const userCosplayerSummarySchema = z.object({
   displayName: z.string(),
   roleBadge: z.string().nullish(),
   isVerified: z.boolean(),
-  isAcceptingBooking: z.boolean(),
   rankingScore: z.number(),
 })
 

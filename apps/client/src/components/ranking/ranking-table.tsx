@@ -8,7 +8,7 @@ import {
   ArrowUp,
   Check,
   Minus,
-  Sparkles,
+  Star,
   UserCheck,
   UserPlus,
 } from "lucide-react";
@@ -200,7 +200,7 @@ export function RankingTable({ items }: RankingTableProps) {
                   {/* Kosume Score */}
                   <TableCell className="text-center">
                     <div className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-400">
-                      <Sparkles className="size-3" />
+                      <Star className="size-3" />
                       <span>{item.score}</span>
                     </div>
                   </TableCell>

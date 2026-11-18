@@ -10,7 +10,6 @@ export class CreateCosplayerProfilesTable1795000002000 implements MigrationInter
         "user_id" bigint NOT NULL,
         "slug" character varying(80) NOT NULL,
         "display_name" character varying(120) NOT NULL,
-        "handle" character varying(80) NOT NULL,
         "role_badge" character varying(80),
         "tagline" character varying(255),
         "bio" character varying(500),
@@ -24,9 +23,7 @@ export class CreateCosplayerProfilesTable1795000002000 implements MigrationInter
         "country_id" bigint,
         "work_area" character varying(160),
         "height_cm" smallint,
-        "height_label" character varying(50),
         "experience_years_num" smallint,
-        "experience_label" character varying(100),
         "skills" jsonb NOT NULL DEFAULT '[]',
         "specialties" jsonb NOT NULL DEFAULT '[]',
         "awards_badges" jsonb NOT NULL DEFAULT '[]',
@@ -37,14 +34,10 @@ export class CreateCosplayerProfilesTable1795000002000 implements MigrationInter
         "tiktok_url" character varying(500),
         "twitter_url" character varying(500),
         "is_verified" boolean NOT NULL DEFAULT false,
-        "is_accepting_booking" boolean NOT NULL DEFAULT false,
         "is_crafting_creator" boolean NOT NULL DEFAULT false,
-        "followers_count" bigint NOT NULL DEFAULT '0',
-        "following_count" bigint NOT NULL DEFAULT '0',
         "total_likes_count" bigint NOT NULL DEFAULT '0',
         "albums_count" integer NOT NULL DEFAULT '0',
         "characters_count" integer NOT NULL DEFAULT '0',
-        "collections_count" integer NOT NULL DEFAULT '0',
         "ranking_score" double precision NOT NULL DEFAULT '0',
         "deleted_at" TIMESTAMP WITH TIME ZONE,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -66,12 +59,6 @@ export class CreateCosplayerProfilesTable1795000002000 implements MigrationInter
       CREATE INDEX "IDX_cosplayer_profiles_ranking" ON "cosplayer_profiles" ("ranking_score", "total_likes_count")
     `);
     await queryRunner.query(`
-      CREATE INDEX "IDX_cosplayer_profiles_booking" ON "cosplayer_profiles" ("is_accepting_booking", "is_verified", "followers_count")
-    `);
-    await queryRunner.query(`
-      CREATE UNIQUE INDEX "UQ_cosplayer_profiles_handle" ON "cosplayer_profiles" ("handle") WHERE "deleted_at" IS NULL
-    `);
-    await queryRunner.query(`
       CREATE UNIQUE INDEX "UQ_cosplayer_profiles_slug" ON "cosplayer_profiles" ("slug") WHERE "deleted_at" IS NULL
     `);
     await queryRunner.query(`
@@ -84,12 +71,6 @@ export class CreateCosplayerProfilesTable1795000002000 implements MigrationInter
       `DROP INDEX "public"."UQ_cosplayer_profiles_user_id"`,
     );
     await queryRunner.query(`DROP INDEX "public"."UQ_cosplayer_profiles_slug"`);
-    await queryRunner.query(
-      `DROP INDEX "public"."UQ_cosplayer_profiles_handle"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_cosplayer_profiles_booking"`,
-    );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_cosplayer_profiles_ranking"`,
     );

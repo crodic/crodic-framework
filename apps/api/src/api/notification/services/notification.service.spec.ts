@@ -2,6 +2,7 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import {
   ENotificationCategory,
   ENotificationType,
@@ -14,6 +15,7 @@ const id = (val: string) => val as unknown as AutoIncrementID;
 describe('NotificationService', () => {
   let service: NotificationService;
   let notiRepo: any;
+  let profileRepo: any;
 
   beforeEach(async () => {
     notiRepo = {
@@ -28,10 +30,18 @@ describe('NotificationService', () => {
       save: jest.fn().mockImplementation(async (item) => item),
     };
 
+    profileRepo = {
+      find: jest.fn().mockResolvedValue([]),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationService,
         { provide: getRepositoryToken(NotificationEntity), useValue: notiRepo },
+        {
+          provide: getRepositoryToken(CosplayerProfileEntity),
+          useValue: profileRepo,
+        },
       ],
     }).compile();
 

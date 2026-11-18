@@ -9,7 +9,6 @@ import {
   Loader2,
   MessageSquare,
   Settings,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,7 +59,6 @@ export function NotificationsView() {
     return {
       all: notifications.length,
       social: notifications.filter((n) => n.category === "social").length,
-      booking: notifications.filter((n) => n.category === "booking").length,
       system: notifications.filter((n) => n.category === "system").length,
     };
   }, [notifications]);
@@ -178,19 +176,6 @@ export function NotificationsView() {
             <span>{t("tabs.social")}</span>
             <span className="text-[11px] opacity-80">
               ({categoryCounts.social})
-            </span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant={activeCategory === "booking" ? "default" : "ghost"}
-            onClick={() => setActiveCategory("booking")}
-            className="h-8.5 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-          >
-            <Sparkles className="size-3.5" />
-            <span>{t("tabs.booking")}</span>
-            <span className="text-[11px] opacity-80">
-              ({categoryCounts.booking})
             </span>
           </Button>
 

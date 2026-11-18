@@ -84,9 +84,18 @@ export class UserEntity extends AbstractEntity implements IAuthUser {
   @Column({
     type: 'jsonb',
     default: () =>
-      `'{"email": true, "system": true, "security": true, "notifyBooking": true, "notifyNewPost": true, "notifyFestivals": false, "notifyInteractions": true}'`,
+      `'{"email": true, "system": true, "security": true, "notifyNewPost": true, "notifyFestivals": false, "notifyInteractions": true}'`,
   })
   notifications!: Record<string, boolean>;
+
+  @Column({ name: 'followers_count', type: 'bigint', default: 0 })
+  followersCount!: number;
+
+  @Column({ name: 'following_count', type: 'bigint', default: 0 })
+  followingCount!: number;
+
+  @Column({ name: 'collections_count', type: 'integer', default: 0 })
+  collectionsCount!: number;
 
   @DeleteDateColumn({
     name: 'deleted_at',

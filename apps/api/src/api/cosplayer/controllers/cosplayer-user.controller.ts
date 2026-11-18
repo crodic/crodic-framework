@@ -16,15 +16,12 @@ import {
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateCosplayerCharacterReqDto,
-  CreateCosplayerServiceReqDto,
   UpdateCosplayerCharacterReqDto,
   UpdateCosplayerProfileReqDto,
-  UpdateCosplayerServiceReqDto,
 } from '../dto/cosplayer-req.dto';
 import {
   CosplayerCharacterResDto,
   CosplayerDetailResDto,
-  CosplayerServiceResDto,
 } from '../dto/cosplayer-res.dto';
 import { CosplayerService } from '../services/cosplayer.service';
 
@@ -37,7 +34,7 @@ export class CosplayerUserController {
   @Get('me')
   @ApiAuth({
     type: CosplayerDetailResDto,
-    summary: 'Get current user cosplayer profile with services & characters',
+    summary: 'Get current user cosplayer profile with characters',
   })
   getMyProfile(@CurrentUser('id') userId: AutoIncrementID) {
     return this.cosplayerService.getMyProfile(userId);
@@ -53,57 +50,6 @@ export class CosplayerUserController {
     @Body() dto: UpdateCosplayerProfileReqDto,
   ) {
     return this.cosplayerService.updateProfile(userId, dto);
-  }
-
-  // =================== SERVICES ===================
-
-  @Get('me/services')
-  @ApiAuth({
-    type: CosplayerServiceResDto,
-    summary: 'Get current user booking services',
-  })
-  getMyServices(@CurrentUser('id') userId: AutoIncrementID) {
-    return this.cosplayerService.getServicesByUserId(userId);
-  }
-
-  @Post('me/services')
-  @ApiAuth({
-    type: CosplayerServiceResDto,
-    summary: 'Add a new booking service',
-    statusCode: HttpStatus.CREATED,
-  })
-  addService(
-    @CurrentUser('id') userId: AutoIncrementID,
-    @Body() dto: CreateCosplayerServiceReqDto,
-  ) {
-    return this.cosplayerService.addService(userId, dto);
-  }
-
-  @Patch('me/services/:id')
-  @ApiAuth({
-    type: CosplayerServiceResDto,
-    summary: 'Update a booking service',
-  })
-  @ApiParam({ name: 'id', type: String })
-  updateService(
-    @CurrentUser('id') userId: AutoIncrementID,
-    @Param('id') serviceId: AutoIncrementID,
-    @Body() dto: UpdateCosplayerServiceReqDto,
-  ) {
-    return this.cosplayerService.updateService(userId, serviceId, dto);
-  }
-
-  @Delete('me/services/:id')
-  @ApiAuth({
-    summary: 'Delete a booking service',
-    statusCode: HttpStatus.NO_CONTENT,
-  })
-  @ApiParam({ name: 'id', type: String })
-  async deleteService(
-    @CurrentUser('id') userId: AutoIncrementID,
-    @Param('id') serviceId: AutoIncrementID,
-  ) {
-    await this.cosplayerService.deleteService(userId, serviceId);
   }
 
   // =================== CHARACTERS ===================

@@ -25,7 +25,7 @@ export const contentReportSchema = z.object({
   reporterName: z.string().nullish(),
   reporterEmail: z.string().nullish(),
   reporterAvatar: z.string().nullish(),
-  targetType: z.enum(['post', 'user', 'comment', 'job']),
+  targetType: z.enum(['post', 'user', 'comment', 'event']),
   targetId: z.string(),
   reason: z.string(),
   description: z.string().nullish(),

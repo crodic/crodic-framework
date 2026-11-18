@@ -56,17 +56,17 @@ const EVENT_TIME_SLOTS = [
 ] as const
 
 const EVENT_LOCATION_OPTIONS = [
-  { label: 'TP.HCM', code: 'hcm' },
-  { label: 'Hà Nội', code: 'hn' },
-  { label: 'Đà Nẵng', code: 'dn' },
-  { label: 'Cần Thơ', code: 'other' },
-  { label: 'Hải Phòng', code: 'other' },
-  { label: 'Toàn quốc', code: 'all' },
+  'TP.HCM',
+  'Hà Nội',
+  'Đà Nẵng',
+  'Cần Thơ',
+  'Hải Phòng',
+  'Toàn quốc',
 ] as const
 
 const DEFAULT_TIME_SLOT = '09:00 - 21:00'
 
-function buildEventDateFields(
+function buildEventDatePreview(
   start: Date,
   end: Date | undefined,
   slot: string
@@ -88,20 +88,13 @@ function buildEventDateFields(
     dateRangeText = `${format(start, 'dd/MM')} - ${format(effectiveEnd, 'dd/MM/yyyy')}`
   }
 
-  const dateString = slot ? `${dateRangeText} • ${slot}` : dateRangeText
-
   return {
     dayLabel,
     monthLabel,
-    yearLabel,
-    dateString,
+    dateString: slot ? `${dateRangeText} • ${slot}` : dateRangeText,
     startAt: start.toISOString(),
     endAt: effectiveEnd.toISOString(),
   }
-}
-
-function formatVndLabel(amount: number) {
-  return `${new Intl.NumberFormat('vi-VN').format(amount)}đ`
 }
 
 interface EventFormDialogProps {
@@ -119,7 +112,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
   const [startOpen, setStartOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)
 
-  const initialDates = buildEventDateFields(
+  const initialDates = buildEventDatePreview(
     startDate,
     endDate,
     DEFAULT_TIME_SLOT
@@ -129,21 +122,15 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       title: '',
-      dayLabel: initialDates.dayLabel,
-      monthLabel: initialDates.monthLabel,
-      yearLabel: initialDates.yearLabel,
-      dateString: initialDates.dateString,
       startAt: initialDates.startAt,
       endAt: initialDates.endAt,
       locationLabel: 'TP.HCM',
-      locationFilterCode: 'hcm',
       organizerName: '',
       venue: 'SECC - Trung tâm Hội chợ & Triển lãm Sài Gòn, Q.7',
       imageUrl: '',
       description:
         'Lễ hội hóa thân Cosplay quy mô lớn nhất mùa đông với hàng ngàn cosplayer.',
       ticketPriceAmount: 120000,
-      ticketPriceLabel: formatVndLabel(120000),
       status: 'upcoming',
       isFeaturedFestival: false,
       isRecruiting: true,
@@ -155,18 +142,14 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     nextEnd: Date | undefined,
     nextSlot: string
   ) => {
-    const computed = buildEventDateFields(nextStart, nextEnd, nextSlot)
-    form.setValue('dayLabel', computed.dayLabel, { shouldValidate: true })
-    form.setValue('monthLabel', computed.monthLabel, { shouldValidate: true })
-    form.setValue('yearLabel', computed.yearLabel)
-    form.setValue('dateString', computed.dateString, { shouldValidate: true })
+    const computed = buildEventDatePreview(nextStart, nextEnd, nextSlot)
     form.setValue('startAt', computed.startAt, { shouldValidate: true })
     form.setValue('endAt', computed.endAt)
   }
 
   const resetLocalState = () => {
     const freshStart = new Date()
-    const freshDates = buildEventDateFields(
+    const freshDates = buildEventDatePreview(
       freshStart,
       undefined,
       DEFAULT_TIME_SLOT
@@ -177,21 +160,15 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     setTicketMode('paid')
     form.reset({
       title: '',
-      dayLabel: freshDates.dayLabel,
-      monthLabel: freshDates.monthLabel,
-      yearLabel: freshDates.yearLabel,
-      dateString: freshDates.dateString,
       startAt: freshDates.startAt,
       endAt: freshDates.endAt,
       locationLabel: 'TP.HCM',
-      locationFilterCode: 'hcm',
       organizerName: '',
       venue: 'SECC - Trung tâm Hội chợ & Triển lãm Sài Gòn, Q.7',
       imageUrl: '',
       description:
         'Lễ hội hóa thân Cosplay quy mô lớn nhất mùa đông với hàng ngàn cosplayer.',
       ticketPriceAmount: 120000,
-      ticketPriceLabel: formatVndLabel(120000),
       status: 'upcoming',
       isFeaturedFestival: false,
       isRecruiting: true,
@@ -215,9 +192,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
     createMutation.mutate(values)
   }
 
-  const previewDay = form.watch('dayLabel')
-  const previewMonth = form.watch('monthLabel')
-  const previewDateString = form.watch('dateString')
+  const previewDates = buildEventDatePreview(startDate, endDate, timeSlot)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -370,11 +345,11 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 <span className='text-muted-foreground'>
                   Tự động hiển thị:{' '}
                   <strong className='text-foreground'>
-                    {previewDateString}
+                    {previewDates.dateString}
                   </strong>
                 </span>
                 <span className='bg-primary/10 text-primary rounded px-2 py-0.5 font-semibold'>
-                  {previewDay} • {previewMonth}
+                  {previewDates.dayLabel} • {previewDates.monthLabel}
                 </span>
               </div>
 
@@ -384,18 +359,7 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel required>Tỉnh / Thành phố</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={(val) => {
-                        field.onChange(val)
-                        const matched = EVENT_LOCATION_OPTIONS.find(
-                          (loc) => loc.label === val
-                        )
-                        if (matched) {
-                          form.setValue('locationFilterCode', matched.code)
-                        }
-                      }}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className='w-full'>
                           <span className='flex items-center gap-2'>
@@ -406,8 +370,8 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                       </FormControl>
                       <SelectContent>
                         {EVENT_LOCATION_OPTIONS.map((loc) => (
-                          <SelectItem key={loc.label} value={loc.label}>
-                            {loc.label}
+                          <SelectItem key={loc} value={loc}>
+                            {loc}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -481,15 +445,10 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                     setTicketMode(val)
                     if (val === 'free') {
                       form.setValue('ticketPriceAmount', 0)
-                      form.setValue('ticketPriceLabel', 'Miễn phí vào cổng')
                     } else {
                       const currentAmount =
                         form.getValues('ticketPriceAmount') || 120000
                       form.setValue('ticketPriceAmount', currentAmount)
-                      form.setValue(
-                        'ticketPriceLabel',
-                        formatVndLabel(currentAmount)
-                      )
                     }
                   }}
                 >
@@ -525,12 +484,6 @@ export function EventFormDialog({ open, onOpenChange }: EventFormDialogProps) {
                               Number(e.target.value) || 0
                             )
                             field.onChange(amount)
-                            form.setValue(
-                              'ticketPriceLabel',
-                              amount > 0
-                                ? formatVndLabel(amount)
-                                : 'Miễn phí vào cổng'
-                            )
                           }}
                         />
                       </FormControl>

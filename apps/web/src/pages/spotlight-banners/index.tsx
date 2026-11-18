@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { PlusIcon, Sparkles } from 'lucide-react'
+import { GalleryHorizontalEnd, PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -113,7 +113,7 @@ export function PageSpotlightBannersOverview() {
         )
       }
       if (filter.name) {
-        builder.filter('name', filter.name)
+        builder.filter('search', filter.name)
       }
     }, [])
 
@@ -139,7 +139,7 @@ export function PageSpotlightBannersOverview() {
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
-            <Sparkles className='text-primary size-6' />
+            <GalleryHorizontalEnd className='text-primary size-6' />
             <span>
               {t(
                 'navigation.kosume.spotlight',

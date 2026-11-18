@@ -1,56 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import {
-  ECurrencyCode,
-  EServicePriceUnit,
-} from '../constants/cosplayer.constant';
-
-export class CosplayerServiceResDto {
-  @ApiProperty({ type: String, example: '1' })
-  id!: AutoIncrementID;
-
-  @ApiProperty({ type: String, example: '1' })
-  userId!: AutoIncrementID;
-
-  @ApiProperty({ example: 'Chụp Photoset Studio / Ngoại cảnh' })
-  title!: string;
-
-  @ApiPropertyOptional({
-    example: 'Phục trang chuẩn bị tỉ mỉ, diễn xuất theo concept yêu cầu',
-  })
-  description?: string | null;
-
-  @ApiProperty({ example: 'Theo thỏa thuận' })
-  badgeLabel!: string;
-
-  @ApiPropertyOptional({ example: 2500000, nullable: true })
-  startingPrice?: number | null;
-
-  @ApiPropertyOptional({ enum: ECurrencyCode, example: ECurrencyCode.VND })
-  currency?: ECurrencyCode;
-
-  @ApiPropertyOptional({
-    enum: EServicePriceUnit,
-    example: EServicePriceUnit.SESSION,
-    nullable: true,
-  })
-  priceUnit?: EServicePriceUnit | null;
-
-  @ApiPropertyOptional({ example: true })
-  isNegotiable?: boolean;
-
-  @ApiProperty({ example: 0 })
-  sortOrder!: number;
-
-  @ApiProperty({ example: true })
-  isActive!: boolean;
-
-  @ApiProperty()
-  createdAt!: Date;
-
-  @ApiProperty()
-  updatedAt!: Date;
-}
 
 export class CosplayerCharacterResDto {
   @ApiProperty({ type: String, example: '1' })
@@ -138,9 +87,6 @@ export class CosplayerSummaryResDto {
 
   @ApiProperty({ example: true })
   isVerified!: boolean;
-
-  @ApiProperty({ example: true })
-  isAcceptingBooking!: boolean;
 
   @ApiProperty({ example: false })
   isCraftingCreator!: boolean;
@@ -269,9 +215,6 @@ export class CosplayerDetailResDto extends CosplayerSummaryResDto {
 
   @ApiProperty({ example: 5 })
   collectionsCount!: number;
-
-  @ApiProperty({ type: () => [CosplayerServiceResDto] })
-  services!: CosplayerServiceResDto[];
 
   @ApiProperty({ type: () => [CosplayerCharacterResDto] })
   characters!: CosplayerCharacterResDto[];

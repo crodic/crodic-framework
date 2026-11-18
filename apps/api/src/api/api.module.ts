@@ -17,10 +17,7 @@ import { CosplayerModule } from './cosplayer/cosplayer.module';
 import { PostModule } from './post/post.module';
 import { SocialModule } from './social/social.module';
 import { CollectionModule } from './collection/collection.module';
-import { BrandModule } from './brand/brand.module';
-import { JobModule } from './job/job.module';
 import { EventModule } from './event/event.module';
-import { BookingModule } from './booking/booking.module';
 import { RankingModule } from './ranking/ranking.module';
 import { SpotlightModule } from './spotlight/spotlight.module';
 import { NotificationModule } from './notification/notification.module';
@@ -47,10 +44,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     PostModule,
     SocialModule,
     CollectionModule,
-    BrandModule,
-    JobModule,
     EventModule,
-    BookingModule,
     RankingModule,
     SpotlightModule,
     NotificationModule,
@@ -76,10 +70,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     PostModule,
     SocialModule,
     CollectionModule,
-    BrandModule,
-    JobModule,
     EventModule,
-    BookingModule,
     RankingModule,
     SpotlightModule,
     NotificationModule,

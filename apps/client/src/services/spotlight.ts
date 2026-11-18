@@ -8,9 +8,8 @@ export interface SpotlightBannerResDto {
   tagline: string;
   bannerImageUrl: string;
   portfolioHref: string;
-  bookingHref?: string | null;
   sortOrder: number;
-  cosplayerUserId?: string | null;
+  cosplayerUserId: string;
   createdAt: string;
 }
 

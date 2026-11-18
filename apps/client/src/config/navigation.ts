@@ -24,12 +24,6 @@ export const APP_SIDEBAR_NAV: NavGroup[] = [
         icon: "home",
       },
       {
-        labelKey: "jobs",
-        defaultLabel: "Bản tin Booking / Tuyển dụng",
-        href: "/jobs",
-        icon: "newspaper",
-      },
-      {
         labelKey: "feed",
         defaultLabel: "Bảng tin",
         href: "/feed",

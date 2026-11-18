@@ -60,13 +60,6 @@ export class CollectionEntity extends AbstractEntity {
   @Column({ name: 'items_count', type: 'integer', default: 0 })
   itemsCount!: number;
 
-  @Column({
-    name: 'preview_thumbnails',
-    type: 'jsonb',
-    default: () => `'[]'`,
-  })
-  previewThumbnails!: string[];
-
   @OneToMany(() => CollectionItemEntity, (item) => item.collection)
   items?: Relation<CollectionItemEntity>[];
 

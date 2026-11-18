@@ -238,13 +238,19 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                     className="border-border/70 bg-muted/20 hover:border-primary/50 group flex items-center gap-3 rounded-2xl border p-3 transition-all hover:-translate-y-0.5"
                   >
                     <div className="border-primary/40 relative size-10 shrink-0 overflow-hidden rounded-full border">
-                      <Image
-                        src={p.avatarUrl}
-                        alt={p.name}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
+                      {p.avatarUrl ? (
+                        <Image
+                          src={p.avatarUrl}
+                          alt={p.name}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-primary/10 text-primary flex size-full items-center justify-center text-xs font-bold">
+                          {p.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">

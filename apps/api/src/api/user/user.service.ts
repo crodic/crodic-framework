@@ -184,10 +184,7 @@ export class UserService {
       if (cleanUsername) {
         await this.dataSource
           .getRepository('cosplayer_profiles')
-          .update(
-            { userId: id },
-            { slug: cleanUsername, handle: `@${cleanUsername}` },
-          );
+          .update({ userId: id }, { slug: cleanUsername });
       }
     }
 

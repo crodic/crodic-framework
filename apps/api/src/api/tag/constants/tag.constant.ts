@@ -40,7 +40,6 @@ export enum ETaggableEntityType {
   FILE = 'file',
   POST = 'post',
   EVENT = 'event',
-  JOB = 'job',
   COSPLAYER_PROFILE = 'cosplayer_profile',
 }
 

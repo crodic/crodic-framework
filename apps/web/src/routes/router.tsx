@@ -211,11 +211,6 @@ const PageContentReportsOverview = lazy(() =>
     default: m.PageContentReportsOverview,
   }))
 )
-const PageJobsOverview = lazy(() =>
-  import('@/pages/jobs').then((m) => ({
-    default: m.PageJobsOverview,
-  }))
-)
 const PageEventsOverview = lazy(() =>
   import('@/pages/events').then((m) => ({
     default: m.PageEventsOverview,
@@ -229,11 +224,6 @@ const PageSpotlightBannersOverview = lazy(() =>
 const PagePostsOverview = lazy(() =>
   import('@/pages/posts').then((m) => ({
     default: m.PagePostsOverview,
-  }))
-)
-const PageBookingsOverview = lazy(() =>
-  import('@/pages/bookings').then((m) => ({
-    default: m.PageBookingsOverview,
   }))
 )
 const PagePlatformSettings = lazy(() =>
@@ -650,14 +640,6 @@ const appRoutes: RouteObject[] = [
         ),
       },
       {
-        path: '/jobs',
-        element: (
-          <RouteAuthorize action='read' subject='JOB'>
-            <PageJobsOverview />
-          </RouteAuthorize>
-        ),
-      },
-      {
         path: '/events',
         element: (
           <RouteAuthorize action='read' subject='EVENT'>
@@ -678,14 +660,6 @@ const appRoutes: RouteObject[] = [
         element: (
           <RouteAuthorize action='read' subject='POST'>
             <PagePostsOverview />
-          </RouteAuthorize>
-        ),
-      },
-      {
-        path: '/bookings',
-        element: (
-          <RouteAuthorize action='read' subject='BOOKING'>
-            <PageBookingsOverview />
           </RouteAuthorize>
         ),
       },

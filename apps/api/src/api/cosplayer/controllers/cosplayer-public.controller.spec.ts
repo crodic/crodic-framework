@@ -16,7 +16,6 @@ describe('CosplayerPublicController', () => {
         id: id('1'),
         slug: 'kiriko-cos',
         displayName: 'KIRIKO',
-        services: [{ id: id('10'), title: 'Photoset' }],
         characters: [{ id: id('20'), characterName: 'Raiden Shogun' }],
       }),
     };
@@ -40,12 +39,6 @@ describe('CosplayerPublicController', () => {
     const res = await controller.findBySlug('kiriko-cos');
     expect(res.slug).toBe('kiriko-cos');
     expect(service.findBySlugOrHandle).toHaveBeenCalledWith('kiriko-cos');
-  });
-
-  it('getServices returns services', async () => {
-    const res = await controller.getServices('kiriko-cos');
-    expect(res).toHaveLength(1);
-    expect(res[0].id).toBe(id('10'));
   });
 
   it('getCharacters returns characters', async () => {

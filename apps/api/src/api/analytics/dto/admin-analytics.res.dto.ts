@@ -4,13 +4,9 @@ export class AdminAnalyticsKpiDto {
   verifiedCosplayers!: number;
   totalPosts!: number;
   featuredPosts!: number;
-  totalBookings!: number;
-  completedBookings!: number;
   activeEvents!: number;
-  openJobs!: number;
   pendingReports!: number;
   pendingPosts!: number;
-  pendingBookings!: number;
 }
 
 export class CategoryDistributionItemDto {
@@ -18,13 +14,7 @@ export class CategoryDistributionItemDto {
   count!: number;
 }
 
-export class BookingStatusDistributionItemDto {
-  status!: string;
-  count!: number;
-}
-
 export class AdminAnalyticsOverviewResDto {
   kpi!: AdminAnalyticsKpiDto;
   postCategories!: CategoryDistributionItemDto[];
-  bookingStatuses!: BookingStatusDistributionItemDto[];
 }

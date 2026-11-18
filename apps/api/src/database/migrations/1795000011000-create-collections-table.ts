@@ -14,7 +14,6 @@ export class CreateCollectionsTable1795000011000 implements MigrationInterface {
         "is_default" boolean NOT NULL DEFAULT false,
         "is_public" boolean NOT NULL DEFAULT true,
         "items_count" integer NOT NULL DEFAULT '0',
-        "preview_thumbnails" jsonb NOT NULL DEFAULT '[]',
         "deleted_at" TIMESTAMP WITH TIME ZONE,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

@@ -2,7 +2,7 @@ export enum EReportTargetType {
   POST = 'post',
   USER = 'user',
   COMMENT = 'comment',
-  JOB = 'job',
+  EVENT = 'event',
 }
 
 export enum EReportStatus {

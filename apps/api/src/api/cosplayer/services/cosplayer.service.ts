@@ -1,12 +1,12 @@
 import {
   AllowedFilter,
+  AllowedSort,
   QueryBuilder,
   QueryParams,
 } from '../../../common/query-builder';
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -17,19 +17,14 @@ import { Brackets, DataSource, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
-import { CosplayerServiceEntity } from '../entities/cosplayer-service.entity';
-import { ECurrencyCode } from '../constants/cosplayer.constant';
 import {
   CreateCosplayerCharacterReqDto,
-  CreateCosplayerServiceReqDto,
   UpdateCosplayerCharacterReqDto,
   UpdateCosplayerProfileReqDto,
-  UpdateCosplayerServiceReqDto,
 } from '../dto/cosplayer-req.dto';
 import {
   CosplayerCharacterResDto,
   CosplayerDetailResDto,
-  CosplayerServiceResDto,
   CosplayerSummaryResDto,
 } from '../dto/cosplayer-res.dto';
 
@@ -52,8 +47,6 @@ export class CosplayerService {
     private readonly dataSource: DataSource,
     @InjectRepository(CosplayerProfileEntity)
     private readonly profileRepo: Repository<CosplayerProfileEntity>,
-    @InjectRepository(CosplayerServiceEntity)
-    private readonly serviceRepo: Repository<CosplayerServiceEntity>,
     @InjectRepository(CosplayerCharacterEntity)
     private readonly characterRepo: Repository<CosplayerCharacterEntity>,
     @InjectRepository(UserEntity)
@@ -66,17 +59,18 @@ export class CosplayerService {
   async findAll(
     query: QueryParams,
   ): Promise<Paginated<CosplayerSummaryResDto>> {
-    const baseQb = this.profileRepo.createQueryBuilder('profile');
+    const baseQb = this.profileRepo
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.user', 'user');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
         AllowedFilter.exact('cityId'),
         AllowedFilter.exact('countryId'),
         AllowedFilter.exact('isVerified'),
-        AllowedFilter.exact('isAcceptingBooking'),
         AllowedFilter.exact('isCraftingCreator'),
         AllowedFilter.partial('displayName'),
-        AllowedFilter.partial('handle'),
+        AllowedFilter.partial('slug'),
         AllowedFilter.partial('workArea'),
         AllowedFilter.callback('search', (qb, value) => {
           const term = Array.isArray(value) ? String(value[0]) : String(value);
@@ -87,7 +81,7 @@ export class CosplayerService {
               b.where('LOWER(profile.displayName) LIKE :sTerm', {
                 sTerm: `%${normalized}%`,
               })
-                .orWhere('LOWER(profile.handle) LIKE :sTerm', {
+                .orWhere('LOWER(profile.slug) LIKE :sTerm', {
                   sTerm: `%${normalized}%`,
                 })
                 .orWhere('LOWER(profile.tagline) LIKE :sTerm', {
@@ -106,7 +100,7 @@ export class CosplayerService {
       .allowedSorts([
         'rankingScore',
         'totalLikesCount',
-        'followersCount',
+        AllowedSort.field('followersCount', 'user.followersCount'),
         'albumsCount',
         'createdAt',
       ])
@@ -126,32 +120,23 @@ export class CosplayerService {
   async findBySlugOrHandle(
     slugOrHandle: string,
   ): Promise<CosplayerDetailResDto> {
-    const cleaned = slugOrHandle.trim().replace(/^@/, '');
+    const cleaned = slugOrHandle.trim().replace(/^@/, '').toLowerCase();
 
     const profile = await this.profileRepo.findOne({
-      where: [
-        { slug: cleaned },
-        { handle: `@${cleaned}` },
-        { handle: cleaned },
-      ],
+      where: { slug: cleaned },
+      relations: ['user'],
     });
 
     if (!profile) {
       throw new NotFoundException(`Cosplayer "${slugOrHandle}" not found`);
     }
 
-    const [services, characters] = await Promise.all([
-      this.serviceRepo.find({
-        where: { userId: profile.userId, isActive: true },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-      this.characterRepo.find({
-        where: { userId: profile.userId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-    ]);
+    const characters = await this.characterRepo.find({
+      where: { userId: profile.userId },
+      order: { sortOrder: 'ASC', id: 'ASC' },
+    });
 
-    return this.toDetailDto(profile, services, characters);
+    return this.toDetailDto(profile, characters);
   }
 
   /**
@@ -160,6 +145,7 @@ export class CosplayerService {
   async getMyProfile(userId: AutoIncrementID): Promise<CosplayerDetailResDto> {
     let profile = await this.profileRepo.findOne({
       where: { userId },
+      relations: ['user'],
     });
 
     if (!profile) {
@@ -180,43 +166,30 @@ export class CosplayerService {
         candidateSlug = `${candidateSlug}-${userId}`;
       }
 
-      const handle = user.username
-        ? `@${user.username}`
-        : `@cosplayer${userId}`;
-
       profile = this.profileRepo.create({
         userId,
         slug: candidateSlug,
         displayName: baseName,
-        handle,
         roleBadge: 'Cosplayer',
         skills: [],
         specialties: [],
         awardsBadges: [],
-        followersCount: 0,
-        followingCount: 0,
         totalLikesCount: 0,
         albumsCount: 0,
         charactersCount: 0,
-        collectionsCount: 0,
         rankingScore: 0,
       });
 
       profile = await this.profileRepo.save(profile);
+      profile.user = user;
     }
 
-    const [services, characters] = await Promise.all([
-      this.serviceRepo.find({
-        where: { userId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-      this.characterRepo.find({
-        where: { userId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-    ]);
+    const characters = await this.characterRepo.find({
+      where: { userId },
+      order: { sortOrder: 'ASC', id: 'ASC' },
+    });
 
-    return this.toDetailDto(profile, services, characters);
+    return this.toDetailDto(profile, characters);
   }
 
   /**
@@ -226,26 +199,31 @@ export class CosplayerService {
     userId: AutoIncrementID,
     dto: UpdateCosplayerProfileReqDto,
   ): Promise<CosplayerDetailResDto> {
-    let profile = await this.profileRepo.findOne({ where: { userId } });
+    let profile = await this.profileRepo.findOne({
+      where: { userId },
+      relations: ['user'],
+    });
 
     if (!profile) {
       await this.getMyProfile(userId);
-      profile = await this.profileRepo.findOneOrFail({ where: { userId } });
+      profile = await this.profileRepo.findOneOrFail({
+        where: { userId },
+        relations: ['user'],
+      });
     }
 
-    if (dto.handle && dto.handle !== profile.handle) {
+    if (
+      dto.handle &&
+      dto.handle.replace(/^@+/, '').trim().toLowerCase() !== profile.slug
+    ) {
       const rawHandle = dto.handle.replace(/^@+/, '').trim();
       const cleanSlug = slugify(rawHandle) || rawHandle.toLowerCase();
-      const formattedHandle = `@${cleanSlug}`;
       const existing = await this.profileRepo.findOne({
-        where: [{ handle: formattedHandle }, { slug: cleanSlug }],
+        where: { slug: cleanSlug },
       });
       if (existing && String(existing.userId) !== String(userId)) {
-        throw new ConflictException(
-          `Handle "${formattedHandle}" is already taken`,
-        );
+        throw new ConflictException(`Handle "@${cleanSlug}" is already taken`);
       }
-      profile.handle = formattedHandle;
       profile.slug = cleanSlug;
       await this.userRepo.update({ id: userId }, { username: cleanSlug });
     }
@@ -263,11 +241,8 @@ export class CosplayerService {
     if (dto.countryId !== undefined) profile.countryId = dto.countryId;
     if (dto.workArea !== undefined) profile.workArea = dto.workArea;
     if (dto.heightCm !== undefined) profile.heightCm = dto.heightCm;
-    if (dto.heightLabel !== undefined) profile.heightLabel = dto.heightLabel;
     if (dto.experienceYearsNum !== undefined)
       profile.experienceYearsNum = dto.experienceYearsNum;
-    if (dto.experienceLabel !== undefined)
-      profile.experienceLabel = dto.experienceLabel;
     if (dto.skills !== undefined) profile.skills = dto.skills;
     if (dto.specialties !== undefined) profile.specialties = dto.specialties;
     if (dto.awardsBadges !== undefined) profile.awardsBadges = dto.awardsBadges;
@@ -277,108 +252,17 @@ export class CosplayerService {
     if (dto.instagramUrl !== undefined) profile.instagramUrl = dto.instagramUrl;
     if (dto.tiktokUrl !== undefined) profile.tiktokUrl = dto.tiktokUrl;
     if (dto.twitterUrl !== undefined) profile.twitterUrl = dto.twitterUrl;
-    if (dto.isAcceptingBooking !== undefined)
-      profile.isAcceptingBooking = dto.isAcceptingBooking;
     if (dto.isCraftingCreator !== undefined)
       profile.isCraftingCreator = dto.isCraftingCreator;
 
     profile = await this.profileRepo.save(profile);
 
-    const [services, characters] = await Promise.all([
-      this.serviceRepo.find({
-        where: { userId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-      this.characterRepo.find({
-        where: { userId },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-    ]);
-
-    return this.toDetailDto(profile, services, characters);
-  }
-
-  // =================== SERVICES ===================
-
-  async getServicesByUserId(
-    userId: AutoIncrementID,
-  ): Promise<CosplayerServiceResDto[]> {
-    const list = await this.serviceRepo.find({
+    const characters = await this.characterRepo.find({
       where: { userId },
       order: { sortOrder: 'ASC', id: 'ASC' },
     });
-    return list.map((item) => this.toServiceDto(item));
-  }
 
-  async addService(
-    userId: AutoIncrementID,
-    dto: CreateCosplayerServiceReqDto,
-  ): Promise<CosplayerServiceResDto> {
-    const service = this.serviceRepo.create({
-      userId,
-      title: dto.title,
-      description: dto.description ?? null,
-      badgeLabel: dto.badgeLabel,
-      startingPrice: dto.startingPrice ?? null,
-      currency: dto.currency ?? ECurrencyCode.VND,
-      priceUnit: dto.priceUnit ?? null,
-      isNegotiable: dto.isNegotiable ?? true,
-      sortOrder: dto.sortOrder ?? 0,
-      isActive: dto.isActive ?? true,
-    });
-
-    const saved = await this.serviceRepo.save(service);
-    return this.toServiceDto(saved);
-  }
-
-  async updateService(
-    userId: AutoIncrementID,
-    serviceId: AutoIncrementID,
-    dto: UpdateCosplayerServiceReqDto,
-  ): Promise<CosplayerServiceResDto> {
-    const service = await this.serviceRepo.findOne({
-      where: { id: serviceId },
-    });
-    if (!service) {
-      throw new NotFoundException(`Service #${serviceId} not found`);
-    }
-    if (String(service.userId) !== String(userId)) {
-      throw new ForbiddenException(
-        'You do not have permission to edit this service',
-      );
-    }
-
-    if (dto.title !== undefined) service.title = dto.title;
-    if (dto.description !== undefined) service.description = dto.description;
-    if (dto.badgeLabel !== undefined) service.badgeLabel = dto.badgeLabel;
-    if (dto.startingPrice !== undefined)
-      service.startingPrice = dto.startingPrice;
-    if (dto.currency !== undefined) service.currency = dto.currency;
-    if (dto.priceUnit !== undefined) service.priceUnit = dto.priceUnit;
-    if (dto.isNegotiable !== undefined) service.isNegotiable = dto.isNegotiable;
-    if (dto.sortOrder !== undefined) service.sortOrder = dto.sortOrder;
-    if (dto.isActive !== undefined) service.isActive = dto.isActive;
-
-    const saved = await this.serviceRepo.save(service);
-    return this.toServiceDto(saved);
-  }
-
-  async deleteService(
-    userId: AutoIncrementID,
-    serviceId: AutoIncrementID,
-  ): Promise<void> {
-    const service = await this.serviceRepo.findOne({
-      where: { id: serviceId },
-    });
-    if (!service) {
-      throw new NotFoundException(`Service #${serviceId} not found`);
-    }
-    if (String(service.userId) !== String(userId)) {
-      throw new ForbiddenException(
-        'You do not have permission to delete this service',
-      );
-    }
-    await this.serviceRepo.delete({ id: serviceId });
+    return this.toDetailDto(profile, characters);
   }
 
   // =================== CHARACTERS ===================
@@ -500,7 +384,7 @@ export class CosplayerService {
       userId: p.userId,
       slug: p.slug,
       displayName: p.displayName,
-      handle: p.handle,
+      handle: `@${p.slug}`,
       roleBadge: p.roleBadge ?? 'Cosplayer',
       tagline: p.tagline ?? null,
       avatarUrl: p.avatarUrl ?? null,
@@ -508,9 +392,8 @@ export class CosplayerService {
       locationLabel: p.locationLabel ?? null,
       workArea: p.workArea ?? null,
       isVerified: p.isVerified,
-      isAcceptingBooking: p.isAcceptingBooking,
       isCraftingCreator: p.isCraftingCreator,
-      followersCount: Number(p.followersCount || 0),
+      followersCount: Number(p.user?.followersCount ?? 0),
       totalLikesCount: Number(p.totalLikesCount || 0),
       albumsCount: Number(p.albumsCount || 0),
       charactersCount: Number(p.charactersCount || 0),
@@ -522,9 +405,13 @@ export class CosplayerService {
 
   private toDetailDto(
     p: CosplayerProfileEntity,
-    services: CosplayerServiceEntity[],
     characters: CosplayerCharacterEntity[],
   ): CosplayerDetailResDto {
+    const heightLabel = p.heightCm ? `${p.heightCm} cm` : null;
+    const experienceLabel = p.experienceYearsNum
+      ? `${p.experienceYearsNum}+ years`
+      : null;
+
     return {
       ...this.toSummaryDto(p),
       bio: p.bio ?? null,
@@ -532,14 +419,14 @@ export class CosplayerService {
       cityId: p.cityId ?? null,
       countryId: p.countryId ?? null,
       heightCm: p.heightCm ?? null,
-      heightLabel: p.heightLabel ?? null,
+      heightLabel,
       experienceYearsNum: p.experienceYearsNum ?? null,
-      experienceLabel: p.experienceLabel ?? null,
+      experienceLabel,
       stats: {
         heightCm: p.heightCm ?? null,
-        heightLabel: p.heightLabel ?? null,
+        heightLabel,
         experienceYearsNum: p.experienceYearsNum ?? null,
-        experienceLabel: p.experienceLabel ?? null,
+        experienceLabel,
       },
       skills: p.skills || [],
       awardsBadges: p.awardsBadges || [],
@@ -555,32 +442,10 @@ export class CosplayerService {
         tiktokUrl: p.tiktokUrl ?? null,
         twitterUrl: p.twitterUrl ?? null,
       },
-      followingCount: Number(p.followingCount || 0),
-      collectionsCount: Number(p.collectionsCount || 0),
-      services: services.map((s) => this.toServiceDto(s)),
+      followingCount: Number(p.user?.followingCount ?? 0),
+      collectionsCount: Number(p.user?.collectionsCount ?? 0),
       characters: characters.map((c) => this.toCharacterDto(c)),
       updatedAt: p.updatedAt,
-    };
-  }
-
-  private toServiceDto(s: CosplayerServiceEntity): CosplayerServiceResDto {
-    return {
-      id: s.id,
-      userId: s.userId,
-      title: s.title,
-      description: s.description ?? null,
-      badgeLabel: s.badgeLabel,
-      startingPrice:
-        s.startingPrice !== null && s.startingPrice !== undefined
-          ? Number(s.startingPrice)
-          : null,
-      currency: s.currency ?? ECurrencyCode.VND,
-      priceUnit: s.priceUnit ?? null,
-      isNegotiable: s.isNegotiable ?? true,
-      sortOrder: s.sortOrder,
-      isActive: s.isActive,
-      createdAt: s.createdAt,
-      updatedAt: s.updatedAt,
     };
   }
 

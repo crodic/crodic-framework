@@ -97,14 +97,6 @@ export class PostEntity extends AbstractEntity {
   albumCategory!: EAlbumCategory;
 
   @Column({
-    name: 'album_category_label',
-    type: 'varchar',
-    length: 80,
-    nullable: true,
-  })
-  albumCategoryLabel?: string | null;
-
-  @Column({
     name: 'character_name',
     type: 'varchar',
     length: 160,
@@ -150,19 +142,6 @@ export class PostEntity extends AbstractEntity {
 
   @Column({ name: 'cover_image_url', length: 500 })
   coverImageUrl!: string;
-
-  @Column({ name: 'is_collage', type: 'boolean', default: false })
-  isCollage!: boolean;
-
-  @Column({
-    name: 'collage_preview_urls',
-    type: 'jsonb',
-    default: () => `'[]'`,
-  })
-  collagePreviewUrls!: string[];
-
-  @Column({ name: 'tag_names_cache', type: 'jsonb', default: () => `'[]'` })
-  tagNamesCache!: string[];
 
   @Column({ type: 'jsonb', default: () => `'[]'` })
   collaborators!: IPostCollaborator[];

@@ -78,21 +78,6 @@ export class LeaderboardSnapshotEntity extends AbstractEntity {
   })
   post?: Relation<PostEntity> | null;
 
-  @Column({ name: 'display_name', length: 150 })
-  displayName!: string;
-
-  @Column({ length: 100 })
-  handle!: string;
-
-  @Column({ name: 'role_label', length: 120 })
-  roleLabel!: string;
-
-  @Column({ name: 'avatar_url', length: 500 })
-  avatarUrl!: string;
-
-  @Column({ name: 'is_verified', type: 'boolean', default: false })
-  isVerified!: boolean;
-
   @Column({ name: 'likes_count', type: 'bigint', default: 0 })
   likesCount!: number;
 
@@ -108,7 +93,4 @@ export class LeaderboardSnapshotEntity extends AbstractEntity {
     default: () => `'[]'`,
   })
   featuredProjects!: string[];
-
-  @Column({ name: 'portfolio_href', length: 255 })
-  portfolioHref!: string;
 }

@@ -47,7 +47,6 @@ export class EventAdminController {
         'locationLabel',
         'search',
         AllowedFilter.exact('status'),
-        AllowedFilter.exact('locationFilterCode'),
         AllowedFilter.exact('cityId'),
         AllowedFilter.exact('isFeaturedFestival'),
         AllowedFilter.exact('isRecruiting'),

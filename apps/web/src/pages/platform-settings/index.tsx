@@ -62,7 +62,6 @@ export function PagePlatformSettings() {
       max_photos_per_album: 50,
       max_file_size_mb: 25,
       auto_approve_posts: true,
-      auto_approve_jobs: false,
       commission_platform_rate_percent: 5,
       banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
       support_email: 'support@kosume.com',
@@ -287,89 +286,58 @@ export function PagePlatformSettings() {
 
             {/* Column 2: Booking policies & Support contacts */}
             <div className='space-y-6'>
-              {/* Section 2: Bookings & Jobs Policies */}
+              {/* Section 2: Platform Fees */}
               <Card>
                 <CardHeader>
                   <div className='flex items-center gap-2'>
                     <Wallet className='size-5 text-emerald-500' />
                     <CardTitle>
                       {t(
-                        'platformSettings.bookingTitle',
-                        'Quy tắc Booking & Tuyển dụng'
+                        'platformSettings.feeTitle',
+                        'Chính sách vận hành & Phí nền tảng'
                       )}
                     </CardTitle>
                   </div>
                   <CardDescription>
                     {t(
-                      'platformSettings.bookingDesc',
-                      'Chính sách hoa hồng dịch vụ trung gian và quy chuẩn phê duyệt tin tuyển dụng.'
+                      'platformSettings.feeDesc',
+                      'Cấu hình tỷ lệ phí vận hành dịch vụ trên hệ thống.'
                     )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className='space-y-4'>
-                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                    <FormField
-                      control={form.control}
-                      name='commission_platform_rate_percent'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t(
-                              'platformSettings.commissionRate',
-                              'Phí nền tảng Booking (%)'
-                            )}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type='number'
-                              min={0}
-                              max={50}
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            {t(
-                              'platformSettings.commissionRateHelp',
-                              'Tỷ lệ % chiết khấu dịch vụ (VD: 5%)'
-                            )}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name='auto_approve_jobs'
-                      render={({ field }) => (
-                        <FormItem className='flex items-center justify-between self-center rounded-lg border p-3'>
-                          <div className='space-y-0.5'>
-                            <FormLabel>
-                              {t(
-                                'platformSettings.autoApproveJobs',
-                                'Tự động duyệt tin Casting'
-                              )}
-                            </FormLabel>
-                            <FormDescription>
-                              {t(
-                                'platformSettings.autoApproveJobsHelp',
-                                'Mở tin tuyển dụng không cần admin duyệt trước'
-                              )}
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name='commission_platform_rate_percent'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {t(
+                            'platformSettings.commissionRate',
+                            'Phí nền tảng (%)'
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            min={0}
+                            max={50}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'platformSettings.commissionRateHelp',
+                            'Tỷ lệ % phí dịch vụ (VD: 5%)'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 

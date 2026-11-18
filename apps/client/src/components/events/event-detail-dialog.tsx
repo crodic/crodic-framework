@@ -181,13 +181,19 @@ export function EventDetailDialog({
                     className="border-border/60 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
                   >
                     <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
-                      <Image
-                        src={p.avatarUrl}
-                        alt={p.name}
-                        fill
-                        sizes="24px"
-                        className="object-cover"
-                      />
+                      {p.avatarUrl ? (
+                        <Image
+                          src={p.avatarUrl}
+                          alt={p.name}
+                          fill
+                          sizes="24px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-primary/10 text-primary flex size-full items-center justify-center text-[10px] font-bold">
+                          {p.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     <span className="text-foreground text-xs font-semibold">
                       {p.name}

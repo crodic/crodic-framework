@@ -130,13 +130,6 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
             </Badge>
           )
         }
-        if (role === 'recruiter') {
-          return (
-            <Badge className='border-blue-200 bg-blue-600/15 text-xs text-blue-700 dark:border-blue-800 dark:bg-blue-500/20 dark:text-blue-300'>
-              Nhà tuyển dụng / Brand
-            </Badge>
-          )
-        }
         return (
           <Badge variant='outline' className='text-xs'>
             Fan
@@ -149,7 +142,6 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
         options: [
           { label: 'Fan', value: 'fan' },
           { label: 'Cosplayer', value: 'cosplayer' },
-          { label: 'Nhà tuyển dụng / Brand', value: 'recruiter' },
         ],
       },
       enableColumnFilter: true,

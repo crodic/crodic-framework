@@ -7,7 +7,8 @@ import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import {
   NotificationResDto,
   UnreadCountResDto,
@@ -19,6 +20,8 @@ export class NotificationService {
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
+    @InjectRepository(CosplayerProfileEntity)
+    private readonly profileRepo: Repository<CosplayerProfileEntity>,
   ) {}
 
   /**
@@ -30,6 +33,7 @@ export class NotificationService {
   ): Promise<Paginated<NotificationResDto>> {
     const baseQb = this.notificationRepo
       .createQueryBuilder('noti')
+      .leftJoinAndSelect('noti.actorUser', 'actorUser')
       .where('noti.recipientUserId = :userId', { userId });
 
     const paginated = await QueryBuilder.for(baseQb, query)
@@ -42,7 +46,25 @@ export class NotificationService {
       .defaultSort('-createdAt')
       .paginate();
 
-    const mapped = paginated.data.map((item) => this.toNotificationDto(item));
+    const actorIds = Array.from(
+      new Set(
+        paginated.data
+          .map((item) => item.actorUserId)
+          .filter((v): v is AutoIncrementID => Boolean(v)),
+      ),
+    );
+    const profiles =
+      actorIds.length > 0
+        ? await this.profileRepo.find({ where: { userId: In(actorIds) } })
+        : [];
+    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+
+    const mapped = paginated.data.map((item) =>
+      this.toNotificationDto(
+        item,
+        item.actorUserId ? profileMap.get(String(item.actorUserId)) : undefined,
+      ),
+    );
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
 
@@ -89,22 +111,33 @@ export class NotificationService {
       .execute();
   }
 
-  private toNotificationDto(n: NotificationEntity): NotificationResDto {
+  private toNotificationDto(
+    n: NotificationEntity,
+    profile?: CosplayerProfileEntity,
+  ): NotificationResDto {
+    const actorName = n.actorUserId
+      ? profile?.displayName || n.actorUser?.fullName || null
+      : null;
+    const actorAvatarUrl = n.actorUserId
+      ? (profile?.avatarUrl ?? n.actorUser?.avatar ?? null)
+      : null;
+    const actorRole = n.actorUserId
+      ? profile?.roleBadge || n.actorUser?.role || null
+      : null;
+
     return {
       id: n.id,
       recipientUserId: n.recipientUserId,
       category: n.category,
       type: n.type,
       actorUserId: n.actorUserId ?? null,
-      actorName: n.actorName ?? null,
-      actorAvatarUrl: n.actorAvatarUrl ?? null,
-      actorRole: n.actorRole ?? null,
-      actorIsVerified: n.actorIsVerified,
+      actorName,
+      actorAvatarUrl,
+      actorRole,
+      actorIsVerified: profile?.isVerified ?? false,
       title: n.title,
       description: n.description,
       actionUrl: n.actionUrl ?? null,
-      actionLabel: n.actionLabel ?? null,
-      secondaryActionLabel: n.secondaryActionLabel ?? null,
       previewImageUrl: n.previewImageUrl ?? null,
       subjectType: n.subjectType ?? null,
       subjectId: n.subjectId ?? null,

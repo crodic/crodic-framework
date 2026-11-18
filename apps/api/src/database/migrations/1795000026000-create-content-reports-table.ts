@@ -5,7 +5,7 @@ export class CreateContentReportsTable1795000026000 implements MigrationInterfac
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "public"."report_target_type_enum" AS ENUM('post', 'user', 'comment', 'job')
+      CREATE TYPE "public"."report_target_type_enum" AS ENUM('post', 'user', 'comment', 'event')
     `);
     await queryRunner.query(`
       CREATE TYPE "public"."report_status_enum" AS ENUM('pending', 'reviewing', 'resolved', 'dismissed')

@@ -7,7 +7,9 @@ import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import {
   CreateSpotlightBannerReqDto,
   UpdateSpotlightBannerReqDto,
@@ -23,6 +25,10 @@ export class SpotlightService {
   constructor(
     @InjectRepository(SpotlightBannerEntity)
     private readonly bannerRepo: Repository<SpotlightBannerEntity>,
+    @InjectRepository(CosplayerProfileEntity)
+    private readonly profileRepo: Repository<CosplayerProfileEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   /**
@@ -31,10 +37,17 @@ export class SpotlightService {
   async getActiveBanners(): Promise<SpotlightBannerResDto[]> {
     const banners = await this.bannerRepo.find({
       where: { isActive: true },
+      relations: ['cosplayerUser'],
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
 
-    return banners.map((b) => this.toBannerDto(b));
+    const profileMap = await this.loadProfileMap(
+      banners.map((b) => b.cosplayerUserId),
+    );
+
+    return banners.map((b) =>
+      this.toBannerDto(b, profileMap.get(String(b.cosplayerUserId))),
+    );
   }
 
   /**
@@ -43,19 +56,52 @@ export class SpotlightService {
   async findAllAdmin(
     query: QueryParams,
   ): Promise<Paginated<SpotlightBannerAdminResDto>> {
-    const baseQb = this.bannerRepo.createQueryBuilder('banner');
+    const baseQb = this.bannerRepo
+      .createQueryBuilder('banner')
+      .leftJoinAndSelect('banner.cosplayerUser', 'cosplayerUser')
+      .leftJoin(
+        CosplayerProfileEntity,
+        'cosplayer',
+        'cosplayer.userId = banner.cosplayerUserId',
+      );
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
         AllowedFilter.exact('isActive'),
-        AllowedFilter.partial('name'),
         AllowedFilter.partial('badge'),
+        AllowedFilter.callback('search', (qb, value) => {
+          const term = Array.isArray(value) ? String(value[0]) : String(value);
+          const normalized = term.trim().toLowerCase();
+          if (!normalized) return;
+          qb.andWhere(
+            new Brackets((b) => {
+              b.where('LOWER(banner.badge) LIKE :sTerm', {
+                sTerm: `%${normalized}%`,
+              })
+                .orWhere('LOWER(banner.tagline) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                })
+                .orWhere('LOWER(cosplayer.displayName) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                })
+                .orWhere('LOWER(cosplayerUser.fullName) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                });
+            }),
+          );
+        }),
       ])
       .allowedSorts(['sortOrder', 'createdAt', 'updatedAt'])
       .defaultSort('sortOrder')
       .paginate();
 
-    const mapped = paginated.data.map((b) => this.toAdminBannerDto(b));
+    const profileMap = await this.loadProfileMap(
+      paginated.data.map((b) => b.cosplayerUserId),
+    );
+
+    const mapped = paginated.data.map((b) =>
+      this.toAdminBannerDto(b, profileMap.get(String(b.cosplayerUserId))),
+    );
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
 
@@ -63,11 +109,17 @@ export class SpotlightService {
    * Admin: Get banner by ID.
    */
   async findById(id: AutoIncrementID): Promise<SpotlightBannerAdminResDto> {
-    const banner = await this.bannerRepo.findOne({ where: { id } });
+    const banner = await this.bannerRepo.findOne({
+      where: { id },
+      relations: ['cosplayerUser'],
+    });
     if (!banner) {
       throw new NotFoundException(`Spotlight banner #${id} not found`);
     }
-    return this.toAdminBannerDto(banner);
+    const profile = await this.profileRepo.findOne({
+      where: { userId: banner.cosplayerUserId },
+    });
+    return this.toAdminBannerDto(banner, profile);
   }
 
   /**
@@ -76,22 +128,29 @@ export class SpotlightService {
   async createBanner(
     dto: CreateSpotlightBannerReqDto,
   ): Promise<SpotlightBannerAdminResDto> {
+    const user = await this.userRepo.findOne({
+      where: { id: dto.cosplayerUserId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User #${dto.cosplayerUserId} not found`);
+    }
+
     const banner = this.bannerRepo.create({
-      name: dto.name,
-      isVerified: dto.isVerified ?? true,
       badge: dto.badge,
       tagline: dto.tagline,
       bannerImageUrl: dto.bannerImageUrl,
       bannerFileId: dto.bannerFileId ?? null,
-      portfolioHref: dto.portfolioHref,
-      bookingHref: dto.bookingHref ?? null,
       sortOrder: dto.sortOrder ?? 0,
-      cosplayerUserId: dto.cosplayerUserId ?? null,
+      cosplayerUserId: dto.cosplayerUserId,
       isActive: dto.isActive ?? true,
     });
 
     const saved = await this.bannerRepo.save(banner);
-    return this.toAdminBannerDto(saved);
+    saved.cosplayerUser = user;
+    const profile = await this.profileRepo.findOne({
+      where: { userId: saved.cosplayerUserId },
+    });
+    return this.toAdminBannerDto(saved, profile);
   }
 
   /**
@@ -101,42 +160,58 @@ export class SpotlightService {
     id: AutoIncrementID,
     dto: UpdateSpotlightBannerReqDto,
   ): Promise<SpotlightBannerAdminResDto> {
-    const banner = await this.bannerRepo.findOne({ where: { id } });
+    const banner = await this.bannerRepo.findOne({
+      where: { id },
+      relations: ['cosplayerUser'],
+    });
     if (!banner) {
       throw new NotFoundException(`Spotlight banner #${id} not found`);
     }
 
-    if (dto.name !== undefined) banner.name = dto.name;
-    if (dto.isVerified !== undefined) banner.isVerified = dto.isVerified;
+    if (dto.cosplayerUserId !== undefined) {
+      const user = await this.userRepo.findOne({
+        where: { id: dto.cosplayerUserId },
+      });
+      if (!user) {
+        throw new NotFoundException(`User #${dto.cosplayerUserId} not found`);
+      }
+      banner.cosplayerUserId = dto.cosplayerUserId;
+      banner.cosplayerUser = user;
+    }
+
     if (dto.badge !== undefined) banner.badge = dto.badge;
     if (dto.tagline !== undefined) banner.tagline = dto.tagline;
     if (dto.bannerImageUrl !== undefined)
       banner.bannerImageUrl = dto.bannerImageUrl;
     if (dto.bannerFileId !== undefined) banner.bannerFileId = dto.bannerFileId;
-    if (dto.portfolioHref !== undefined)
-      banner.portfolioHref = dto.portfolioHref;
-    if (dto.bookingHref !== undefined) banner.bookingHref = dto.bookingHref;
     if (dto.sortOrder !== undefined) banner.sortOrder = dto.sortOrder;
-    if (dto.cosplayerUserId !== undefined)
-      banner.cosplayerUserId = dto.cosplayerUserId;
     if (dto.isActive !== undefined) banner.isActive = dto.isActive;
 
     const saved = await this.bannerRepo.save(banner);
-    return this.toAdminBannerDto(saved);
+    const profile = await this.profileRepo.findOne({
+      where: { userId: saved.cosplayerUserId },
+    });
+    return this.toAdminBannerDto(saved, profile);
   }
 
   /**
    * Admin: Toggle active status.
    */
   async toggleBanner(id: AutoIncrementID): Promise<SpotlightBannerAdminResDto> {
-    const banner = await this.bannerRepo.findOne({ where: { id } });
+    const banner = await this.bannerRepo.findOne({
+      where: { id },
+      relations: ['cosplayerUser'],
+    });
     if (!banner) {
       throw new NotFoundException(`Spotlight banner #${id} not found`);
     }
 
     banner.isActive = !banner.isActive;
     const saved = await this.bannerRepo.save(banner);
-    return this.toAdminBannerDto(saved);
+    const profile = await this.profileRepo.findOne({
+      where: { userId: saved.cosplayerUserId },
+    });
+    return this.toAdminBannerDto(saved, profile);
   }
 
   /**
@@ -150,39 +225,53 @@ export class SpotlightService {
     await this.bannerRepo.delete({ id });
   }
 
-  private toBannerDto(b: SpotlightBannerEntity): SpotlightBannerResDto {
+  private async loadProfileMap(
+    userIds: AutoIncrementID[],
+  ): Promise<Map<string, CosplayerProfileEntity>> {
+    const uniqueIds = Array.from(new Set(userIds.filter(Boolean)));
+    if (uniqueIds.length === 0) {
+      return new Map();
+    }
+    const profiles = await this.profileRepo.find({
+      where: { userId: In(uniqueIds) },
+    });
+    return new Map(profiles.map((p) => [String(p.userId), p]));
+  }
+
+  private toBannerDto(
+    b: SpotlightBannerEntity,
+    profile?: CosplayerProfileEntity | null,
+  ): SpotlightBannerResDto {
+    const name =
+      profile?.displayName ||
+      b.cosplayerUser?.fullName ||
+      `User #${b.cosplayerUserId}`;
+    const portfolioHref = profile
+      ? `/cosplayer/${profile.slug}`
+      : `/cosplayer/${b.cosplayerUserId}`;
+
     return {
       id: b.id,
-      name: b.name,
-      isVerified: b.isVerified,
+      name,
+      isVerified: profile?.isVerified ?? false,
       badge: b.badge,
       tagline: b.tagline,
       bannerImageUrl: b.bannerImageUrl,
-      portfolioHref: b.portfolioHref,
-      bookingHref: b.bookingHref ?? null,
+      portfolioHref,
       sortOrder: b.sortOrder,
-      cosplayerUserId: b.cosplayerUserId ?? null,
+      cosplayerUserId: b.cosplayerUserId,
       createdAt: b.createdAt,
     };
   }
 
   private toAdminBannerDto(
     b: SpotlightBannerEntity,
+    profile?: CosplayerProfileEntity | null,
   ): SpotlightBannerAdminResDto {
     return {
-      id: b.id,
-      name: b.name,
-      isVerified: b.isVerified,
-      badge: b.badge,
-      tagline: b.tagline,
-      bannerImageUrl: b.bannerImageUrl,
+      ...this.toBannerDto(b, profile),
       bannerFileId: b.bannerFileId ?? null,
-      portfolioHref: b.portfolioHref,
-      bookingHref: b.bookingHref ?? null,
-      sortOrder: b.sortOrder,
-      cosplayerUserId: b.cosplayerUserId ?? null,
       isActive: b.isActive,
-      createdAt: b.createdAt,
       updatedAt: b.updatedAt,
     };
   }

@@ -317,20 +317,6 @@ export function PageUserShow() {
                       label={t('users.show.rankingScore', 'Điểm xếp hạng')}
                       value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
                     />
-                    <DescriptionItem
-                      label={t(
-                        'users.show.bookingStatus',
-                        'Trạng thái nhận booking'
-                      )}
-                      value={
-                        data.cosplayerProfile.isAcceptingBooking
-                          ? t(
-                              'users.show.acceptingBooking',
-                              'Đang nhận booking'
-                            )
-                          : t('users.show.notAcceptingBooking', 'Đang tạm dừng')
-                      }
-                    />
                   </Descriptions>
                 </CardContent>
               </Card>

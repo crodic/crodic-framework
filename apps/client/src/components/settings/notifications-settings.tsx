@@ -15,7 +15,6 @@ export function NotificationsSettings() {
   const [notifyNewPost, setNotifyNewPost] = useState(true);
   const [notifyInteractions, setNotifyInteractions] = useState(true);
   const [notifyFestivals, setNotifyFestivals] = useState(false);
-  const [notifyBooking, setNotifyBooking] = useState(true);
 
   return (
     <div className="space-y-6">
@@ -60,22 +59,6 @@ export function NotificationsSettings() {
             <Switch
               checked={notifyInteractions}
               onCheckedChange={setNotifyInteractions}
-            />
-          </div>
-
-          <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
-            <div className="space-y-0.5 pr-4">
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
-                Bản tin Booking / Tuyển dụng mẫu & craft
-              </p>
-              <p className="text-muted-foreground text-[11px]">
-                Nhận tin tuyển dụng dự án cosplay và tìm bạn diễn theo concept
-                yêu cầu.
-              </p>
-            </div>
-            <Switch
-              checked={notifyBooking}
-              onCheckedChange={setNotifyBooking}
             />
           </div>
         </CardContent>

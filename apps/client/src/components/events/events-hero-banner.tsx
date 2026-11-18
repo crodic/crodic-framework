@@ -76,7 +76,7 @@ export function EventsHeroBanner({
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-9 w-full cursor-pointer rounded-xl px-5 text-xs font-bold shadow-lg transition-all hover:scale-[1.02] sm:h-11 sm:w-auto sm:px-7 sm:text-sm"
               >
                 <Ticket className="mr-1.5 size-4" />
-                <span>{current.registrationCta || t("applyNow")}</span>
+                <span>{t("applyNow")}</span>
               </Button>
             </div>
           </div>

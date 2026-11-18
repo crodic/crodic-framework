@@ -18,10 +18,6 @@ describe('CosplayerUserController', () => {
       updateProfile: jest
         .fn()
         .mockResolvedValue({ id: id('1'), displayName: 'Updated' }),
-      getServicesByUserId: jest.fn().mockResolvedValue([]),
-      addService: jest.fn().mockResolvedValue({ id: id('10') }),
-      updateService: jest.fn().mockResolvedValue({ id: id('10') }),
-      deleteService: jest.fn().mockResolvedValue(undefined),
       getCharactersByUserId: jest.fn().mockResolvedValue([]),
       addCharacter: jest.fn().mockResolvedValue({ id: id('20') }),
       updateCharacter: jest.fn().mockResolvedValue({ id: id('20') }),
@@ -50,23 +46,6 @@ describe('CosplayerUserController', () => {
     expect(service.updateProfile).toHaveBeenCalledWith(id('100'), {
       displayName: 'Updated',
     });
-  });
-
-  it('services endpoints delegate correctly', async () => {
-    await controller.getMyServices(id('100'));
-    expect(service.getServicesByUserId).toHaveBeenCalledWith(id('100'));
-
-    await controller.addService(id('100'), {
-      title: 'Photoset',
-      badgeLabel: 'Deal',
-    });
-    expect(service.addService).toHaveBeenCalledWith(id('100'), {
-      title: 'Photoset',
-      badgeLabel: 'Deal',
-    });
-
-    await controller.deleteService(id('100'), id('10'));
-    expect(service.deleteService).toHaveBeenCalledWith(id('100'), id('10'));
   });
 
   it('characters endpoints delegate correctly', async () => {

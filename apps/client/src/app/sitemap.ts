@@ -4,7 +4,6 @@ import { fetchPublishedCmsPages } from "@/services/cms-pages";
 import { getEvents } from "@/services/events";
 import { getPosts } from "@/services/posts";
 import { getCosplayers } from "@/services/cosplayer";
-import { getJobs } from "@/services/jobs";
 
 export async function generateSitemaps() {
   return [
@@ -12,7 +11,6 @@ export async function generateSitemaps() {
     { id: "events" },
     { id: "posts" },
     { id: "cosplayers" },
-    { id: "jobs" },
   ];
 }
 
@@ -186,37 +184,6 @@ export default async function sitemap(props: {
       }
     } catch (err) {
       console.warn("Failed to fetch cosplayers for sitemap:", err);
-    }
-
-    return entries;
-  }
-
-  // 5. Jobs Sitemap
-  if (id === "jobs") {
-    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
-      baseUrl,
-      "/jobs",
-      now,
-      "daily",
-      0.8
-    );
-
-    try {
-      const jobsRes = await getJobs({ limit: 100 });
-      for (const job of jobsRes?.data || []) {
-        if (!job.slug) continue;
-        entries.push(
-          ...buildLocalizedEntries(
-            baseUrl,
-            `/jobs?slug=${job.slug}`,
-            job.createdAt ? new Date(job.createdAt) : now,
-            "weekly",
-            0.7
-          )
-        );
-      }
-    } catch (err) {
-      console.warn("Failed to fetch jobs for sitemap:", err);
     }
 
     return entries;

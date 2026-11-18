@@ -18,8 +18,7 @@ export class RankingPublicController {
     isQueryBuilder: true,
     queryBuilderOptions: {
       filters: [
-        'displayName',
-        'handle',
+        'search',
         AllowedFilter.exact('filterCategory'),
         AllowedFilter.exact('periodKey'),
       ],

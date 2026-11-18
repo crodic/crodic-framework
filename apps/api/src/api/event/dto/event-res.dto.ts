@@ -12,17 +12,18 @@ export class EventParticipantResDto {
   @ApiProperty({ type: String, example: '1' })
   eventId!: AutoIncrementID;
 
-  @ApiPropertyOptional({ type: String, nullable: true })
-  userId?: AutoIncrementID | null;
+  @ApiProperty({ type: String, example: '100' })
+  userId!: AutoIncrementID;
 
   @ApiProperty({ example: 'KIRIKO' })
   name!: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example:
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
+    nullable: true,
   })
-  avatarUrl!: string;
+  avatarUrl?: string | null;
 
   @ApiProperty({ example: true })
   isVerified!: boolean;
@@ -65,14 +66,8 @@ export class EventSummaryResDto {
   @ApiProperty({ example: 'TP. Hồ Chí Minh' })
   locationLabel!: string;
 
-  @ApiProperty({ example: 'hcm' })
-  locationFilterCode!: string;
-
   @ApiPropertyOptional({ type: String, nullable: true })
   cityId?: AutoIncrementID | null;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  brandId?: AutoIncrementID | null;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   organizerUserId?: AutoIncrementID | null;
@@ -112,17 +107,11 @@ export class EventSummaryResDto {
   @ApiProperty({ example: true })
   isFeaturedFestival!: boolean;
 
-  @ApiPropertyOptional({ example: 'Đăng Ký Tham Gia Ngay' })
-  registrationCta?: string | null;
-
   @ApiProperty({
     type: [String],
     example: ['Cosplay Contest', 'Artist Alley', 'Workshop'],
   })
   categories!: string[];
-
-  @ApiProperty({ type: [String], example: ['Festival', 'Genshin', 'Honkai'] })
-  filterTags!: string[];
 
   @ApiProperty({ enum: EEventStatus, example: EEventStatus.UPCOMING })
   status!: EEventStatus;

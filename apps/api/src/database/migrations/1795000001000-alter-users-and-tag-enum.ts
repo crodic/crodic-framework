@@ -5,7 +5,7 @@ export class AlterUsersAndTagEnum1795000001000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "public"."user_role_enum" AS ENUM('fan', 'cosplayer', 'recruiter')
+      CREATE TYPE "public"."user_role_enum" AS ENUM('fan', 'cosplayer')
     `);
 
     await queryRunner.query(`
@@ -25,7 +25,19 @@ export class AlterUsersAndTagEnum1795000001000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "users" ALTER COLUMN "notifications" SET DEFAULT '{"email": true, "system": true, "security": true, "notifyNewPost": true, "notifyInteractions": true, "notifyFestivals": false, "notifyBooking": true}'
+      ALTER TABLE "users" ADD "followers_count" bigint NOT NULL DEFAULT '0'
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" ADD "following_count" bigint NOT NULL DEFAULT '0'
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" ADD "collections_count" integer NOT NULL DEFAULT '0'
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" ALTER COLUMN "notifications" SET DEFAULT '{"email": true, "system": true, "security": true, "notifyNewPost": true, "notifyInteractions": true, "notifyFestivals": false}'
     `);
 
     await queryRunner.query(`
@@ -36,9 +48,6 @@ export class AlterUsersAndTagEnum1795000001000 implements MigrationInterface {
       ALTER TYPE "public"."entity_tags_entity_type_enum" ADD VALUE IF NOT EXISTS 'event'
     `);
     await queryRunner.query(`
-      ALTER TYPE "public"."entity_tags_entity_type_enum" ADD VALUE IF NOT EXISTS 'job'
-    `);
-    await queryRunner.query(`
       ALTER TYPE "public"."entity_tags_entity_type_enum" ADD VALUE IF NOT EXISTS 'cosplayer_profile'
     `);
 
@@ -46,17 +55,11 @@ export class AlterUsersAndTagEnum1795000001000 implements MigrationInterface {
       ALTER TYPE "public"."entity_tag_logs_entity_type_enum" ADD VALUE IF NOT EXISTS 'event'
     `);
     await queryRunner.query(`
-      ALTER TYPE "public"."entity_tag_logs_entity_type_enum" ADD VALUE IF NOT EXISTS 'job'
-    `);
-    await queryRunner.query(`
       ALTER TYPE "public"."entity_tag_logs_entity_type_enum" ADD VALUE IF NOT EXISTS 'cosplayer_profile'
     `);
 
     await queryRunner.query(`
       ALTER TYPE "public"."entity_tag_configs_entity_type_enum" ADD VALUE IF NOT EXISTS 'event'
-    `);
-    await queryRunner.query(`
-      ALTER TYPE "public"."entity_tag_configs_entity_type_enum" ADD VALUE IF NOT EXISTS 'job'
     `);
     await queryRunner.query(`
       ALTER TYPE "public"."entity_tag_configs_entity_type_enum" ADD VALUE IF NOT EXISTS 'cosplayer_profile'
@@ -70,6 +73,18 @@ export class AlterUsersAndTagEnum1795000001000 implements MigrationInterface {
 
     await queryRunner.query(`
       ALTER TABLE "users" ALTER COLUMN "notifications" SET DEFAULT '{"email": true, "system": true, "security": true}'
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" DROP COLUMN "collections_count"
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" DROP COLUMN "following_count"
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE "users" DROP COLUMN "followers_count"
     `);
 
     await queryRunner.query(`

@@ -14,6 +14,7 @@ import {
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { PostEntity } from '../../post/entities/post.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import {
   AddCollectionItemReqDto,
   CreateCollectionReqDto,
@@ -48,6 +49,8 @@ export class CollectionService {
     private readonly itemRepo: Repository<CollectionItemEntity>,
     @InjectRepository(PostEntity)
     private readonly postRepo: Repository<PostEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   /**
@@ -67,7 +70,31 @@ export class CollectionService {
       .defaultSort('-updatedAt')
       .paginate();
 
-    const mapped = paginated.data.map((item) => this.toCollectionDto(item));
+    const colIds = paginated.data.map((col) => col.id);
+    const items =
+      colIds.length > 0
+        ? await this.itemRepo
+            .createQueryBuilder('item')
+            .leftJoinAndSelect('item.post', 'post')
+            .where('item.collectionId IN (:...colIds)', { colIds })
+            .orderBy('item.sortOrder', 'ASC')
+            .addOrderBy('item.id', 'ASC')
+            .getMany()
+        : [];
+
+    const thumbsMap = new Map<string, string[]>();
+    for (const item of items) {
+      const key = String(item.collectionId);
+      const thumbs = thumbsMap.get(key) ?? [];
+      if (thumbs.length < 4 && item.post?.coverImageUrl) {
+        thumbs.push(item.post.coverImageUrl);
+        thumbsMap.set(key, thumbs);
+      }
+    }
+
+    const mapped = paginated.data.map((item) =>
+      this.toCollectionDto(item, thumbsMap.get(String(item.id)) ?? []),
+    );
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
 
@@ -97,11 +124,11 @@ export class CollectionService {
       isDefault: false,
       isPublic: dto.isPublic ?? true,
       itemsCount: 0,
-      previewThumbnails: [],
     });
 
     const saved = await this.collectionRepo.save(col);
-    return this.toCollectionDto(saved);
+    await this.userRepo.increment({ id: userId }, 'collectionsCount', 1);
+    return this.toCollectionDto(saved, []);
   }
 
   /**
@@ -126,7 +153,17 @@ export class CollectionService {
       throw new ForbiddenException('This collection is private');
     }
 
-    return this.toCollectionDto(col);
+    const previewItems = await this.itemRepo.find({
+      where: { collectionId: col.id },
+      relations: ['post'],
+      order: { sortOrder: 'ASC', id: 'ASC' },
+      take: 4,
+    });
+    const previewThumbnails = previewItems
+      .map((item) => item.post?.coverImageUrl)
+      .filter((url): url is string => Boolean(url));
+
+    return this.toCollectionDto(col, previewThumbnails);
   }
 
   /**
@@ -146,6 +183,10 @@ export class CollectionService {
       throw new ForbiddenException('You do not own this collection');
     }
     await this.collectionRepo.softDelete({ id: collectionId });
+    const owner = await this.userRepo.findOne({ where: { id: userId } });
+    if (owner && Number(owner.collectionsCount) > 0) {
+      await this.userRepo.decrement({ id: userId }, 'collectionsCount', 1);
+    }
   }
 
   /**
@@ -268,7 +309,10 @@ export class CollectionService {
 
   // =================== MAPPERS ===================
 
-  private toCollectionDto(c: CollectionEntity): CollectionResDto {
+  private toCollectionDto(
+    c: CollectionEntity,
+    previewThumbnails: string[] = [],
+  ): CollectionResDto {
     return {
       id: c.id,
       userId: c.userId,
@@ -278,7 +322,7 @@ export class CollectionService {
       isDefault: c.isDefault,
       isPublic: c.isPublic,
       itemsCount: Number(c.itemsCount || 0),
-      previewThumbnails: c.previewThumbnails || [],
+      previewThumbnails,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     };

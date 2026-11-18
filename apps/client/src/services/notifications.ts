@@ -4,7 +4,7 @@ import type { PaginatedResponse } from "@repo/query-builder";
 export interface NotificationResDto {
   id: string;
   recipientUserId: string;
-  category: "social" | "booking" | "system";
+  category: "social" | "system";
   type: string;
   actorUserId?: string | null;
   actorName?: string | null;
@@ -14,8 +14,6 @@ export interface NotificationResDto {
   title: string;
   description: string;
   actionUrl?: string | null;
-  actionLabel?: string | null;
-  secondaryActionLabel?: string | null;
   previewImageUrl?: string | null;
   subjectType?: string | null;
   subjectId?: string | null;

@@ -465,8 +465,8 @@ export function ProfileHero({
               Gửi tin nhắn đến {profile.displayName}
             </DialogTitle>
             <DialogDescription>
-              Liên hệ trao đổi về dự án cosplay, booking sự kiện hoặc giao lưu
-              nghệ thuật.
+              Liên hệ trao đổi về dự án cosplay, sự kiện hoặc giao lưu nghệ
+              thuật.
             </DialogDescription>
           </DialogHeader>
 

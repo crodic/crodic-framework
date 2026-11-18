@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../../../api/user/entities/user.entity';
 import { UserAccountEntity } from '../../../api/user/entities/user-account.entity';
 import { CosplayerProfileEntity } from '../../../api/cosplayer/entities/cosplayer-profile.entity';
-import { CosplayerServiceEntity } from '../../../api/cosplayer/entities/cosplayer-service.entity';
 import { CosplayerCharacterEntity } from '../../../api/cosplayer/entities/cosplayer-character.entity';
 import { PostEntity } from '../../../api/post/entities/post.entity';
 import { PostMediaEntity } from '../../../api/post/entities/post-media.entity';
@@ -12,8 +11,6 @@ import { PostCommentEntity } from '../../../api/post/entities/post-comment.entit
 import { UserFollowEntity } from '../../../api/social/entities/user-follow.entity';
 import { CollectionEntity } from '../../../api/collection/entities/collection.entity';
 import { CollectionItemEntity } from '../../../api/collection/entities/collection-item.entity';
-import { BrandEntity } from '../../../api/brand/entities/brand.entity';
-import { JobEntity } from '../../../api/job/entities/job.entity';
 import { EventEntity } from '../../../api/event/entities/event.entity';
 import { EventParticipantEntity } from '../../../api/event/entities/event-participant.entity';
 import { SpotlightBannerEntity } from '../../../api/spotlight/entities/spotlight-banner.entity';
@@ -31,7 +28,6 @@ import { KosumeSeedService } from './kosume-seed.service';
       UserEntity,
       UserAccountEntity,
       CosplayerProfileEntity,
-      CosplayerServiceEntity,
       CosplayerCharacterEntity,
       PostEntity,
       PostMediaEntity,
@@ -40,8 +36,6 @@ import { KosumeSeedService } from './kosume-seed.service';
       UserFollowEntity,
       CollectionEntity,
       CollectionItemEntity,
-      BrandEntity,
-      JobEntity,
       EventEntity,
       EventParticipantEntity,
       SpotlightBannerEntity,

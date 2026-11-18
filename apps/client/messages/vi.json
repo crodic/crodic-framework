@@ -288,18 +288,18 @@
   "Auth": {
     "layout": {
       "welcome": "Chào mừng đến với Kosume",
-      "tagline": "Không gian sáng tạo & Nền tảng Booking Cosplay Chuyên nghiệp",
-      "description": "Kết nối hơn 50.000+ Cosplayers, Photographers, Prop-crafters và các Nhà phát hành Game hàng đầu (HoYoverse, VNG, Garena) trên toàn quốc.",
+      "tagline": "Không gian sáng tạo & Cộng đồng Cosplay Chuyên nghiệp",
+      "description": "Kết nối hàng chục nghìn Cosplayers, Photographers, Prop-crafters và người hâm mộ Anime/Game trên toàn quốc.",
       "operational": "Hệ thống hoạt động 99.9%",
       "feature1Title": "Hồ sơ & Visual Portfolio",
       "feature1Desc": "Quản lý visual shoots, character tags và showcase album chuẩn độ phân giải cao.",
-      "feature2Title": "Booking & Hợp đồng Bảo đảm",
-      "feature2Desc": "Nhận job sự kiện, lookbook và đại sứ thương hiệu với thanh toán minh bạch, bảo vệ quyền lợi.",
+      "feature2Title": "Kết nối & Tương tác Cộng đồng",
+      "feature2Desc": "Theo dõi cosplayer yêu thích, lưu giữ bộ sưu tập và bình luận tác phẩm nổi bật.",
       "feature3Title": "Bảng xếp hạng & Festival",
-      "feature3Desc": "Vinh danh cống hiến nghệ thuật, vé mời festival cosplay và cơ hội hợp tác độc quyền.",
+      "feature3Desc": "Vinh danh cống hiến nghệ thuật, cập nhật lịch lễ hội cosplay và sự kiện giao lưu.",
       "statUptime": "50K+ Cosplayers",
-      "statLatency": "1.2K+ Job hoàn tất",
-      "statScale": "100% Uy tín & Bảo đảm"
+      "statLatency": "10K+ Bộ ảnh",
+      "statScale": "100+ Lễ hội ACG"
     },
     "login": {
       "metaTitle": "Đăng nhập",
@@ -870,7 +870,7 @@
   },
   "Notifications": {
     "title": "Thông Báo Của Bạn",
-    "desc": "Theo dõi các hoạt động tương tác, cập nhật booking và tin tức hệ thống mới nhất.",
+    "desc": "Theo dõi các hoạt động tương tác và tin tức hệ thống mới nhất.",
     "markAllRead": "Đánh dấu tất cả đã đọc",
     "markAllSuccess": "Đã đánh dấu tất cả thông báo là đã đọc",
     "unreadFilter": "Chưa đọc ({count})",
@@ -878,11 +878,10 @@
       "all": "Tất cả",
       "unread": "Chưa đọc",
       "social": "Tương tác",
-      "booking": "Booking",
       "system": "Hệ thống"
     },
     "emptyTitle": "Không có thông báo nào",
-    "emptyDesc": "Các hoạt động tương tác, cập nhật booking và tin tức hệ thống sẽ hiển thị tại đây.",
+    "emptyDesc": "Các hoạt động tương tác và tin tức hệ thống sẽ hiển thị tại đây.",
     "settings": "Cài đặt thông báo",
     "newCount": "{count} mới",
     "errorOccurred": "Có lỗi xảy ra",

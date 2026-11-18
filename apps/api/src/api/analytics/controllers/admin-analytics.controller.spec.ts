@@ -16,16 +16,11 @@ describe('AdminAnalyticsController', () => {
           verifiedCosplayers: 10,
           totalPosts: 50,
           featuredPosts: 8,
-          totalBookings: 20,
-          completedBookings: 12,
           activeEvents: 4,
-          openJobs: 6,
           pendingReports: 2,
           pendingPosts: 3,
-          pendingBookings: 5,
         },
         postCategories: [{ category: 'series', count: 35 }],
-        bookingStatuses: [{ status: 'completed', count: 12 }],
       }),
     };
 

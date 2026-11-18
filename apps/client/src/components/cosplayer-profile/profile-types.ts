@@ -1,7 +1,6 @@
 import type {
   CosplayerDetailResDto,
   CosplayerCharacterResDto,
-  CosplayerServiceResDto,
   CosplayerSummaryResDto,
 } from "@/services/cosplayer";
 import type { PostSummaryResDto } from "@/services/posts";
@@ -9,7 +8,6 @@ import type { PostSummaryResDto } from "@/services/posts";
 export type {
   CosplayerDetailResDto,
   CosplayerCharacterResDto,
-  CosplayerServiceResDto,
   CosplayerSummaryResDto,
 };
 

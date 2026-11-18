@@ -76,10 +76,6 @@ export class CreatePostReqDto {
   @EnumFieldOptional(() => EAlbumCategory, { default: EAlbumCategory.SERIES })
   albumCategory?: EAlbumCategory;
 
-  @StringFieldOptional({ maxLength: 80 })
-  @Trim()
-  albumCategoryLabel?: string;
-
   @StringFieldOptional({ maxLength: 120 })
   @Trim()
   characterName?: string;
@@ -99,15 +95,6 @@ export class CreatePostReqDto {
 
   @StringField({ maxLength: 500 })
   coverImageUrl!: string;
-
-  @BooleanFieldOptional()
-  isCollage?: boolean;
-
-  @StringFieldOptional({ each: true })
-  collagePreviewUrls?: string[];
-
-  @StringFieldOptional({ each: true })
-  tagNamesCache?: string[];
 
   @ArrayFieldOptional(PostCollaboratorInputDto)
   collaborators?: PostCollaboratorInputDto[];
@@ -140,10 +127,6 @@ export class UpdatePostReqDto {
   @EnumFieldOptional(() => EAlbumCategory)
   albumCategory?: EAlbumCategory;
 
-  @StringFieldOptional({ maxLength: 80 })
-  @Trim()
-  albumCategoryLabel?: string;
-
   @StringFieldOptional({ maxLength: 120 })
   @Trim()
   characterName?: string;
@@ -163,15 +146,6 @@ export class UpdatePostReqDto {
 
   @StringFieldOptional({ maxLength: 500 })
   coverImageUrl?: string;
-
-  @BooleanFieldOptional()
-  isCollage?: boolean;
-
-  @StringFieldOptional({ each: true })
-  collagePreviewUrls?: string[];
-
-  @StringFieldOptional({ each: true })
-  tagNamesCache?: string[];
 
   @ArrayFieldOptional(PostCollaboratorInputDto)
   collaborators?: PostCollaboratorInputDto[];

@@ -11,7 +11,7 @@ describe('Spotlight Banner Zod Schemas', () => {
       bannerImageUrl:
         'https://images.unsplash.com/photo-1578632767115-351597cf2477',
       portfolioHref: '/cosplayer/kiriko',
-      bookingHref: '/booking?cosplayer=kiriko',
+      cosplayerUserId: '100',
       sortOrder: 0,
       isVerified: true,
       isActive: true,
@@ -23,14 +23,12 @@ describe('Spotlight Banner Zod Schemas', () => {
 
   it('validates spotlight banner form submission values', () => {
     const valid = spotlightBannerFormSchema.safeParse({
-      name: 'KIRIKO',
+      cosplayerUserId: '100',
       badge: 'Cosplayer Tiêu Điểm',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
       bannerImageUrl:
         'https://images.unsplash.com/photo-1578632767115-351597cf2477',
-      portfolioHref: '/cosplayer/kiriko',
       sortOrder: 0,
-      isVerified: true,
       isActive: true,
     })
 

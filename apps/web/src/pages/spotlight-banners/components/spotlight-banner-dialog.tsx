@@ -77,14 +77,10 @@ export function SpotlightBannerDialog({
     resolver: zodResolver(spotlightBannerFormSchema),
     defaultValues: {
       cosplayerUserId: '',
-      name: '',
       badge: 'Cosplayer Tiêu Điểm Tuần Này',
       tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
       bannerImageUrl: '',
-      portfolioHref: '',
-      bookingHref: '',
       sortOrder: 0,
-      isVerified: true,
       isActive: true,
     },
   })
@@ -95,27 +91,19 @@ export function SpotlightBannerDialog({
         cosplayerUserId: banner.cosplayerUserId
           ? String(banner.cosplayerUserId)
           : '',
-        name: banner.name,
         badge: banner.badge,
         tagline: banner.tagline,
         bannerImageUrl: banner.bannerImageUrl,
-        portfolioHref: banner.portfolioHref,
-        bookingHref: banner.bookingHref ?? '',
         sortOrder: banner.sortOrder,
-        isVerified: banner.isVerified,
         isActive: banner.isActive,
       })
     } else {
       form.reset({
         cosplayerUserId: '',
-        name: '',
         badge: 'Cosplayer Tiêu Điểm Tuần Này',
         tagline: 'Vinh danh thành thương hiệu chuyên nghiệp',
         bannerImageUrl: '',
-        portfolioHref: '',
-        bookingHref: '',
         sortOrder: 0,
-        isVerified: true,
         isActive: true,
       })
     }
@@ -178,17 +166,14 @@ export function SpotlightBannerDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className='space-y-4 py-2'
           >
-            {/* Chọn Cosplayer để tự động map thông tin */}
+            {/* Chọn Cosplayer để liên kết banner */}
             <FormField
               control={form.control}
               name='cosplayerUserId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {t(
-                      'spotlight.fields.cosplayerUser',
-                      'Liên kết Cosplayer (Tùy chọn)'
-                    )}
+                  <FormLabel required>
+                    {t('spotlight.fields.cosplayerUser', 'Chọn Cosplayer')}
                   </FormLabel>
                   <FormControl>
                     <AutoCompleteAsyncSelectControl
@@ -198,7 +183,6 @@ export function SpotlightBannerDialog({
                         'spotlight.placeholders.selectCosplayer',
                         'Tìm kiếm và chọn Cosplayer trên sàn...'
                       )}
-                      isClearable
                       defaultOption={
                         banner?.cosplayerUserId
                           ? {
@@ -239,23 +223,6 @@ export function SpotlightBannerDialog({
                       onSelectOption={(opt) => {
                         if (!opt || Array.isArray(opt)) return
                         const selected = opt as CosplayerSelectOption
-                        form.setValue(
-                          'name',
-                          selected.displayName || selected.label || ''
-                        )
-                        if (selected.slug) {
-                          form.setValue(
-                            'portfolioHref',
-                            `/cosplayer/${selected.slug}`
-                          )
-                          form.setValue(
-                            'bookingHref',
-                            `/cosplayer/${selected.slug}#booking`
-                          )
-                        }
-                        if (selected.isVerified !== undefined) {
-                          form.setValue('isVerified', selected.isVerified)
-                        }
                         if (selected.tagline && !form.getValues('tagline')) {
                           form.setValue('tagline', selected.tagline)
                         }
@@ -265,23 +232,9 @@ export function SpotlightBannerDialog({
                   <FormDescription className='text-muted-foreground text-xs'>
                     {t(
                       'spotlight.fields.cosplayerUserHelp',
-                      'Chọn Cosplayer để tự động điền Tên, Tích xanh và tạo đường link Portfolio / Booking chuẩn xác.'
+                      'Tên hiển thị, tích xanh và đường dẫn Portfolio sẽ tự động đồng bộ theo hồ sơ Cosplayer đã chọn.'
                     )}
                   </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Tên Cosplayer / Nhân vật</FormLabel>
-                  <FormControl>
-                    <Input placeholder='KIRIKO' {...field} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -343,44 +296,6 @@ export function SpotlightBannerDialog({
               )}
             />
 
-            <div className='grid grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='portfolioHref'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>Link hồ sơ (Portfolio)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='/cosplayer/kiriko'
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='bookingHref'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link Booking (Tùy chọn)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='/booking?cosplayer=kiriko'
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name='sortOrder'
@@ -399,47 +314,25 @@ export function SpotlightBannerDialog({
               )}
             />
 
-            <div className='grid grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='isActive'
-                render={({ field }) => (
-                  <FormItem className='flex items-center justify-between rounded-lg border p-3'>
-                    <div className='space-y-0.5'>
-                      <FormLabel className='text-sm'>
-                        Kích hoạt hiển thị
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='isVerified'
-                render={({ field }) => (
-                  <FormItem className='flex items-center justify-between rounded-lg border p-3'>
-                    <div className='space-y-0.5'>
-                      <FormLabel className='text-sm'>
-                        Tích xanh xác minh
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name='isActive'
+              render={({ field }) => (
+                <FormItem className='flex items-center justify-between rounded-lg border p-3'>
+                  <div className='space-y-0.5'>
+                    <FormLabel className='text-sm'>
+                      Kích hoạt hiển thị
+                    </FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <DialogFooter className='pt-2'>
               <Button

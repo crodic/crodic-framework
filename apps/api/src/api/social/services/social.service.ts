@@ -4,7 +4,7 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { FollowToggleResDto, FollowUserResDto } from '../dto/social-res.dto';
 import { UserFollowEntity } from '../entities/user-follow.entity';
 
@@ -14,8 +14,8 @@ export class SocialService {
     private readonly dataSource: DataSource,
     @InjectRepository(UserFollowEntity)
     private readonly followRepo: Repository<UserFollowEntity>,
-    @InjectRepository(CosplayerProfileEntity)
-    private readonly cosplayerRepo: Repository<CosplayerProfileEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   /**
@@ -39,11 +39,12 @@ export class SocialService {
       if (existing) {
         await em.delete(UserFollowEntity, { id: existing.id });
         await em.decrement(
-          CosplayerProfileEntity,
-          { userId: followingId },
+          UserEntity,
+          { id: followingId },
           'followersCount',
           1,
         );
+        await em.decrement(UserEntity, { id: followerId }, 'followingCount', 1);
         isFollowingNow = false;
       } else {
         const newFollow = em.create(UserFollowEntity, {
@@ -52,18 +53,19 @@ export class SocialService {
         });
         await em.save(newFollow);
         await em.increment(
-          CosplayerProfileEntity,
-          { userId: followingId },
+          UserEntity,
+          { id: followingId },
           'followersCount',
           1,
         );
+        await em.increment(UserEntity, { id: followerId }, 'followingCount', 1);
         isFollowingNow = true;
       }
 
-      const profile = await em.findOne(CosplayerProfileEntity, {
-        where: { userId: followingId },
+      const targetUser = await em.findOne(UserEntity, {
+        where: { id: followingId },
       });
-      const followersCount = Number(profile?.followersCount || 0);
+      const followersCount = Number(targetUser?.followersCount || 0);
 
       return {
         following: isFollowingNow,

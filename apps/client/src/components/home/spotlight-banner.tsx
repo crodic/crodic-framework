@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { BadgeCheck, Sparkles } from "lucide-react";
+import { BadgeCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -41,7 +41,7 @@ export function SpotlightBanner() {
     return (
       <div className="border-border/70 bg-card/40 flex min-h-[210px] w-full animate-pulse items-center justify-center rounded-2xl border sm:min-h-[230px]">
         <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-          <Sparkles className="text-primary size-4 animate-spin" />
+          <Loader2 className="text-primary size-4 animate-spin" />
           <span>{t("viewPortfolio")}...</span>
         </div>
       </div>
@@ -118,17 +118,6 @@ export function SpotlightBanner() {
                 >
                   <Link href={slide.portfolioHref || "/cosplayer"}>
                     {t("viewPortfolio")}
-                  </Link>
-                </Button>
-
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="border-border/80 bg-background/50 hover:bg-muted text-foreground h-9 cursor-pointer rounded-lg px-4 text-xs font-medium transition-all hover:scale-[1.02] sm:px-5 sm:text-sm"
-                >
-                  <Link href={slide.bookingHref || "/cosplayer"}>
-                    {t("contactBooking")}
                   </Link>
                 </Button>
               </div>

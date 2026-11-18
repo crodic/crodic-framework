@@ -1,11 +1,14 @@
-import { AllowedFilter, QueryParams } from '../../../common/query-builder';
+import {
+  AllowedFilter,
+  AllowedSort,
+  QueryParams,
+} from '../../../common/query-builder';
 import { ApiPublic } from '../../../decorators/http.decorators';
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CosplayerCharacterResDto,
   CosplayerDetailResDto,
-  CosplayerServiceResDto,
   CosplayerSummaryResDto,
 } from '../dto/cosplayer-res.dto';
 import { CosplayerService } from '../services/cosplayer.service';
@@ -23,19 +26,18 @@ export class CosplayerPublicController {
     queryBuilderOptions: {
       filters: [
         'displayName',
-        'handle',
+        'slug',
         'workArea',
         'search',
         AllowedFilter.exact('cityId'),
         AllowedFilter.exact('countryId'),
         AllowedFilter.exact('isVerified'),
-        AllowedFilter.exact('isAcceptingBooking'),
         AllowedFilter.exact('isCraftingCreator'),
       ],
       sorts: [
         'rankingScore',
         'totalLikesCount',
-        'followersCount',
+        AllowedSort.field('followersCount', 'user.followersCount'),
         'albumsCount',
         'createdAt',
       ],
@@ -54,17 +56,6 @@ export class CosplayerPublicController {
   @ApiParam({ name: 'slug', type: String, example: 'kiriko-cos' })
   findBySlug(@Param('slug') slug: string) {
     return this.cosplayerService.findBySlugOrHandle(slug);
-  }
-
-  @Get(':slug/services')
-  @ApiPublic({
-    type: CosplayerServiceResDto,
-    summary: 'Get active booking services / rate card of a cosplayer',
-  })
-  @ApiParam({ name: 'slug', type: String, example: 'kiriko-cos' })
-  async getServices(@Param('slug') slug: string) {
-    const profile = await this.cosplayerService.findBySlugOrHandle(slug);
-    return profile.services;
   }
 
   @Get(':slug/characters')

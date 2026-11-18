@@ -177,9 +177,6 @@ export function UserEditForm({ data }: { data: UserSchema }) {
                       <SelectContent>
                         <SelectItem value='fan'>Fan</SelectItem>
                         <SelectItem value='cosplayer'>Cosplayer</SelectItem>
-                        <SelectItem value='recruiter'>
-                          Nhà tuyển dụng / Brand
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

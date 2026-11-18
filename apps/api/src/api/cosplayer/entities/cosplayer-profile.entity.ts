@@ -16,7 +16,6 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { FileEntity } from '../../file/entities/file.entity';
 import { CityEntity } from '../../location/entities/city.entity';
 import { CountryEntity } from '../../location/entities/country.entity';
-import { CosplayerServiceEntity } from './cosplayer-service.entity';
 import { CosplayerCharacterEntity } from './cosplayer-character.entity';
 
 @Entity('cosplayer_profiles')
@@ -28,15 +27,6 @@ import { CosplayerCharacterEntity } from './cosplayer-character.entity';
   unique: true,
   where: '"deleted_at" IS NULL',
 })
-@Index('UQ_cosplayer_profiles_handle', ['handle'], {
-  unique: true,
-  where: '"deleted_at" IS NULL',
-})
-@Index('IDX_cosplayer_profiles_booking', [
-  'isAcceptingBooking',
-  'isVerified',
-  'followersCount',
-])
 @Index('IDX_cosplayer_profiles_ranking', ['rankingScore', 'totalLikesCount'])
 @Index('IDX_cosplayer_profiles_city_id', ['cityId'])
 export class CosplayerProfileEntity extends AbstractEntity {
@@ -66,9 +56,6 @@ export class CosplayerProfileEntity extends AbstractEntity {
 
   @Column({ name: 'display_name', length: 120 })
   displayName!: string;
-
-  @Column({ length: 80 })
-  handle!: string;
 
   @Column({
     name: 'role_badge',
@@ -152,19 +139,8 @@ export class CosplayerProfileEntity extends AbstractEntity {
   @Column({ name: 'height_cm', type: 'smallint', nullable: true })
   heightCm?: number | null;
 
-  @Column({ name: 'height_label', type: 'varchar', length: 50, nullable: true })
-  heightLabel?: string | null;
-
   @Column({ name: 'experience_years_num', type: 'smallint', nullable: true })
   experienceYearsNum?: number | null;
-
-  @Column({
-    name: 'experience_label',
-    type: 'varchar',
-    length: 100,
-    nullable: true,
-  })
-  experienceLabel?: string | null;
 
   @Column({ type: 'jsonb', default: () => `'[]'` })
   skills!: string[];
@@ -216,17 +192,8 @@ export class CosplayerProfileEntity extends AbstractEntity {
   @Column({ name: 'is_verified', type: 'boolean', default: false })
   isVerified!: boolean;
 
-  @Column({ name: 'is_accepting_booking', type: 'boolean', default: false })
-  isAcceptingBooking!: boolean;
-
   @Column({ name: 'is_crafting_creator', type: 'boolean', default: false })
   isCraftingCreator!: boolean;
-
-  @Column({ name: 'followers_count', type: 'bigint', default: 0 })
-  followersCount!: number;
-
-  @Column({ name: 'following_count', type: 'bigint', default: 0 })
-  followingCount!: number;
 
   @Column({ name: 'total_likes_count', type: 'bigint', default: 0 })
   totalLikesCount!: number;
@@ -237,17 +204,8 @@ export class CosplayerProfileEntity extends AbstractEntity {
   @Column({ name: 'characters_count', type: 'integer', default: 0 })
   charactersCount!: number;
 
-  @Column({ name: 'collections_count', type: 'integer', default: 0 })
-  collectionsCount!: number;
-
   @Column({ name: 'ranking_score', type: 'double precision', default: 0 })
   rankingScore!: number;
-
-  @OneToMany(
-    () => CosplayerServiceEntity,
-    (service) => service.cosplayerProfile,
-  )
-  services?: Relation<CosplayerServiceEntity>[];
 
   @OneToMany(() => CosplayerCharacterEntity, (char) => char.cosplayerProfile)
   characters?: Relation<CosplayerCharacterEntity>[];

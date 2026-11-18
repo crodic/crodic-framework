@@ -14,7 +14,6 @@ import {
 import { CityEntity } from '../../location/entities/city.entity';
 import { FileEntity } from '../../file/entities/file.entity';
 import { AdminUserEntity } from '../../admin-user/entities/admin-user.entity';
-import { BrandEntity } from '../../brand/entities/brand.entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { EEventStatus } from '../constants/event.constant';
 import { EventParticipantEntity } from './event-participant.entity';
@@ -29,7 +28,6 @@ import { EventInterestEntity } from './event-interest.entity';
 @Index('IDX_events_status_start', ['status', 'startAt'])
 @Index('IDX_events_featured', ['isFeaturedFestival', 'startAt'])
 @Index('IDX_events_recruiting', ['isRecruiting', 'startAt'])
-@Index('IDX_events_brand_id', ['brandId'])
 export class EventEntity extends AbstractEntity {
   constructor(data?: Partial<EventEntity>) {
     super();
@@ -48,18 +46,6 @@ export class EventEntity extends AbstractEntity {
   @Column({ length: 220 })
   title!: string;
 
-  @Column({ name: 'day_label', length: 10 })
-  dayLabel!: string;
-
-  @Column({ name: 'month_label', length: 20 })
-  monthLabel!: string;
-
-  @Column({ name: 'year_label', type: 'varchar', length: 10, nullable: true })
-  yearLabel?: string | null;
-
-  @Column({ name: 'date_string', length: 40 })
-  dateString!: string;
-
   @Column({ name: 'start_at', type: 'timestamptz' })
   startAt!: Date;
 
@@ -68,13 +54,6 @@ export class EventEntity extends AbstractEntity {
 
   @Column({ name: 'location_label', length: 100 })
   locationLabel!: string;
-
-  @Column({
-    name: 'location_filter_code',
-    length: 40,
-    default: 'hcm',
-  })
-  locationFilterCode!: string;
 
   @Column({ name: 'city_id', type: 'bigint', nullable: true })
   cityId?: AutoIncrementID | null;
@@ -113,14 +92,6 @@ export class EventEntity extends AbstractEntity {
   @Column({ type: 'text' })
   description!: string;
 
-  @Column({
-    name: 'ticket_price_label',
-    type: 'varchar',
-    length: 100,
-    nullable: true,
-  })
-  ticketPriceLabel?: string | null;
-
   @Column({ name: 'ticket_price_amount', type: 'integer', nullable: true })
   ticketPriceAmount?: number | null;
 
@@ -130,22 +101,11 @@ export class EventEntity extends AbstractEntity {
   @Column({ name: 'is_featured_festival', type: 'boolean', default: false })
   isFeaturedFestival!: boolean;
 
-  @Column({
-    name: 'registration_cta',
-    type: 'varchar',
-    length: 120,
-    nullable: true,
-  })
-  registrationCta?: string | null;
-
   @Column({ type: 'jsonb', default: () => `'[]'` })
-  schedule!: any[];
+  schedule!: { time: string; activity: string }[];
 
   @Column({ type: 'jsonb', default: () => `'[]'` })
   categories!: string[];
-
-  @Column({ name: 'filter_tags', type: 'jsonb', default: () => `'[]'` })
-  filterTags!: string[];
 
   @Column({
     type: 'enum',
@@ -163,16 +123,6 @@ export class EventEntity extends AbstractEntity {
 
   @Column({ name: 'interested_count', type: 'integer', default: 0 })
   interestedCount!: number;
-
-  @Column({ name: 'brand_id', type: 'bigint', nullable: true })
-  brandId?: AutoIncrementID | null;
-
-  @ManyToOne(() => BrandEntity, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({
-    name: 'brand_id',
-    foreignKeyConstraintName: 'FK_events_brand_id',
-  })
-  brand?: Relation<BrandEntity> | null;
 
   @Column({ name: 'organizer_user_id', type: 'bigint', nullable: true })
   organizerUserId?: AutoIncrementID | null;

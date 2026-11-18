@@ -30,9 +30,6 @@ describe('Event Zod Schemas', () => {
   it('validates event form submission values', () => {
     const valid = eventFormSchema.safeParse({
       title: 'Vietnam Cosplay Expo 2026',
-      dayLabel: '28',
-      monthLabel: 'THÁNG 12',
-      dateString: '28 - 29 Tháng 12, 2026',
       startAt: new Date().toISOString(),
       locationLabel: 'TP.HCM',
       venue: 'SECC Q.7, TP.HCM',

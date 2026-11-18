@@ -50,13 +50,6 @@ export function NotificationItemCard({
           icon: <UserPlus className="size-3.5 text-violet-400" />,
           badgeBg: "bg-violet-500/15 border-violet-500/30 text-violet-400",
         };
-      case "booking_request":
-      case "booking_accepted":
-      case "job_approved":
-        return {
-          icon: <Calendar className="size-3.5 text-amber-400" />,
-          badgeBg: "bg-amber-500/15 border-amber-500/30 text-amber-400",
-        };
       case "badge_awarded":
         return {
           icon: <Trophy className="size-3.5 text-yellow-400" />,
@@ -150,7 +143,7 @@ export function NotificationItemCard({
           {notification.description}
         </p>
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         {notification.actionUrl && (
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <Button
@@ -158,21 +151,8 @@ export function NotificationItemCard({
               size="sm"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-lg px-3 text-xs font-semibold shadow-xs"
             >
-              <Link href={notification.actionUrl}>
-                {notification.actionLabel || "Xem chi tiết"}
-              </Link>
+              <Link href={notification.actionUrl}>Xem chi tiết</Link>
             </Button>
-
-            {notification.secondaryActionLabel && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border/80 hover:bg-destructive/10 hover:text-destructive h-8 cursor-pointer rounded-lg px-3 text-xs font-medium"
-                onClick={() => onDelete(notification.id)}
-              >
-                {notification.secondaryActionLabel}
-              </Button>
-            )}
           </div>
         )}
       </div>

@@ -26,21 +26,15 @@ export class SpotlightBannerEntity extends AbstractEntity {
   })
   id!: AutoIncrementID;
 
-  @Column({ name: 'cosplayer_user_id', type: 'bigint', nullable: true })
-  cosplayerUserId?: AutoIncrementID | null;
+  @Column({ name: 'cosplayer_user_id', type: 'bigint' })
+  cosplayerUserId!: AutoIncrementID;
 
-  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'cosplayer_user_id',
     foreignKeyConstraintName: 'FK_spotlight_banners_cosplayer_user_id',
   })
-  cosplayerUser?: Relation<UserEntity> | null;
-
-  @Column({ length: 120 })
-  name!: string;
-
-  @Column({ name: 'is_verified', type: 'boolean', default: true })
-  isVerified!: boolean;
+  cosplayerUser?: Relation<UserEntity>;
 
   @Column({ length: 80 })
   badge!: string;
@@ -60,17 +54,6 @@ export class SpotlightBannerEntity extends AbstractEntity {
 
   @Column({ name: 'banner_image_url', length: 500 })
   bannerImageUrl!: string;
-
-  @Column({ name: 'portfolio_href', length: 200 })
-  portfolioHref!: string;
-
-  @Column({
-    name: 'booking_href',
-    type: 'varchar',
-    length: 200,
-    nullable: true,
-  })
-  bookingHref?: string | null;
 
   @Column({ name: 'sort_order', type: 'smallint', default: 0 })
   sortOrder!: number;

@@ -97,8 +97,8 @@ describe('PostService', () => {
       findOne: jest.fn().mockResolvedValue({
         id: id('1'),
         userId: id('100'),
+        slug: 'kiriko',
         displayName: 'KIRIKO',
-        handle: '@kiriko',
         albumsCount: 5,
       }),
       find: jest.fn().mockResolvedValue([]),
@@ -164,7 +164,6 @@ describe('PostService', () => {
         postType: EPostType.PHOTOSET,
         albumCategory: EAlbumCategory.SERIES,
         coverImageUrl: 'url',
-        isCollage: false,
         photosCount: 1,
         publishedAt: new Date(),
         createdAt: new Date(),

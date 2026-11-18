@@ -52,13 +52,18 @@ describe('SpotlightAdminController', () => {
   });
 
   it('create delegates to service', async () => {
-    const dto: any = { name: 'Banner 1' };
+    const dto: any = {
+      cosplayerUserId: id('100'),
+      badge: 'TOP 1',
+      tagline: 'Banner tagline',
+      bannerImageUrl: 'https://example.com/banner.jpg',
+    };
     await controller.create(dto);
     expect(service.createBanner).toHaveBeenCalledWith(dto);
   });
 
   it('update delegates to service', async () => {
-    const dto: any = { name: 'Updated' };
+    const dto: any = { badge: 'Updated' };
     await controller.update(id('1'), dto);
     expect(service.updateBanner).toHaveBeenCalledWith(id('1'), dto);
   });

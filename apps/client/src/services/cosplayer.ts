@@ -1,27 +1,6 @@
 import { http } from "@/lib/http";
 import type { PaginatedResponse } from "@repo/query-builder";
 
-export type ServicePriceUnit =
-  "hour" | "session" | "day" | "event" | "set" | "project" | "item";
-
-export type CurrencyCode = "VND" | "USD" | "JPY";
-
-export interface CosplayerServiceResDto {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string | null;
-  badgeLabel: string;
-  startingPrice?: number | null;
-  currency?: CurrencyCode;
-  priceUnit?: ServicePriceUnit | null;
-  isNegotiable?: boolean;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CosplayerCharacterResDto {
   id: string;
   userId: string;
@@ -51,7 +30,6 @@ export interface CosplayerSummaryResDto {
   locationLabel?: string | null;
   workArea?: string | null;
   isVerified: boolean;
-  isAcceptingBooking: boolean;
   isCraftingCreator: boolean;
   followersCount: number;
   totalLikesCount: number;
@@ -81,7 +59,6 @@ export interface CosplayerDetailResDto extends CosplayerSummaryResDto {
   twitterUrl?: string | null;
   followingCount: number;
   collectionsCount: number;
-  services: CosplayerServiceResDto[];
   characters: CosplayerCharacterResDto[];
   updatedAt: string;
 }
@@ -111,15 +88,6 @@ export const getCosplayerBySlug = async (
     `/api/v1/public/cosplayers/${slug}`
   );
   return data;
-};
-
-export const getCosplayerServices = async (
-  slug: string
-): Promise<CosplayerServiceResDto[]> => {
-  const { data } = await http.get<CosplayerServiceResDto[]>(
-    `/api/v1/public/cosplayers/${slug}/services`
-  );
-  return data || [];
 };
 
 export const getCosplayerCharacters = async (

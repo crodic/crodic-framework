@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { BadgeCheck, Heart, Sparkles } from "lucide-react";
+import { BadgeCheck, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -154,7 +154,7 @@ export function FeaturedWorks() {
               key={n}
               className="border-border/70 bg-card/40 flex aspect-[4/3.6] animate-pulse items-center justify-center rounded-2xl border"
             >
-              <Sparkles className="text-muted-foreground size-5 animate-spin" />
+              <Loader2 className="text-muted-foreground size-5 animate-spin" />
             </div>
           ))}
         </div>

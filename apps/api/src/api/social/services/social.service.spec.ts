@@ -3,7 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { UserFollowEntity } from '../entities/user-follow.entity';
 import { SocialService } from './social.service';
 
@@ -12,7 +12,7 @@ const id = (val: string) => val as unknown as AutoIncrementID;
 describe('SocialService', () => {
   let service: SocialService;
   let followRepo: any;
-  let cosplayerRepo: any;
+  let userRepo: any;
   let dataSource: any;
 
   beforeEach(async () => {
@@ -21,7 +21,7 @@ describe('SocialService', () => {
       count: jest.fn().mockResolvedValue(1),
     };
 
-    cosplayerRepo = {
+    userRepo = {
       findOne: jest.fn(),
     };
 
@@ -45,8 +45,8 @@ describe('SocialService', () => {
         { provide: DataSource, useValue: dataSource },
         { provide: getRepositoryToken(UserFollowEntity), useValue: followRepo },
         {
-          provide: getRepositoryToken(CosplayerProfileEntity),
-          useValue: cosplayerRepo,
+          provide: getRepositoryToken(UserEntity),
+          useValue: userRepo,
         },
       ],
     }).compile();

@@ -1,16 +1,10 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
-import {
-  ForbiddenException,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
-import { CosplayerServiceEntity } from '../entities/cosplayer-service.entity';
 import { CosplayerService } from './cosplayer.service';
 
 const id = (val: string) => val as unknown as AutoIncrementID;
@@ -18,7 +12,6 @@ const id = (val: string) => val as unknown as AutoIncrementID;
 describe('CosplayerService', () => {
   let service: CosplayerService;
   let profileRepo: any;
-  let serviceRepo: any;
   let characterRepo: any;
   let userRepo: any;
   let dataSource: any;
@@ -37,18 +30,6 @@ describe('CosplayerService', () => {
       })),
       increment: jest.fn().mockResolvedValue(undefined),
       decrement: jest.fn().mockResolvedValue(undefined),
-    };
-
-    serviceRepo = {
-      find: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('10') })),
-      save: jest.fn().mockImplementation(async (item) => ({
-        ...item,
-        id: item.id || id('10'),
-        updatedAt: new Date(),
-      })),
-      delete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     characterRepo = {
@@ -97,10 +78,6 @@ describe('CosplayerService', () => {
           useValue: profileRepo,
         },
         {
-          provide: getRepositoryToken(CosplayerServiceEntity),
-          useValue: serviceRepo,
-        },
-        {
           provide: getRepositoryToken(CosplayerCharacterEntity),
           useValue: characterRepo,
         },
@@ -118,23 +95,12 @@ describe('CosplayerService', () => {
         userId: id('100'),
         slug: 'kiriko-cos',
         displayName: 'KIRIKO',
-        handle: '@kirikocos',
         roleBadge: 'Cosplayer',
         skills: ['Crafting'],
         specialties: ['Genshin Impact'],
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      serviceRepo.find.mockResolvedValue([
-        {
-          id: id('10'),
-          userId: id('100'),
-          title: 'Photoset',
-          badgeLabel: 'Thỏa thuận',
-          sortOrder: 0,
-          isActive: true,
-        },
-      ]);
       characterRepo.find.mockResolvedValue([
         {
           id: id('20'),
@@ -151,8 +117,8 @@ describe('CosplayerService', () => {
       const res = await service.findBySlugOrHandle('kiriko-cos');
 
       expect(res.slug).toBe('kiriko-cos');
+      expect(res.handle).toBe('@kiriko-cos');
       expect(res.displayName).toBe('KIRIKO');
-      expect(res.services).toHaveLength(1);
       expect(res.characters).toHaveLength(1);
     });
 
@@ -175,7 +141,6 @@ describe('CosplayerService', () => {
         lastName: 'Cos',
       });
       profileRepo.count.mockResolvedValue(0);
-      serviceRepo.find.mockResolvedValue([]);
       characterRepo.find.mockResolvedValue([]);
 
       const res = await service.getMyProfile(id('100'));
@@ -191,40 +156,17 @@ describe('CosplayerService', () => {
         .mockResolvedValueOnce({
           id: id('1'),
           userId: id('100'),
-          handle: '@kiriko',
+          slug: 'kiriko',
         })
         .mockResolvedValueOnce({
           id: id('2'),
           userId: id('999'),
-          handle: '@taken',
+          slug: 'taken',
         });
 
       await expect(
         service.updateProfile(id('100'), { handle: 'taken' }),
       ).rejects.toThrow(ConflictException);
-    });
-  });
-
-  describe('Service CRUD', () => {
-    it('prevents updating another user service', async () => {
-      serviceRepo.findOne.mockResolvedValue({
-        id: id('10'),
-        userId: id('999'),
-      });
-
-      await expect(
-        service.updateService(id('100'), id('10'), { title: 'Updated' }),
-      ).rejects.toThrow(ForbiddenException);
-    });
-
-    it('adds and returns new service', async () => {
-      const res = await service.addService(id('100'), {
-        title: 'Photoset',
-        badgeLabel: 'Liên hệ',
-      });
-
-      expect(res.title).toBe('Photoset');
-      expect(serviceRepo.save).toHaveBeenCalled();
     });
   });
 

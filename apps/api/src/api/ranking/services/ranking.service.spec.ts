@@ -1,6 +1,7 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import {
   ERankingFilterCategory,
   ERankingTrend,
@@ -13,10 +14,14 @@ const id = (val: string) => val as unknown as AutoIncrementID;
 describe('RankingService', () => {
   let service: RankingService;
   let snapshotRepo: any;
+  let profileRepo: any;
 
   beforeEach(async () => {
     snapshotRepo = {
       createQueryBuilder: jest.fn(),
+    };
+    profileRepo = {
+      find: jest.fn().mockResolvedValue([]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -25,6 +30,10 @@ describe('RankingService', () => {
         {
           provide: getRepositoryToken(LeaderboardSnapshotEntity),
           useValue: snapshotRepo,
+        },
+        {
+          provide: getRepositoryToken(CosplayerProfileEntity),
+          useValue: profileRepo,
         },
       ],
     }).compile();
@@ -40,23 +49,28 @@ describe('RankingService', () => {
       trend: ERankingTrend.UP,
       userId: id('100'),
       postId: null,
-      displayName: 'KIRIKO',
-      handle: 'kiriko-cos',
-      roleLabel: 'Pro Cosplayer',
-      avatarUrl: 'https://img.jpg',
-      isVerified: true,
       likesCount: '15000',
       followersCount: '48000',
       score: '98.5',
       featuredProjects: ['Acheron'],
-      portfolioHref: '/cosplayer/kiriko-cos',
       filterCategory: ERankingFilterCategory.MONTH,
       periodKey: '2024-10',
     };
+    const profile: any = {
+      userId: id('100'),
+      displayName: 'KIRIKO',
+      slug: 'kiriko-cos',
+      roleBadge: 'Pro Cosplayer',
+      avatarUrl: 'https://img.jpg',
+      isVerified: true,
+    };
 
-    const dto = (service as any).toLeaderboardDto(raw);
+    const dto = (service as any).toLeaderboardDto(raw, profile);
     expect(dto.rank).toBe(1);
     expect(dto.trend).toBe(ERankingTrend.UP);
+    expect(dto.displayName).toBe('KIRIKO');
+    expect(dto.handle).toBe('@kiriko-cos');
+    expect(dto.portfolioHref).toBe('/cosplayer/kiriko-cos');
     expect(dto.likesCount).toBe(15000);
     expect(dto.followersCount).toBe(48000);
     expect(dto.score).toBe(98.5);

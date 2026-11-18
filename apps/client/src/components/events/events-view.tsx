@@ -52,9 +52,9 @@ export function EventsView() {
     const lower = selectedTagId.toLowerCase();
     return allEvents.filter(
       (e) =>
-        e.filterTags?.some((t) => t.toLowerCase().includes(lower)) ||
         e.categories?.some((c) => c.toLowerCase().includes(lower)) ||
-        e.locationFilterCode?.toLowerCase() === lower
+        e.locationLabel?.toLowerCase().includes(lower) ||
+        e.status?.toLowerCase() === lower
     );
   }, [selectedTagId, allEvents]);
 

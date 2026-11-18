@@ -5,14 +5,12 @@ import { CosplayerPublicController } from './controllers/cosplayer-public.contro
 import { CosplayerUserController } from './controllers/cosplayer-user.controller';
 import { CosplayerCharacterEntity } from './entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from './entities/cosplayer-profile.entity';
-import { CosplayerServiceEntity } from './entities/cosplayer-service.entity';
 import { CosplayerService } from './services/cosplayer.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       CosplayerProfileEntity,
-      CosplayerServiceEntity,
       CosplayerCharacterEntity,
       UserEntity,
     ]),

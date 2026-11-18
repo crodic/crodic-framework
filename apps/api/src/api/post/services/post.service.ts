@@ -14,7 +14,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
-import { EPostStatus } from '../constants/post.constant';
+import { EAlbumCategory, EPostStatus } from '../constants/post.constant';
 import {
   CreatePostCommentReqDto,
   CreatePostReqDto,
@@ -31,6 +31,13 @@ import { PostCommentEntity } from '../entities/post-comment.entity';
 import { PostLikeEntity } from '../entities/post-like.entity';
 import { PostMediaEntity } from '../entities/post-media.entity';
 import { PostEntity } from '../entities/post.entity';
+
+const ALBUM_CATEGORY_LABELS: Record<EAlbumCategory, string> = {
+  [EAlbumCategory.GENERAL]: 'Album Tổng Hợp',
+  [EAlbumCategory.GROUP]: 'Nhóm & Doujin',
+  [EAlbumCategory.SERIES]: 'Nhân vật & Series',
+  [EAlbumCategory.PREMIUM]: 'Studio Cao Cấp',
+};
 
 function slugify(text: string): string {
   return text
@@ -106,9 +113,6 @@ export class PostService {
                 })
                 .orWhere('LOWER(post.fandomName) LIKE :sTerm', {
                   sTerm: `%${normalized}%`,
-                })
-                .orWhere('post.tagNamesCache::text ILIKE :sTerm', {
-                  sTerm: `%${normalized}%`,
                 });
             }),
           );
@@ -135,22 +139,22 @@ export class PostService {
       likedPostIds = new Set(likes.map((l) => String(l.postId)));
     }
 
-    // Load author profiles for avatar & badges
     const authorIds = Array.from(
       new Set(paginated.data.map((p) => p.authorId)),
     );
-    const profiles =
-      authorIds.length > 0
-        ? await this.profileRepo.find({ where: { userId: In(authorIds) } })
-        : [];
-    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+    const [profileMap, mediaByPostId] = await Promise.all([
+      this.loadProfileMap(authorIds),
+      this.loadMediaPreviewsByPostIds(postIds),
+    ]);
 
     const mapped = paginated.data.map((post) => {
       const profile = profileMap.get(String(post.authorId));
+      const previews = mediaByPostId.get(String(post.id));
       return this.toSummaryDto(
         post,
         profile,
         likedPostIds.has(String(post.id)),
+        previews,
       );
     });
 
@@ -220,19 +224,12 @@ export class PostService {
         caption: dto.caption ?? null,
         postType: dto.postType,
         albumCategory: dto.albumCategory,
-        albumCategoryLabel: dto.albumCategoryLabel ?? null,
         characterName: dto.characterName ?? null,
         fandomName: dto.fandomName ?? null,
         cosplayerCharacterId: dto.cosplayerCharacterId ?? null,
         characterTagId: dto.characterTagId ?? null,
         copyrightTagId: dto.copyrightTagId ?? null,
         coverImageUrl: dto.coverImageUrl,
-        isCollage: dto.isCollage ?? false,
-        collagePreviewUrls:
-          dto.collagePreviewUrls ||
-          dto.media?.slice(0, 4).map((m) => m.mediaUrl) ||
-          [],
-        tagNamesCache: dto.tagNamesCache || [],
         collaborators: dto.collaborators || [],
         isPublic: dto.isPublic ?? true,
         enableWatermark: dto.enableWatermark ?? false,
@@ -306,8 +303,6 @@ export class PostService {
       if (dto.postType !== undefined) post.postType = dto.postType;
       if (dto.albumCategory !== undefined)
         post.albumCategory = dto.albumCategory;
-      if (dto.albumCategoryLabel !== undefined)
-        post.albumCategoryLabel = dto.albumCategoryLabel;
       if (dto.characterName !== undefined)
         post.characterName = dto.characterName;
       if (dto.fandomName !== undefined) post.fandomName = dto.fandomName;
@@ -319,11 +314,6 @@ export class PostService {
         post.copyrightTagId = dto.copyrightTagId;
       if (dto.coverImageUrl !== undefined)
         post.coverImageUrl = dto.coverImageUrl;
-      if (dto.isCollage !== undefined) post.isCollage = dto.isCollage;
-      if (dto.collagePreviewUrls !== undefined)
-        post.collagePreviewUrls = dto.collagePreviewUrls;
-      if (dto.tagNamesCache !== undefined)
-        post.tagNamesCache = dto.tagNamesCache;
       if (dto.collaborators !== undefined)
         post.collaborators = dto.collaborators;
       if (dto.isPublic !== undefined) post.isPublic = dto.isPublic;
@@ -454,17 +444,22 @@ export class PostService {
       .defaultSort('-createdAt')
       .paginate();
 
-    const authorIds = paginated.data.map((p) => p.authorId);
-    const profiles =
-      authorIds.length > 0
-        ? await this.profileRepo.find({
-            where: { userId: In(authorIds) },
-          })
-        : [];
-    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+    const postIds = paginated.data.map((p) => p.id);
+    const authorIds = Array.from(
+      new Set(paginated.data.map((p) => p.authorId)),
+    );
+    const [profileMap, mediaByPostId] = await Promise.all([
+      this.loadProfileMap(authorIds),
+      this.loadMediaPreviewsByPostIds(postIds),
+    ]);
 
     const mapped = paginated.data.map((post) =>
-      this.toSummaryDto(post, profileMap.get(String(post.authorId))),
+      this.toSummaryDto(
+        post,
+        profileMap.get(String(post.authorId)),
+        false,
+        mediaByPostId.get(String(post.id)),
+      ),
     );
 
     return new Paginated(mapped, paginated.meta, paginated.links);
@@ -653,8 +648,12 @@ export class PostService {
           id: c.authorId,
           displayName:
             profile?.displayName || c.author?.fullName || `User #${c.authorId}`,
-          handle: profile?.handle || `@user${c.authorId}`,
-          avatarUrl: profile?.avatarUrl ?? null,
+          handle: profile
+            ? `@${profile.slug}`
+            : c.author?.username
+              ? `@${c.author.username}`
+              : `@user${c.authorId}`,
+          avatarUrl: profile?.avatarUrl ?? c.author?.avatar ?? null,
           isVerified: profile?.isVerified ?? false,
           role: c.author?.role,
         },
@@ -703,8 +702,12 @@ export class PostService {
         id: userId,
         displayName:
           profile?.displayName || user?.fullName || `User #${userId}`,
-        handle: profile?.handle || `@user${userId}`,
-        avatarUrl: profile?.avatarUrl ?? null,
+        handle: profile
+          ? `@${profile.slug}`
+          : user?.username
+            ? `@${user.username}`
+            : `@user${userId}`,
+        avatarUrl: profile?.avatarUrl ?? user?.avatar ?? null,
         isVerified: profile?.isVerified ?? false,
         role: user?.role,
       },
@@ -735,11 +738,60 @@ export class PostService {
 
   // =================== MAPPERS ===================
 
+  private async loadProfileMap(
+    userIds: AutoIncrementID[],
+  ): Promise<Map<string, CosplayerProfileEntity>> {
+    if (userIds.length === 0) {
+      return new Map();
+    }
+    const profiles = await this.profileRepo.find({
+      where: { userId: In(userIds) },
+    });
+    return new Map(profiles.map((p) => [String(p.userId), p]));
+  }
+
+  private async loadMediaPreviewsByPostIds(
+    postIds: AutoIncrementID[],
+  ): Promise<Map<string, string[]>> {
+    const mediaByPostId = new Map<string, string[]>();
+    if (postIds.length === 0) {
+      return mediaByPostId;
+    }
+    const mediaRows = await this.mediaRepo.find({
+      where: { postId: In(postIds) },
+      order: { sortOrder: 'ASC', id: 'ASC' },
+    });
+    for (const item of mediaRows) {
+      const key = String(item.postId);
+      const existing = mediaByPostId.get(key) ?? [];
+      if (existing.length < 4) {
+        existing.push(item.url);
+        mediaByPostId.set(key, existing);
+      }
+    }
+    return mediaByPostId;
+  }
+
   private toSummaryDto(
     post: PostEntity,
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
+    previewUrls?: string[],
   ): PostSummaryResDto {
+    const collagePreviewUrls =
+      previewUrls && previewUrls.length > 0
+        ? previewUrls.slice(0, 4)
+        : post.coverImageUrl
+          ? [post.coverImageUrl]
+          : [];
+    const tagNamesCache = Array.from(
+      new Set(
+        [post.characterName, post.fandomName].filter(
+          (v): v is string => typeof v === 'string' && v.trim().length > 0,
+        ),
+      ),
+    );
+
     return {
       id: post.id,
       slug: post.slug,
@@ -747,13 +799,13 @@ export class PostService {
       caption: post.caption ?? null,
       postType: post.postType,
       albumCategory: post.albumCategory,
-      albumCategoryLabel: post.albumCategoryLabel ?? null,
+      albumCategoryLabel: ALBUM_CATEGORY_LABELS[post.albumCategory] ?? null,
       characterName: post.characterName ?? null,
       fandomName: post.fandomName ?? null,
       coverImageUrl: post.coverImageUrl,
-      isCollage: post.isCollage,
-      collagePreviewUrls: post.collagePreviewUrls || [],
-      tagNamesCache: post.tagNamesCache || [],
+      isCollage: collagePreviewUrls.length >= 2,
+      collagePreviewUrls,
+      tagNamesCache,
       collaborators: post.collaborators || [],
       isPublic: post.isPublic,
       status: post.status,
@@ -772,8 +824,12 @@ export class PostService {
           profile?.displayName ||
           post.author?.fullName ||
           `Author #${post.authorId}`,
-        handle: profile?.handle || `@author${post.authorId}`,
-        avatarUrl: profile?.avatarUrl ?? null,
+        handle: profile
+          ? `@${profile.slug}`
+          : post.author?.username
+            ? `@${post.author.username}`
+            : `@author${post.authorId}`,
+        avatarUrl: profile?.avatarUrl ?? post.author?.avatar ?? null,
         isVerified: profile?.isVerified ?? false,
         role: post.author?.role,
       },
@@ -788,8 +844,9 @@ export class PostService {
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
   ): PostDetailResDto {
+    const previewUrls = media.slice(0, 4).map((m) => m.url);
     return {
-      ...this.toSummaryDto(post, profile, isLiked),
+      ...this.toSummaryDto(post, profile, isLiked, previewUrls),
       enableWatermark: post.enableWatermark,
       cosplayerCharacterId: post.cosplayerCharacterId ?? null,
       characterTagId: post.characterTagId ?? null,

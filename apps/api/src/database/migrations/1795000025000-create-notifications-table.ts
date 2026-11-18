@@ -5,10 +5,10 @@ export class CreateNotificationsTable1795000025000 implements MigrationInterface
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "public"."notification_category_enum" AS ENUM('social', 'booking', 'system')
+      CREATE TYPE "public"."notification_category_enum" AS ENUM('social', 'system')
     `);
     await queryRunner.query(`
-      CREATE TYPE "public"."notification_type_enum" AS ENUM('like', 'comment', 'follow', 'booking_request', 'booking_accepted', 'job_approved', 'badge_awarded', 'security')
+      CREATE TYPE "public"."notification_type_enum" AS ENUM('like', 'comment', 'follow', 'badge_awarded', 'security')
     `);
 
     await queryRunner.query(`
@@ -18,15 +18,9 @@ export class CreateNotificationsTable1795000025000 implements MigrationInterface
         "category" "public"."notification_category_enum" NOT NULL,
         "type" "public"."notification_type_enum" NOT NULL,
         "actor_user_id" bigint,
-        "actor_name" character varying(120),
-        "actor_avatar_url" character varying(500),
-        "actor_role" character varying(80),
-        "actor_is_verified" boolean NOT NULL DEFAULT false,
         "title" character varying(220) NOT NULL,
         "description" text NOT NULL,
         "action_url" character varying(300),
-        "action_label" character varying(80),
-        "secondary_action_label" character varying(80),
         "preview_image_url" character varying(500),
         "subject_type" character varying(50),
         "subject_id" bigint,

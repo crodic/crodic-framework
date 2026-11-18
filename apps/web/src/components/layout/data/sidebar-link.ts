@@ -15,12 +15,10 @@ import {
   BookMarked,
   MapPin,
   Tags,
-  Briefcase,
   CalendarDays,
   ShieldAlert,
-  Sparkles,
+  GalleryHorizontalEnd,
   Image as ImageIcon,
-  Handshake,
   Sliders,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -130,12 +128,6 @@ export const sidebarLink: SidebarData = {
           permission: 'CONTENT_REPORT',
         },
         {
-          title: 'navigation.kosume.jobs',
-          url: '/jobs',
-          icon: Briefcase,
-          permission: 'JOB',
-        },
-        {
           title: 'navigation.kosume.events',
           url: '/events',
           icon: CalendarDays,
@@ -148,15 +140,9 @@ export const sidebarLink: SidebarData = {
           permission: 'POST',
         },
         {
-          title: 'navigation.kosume.bookings',
-          url: '/bookings',
-          icon: Handshake,
-          permission: 'BOOKING',
-        },
-        {
           title: 'navigation.kosume.spotlight',
           url: '/spotlight-banners',
-          icon: Sparkles,
+          icon: GalleryHorizontalEnd,
           permission: 'SPOTLIGHT',
         },
         {

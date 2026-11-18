@@ -1,20 +1,13 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
-  BooleanField,
   BooleanFieldOptional,
   EmailFieldOptional,
-  EnumFieldOptional,
-  NumberField,
   NumberFieldOptional,
   StringField,
   StringFieldOptional,
   URLFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
-import {
-  ECurrencyCode,
-  EServicePriceUnit,
-} from '../constants/cosplayer.constant';
 
 export class UpdateCosplayerProfileReqDto {
   @StringFieldOptional({ maxLength: 120 })
@@ -64,16 +57,8 @@ export class UpdateCosplayerProfileReqDto {
   @NumberFieldOptional({ min: 100, max: 250 })
   heightCm?: number;
 
-  @StringFieldOptional({ maxLength: 50 })
-  @Trim()
-  heightLabel?: string;
-
   @NumberFieldOptional({ min: 0, max: 50 })
   experienceYearsNum?: number;
-
-  @StringFieldOptional({ maxLength: 100 })
-  @Trim()
-  experienceLabel?: string;
 
   @StringFieldOptional({ each: true })
   skills?: string[];
@@ -104,74 +89,7 @@ export class UpdateCosplayerProfileReqDto {
   twitterUrl?: string;
 
   @BooleanFieldOptional()
-  isAcceptingBooking?: boolean;
-
-  @BooleanFieldOptional()
   isCraftingCreator?: boolean;
-}
-
-export class CreateCosplayerServiceReqDto {
-  @StringField({ maxLength: 150 })
-  @Trim()
-  title!: string;
-
-  @StringFieldOptional({ maxLength: 500 })
-  @Trim()
-  description?: string;
-
-  @StringField({ maxLength: 80 })
-  @Trim()
-  badgeLabel!: string;
-
-  @NumberFieldOptional({ min: 0 })
-  startingPrice?: number;
-
-  @EnumFieldOptional(() => ECurrencyCode, { default: ECurrencyCode.VND })
-  currency?: ECurrencyCode;
-
-  @EnumFieldOptional(() => EServicePriceUnit)
-  priceUnit?: EServicePriceUnit;
-
-  @BooleanFieldOptional({ default: true })
-  isNegotiable?: boolean;
-
-  @NumberFieldOptional({ min: 0, max: 1000 })
-  sortOrder?: number;
-
-  @BooleanFieldOptional()
-  isActive?: boolean;
-}
-
-export class UpdateCosplayerServiceReqDto {
-  @StringFieldOptional({ maxLength: 150 })
-  @Trim()
-  title?: string;
-
-  @StringFieldOptional({ maxLength: 500 })
-  @Trim()
-  description?: string;
-
-  @StringFieldOptional({ maxLength: 80 })
-  @Trim()
-  badgeLabel?: string;
-
-  @NumberFieldOptional({ min: 0 })
-  startingPrice?: number;
-
-  @EnumFieldOptional(() => ECurrencyCode)
-  currency?: ECurrencyCode;
-
-  @EnumFieldOptional(() => EServicePriceUnit)
-  priceUnit?: EServicePriceUnit;
-
-  @BooleanFieldOptional()
-  isNegotiable?: boolean;
-
-  @NumberFieldOptional({ min: 0, max: 1000 })
-  sortOrder?: number;
-
-  @BooleanFieldOptional()
-  isActive?: boolean;
 }
 
 export class CreateCosplayerCharacterReqDto {

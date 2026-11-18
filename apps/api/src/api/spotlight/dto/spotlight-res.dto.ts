@@ -29,14 +29,11 @@ export class SpotlightBannerResDto {
   @ApiProperty({ example: '/cosplayer/kiriko-cos' })
   portfolioHref!: string;
 
-  @ApiPropertyOptional({ example: '/booking?cosplayer=kiriko' })
-  bookingHref?: string | null;
-
   @ApiProperty({ example: 1 })
   sortOrder!: number;
 
-  @ApiPropertyOptional({ type: String, example: '100' })
-  cosplayerUserId?: AutoIncrementID | null;
+  @ApiProperty({ type: String, example: '100' })
+  cosplayerUserId!: AutoIncrementID;
 
   @ApiProperty()
   createdAt!: Date;

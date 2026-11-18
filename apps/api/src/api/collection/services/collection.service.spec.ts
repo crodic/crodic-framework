@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 import { PostEntity } from '../../post/entities/post.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { CollectionItemEntity } from '../entities/collection-item.entity';
 import { CollectionEntity } from '../entities/collection.entity';
 import { CollectionService } from './collection.service';
@@ -19,6 +19,7 @@ describe('CollectionService', () => {
   let collectionRepo: any;
   let itemRepo: any;
   let postRepo: any;
+  let userRepo: any;
   let dataSource: any;
 
   beforeEach(async () => {
@@ -45,6 +46,7 @@ describe('CollectionService', () => {
 
     itemRepo = {
       createQueryBuilder: jest.fn(),
+      find: jest.fn().mockResolvedValue([]),
       findOne: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({
         ...dto,
@@ -61,6 +63,14 @@ describe('CollectionService', () => {
 
     postRepo = {
       findOne: jest.fn(),
+    };
+
+    userRepo = {
+      findOne: jest
+        .fn()
+        .mockResolvedValue({ id: id('100'), collectionsCount: 1 }),
+      increment: jest.fn().mockResolvedValue(undefined),
+      decrement: jest.fn().mockResolvedValue(undefined),
     };
 
     dataSource = {
@@ -93,6 +103,7 @@ describe('CollectionService', () => {
           useValue: itemRepo,
         },
         { provide: getRepositoryToken(PostEntity), useValue: postRepo },
+        { provide: getRepositoryToken(UserEntity), useValue: userRepo },
       ],
     }).compile();
 

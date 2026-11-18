@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { EventAdminController } from './controllers/event-admin.controller';
 import { EventPublicController } from './controllers/event-public.controller';
 import { EventUserController } from './controllers/event-user.controller';
@@ -16,6 +18,8 @@ import { EventService } from './services/event.service';
       EventParticipantEntity,
       EventApplicationEntity,
       EventInterestEntity,
+      CosplayerProfileEntity,
+      UserEntity,
     ]),
   ],
   controllers: [

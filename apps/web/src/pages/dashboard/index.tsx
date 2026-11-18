@@ -10,9 +10,9 @@ import {
   ExternalLinkIcon,
   HardDriveIcon,
   LayersIcon,
+  LayoutGrid,
   RefreshCwIcon,
   ServerIcon,
-  Sparkles,
   WorkflowIcon,
   XCircleIcon,
   ZapIcon,
@@ -172,7 +172,7 @@ export function Dashboard() {
         <Tabs defaultValue='kosume' className='w-full space-y-6'>
           <TabsList className='grid w-full max-w-md grid-cols-2'>
             <TabsTrigger value='kosume' className='gap-2'>
-              <Sparkles className='text-primary size-4' />
+              <LayoutGrid className='text-primary size-4' />
               <span>{t('dashboard.tabs.kosume', 'Nền tảng Kosume')}</span>
             </TabsTrigger>
             <TabsTrigger value='system' className='gap-2'>

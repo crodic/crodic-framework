@@ -63,7 +63,6 @@ export class SettingsController {
       max_photos_per_album: 50,
       max_file_size_mb: 25,
       auto_approve_posts: true,
-      auto_approve_jobs: false,
       commission_platform_rate_percent: 5,
       banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
       support_email: 'support@kosume.com',

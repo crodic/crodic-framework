@@ -5,7 +5,7 @@ import {
   Clock,
   Heart,
   MapPin,
-  Sparkles,
+  Star,
   UserCheck,
   Users,
   XCircle,
@@ -60,7 +60,7 @@ export function getEventsTableColumns({
               </span>
               {row.original.isFeaturedFestival && (
                 <Badge className='bg-primary/15 text-primary border-primary/20 h-4 shrink-0 px-1 py-0 text-[10px]'>
-                  <Sparkles className='mr-0.5 size-2.5' />
+                  <Star className='mr-0.5 size-2.5' />
                   Festival
                 </Badge>
               )}

@@ -65,8 +65,8 @@ export function getContentReportsTableColumns({
             className:
               'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
           },
-          job: {
-            label: 'Tuyển dụng',
+          event: {
+            label: 'Sự kiện',
             icon: AlertCircle,
             className:
               'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
@@ -99,7 +99,7 @@ export function getContentReportsTableColumns({
           { label: 'Bài viết (Post)', value: 'post' },
           { label: 'Người dùng (User)', value: 'user' },
           { label: 'Bình luận (Comment)', value: 'comment' },
-          { label: 'Việc làm (Job)', value: 'job' },
+          { label: 'Sự kiện (Event)', value: 'event' },
         ],
       },
       enableColumnFilter: true,

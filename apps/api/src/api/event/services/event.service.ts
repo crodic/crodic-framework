@@ -50,6 +50,10 @@ export class EventService {
     private readonly applicationRepo: Repository<EventApplicationEntity>,
     @InjectRepository(EventInterestEntity)
     private readonly interestRepo: Repository<EventInterestEntity>,
+    @InjectRepository(CosplayerProfileEntity)
+    private readonly profileRepo: Repository<CosplayerProfileEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   /**
@@ -67,7 +71,6 @@ export class EventService {
         AllowedFilter.exact('status'),
         AllowedFilter.exact('isRecruiting'),
         AllowedFilter.exact('isFeaturedFestival'),
-        AllowedFilter.exact('locationFilterCode'),
         AllowedFilter.partial('title'),
         AllowedFilter.partial('venue'),
         AllowedFilter.partial('locationLabel'),
@@ -87,9 +90,6 @@ export class EventService {
                   sTerm: `%${normalized}%`,
                 })
                 .orWhere('event.categories::text ILIKE :sTerm', {
-                  sTerm: `%${normalized}%`,
-                })
-                .orWhere('event.filterTags::text ILIKE :sTerm', {
                   sTerm: `%${normalized}%`,
                 });
             }),
@@ -162,7 +162,7 @@ export class EventService {
       }),
     ]);
 
-    return this.toDetailDto(
+    return this.toDetailDtoWithParticipants(
       event,
       participantsList,
       Boolean(interest),
@@ -229,22 +229,11 @@ export class EventService {
       where: { userId, eventId },
     });
     if (!participant) {
-      const profile = await this.dataSource
-        .getRepository(CosplayerProfileEntity)
-        .findOne({ where: { userId } });
-      const user = await this.dataSource
-        .getRepository(UserEntity)
-        .findOne({ where: { id: userId } });
+      const profile = await this.profileRepo.findOne({ where: { userId } });
 
       participant = this.participantRepo.create({
         userId,
         eventId,
-        name: profile?.displayName || user?.fullName || `User #${userId}`,
-        avatarUrl:
-          profile?.avatarUrl ||
-          user?.avatar ||
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
-        isVerified: profile?.isVerified ?? false,
         roleLabel: profile?.roleBadge || 'Cosplayer',
         sortOrder: 0,
       });
@@ -340,7 +329,7 @@ export class EventService {
       where: { eventId },
       order: { sortOrder: 'ASC' },
     });
-    return this.toDetailDto(event, participants, false, false);
+    return this.toDetailDtoWithParticipants(event, participants, false, false);
   }
 
   async createEvent(
@@ -370,30 +359,21 @@ export class EventService {
     const event = this.eventRepo.create({
       slug: slugCandidate,
       title: dto.title,
-      dayLabel: dto.dayLabel,
-      monthLabel: dto.monthLabel,
-      yearLabel: dto.yearLabel ?? null,
-      dateString: dto.dateString,
       startAt: dto.startAt,
       endAt: dto.endAt ?? null,
       locationLabel: dto.locationLabel,
-      locationFilterCode: dto.locationFilterCode || 'hcm',
       cityId: dto.cityId ?? null,
-      brandId: dto.brandId ?? null,
       organizerUserId: dto.organizerUserId ?? null,
       organizerName: dto.organizerName ?? null,
       venue: dto.venue,
       imageUrl: dto.imageUrl,
       bannerImageUrl: dto.bannerImageUrl ?? null,
       description: dto.description,
-      ticketPriceLabel: dto.ticketPriceLabel ?? null,
       ticketPriceAmount: dto.ticketPriceAmount ?? null,
       isRecruiting: dto.isRecruiting ?? false,
       isFeaturedFestival: dto.isFeaturedFestival ?? false,
-      registrationCta: dto.registrationCta ?? null,
       schedule: dto.schedule || [],
       categories: dto.categories || [],
-      filterTags: dto.filterTags || [],
       status: dto.status ?? EEventStatus.UPCOMING,
       createdByAdminId: adminId,
       participantsCount: 0,
@@ -415,18 +395,11 @@ export class EventService {
     }
 
     if (dto.title !== undefined) event.title = dto.title;
-    if (dto.dayLabel !== undefined) event.dayLabel = dto.dayLabel;
-    if (dto.monthLabel !== undefined) event.monthLabel = dto.monthLabel;
-    if (dto.yearLabel !== undefined) event.yearLabel = dto.yearLabel;
-    if (dto.dateString !== undefined) event.dateString = dto.dateString;
     if (dto.startAt !== undefined) event.startAt = dto.startAt;
     if (dto.endAt !== undefined) event.endAt = dto.endAt;
     if (dto.locationLabel !== undefined)
       event.locationLabel = dto.locationLabel;
-    if (dto.locationFilterCode !== undefined)
-      event.locationFilterCode = dto.locationFilterCode;
     if (dto.cityId !== undefined) event.cityId = dto.cityId;
-    if (dto.brandId !== undefined) event.brandId = dto.brandId;
     if (dto.organizerUserId !== undefined)
       event.organizerUserId = dto.organizerUserId;
     if (dto.organizerName !== undefined)
@@ -436,18 +409,13 @@ export class EventService {
     if (dto.bannerImageUrl !== undefined)
       event.bannerImageUrl = dto.bannerImageUrl;
     if (dto.description !== undefined) event.description = dto.description;
-    if (dto.ticketPriceLabel !== undefined)
-      event.ticketPriceLabel = dto.ticketPriceLabel;
     if (dto.ticketPriceAmount !== undefined)
       event.ticketPriceAmount = dto.ticketPriceAmount;
     if (dto.isRecruiting !== undefined) event.isRecruiting = dto.isRecruiting;
     if (dto.isFeaturedFestival !== undefined)
       event.isFeaturedFestival = dto.isFeaturedFestival;
-    if (dto.registrationCta !== undefined)
-      event.registrationCta = dto.registrationCta;
     if (dto.schedule !== undefined) event.schedule = dto.schedule;
     if (dto.categories !== undefined) event.categories = dto.categories;
-    if (dto.filterTags !== undefined) event.filterTags = dto.filterTags;
     if (dto.status !== undefined) event.status = dto.status;
 
     const saved = await this.eventRepo.save(event);
@@ -455,7 +423,7 @@ export class EventService {
       where: { eventId },
       order: { sortOrder: 'ASC' },
     });
-    return this.toDetailDto(saved, participants, false, false);
+    return this.toDetailDtoWithParticipants(saved, participants, false, false);
   }
 
   async updateEventStatus(
@@ -480,7 +448,7 @@ export class EventService {
       where: { eventId },
       order: { sortOrder: 'ASC' },
     });
-    return this.toDetailDto(saved, participants, false, false);
+    return this.toDetailDtoWithParticipants(saved, participants, false, false);
   }
 
   async deleteEvent(eventId: AutoIncrementID): Promise<void> {
@@ -493,37 +461,126 @@ export class EventService {
 
   // =================== MAPPERS ===================
 
+  private formatDateLabels(
+    startAt: Date,
+    endAt?: Date | null,
+  ): {
+    dayLabel: string;
+    monthLabel: string;
+    yearLabel: string;
+    dateString: string;
+  } {
+    const start = new Date(startAt);
+    const day = start.getDate();
+    const month = start.getMonth() + 1;
+    const year = start.getFullYear();
+    const dayLabel = String(day).padStart(2, '0');
+    const monthLabel = `Tháng ${month}`;
+    const yearLabel = String(year);
+
+    let dateString = `${dayLabel} Tháng ${month}, ${yearLabel}`;
+    if (endAt) {
+      const end = new Date(endAt);
+      const endDay = String(end.getDate()).padStart(2, '0');
+      const endMonth = end.getMonth() + 1;
+      const endYear = end.getFullYear();
+      if (day !== end.getDate() || month !== endMonth || year !== endYear) {
+        dateString =
+          month === endMonth && year === endYear
+            ? `${dayLabel} - ${endDay} Tháng ${month}, ${yearLabel}`
+            : `${dayLabel}/${String(month).padStart(2, '0')} - ${endDay}/${String(endMonth).padStart(2, '0')}/${endYear}`;
+      }
+    }
+
+    return { dayLabel, monthLabel, yearLabel, dateString };
+  }
+
+  private formatTicketPriceLabel(amount?: number | null): string | null {
+    if (amount === null || amount === undefined) {
+      return null;
+    }
+    if (Number(amount) <= 0) {
+      return 'Miễn phí';
+    }
+    return `${Number(amount).toLocaleString('vi-VN')}đ`;
+  }
+
+  private async enrichParticipants(
+    participants: EventParticipantEntity[],
+  ): Promise<EventParticipantResDto[]> {
+    if (participants.length === 0) {
+      return [];
+    }
+
+    const userIds = Array.from(
+      new Set(participants.map((p) => p.userId).filter(Boolean)),
+    );
+    const [profiles, users] =
+      userIds.length > 0
+        ? await Promise.all([
+            this.profileRepo.find({ where: { userId: In(userIds) } }),
+            this.userRepo.find({ where: { id: In(userIds) } }),
+          ])
+        : [[], []];
+
+    const profileMap = new Map(profiles.map((p) => [String(p.userId), p]));
+    const userMap = new Map(users.map((u) => [String(u.id), u]));
+
+    return participants.map((p) => {
+      const key = String(p.userId);
+      const profile = profileMap.get(key);
+      const user = userMap.get(key);
+      return {
+        id: p.id,
+        eventId: p.eventId,
+        userId: p.userId,
+        name: profile?.displayName || user?.fullName || `User #${p.userId}`,
+        avatarUrl: profile?.avatarUrl ?? user?.avatar ?? null,
+        isVerified: profile?.isVerified ?? false,
+        roleLabel: p.roleLabel ?? profile?.roleBadge ?? null,
+        sortOrder: p.sortOrder,
+      };
+    });
+  }
+
+  private async toDetailDtoWithParticipants(
+    e: EventEntity,
+    participants: EventParticipantEntity[],
+    isInterested = false,
+    isParticipating = false,
+  ): Promise<EventDetailResDto> {
+    const participantDtos = await this.enrichParticipants(participants);
+    return this.toDetailDto(e, participantDtos, isInterested, isParticipating);
+  }
+
   private toSummaryDto(
     e: EventEntity,
     isInterested = false,
     isParticipating = false,
   ): EventSummaryResDto {
+    const dateInfo = this.formatDateLabels(e.startAt, e.endAt);
     return {
       id: e.id,
       slug: e.slug,
       title: e.title,
-      dayLabel: e.dayLabel,
-      monthLabel: e.monthLabel,
-      yearLabel: e.yearLabel ?? null,
-      dateString: e.dateString,
+      dayLabel: dateInfo.dayLabel,
+      monthLabel: dateInfo.monthLabel,
+      yearLabel: dateInfo.yearLabel,
+      dateString: dateInfo.dateString,
       startAt: e.startAt,
       endAt: e.endAt ?? null,
       locationLabel: e.locationLabel,
-      locationFilterCode: e.locationFilterCode,
       cityId: e.cityId ?? null,
-      brandId: e.brandId ?? null,
       organizerUserId: e.organizerUserId ?? null,
       organizerName: e.organizerName ?? null,
       venue: e.venue,
       imageUrl: e.imageUrl,
       bannerImageUrl: e.bannerImageUrl ?? null,
-      ticketPriceLabel: e.ticketPriceLabel ?? null,
+      ticketPriceLabel: this.formatTicketPriceLabel(e.ticketPriceAmount),
       ticketPriceAmount: e.ticketPriceAmount ?? null,
       isRecruiting: e.isRecruiting,
       isFeaturedFestival: e.isFeaturedFestival,
-      registrationCta: e.registrationCta ?? null,
       categories: e.categories || [],
-      filterTags: e.filterTags || [],
       status: e.status,
       participantsCount: Number(e.participantsCount || 0),
       interestedCount: Number(e.interestedCount || 0),
@@ -535,7 +592,7 @@ export class EventService {
 
   private toDetailDto(
     e: EventEntity,
-    participants: EventParticipantEntity[],
+    participants: EventParticipantResDto[],
     isInterested = false,
     isParticipating = false,
   ): EventDetailResDto {
@@ -543,22 +600,9 @@ export class EventService {
       ...this.toSummaryDto(e, isInterested, isParticipating),
       description: e.description,
       schedule: e.schedule || [],
-      participants: participants.map((p) => this.toParticipantDto(p)),
+      participants,
       createdAt: e.createdAt,
       updatedAt: e.updatedAt,
-    };
-  }
-
-  private toParticipantDto(p: EventParticipantEntity): EventParticipantResDto {
-    return {
-      id: p.id,
-      eventId: p.eventId,
-      userId: p.userId ?? null,
-      name: p.name,
-      avatarUrl: p.avatarUrl,
-      isVerified: p.isVerified,
-      roleLabel: p.roleLabel ?? null,
-      sortOrder: p.sortOrder,
     };
   }
 
