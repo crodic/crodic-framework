@@ -1,13 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
-import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
+import { serverFetch } from "@/lib/server-fetch";
 import Layout from "@/components/layouts/layout";
 import { PostStandaloneView } from "@/components/post-detail/post-standalone-view";
-import { getPostBySlug, getPostComments } from "@/services/posts";
+import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 
 interface PostPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -22,7 +21,9 @@ export async function generateMetadata({
   const siteName = whiteLabel?.brandName || "Kosume";
 
   try {
-    const post = await getPostBySlug(id);
+    const post = await serverFetch<PostDetailResDto>(
+      `/api/v1/public/posts/${id}`
+    );
     const isVi = locale === "vi";
     const authorName = post.author?.displayName || "Cosplayer";
     const title = `${post.title} - ${authorName} | ${siteName}`;
@@ -89,13 +90,14 @@ export default async function PostPage({ params }: PostPageProps) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
-
   try {
     const [rawPost, rawComments] = await Promise.all([
-      getPostBySlug(id, { token }).catch(() => null),
-      getPostComments(id, { token }).catch(() => []),
+      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${id}`).catch(
+        () => null
+      ),
+      serverFetch<PostCommentResDto[]>(
+        `/api/v1/public/posts/${id}/comments`
+      ).catch(() => []),
     ]);
 
     if (!rawPost) {

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
+import { serverFetch } from "@/lib/server-fetch";
 import { PostDetailModal } from "@/components/post-detail/post-detail-modal";
-import { getPostBySlug, getPostComments } from "@/services/posts";
+import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 
 interface InterceptedPostPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -13,13 +12,14 @@ export default async function InterceptedPostPage({
 }: InterceptedPostPageProps) {
   const { id } = await params;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
-
   try {
     const [rawPost, rawComments] = await Promise.all([
-      getPostBySlug(id, { token }).catch(() => null),
-      getPostComments(id, { token }).catch(() => []),
+      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${id}`).catch(
+        () => null
+      ),
+      serverFetch<PostCommentResDto[]>(
+        `/api/v1/public/posts/${id}/comments`
+      ).catch(() => []),
     ]);
 
     if (!rawPost) {

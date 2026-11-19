@@ -1,14 +1,14 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
-import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
+import { serverFetch } from "@/lib/server-fetch";
 import Layout from "@/components/layouts/layout";
 import { CosplayerProfileView } from "@/components/cosplayer-profile/cosplayer-profile-view";
-import { getCosplayerBySlug } from "@/services/cosplayer";
-import { getPosts } from "@/services/posts";
+import type { CosplayerDetailResDto } from "@/services/cosplayer";
+import type { PostSummaryResDto } from "@/services/posts";
+import type { PaginatedResponse } from "@repo/query-builder";
 import type { WithContext, ProfilePage, Person } from "schema-dts";
 
 interface CosplayerPageProps {
@@ -24,7 +24,9 @@ export async function generateMetadata({
   const siteName = whiteLabel?.brandName || "Kosume";
 
   try {
-    const profile = await getCosplayerBySlug(slug);
+    const profile = await serverFetch<CosplayerDetailResDto>(
+      `/api/v1/public/cosplayers/${slug}`
+    );
     const isVi = locale === "vi";
     const handleSuffix = profile.handle ? ` (${profile.handle})` : "";
     const title = isVi
@@ -118,17 +120,18 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
-
   try {
-    const profile = await getCosplayerBySlug(slug);
-    const albumsRes = await getPosts(
+    const profile = await serverFetch<CosplayerDetailResDto>(
+      `/api/v1/public/cosplayers/${slug}`
+    );
+    const albumsRes = await serverFetch<PaginatedResponse<PostSummaryResDto>>(
+      "/api/v1/public/posts",
       {
-        authorId: profile.userId,
-        limit: 50,
-      },
-      { token }
+        params: {
+          "filter[authorId]": profile.userId,
+          limit: 50,
+        },
+      }
     ).catch(() => ({ data: [] }));
 
     // Rich SEO Schema (ProfilePage & Person)
