@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
 
