@@ -14,6 +14,18 @@ interface BottomNavItem {
   hasBadge?: boolean;
 }
 
+function isNavItemActive(href: string, pathname: string): boolean {
+  if (href === "/") {
+    return pathname === "/";
+  }
+  if (href === "/profile") {
+    return (
+      pathname.startsWith("/profile") || pathname.startsWith("/cosplayer/")
+    );
+  }
+  return pathname.startsWith(href);
+}
+
 export function AppBottomNav() {
   const pathname = usePathname();
   const t = useTranslations("Navigation");
@@ -38,8 +50,7 @@ export function AppBottomNav() {
       aria-label={t("exploreGroup")}
     >
       {navItems.map((item) => {
-        const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        const isActive = isNavItemActive(item.href, pathname);
         const Icon = item.icon;
 
         return (

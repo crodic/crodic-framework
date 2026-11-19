@@ -162,7 +162,7 @@ export function ProfileSavedCollections({
           )}
         >
           <FolderHeart className="text-primary size-4.5" />
-          <span>{t("collectionsTab", { count: collections.length })}</span>
+          <span>{t("collectionsTab")}</span>
         </h3>
         <Button
           type="button"

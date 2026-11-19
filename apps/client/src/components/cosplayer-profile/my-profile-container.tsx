@@ -1,60 +1,50 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMyCosplayerProfile,
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
-import { getPosts } from "@/services/posts";
-import { getUserFollowing } from "@/services/social";
-import { getMyCollections } from "@/services/collections";
-import { CosplayerProfileView } from "./cosplayer-profile-view";
 import { Compass, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/use-auth-store";
 
 export function MyProfileContainer() {
   const t = useTranslations("Common");
   const tOnboarding = useTranslations("Onboarding");
-  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+  const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
   // 1. Fetch current user cosplayer profile from real backend API
-  const { data: cosplayerProfile, isLoading: isCosplayerLoading } =
-    useQuery<CosplayerDetailResDto>({
-      queryKey: ["my-cosplayer-profile"],
-      queryFn: getMyCosplayerProfile,
-      staleTime: 1000 * 60 * 2,
-      enabled: !isHydrating && !!accessToken,
-    });
-
-  const userId = cosplayerProfile?.userId;
-
-  // 2. Fetch associated posts, following, collections using real userId
-  const { data: myPostsRes } = useQuery({
-    queryKey: ["my-posts", userId],
-    queryFn: () => getPosts({ authorId: userId!, limit: 50 }),
-    enabled: !isHydrating && !!accessToken && !!userId,
+  const {
+    data: cosplayerProfile,
+    isLoading: isCosplayerLoading,
+    isError,
+  } = useQuery<CosplayerDetailResDto>({
+    queryKey: ["my-cosplayer-profile"],
+    queryFn: getMyCosplayerProfile,
+    staleTime: 1000 * 60 * 2,
+    enabled: !isHydrating && !!accessToken,
+    retry: false,
   });
 
-  const { data: myFollowingRes } = useQuery({
-    queryKey: ["my-following", userId],
-    queryFn: () => getUserFollowing(userId!, { limit: 50 }),
-    enabled: !isHydrating && !!accessToken && !!userId,
-  });
+  // 2. Seamlessly redirect to the unified canonical profile URL (/cosplayer/[slug])
+  useEffect(() => {
+    if (cosplayerProfile?.slug) {
+      router.replace(`/cosplayer/${cosplayerProfile.slug}`);
+    }
+  }, [cosplayerProfile?.slug, router]);
 
-  const { data: myCollectionsRes } = useQuery({
-    queryKey: ["my-collections", userId],
-    queryFn: () => getMyCollections({ limit: 50 }),
-    enabled: !isHydrating && !!accessToken && !!userId,
-  });
-
-  // 3. Loading state AFTER all hooks are unconditionally declared
-  if (isHydrating || isCosplayerLoading) {
+  // 3. Loading state while hydrating or waiting for redirect
+  if (
+    isHydrating ||
+    isCosplayerLoading ||
+    (cosplayerProfile?.slug && !isError)
+  ) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
         <Loader2 className="text-primary size-8 animate-spin" />
@@ -65,61 +55,23 @@ export function MyProfileContainer() {
     );
   }
 
-  if (!cosplayerProfile) {
-    return null;
-  }
-
-  const isIncomplete =
-    !cosplayerProfile.bio &&
-    (!cosplayerProfile.specialties ||
-      cosplayerProfile.specialties.length === 0);
-
+  // 4. Fallback if user doesn't have a cosplayer profile yet: prompt to onboard
   return (
-    <div className="space-y-6">
-      {isIncomplete && !isBannerDismissed && (
-        <div className="border-border/70 bg-card/80 flex flex-col items-start justify-between gap-4 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:flex-row sm:items-center sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-              <Compass className="size-5" />
-            </div>
-            <div>
-              <h4 className="text-foreground text-sm font-bold">
-                {tOnboarding("banner.title")}
-              </h4>
-              <p className="text-muted-foreground text-xs">
-                {tOnboarding("banner.desc")}
-              </p>
-            </div>
-          </div>
-          <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsBannerDismissed(true)}
-              className="text-muted-foreground text-xs"
-            >
-              {tOnboarding("banner.dismiss")}
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              className="rounded-xl text-xs font-semibold"
-            >
-              <Link href="/onboarding">{tOnboarding("banner.cta")}</Link>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <CosplayerProfileView
-        initialProfile={cosplayerProfile}
-        initialAlbums={myPostsRes?.data || []}
-        initialCharacters={cosplayerProfile.characters || []}
-        initialFollowed={myFollowingRes?.data || []}
-        initialLikedWorks={[]}
-        initialCollections={myCollectionsRes?.data || []}
-        isOwner={true}
-      />
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+      <div className="bg-primary/10 text-primary flex size-16 items-center justify-center rounded-2xl">
+        <Compass className="size-8" />
+      </div>
+      <div className="max-w-md space-y-2">
+        <h3 className="text-foreground text-lg font-bold">
+          {tOnboarding("banner.title")}
+        </h3>
+        <p className="text-muted-foreground text-sm">
+          {tOnboarding("banner.desc")}
+        </p>
+      </div>
+      <Button asChild className="rounded-xl px-6 font-semibold">
+        <Link href="/onboarding">{tOnboarding("banner.cta")}</Link>
+      </Button>
     </div>
   );
 }

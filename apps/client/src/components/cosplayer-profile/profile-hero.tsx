@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   BadgeCheck,
   Camera,
@@ -55,11 +55,12 @@ import {
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
 import { toggleFollow, checkIsFollowing } from "@/services/social";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import { useTranslations } from "next-intl";
 import { useProfile } from "@/hooks/use-profile";
+import { useAuthStore } from "@/store/use-auth-store";
 
 interface ProfileHeroProps {
   profile: CosplayerDetailResDto;
@@ -79,8 +80,28 @@ export function ProfileHero({
   const t = useTranslations("Profile");
   const tCos = useTranslations("CosplayerProfile");
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data: currentUser } = useProfile();
-  const [isFollowing, setIsFollowing] = useState(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const isAuthenticated = !isHydrating && !!accessToken;
+
+  const isOwnerView = isOwner && viewMode === "owner";
+  const isSelf =
+    isOwner ||
+    (!!currentUser?.id &&
+      !!profile.userId &&
+      String(currentUser.id) === String(profile.userId));
+
+  // Check follow status with TanStack Query (no useEffect)
+  const { data: followStatus = false, isLoading: isCheckingFollow } = useQuery({
+    queryKey: ["is-following", profile.userId],
+    queryFn: () => checkIsFollowing(profile.userId!),
+    enabled: Boolean(isAuthenticated && !isSelf && profile.userId),
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const isFollowing = Boolean(followStatus);
   const [followersCount, setFollowersCount] = useState(
     profile.followersCount || 0
   );
@@ -91,13 +112,6 @@ export function ProfileHero({
 
   const coverFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
-
-  const isOwnerView = isOwner && viewMode === "owner";
-  const isSelf =
-    isOwner ||
-    (!!currentUser?.id &&
-      !!profile.userId &&
-      String(currentUser.id) === String(profile.userId));
 
   const messageForm = useForm<MessageFormValues>({
     resolver: zodResolver(createMessageFormSchema(t)),
@@ -111,19 +125,14 @@ export function ProfileHero({
     setLikesCount(profile.totalLikesCount || 0);
   }, [profile.followersCount, profile.totalLikesCount]);
 
-  useEffect(() => {
-    if (!isSelf && profile.userId) {
-      checkIsFollowing(profile.userId)
-        .then((res) => setIsFollowing(res))
-        .catch(() => {});
-    }
-  }, [isSelf, profile.userId]);
-
   const followMutation = useMutation({
     mutationFn: (targetUserId: string) => toggleFollow(targetUserId),
     onSuccess: (res) => {
-      setIsFollowing(res.following);
       setFollowersCount(res.followersCount);
+      queryClient.setQueryData(["is-following", profile.userId], res.following);
+      queryClient.invalidateQueries({
+        queryKey: ["is-following", profile.userId],
+      });
       queryClient.invalidateQueries({ queryKey: ["my-following"] });
       queryClient.invalidateQueries({ queryKey: ["my-cosplayer-profile"] });
       toast.success(
@@ -178,9 +187,13 @@ export function ProfileHero({
 
   const isUploadingCover = coverMutation.isPending;
   const isUploadingAvatar = avatarMutation.isPending;
-  const isFollowLoading = followMutation.isPending;
+  const isFollowLoading = followMutation.isPending || isCheckingFollow;
 
   const handleToggleFollow = () => {
+    if (!isAuthenticated) {
+      router.push("/auth/login");
+      return;
+    }
     if (!profile.userId || followMutation.isPending) return;
     followMutation.mutate(profile.userId);
   };
@@ -424,7 +437,7 @@ export function ProfileHero({
           </div>
 
           {/* Right Column: Actions */}
-          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-2.5 md:mt-0 md:w-auto md:flex-nowrap md:justify-end">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2 sm:gap-2.5 md:mt-0 md:w-auto md:flex-nowrap">
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
