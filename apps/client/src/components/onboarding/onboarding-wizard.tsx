@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { XiorError } from "xior";
+import { useAuthStore } from "@/store/use-auth-store";
 import {
   ArrowLeft,
   ArrowRight,
@@ -109,11 +110,14 @@ export function OnboardingWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Queries
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
   const { data: userProfile } = useProfile();
   const { data: cosplayerProfile } = useQuery<CosplayerDetailResDto>({
     queryKey: ["my-cosplayer-profile"],
     queryFn: getMyCosplayerProfile,
     staleTime: 1000 * 60 * 2,
+    enabled: !isHydrating && !!accessToken,
     retry: 1,
   });
 

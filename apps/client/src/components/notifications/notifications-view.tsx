@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useAuthStore } from "@/store/use-auth-store";
 import { NotificationCategory } from "./notifications-types";
 import { NotificationItemCard } from "./notification-item-card";
 import {
@@ -32,6 +33,8 @@ import {
 
 export function NotificationsView() {
   const t = useTranslations("Notifications");
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
   const [activeCategory, setActiveCategory] =
     useState<NotificationCategory>("all");
   const [showUnreadOnly, setShowUnreadOnly] = useState<boolean>(false);
@@ -43,6 +46,7 @@ export function NotificationsView() {
   } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => getNotifications({ limit: 50 }),
+    enabled: !isHydrating && !!accessToken,
   });
 
   const notifications: NotificationResDto[] = useMemo(() => {

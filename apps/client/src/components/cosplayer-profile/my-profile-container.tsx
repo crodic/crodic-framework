@@ -14,11 +14,14 @@ import { Compass, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/use-auth-store";
 
 export function MyProfileContainer() {
   const t = useTranslations("Common");
   const tOnboarding = useTranslations("Onboarding");
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
 
   // 1. Fetch current user cosplayer profile from real backend API
   const { data: cosplayerProfile, isLoading: isCosplayerLoading } =
@@ -26,6 +29,7 @@ export function MyProfileContainer() {
       queryKey: ["my-cosplayer-profile"],
       queryFn: getMyCosplayerProfile,
       staleTime: 1000 * 60 * 2,
+      enabled: !isHydrating && !!accessToken,
     });
 
   const userId = cosplayerProfile?.userId;
@@ -34,22 +38,23 @@ export function MyProfileContainer() {
   const { data: myPostsRes } = useQuery({
     queryKey: ["my-posts", userId],
     queryFn: () => getPosts({ authorId: userId!, limit: 50 }),
-    enabled: !!userId,
+    enabled: !isHydrating && !!accessToken && !!userId,
   });
 
   const { data: myFollowingRes } = useQuery({
     queryKey: ["my-following", userId],
     queryFn: () => getUserFollowing(userId!, { limit: 50 }),
-    enabled: !!userId,
+    enabled: !isHydrating && !!accessToken && !!userId,
   });
 
   const { data: myCollectionsRes } = useQuery({
-    queryKey: ["my-collections"],
+    queryKey: ["my-collections", userId],
     queryFn: () => getMyCollections({ limit: 50 }),
+    enabled: !isHydrating && !!accessToken && !!userId,
   });
 
   // 3. Loading state AFTER all hooks are unconditionally declared
-  if (isCosplayerLoading) {
+  if (isHydrating || isCosplayerLoading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
         <Loader2 className="text-primary size-8 animate-spin" />
