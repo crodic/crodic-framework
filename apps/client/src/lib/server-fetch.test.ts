@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { serverFetch, ServerFetchError } from "./server-fetch";
+import {
+  serverFetch,
+  ServerFetchError,
+  isServerFetchError,
+} from "./server-fetch";
 import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
 
 // Mock next/headers
@@ -174,5 +178,51 @@ describe("serverFetch", () => {
 
     await serverFetch.patch("/test/1", { name: "patched" });
     expect((global.fetch as any).mock.calls[3][1].method).toBe("PATCH");
+  });
+
+  it("does not attach cookie token to external domains (cross-origin security)", async () => {
+    (global.fetch as any).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
+
+    await serverFetch("https://external-service.com/api/v1/data");
+
+    const callHeaders = (global.fetch as any).mock.calls[0][1]
+      .headers as Headers;
+    expect(callHeaders.get("Authorization")).toBeNull();
+  });
+
+  it("returns null for HTTP 204 No Content responses", async () => {
+    (global.fetch as any).mockResolvedValueOnce(
+      new Response(null, { status: 204, statusText: "No Content" })
+    );
+
+    const result = await serverFetch("/api/v1/posts/1");
+    expect(result).toBeNull();
+  });
+
+  it("formats array error messages from NestJS ValidationPipe", async () => {
+    (global.fetch as any).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          statusCode: 400,
+          message: ["email must be an email", "password is too short"],
+          error: "Bad Request",
+        }),
+        { status: 400, statusText: "Bad Request" }
+      )
+    );
+
+    try {
+      await serverFetch("/api/v1/auth/register");
+    } catch (err) {
+      expect(isServerFetchError(err)).toBe(true);
+      if (isServerFetchError(err)) {
+        expect(err.message).toBe(
+          "email must be an email, password is too short"
+        );
+        expect(err.status).toBe(400);
+      }
+    }
   });
 });

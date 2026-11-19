@@ -32,12 +32,14 @@ export interface ServerFetchOptions<TBody = unknown> extends Omit<
 
   /**
    * Explicit Bearer token to use for Authorization.
-   * If omitted, serverFetch automatically extracts the `accessToken` from Next.js HttpOnly cookies.
+   * If omitted, serverFetch automatically extracts the `accessToken` from Next.js HttpOnly cookies
+   * when calling same-origin API endpoints.
    */
   token?: string;
 
   /**
    * If true, serverFetch will NOT automatically read or attach the cookie token.
+   * Recommended for public/ISR endpoints to preserve static/revalidated rendering.
    * Default: false.
    */
   anonymous?: boolean;
@@ -57,6 +59,20 @@ export interface ServerFetchOptions<TBody = unknown> extends Omit<
    * - 'raw': Returns the raw Response object
    */
   responseType?: "json" | "text" | "blob" | "arrayBuffer" | "raw";
+
+  /**
+   * Optional request timeout in milliseconds.
+   * When exceeded, the underlying fetch request is aborted via AbortController.
+   */
+  timeout?: number;
+
+  /**
+   * Next.js Data Cache configuration passed through to `fetch`.
+   */
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
 }
 
 export class ServerFetchError<TData = unknown> extends Error {
@@ -90,21 +106,27 @@ export class ServerFetchError<TData = unknown> extends Error {
   }
 }
 
-function isNextRouterError(error: unknown): boolean {
+export function isServerFetchError(error: unknown): error is ServerFetchError {
+  return error instanceof ServerFetchError;
+}
+
+export function isNextRouterError(error: unknown): boolean {
   if (error && typeof error === "object" && "digest" in error) {
     const digest = String((error as { digest?: unknown }).digest);
     return (
       digest.startsWith("NEXT_REDIRECT") ||
       digest.startsWith("NEXT_NOT_FOUND") ||
+      digest.startsWith("NEXT_HTTP_ERROR_FALLBACK") ||
+      digest.startsWith("NEXT_PRERENDER_INTERRUPTED") ||
       digest.startsWith("DYNAMIC_SERVER_USAGE")
     );
   }
   return false;
 }
 
-export async function serverFetch<T = any>(
+export async function serverFetch<T = unknown, TBody = unknown>(
   input: string | URL,
-  options: ServerFetchOptions = {}
+  options: ServerFetchOptions<TBody> = {}
 ): Promise<T> {
   const {
     body,
@@ -113,7 +135,9 @@ export async function serverFetch<T = any>(
     anonymous = false,
     baseUrl: customBaseUrl,
     responseType = "json",
+    timeout,
     headers,
+    signal: externalSignal,
     ...fetchInit
   } = options;
 
@@ -125,51 +149,62 @@ export async function serverFetch<T = any>(
 
   const resolvedBaseUrl = customBaseUrl || defaultBaseUrl;
   const rawUrl = typeof input === "string" ? input : input.toString();
+  const isAbsoluteInput =
+    rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
 
-  let fullUrl =
-    rawUrl.startsWith("http://") || rawUrl.startsWith("https://")
-      ? rawUrl
-      : `${resolvedBaseUrl.replace(/\/+$/, "")}/${rawUrl.replace(/^\/+/, "")}`;
+  const baseUrlObj = new URL(resolvedBaseUrl);
+  const targetUrl = isAbsoluteInput
+    ? new URL(rawUrl)
+    : new URL(
+        `${resolvedBaseUrl.replace(/\/+$/, "")}/${rawUrl.replace(/^\/+/, "")}`
+      );
 
-  // 2. Append query parameters
+  const isSameOriginAsApi =
+    !isAbsoluteInput || targetUrl.origin === baseUrlObj.origin;
+
+  // 2. Append query parameters safely (preserves existing query params and #hash)
   if (params) {
-    const searchParams =
-      params instanceof URLSearchParams
-        ? new URLSearchParams(params)
-        : new URLSearchParams();
-
-    if (!(params instanceof URLSearchParams)) {
+    if (params instanceof URLSearchParams) {
+      params.forEach((value, key) => {
+        targetUrl.searchParams.append(key, value);
+      });
+    } else {
       for (const [key, val] of Object.entries(params)) {
         if (val !== undefined && val !== null) {
           if (Array.isArray(val)) {
             val.forEach((item) => {
               if (item !== undefined && item !== null) {
-                searchParams.append(key, String(item));
+                targetUrl.searchParams.append(key, String(item));
               }
             });
           } else {
-            searchParams.append(key, String(val));
+            targetUrl.searchParams.append(key, String(val));
           }
         }
       }
     }
-
-    const qs = searchParams.toString();
-    if (qs) {
-      fullUrl += `${fullUrl.includes("?") ? "&" : "?"}${qs}`;
-    }
   }
+
+  const fullUrl = targetUrl.toString();
 
   // 3. Resolve Request Headers
   const reqHeaders = new Headers(headers);
 
-  // 4. Resolve Auth Token (Cookie or Explicit)
+  // 4. Resolve Auth Token (Explicit or Same-Origin Cookie)
   let authToken = explicitToken;
-  if (!authToken && !anonymous) {
+  if (
+    !authToken &&
+    !anonymous &&
+    isSameOriginAsApi &&
+    !reqHeaders.has("Authorization")
+  ) {
     try {
       const cookieStore = await cookies();
       authToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
-    } catch {
+    } catch (error) {
+      if (isNextRouterError(error)) {
+        throw error;
+      }
       // Called outside Next.js request context (e.g. build time static analysis)
     }
   }
@@ -178,21 +213,25 @@ export async function serverFetch<T = any>(
     reqHeaders.set("Authorization", `Bearer ${authToken}`);
   }
 
-  if (!reqHeaders.has("Accept")) {
+  if (responseType === "json" && !reqHeaders.has("Accept")) {
     reqHeaders.set("Accept", "application/json");
   }
 
   // 5. Serialize Body
   let serializedBody: BodyInit | null | undefined = undefined;
   if (body !== undefined && body !== null) {
-    if (
+    if (typeof FormData !== "undefined" && body instanceof FormData) {
+      // Remove any manual Content-Type so fetch generates the multipart boundary
+      reqHeaders.delete("Content-Type");
+      serializedBody = body;
+    } else if (
       typeof body === "string" ||
-      body instanceof FormData ||
-      body instanceof URLSearchParams ||
-      body instanceof Blob ||
-      body instanceof ArrayBuffer ||
+      (typeof URLSearchParams !== "undefined" &&
+        body instanceof URLSearchParams) ||
+      (typeof Blob !== "undefined" && body instanceof Blob) ||
+      (typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer) ||
       ArrayBuffer.isView(body) ||
-      body instanceof ReadableStream
+      (typeof ReadableStream !== "undefined" && body instanceof ReadableStream)
     ) {
       serializedBody = body as BodyInit;
     } else if (typeof body === "object") {
@@ -205,39 +244,89 @@ export async function serverFetch<T = any>(
     }
   }
 
-  // 6. Execute Native Fetch
+  // 6. Execute Native Fetch (with optional timeout & signal composition)
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let effectiveSignal: AbortSignal | undefined = externalSignal ?? undefined;
+  let abortController: AbortController | undefined;
+  let onExternalAbort: (() => void) | undefined;
+
+  if (typeof timeout === "number" && timeout >= 0) {
+    abortController = new AbortController();
+    effectiveSignal = abortController.signal;
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        abortController.abort(externalSignal.reason);
+      } else {
+        onExternalAbort = () => {
+          abortController?.abort(externalSignal.reason);
+        };
+        externalSignal.addEventListener("abort", onExternalAbort, {
+          once: true,
+        });
+      }
+    }
+
+    timeoutId = setTimeout(() => {
+      const timeoutError =
+        typeof DOMException !== "undefined"
+          ? new DOMException(
+              `Request timed out after ${timeout}ms`,
+              "TimeoutError"
+            )
+          : new Error(`Request timed out after ${timeout}ms`);
+      abortController?.abort(timeoutError);
+    }, timeout);
+  }
+
   let response: Response;
   try {
     response = await fetch(fullUrl, {
       ...fetchInit,
       headers: reqHeaders,
       body: serializedBody,
+      signal: effectiveSignal,
     });
-  } catch (error) {
-    if (isNextRouterError(error)) {
-      throw error;
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
     }
-    throw error;
+    if (externalSignal && onExternalAbort) {
+      externalSignal.removeEventListener("abort", onExternalAbort);
+    }
   }
 
   // 7. Handle HTTP Error Responses
   if (!response.ok) {
-    let errorData: unknown = null;
+    let rawText = "";
     try {
-      const text = await response.text();
-      errorData = text ? JSON.parse(text) : null;
+      rawText = await response.text();
     } catch {
-      // Ignore body parsing error on error response
+      // Ignore body read errors on failed responses
+    }
+
+    let errorData: unknown = null;
+    if (rawText) {
+      try {
+        errorData = JSON.parse(rawText);
+      } catch {
+        errorData = rawText;
+      }
     }
 
     let message = `Server fetch to "${fullUrl}" failed with HTTP ${response.status} (${response.statusText})`;
-    if (
-      errorData &&
-      typeof errorData === "object" &&
-      "message" in errorData &&
-      typeof (errorData as { message?: unknown }).message === "string"
-    ) {
-      message = (errorData as { message: string }).message;
+    if (errorData && typeof errorData === "object" && "message" in errorData) {
+      const rawMessage = (errorData as { message?: unknown }).message;
+      if (typeof rawMessage === "string" && rawMessage) {
+        message = rawMessage;
+      } else if (Array.isArray(rawMessage)) {
+        const parts = rawMessage.filter(
+          (item): item is string => typeof item === "string" && item.length > 0
+        );
+        if (parts.length > 0) {
+          message = parts.join(", ");
+        }
+      }
     }
 
     throw new ServerFetchError(message, {
@@ -263,38 +352,56 @@ export async function serverFetch<T = any>(
     return (await response.arrayBuffer()) as unknown as T;
   }
 
+  if (response.status === 204 || response.status === 205) {
+    return null as unknown as T;
+  }
+
   // Default: json
   const responseText = await response.text();
   if (!responseText) {
     return null as unknown as T;
   }
-  return JSON.parse(responseText) as T;
+
+  try {
+    return JSON.parse(responseText) as T;
+  } catch {
+    throw new ServerFetchError(
+      `Failed to parse JSON response from "${fullUrl}" (HTTP ${response.status})`,
+      {
+        status: response.status,
+        statusText: response.statusText,
+        url: fullUrl,
+        response,
+        data: responseText,
+      }
+    );
+  }
 }
 
-serverFetch.get = <T = any>(
+serverFetch.get = <T = unknown>(
   input: string | URL,
-  options?: Omit<ServerFetchOptions, "method" | "body">
-) => serverFetch<T>(input, { ...options, method: "GET" });
+  options?: Omit<ServerFetchOptions<never>, "method" | "body">
+) => serverFetch<T, never>(input, { ...options, method: "GET" });
 
-serverFetch.post = <T = any, TBody = unknown>(
+serverFetch.post = <T = unknown, TBody = unknown>(
   input: string | URL,
   body?: TBody | BodyInit | null,
   options?: Omit<ServerFetchOptions<TBody>, "method" | "body">
-) => serverFetch<T>(input, { ...options, method: "POST", body });
+) => serverFetch<T, TBody>(input, { ...options, method: "POST", body });
 
-serverFetch.put = <T = any, TBody = unknown>(
+serverFetch.put = <T = unknown, TBody = unknown>(
   input: string | URL,
   body?: TBody | BodyInit | null,
   options?: Omit<ServerFetchOptions<TBody>, "method" | "body">
-) => serverFetch<T>(input, { ...options, method: "PUT", body });
+) => serverFetch<T, TBody>(input, { ...options, method: "PUT", body });
 
-serverFetch.patch = <T = any, TBody = unknown>(
+serverFetch.patch = <T = unknown, TBody = unknown>(
   input: string | URL,
   body?: TBody | BodyInit | null,
   options?: Omit<ServerFetchOptions<TBody>, "method" | "body">
-) => serverFetch<T>(input, { ...options, method: "PATCH", body });
+) => serverFetch<T, TBody>(input, { ...options, method: "PATCH", body });
 
-serverFetch.delete = <T = any>(
+serverFetch.delete = <T = unknown, TBody = unknown>(
   input: string | URL,
-  options?: Omit<ServerFetchOptions, "method">
-) => serverFetch<T>(input, { ...options, method: "DELETE" });
+  options?: Omit<ServerFetchOptions<TBody>, "method">
+) => serverFetch<T, TBody>(input, { ...options, method: "DELETE" });
