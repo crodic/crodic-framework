@@ -194,7 +194,8 @@ export function AppHeader() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="border-border/70 bg-card/60 hover:bg-muted flex h-8.5 cursor-pointer items-center gap-2 rounded-full border px-1 sm:h-9 sm:px-2.5"
+                  aria-label={displayName}
+                  className="border-border/70 bg-card/60 hover:bg-muted flex size-8.5 cursor-pointer items-center justify-center rounded-full border p-0 has-[>svg]:p-0 sm:size-9 md:size-auto md:h-9 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
                 >
                   <Avatar className="border-primary/30 size-7 border">
                     <AvatarImage src={displayAvatar} alt={displayName} />
@@ -205,7 +206,7 @@ export function AppHeader() {
                   <span className="text-foreground hidden max-w-[120px] truncate text-xs font-semibold md:inline">
                     {displayName}
                   </span>
-                  <ChevronDown className="text-muted-foreground hidden size-3.5 sm:inline" />
+                  <ChevronDown className="text-muted-foreground hidden size-3.5 md:inline" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
