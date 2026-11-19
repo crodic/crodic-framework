@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMyCosplayerProfile,
@@ -9,7 +9,6 @@ import {
 import { getPosts } from "@/services/posts";
 import { getUserFollowing } from "@/services/social";
 import { getMyCollections } from "@/services/collections";
-import type { FollowedCosplayer, SavedCollection } from "./profile-types";
 import { CosplayerProfileView } from "./cosplayer-profile-view";
 import { Compass, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -49,32 +48,7 @@ export function MyProfileContainer() {
     queryFn: () => getMyCollections({ limit: 50 }),
   });
 
-  // 3. Transform lists
-  const myFollowedCosplayers: FollowedCosplayer[] = useMemo(() => {
-    return (myFollowingRes?.data || []).map((user) => ({
-      id: user.id,
-      name: user.displayName,
-      handle: user.handle
-        ? `@${user.handle.replace(/^@/, "")}`
-        : `@user-${user.id}`,
-      avatarUrl: user.avatarUrl || "/landing/hero-banner.png",
-      isVerified: false,
-      previewPhoto: user.avatarUrl || "/landing/hero-banner.png",
-      isFollowing: true,
-    }));
-  }, [myFollowingRes]);
-
-  const mySavedCollections: SavedCollection[] = useMemo(() => {
-    return (myCollectionsRes?.data || []).map((col) => ({
-      id: col.id,
-      title: col.title,
-      count: col.itemsCount,
-      thumbnails: col.previewThumbnails || [],
-      updatedAt: col.updatedAt,
-    }));
-  }, [myCollectionsRes]);
-
-  // 4. Loading state AFTER all hooks
+  // 3. Loading state AFTER all hooks are unconditionally declared
   if (isCosplayerLoading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
@@ -136,9 +110,9 @@ export function MyProfileContainer() {
         initialProfile={cosplayerProfile}
         initialAlbums={myPostsRes?.data || []}
         initialCharacters={cosplayerProfile.characters || []}
-        initialFollowed={myFollowedCosplayers}
+        initialFollowed={myFollowingRes?.data || []}
         initialLikedWorks={[]}
-        initialCollections={mySavedCollections}
+        initialCollections={myCollectionsRes?.data || []}
         isOwner={true}
       />
     </div>

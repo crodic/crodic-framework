@@ -599,7 +599,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         author={{
           name: post.author.displayName,
           handle: post.author.handle,
-          avatarUrl: post.author.avatarUrl || "/logo.png",
+          avatarUrl: post.author.avatarUrl,
         }}
         caption={captionText}
       />

@@ -89,13 +89,19 @@ export function AlbumCard({ album }: AlbumCardProps) {
         <div className="flex items-center gap-2">
           {/* Avatar */}
           <div className="border-primary/40 bg-muted relative size-6 shrink-0 overflow-hidden rounded-full border">
-            <Image
-              src={album.author?.avatarUrl || "/placeholder-avatar.png"}
-              alt={album.author?.displayName || "Author"}
-              fill
-              sizes="24px"
-              className="object-cover"
-            />
+            {album.author?.avatarUrl ? (
+              <Image
+                src={album.author.avatarUrl}
+                alt={album.author.displayName || "Author"}
+                fill
+                sizes="24px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[10px] font-bold">
+                {(album.author?.displayName || "C").slice(0, 1).toUpperCase()}
+              </div>
+            )}
           </div>
 
           {/* Character Name / Title */}

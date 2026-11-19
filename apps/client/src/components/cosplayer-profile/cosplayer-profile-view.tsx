@@ -19,33 +19,8 @@ import type {
 } from "./profile-types";
 import type { PostSummaryResDto } from "@/services/posts";
 
-const DEFAULT_EMPTY_PROFILE: CosplayerDetailResDto = {
-  id: "",
-  userId: "",
-  slug: "",
-  displayName: "",
-  handle: "",
-  roleBadge: "",
-  locationLabel: "",
-  isVerified: false,
-  isCraftingCreator: false,
-  followersCount: 0,
-  totalLikesCount: 0,
-  albumsCount: 0,
-  charactersCount: 0,
-  rankingScore: 0,
-  specialties: [],
-  skills: [],
-  awardsBadges: [],
-  followingCount: 0,
-  collectionsCount: 0,
-  characters: [],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
-
 interface CosplayerProfileViewProps {
-  initialProfile?: CosplayerDetailResDto;
+  initialProfile: CosplayerDetailResDto;
   initialAlbums?: PostSummaryResDto[];
   initialCharacters?: CosplayerCharacterResDto[];
   initialFollowed?: FollowedCosplayer[];
@@ -55,7 +30,7 @@ interface CosplayerProfileViewProps {
 }
 
 export function CosplayerProfileView({
-  initialProfile = DEFAULT_EMPTY_PROFILE,
+  initialProfile,
   initialAlbums = [],
   initialCharacters = [],
   initialFollowed = [],
@@ -69,7 +44,7 @@ export function CosplayerProfileView({
   const [activeTab, setActiveTab] = useState(isOwner ? "following" : "albums");
 
   useEffect(() => {
-    if (initialProfile && initialProfile.id) {
+    if (initialProfile) {
       setProfile(initialProfile);
     }
   }, [initialProfile]);

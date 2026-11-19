@@ -58,13 +58,19 @@ export function ProfileLikedWorks({
           >
             {/* Image Thumbnail */}
             <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
-              <Image
-                src={work.image}
-                alt={work.title}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {work.coverImageUrl ? (
+                <Image
+                  src={work.coverImageUrl}
+                  alt={work.title}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="bg-muted flex size-full items-center justify-center">
+                  <Heart className="text-muted-foreground/40 size-8" />
+                </div>
+              )}
 
               {/* Heart Badge (Click to unlike) */}
               <button
@@ -81,9 +87,11 @@ export function ProfileLikedWorks({
 
               {/* Author & Title over bottom */}
               <div className="absolute inset-x-2.5 bottom-2.5 space-y-0.5 text-white">
-                <span className="block truncate text-[10px] text-white/80">
-                  {t("byAuthor", { name: work.authorName })}
-                </span>
+                {work.author?.displayName && (
+                  <span className="block truncate text-[10px] text-white/80">
+                    {t("byAuthor", { name: work.author.displayName })}
+                  </span>
+                )}
                 <h4 className="truncate text-xs font-bold text-white drop-shadow-sm sm:text-sm">
                   {work.title}
                 </h4>

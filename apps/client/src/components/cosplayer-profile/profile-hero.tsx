@@ -244,14 +244,18 @@ export function ProfileHero({
 
       {/* 1. Panoramic Cover Banner */}
       <div className="group/cover bg-muted/40 border-border/40 relative h-44 w-full overflow-hidden rounded-2xl border shadow-sm sm:h-56 sm:rounded-3xl md:h-72 lg:h-80">
-        <Image
-          src={profile.coverUrl || "/landing/hero-banner.png"}
-          alt={`${profile.displayName} Cover Banner`}
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
-          className="object-cover object-center"
-        />
+        {profile.coverUrl ? (
+          <Image
+            src={profile.coverUrl}
+            alt={`${profile.displayName} Cover Banner`}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
+            className="object-cover object-center"
+          />
+        ) : (
+          <div className="from-primary/20 via-muted to-muted/60 size-full bg-gradient-to-r" />
+        )}
         <div className="from-background/90 to-background/20 absolute inset-0 bg-gradient-to-t via-transparent" />
 
         {/* Owner Action: Change Cover Photo */}

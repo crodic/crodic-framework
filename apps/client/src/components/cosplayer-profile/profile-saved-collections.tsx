@@ -5,10 +5,7 @@ import Image from "next/image";
 import {
   FolderHeart,
   Plus,
-  X,
-  Maximize2,
   Trash2,
-  Heart,
   Share2,
   Clock,
   Images,
@@ -23,7 +20,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -40,13 +36,21 @@ import {
 } from "./schema";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { CollectionPhoto, SavedCollection } from "./profile-types";
+import type {
+  CollectionResDto,
+  CollectionItemResDto,
+} from "@/services/collections";
 import { useTranslations } from "next-intl";
-import { createCollection, deleteCollection } from "@/services/collections";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createCollection,
+  deleteCollection,
+  getCollectionItems,
+  removeCollectionItem,
+} from "@/services/collections";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ProfileSavedCollectionsProps {
-  initialCollections: SavedCollection[];
+  initialCollections: CollectionResDto[];
   layout?: "compact" | "full";
 }
 
@@ -58,8 +62,11 @@ export function ProfileSavedCollections({
   const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
   const [collections, setCollections] =
-    useState<SavedCollection[]>(initialCollections);
+    useState<CollectionResDto[]>(initialCollections);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedCollection, setSelectedCollection] =
+    useState<CollectionResDto | null>(null);
+  const [activePhoto, setActivePhoto] = useState<string | null>(null);
 
   const form = useForm<CreateCollectionFormValues>({
     resolver: zodResolver(createCollectionSchema(t)),
@@ -74,12 +81,14 @@ export function ProfileSavedCollections({
     }
   }, [initialCollections]);
 
-  // Viewing full collection modal
-  const [selectedCollection, setSelectedCollection] =
-    useState<SavedCollection | null>(null);
+  // Query real collection items when a collection is selected
+  const { data: itemsRes, isLoading: isItemsLoading } = useQuery({
+    queryKey: ["collection-items", selectedCollection?.id],
+    queryFn: () => getCollectionItems(selectedCollection!.id, { limit: 50 }),
+    enabled: !!selectedCollection?.id,
+  });
 
-  // Fullscreen Lightbox for individual photo
-  const [activePhoto, setActivePhoto] = useState<CollectionPhoto | null>(null);
+  const collectionItems: CollectionItemResDto[] = itemsRes?.data || [];
 
   const createMutation = useMutation({
     mutationFn: (values: CreateCollectionFormValues) =>
@@ -88,16 +97,7 @@ export function ProfileSavedCollections({
         isPublic: true,
       }),
     onSuccess: async (created) => {
-      const newCol: SavedCollection = {
-        id: created.id,
-        title: created.title,
-        count: created.itemsCount || 0,
-        thumbnails: created.previewThumbnails || [],
-        photos: [],
-        updatedAt: created.updatedAt,
-      };
-
-      setCollections((prev) => [newCol, ...prev]);
+      setCollections((prev) => [created, ...prev]);
       form.reset();
       setIsCreateOpen(false);
       await queryClient.invalidateQueries({ queryKey: ["my-collections"] });
@@ -121,32 +121,30 @@ export function ProfileSavedCollections({
     },
   });
 
+  const removeItemMutation = useMutation({
+    mutationFn: (itemId: string) =>
+      removeCollectionItem(selectedCollection!.id, itemId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["collection-items", selectedCollection?.id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      toast.success(tCommon("confirm"));
+    },
+    onError: () => {
+      toast.error(tCommon("error"));
+    },
+  });
+
   const onSubmitCreate = (values: CreateCollectionFormValues) => {
     createMutation.mutate(values);
-  };
-
-  const handleRemovePhoto = (photoId: string) => {
-    if (!selectedCollection) return;
-    const updatedPhotos = (selectedCollection.photos || []).filter(
-      (p) => p.id !== photoId
-    );
-    const updatedCol = {
-      ...selectedCollection,
-      photos: updatedPhotos,
-      count: Math.max(0, selectedCollection.count - 1),
-    };
-
-    setSelectedCollection(updatedCol);
-    setCollections((prev) =>
-      prev.map((c) => (c.id === updatedCol.id ? updatedCol : c))
-    );
   };
 
   const handleDeleteCollection = (collectionId: string) => {
     deleteMutation.mutate(collectionId);
   };
 
-  const handleShareCollection = (col: SavedCollection) => {
+  const handleShareCollection = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText?.(window.location.href);
       toast.success(t("copyUrlSuccess"));
@@ -164,11 +162,7 @@ export function ProfileSavedCollections({
           )}
         >
           <FolderHeart className="text-primary size-4.5" />
-          <span>
-            {layout === "full"
-              ? `${t("collectionsTab", { count: collections.length })}`
-              : t("collectionsTab", { count: collections.length })}
-          </span>
+          <span>{t("collectionsTab", { count: collections.length })}</span>
         </h3>
         <Button
           type="button"
@@ -191,7 +185,8 @@ export function ProfileSavedCollections({
         )}
       >
         {collections.map((col) => {
-          const hasThumbs = col.thumbnails && col.thumbnails.length > 0;
+          const hasThumbs =
+            col.previewThumbnails && col.previewThumbnails.length > 0;
 
           return (
             <div
@@ -206,7 +201,7 @@ export function ProfileSavedCollections({
                     {/* Hero Left (2 cols) */}
                     <div className="relative col-span-2 h-full overflow-hidden rounded-l-2xl">
                       <Image
-                        src={col.thumbnails[0] || ""}
+                        src={col.previewThumbnails[0] || ""}
                         alt={col.title}
                         fill
                         sizes="(max-width: 640px) 70vw, (max-width: 1024px) 35vw, 25vw"
@@ -217,9 +212,9 @@ export function ProfileSavedCollections({
                     {/* Stacked Right (1 col, 2 rows) */}
                     <div className="grid h-full grid-rows-2 gap-1">
                       <div className="relative h-full overflow-hidden rounded-tr-2xl">
-                        {col.thumbnails[1] && (
+                        {col.previewThumbnails[1] && (
                           <Image
-                            src={col.thumbnails[1]}
+                            src={col.previewThumbnails[1]}
                             alt={col.title}
                             fill
                             sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
@@ -228,19 +223,18 @@ export function ProfileSavedCollections({
                         )}
                       </div>
                       <div className="relative h-full overflow-hidden rounded-br-2xl">
-                        {col.thumbnails[2] && (
+                        {col.previewThumbnails[2] && (
                           <Image
-                            src={col.thumbnails[2]}
+                            src={col.previewThumbnails[2]}
                             alt={col.title}
                             fill
                             sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         )}
-                        {/* Count Badge overlay on bottom-right thumbnail */}
-                        {col.count > 3 && (
+                        {col.itemsCount > 3 && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/60 font-mono text-xs font-bold text-white/95 backdrop-blur-xs">
-                            +{col.count - 2}
+                            +{col.itemsCount - 2}
                           </div>
                         )}
                       </div>
@@ -252,43 +246,18 @@ export function ProfileSavedCollections({
                   </div>
                 )}
 
-                {/* Subtle gradient vignette at bottom */}
                 <div className="from-card/80 pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t via-transparent to-transparent" />
-
-                {/* Hover overlay hint */}
-                <div className="bg-background/50 absolute inset-0 flex items-center justify-center opacity-0 backdrop-blur-xs transition-opacity duration-200 group-hover:opacity-100">
-                  <span className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-lg">
-                    <Images className="size-4" />
-                    {t("viewAlbum")}
-                  </span>
-                </div>
               </div>
 
-              {/* Card Body: Info, Count & Folder Emblem */}
-              <div className="p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 space-y-1">
-                    <h4 className="text-foreground group-hover:text-primary truncate text-base font-bold tracking-tight transition-colors">
-                      {col.title.replace(/^"|"$/g, "")}
-                    </h4>
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
-                      <span className="text-primary flex items-center gap-1 font-semibold">
-                        <Images className="size-3.5" />
-                        {t("photosCount", { count: col.count })}
-                      </span>
-                      {col.updatedAt && (
-                        <>
-                          <span className="text-muted-foreground/40">•</span>
-                          <span>{col.updatedAt}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Folder Icon Emblem with smooth color transition */}
-                  <div className="bg-primary/10 border-primary/20 text-primary group-hover:bg-primary group-hover:text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-xl border shadow-xs transition-all duration-300">
-                    <FolderHeart className="size-4.5" />
-                  </div>
+              {/* Card Footer */}
+              <div className="flex items-center justify-between p-4">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-foreground truncate text-sm font-bold">
+                    {col.title.replace(/^"|"$/g, "")}
+                  </h4>
+                  <p className="text-muted-foreground text-xs font-medium">
+                    {t("photosCount", { count: col.itemsCount })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -327,14 +296,18 @@ export function ProfileSavedCollections({
                     </DialogTitle>
                     <div className="text-muted-foreground flex items-center gap-3 text-xs">
                       <span>
-                        {t("photosCount", { count: selectedCollection.count })}
+                        {t("photosCount", {
+                          count: selectedCollection.itemsCount,
+                        })}
                       </span>
                       {selectedCollection.updatedAt && (
                         <>
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <Clock className="size-3" />
-                            {selectedCollection.updatedAt}
+                            {new Date(
+                              selectedCollection.updatedAt
+                            ).toLocaleDateString()}
                           </span>
                         </>
                       )}
@@ -346,7 +319,7 @@ export function ProfileSavedCollections({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleShareCollection(selectedCollection)}
+                      onClick={handleShareCollection}
                       className="border-border/70 h-8 gap-1.5 rounded-xl text-xs"
                     >
                       <Share2 className="size-3.5" />
@@ -368,28 +341,39 @@ export function ProfileSavedCollections({
 
               {/* Photos Grid */}
               <div className="flex-1 overflow-y-auto p-5 sm:p-6">
-                {selectedCollection.photos &&
-                selectedCollection.photos.length > 0 ? (
+                {isItemsLoading ? (
+                  <div className="flex min-h-[200px] items-center justify-center">
+                    <Loader2 className="text-primary size-7 animate-spin" />
+                  </div>
+                ) : collectionItems.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-                    {selectedCollection.photos.map((photo) => (
+                    {collectionItems.map((item) => (
                       <div
-                        key={photo.id}
-                        onClick={() => setActivePhoto(photo)}
+                        key={item.id}
+                        onClick={() =>
+                          item.mediaUrl && setActivePhoto(item.mediaUrl)
+                        }
                         className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
                       >
-                        <Image
-                          src={photo.src}
-                          alt={photo.title}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                        {item.mediaUrl ? (
+                          <Image
+                            src={item.mediaUrl}
+                            alt="Collection item"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="bg-muted flex size-full items-center justify-center">
+                            <Images className="text-muted-foreground/40 size-8" />
+                          </div>
+                        )}
                         <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRemovePhoto(photo.id);
+                              removeItemMutation.mutate(item.id);
                             }}
                             className="hover:bg-destructive flex size-7 items-center justify-center rounded-lg bg-black/70 text-white backdrop-blur-xs transition-colors"
                           >
@@ -423,30 +407,12 @@ export function ProfileSavedCollections({
             <div className="relative flex flex-col items-center">
               <div className="relative aspect-[3/4] max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-2xl">
                 <Image
-                  src={activePhoto.src}
-                  alt={activePhoto.title}
+                  src={activePhoto}
+                  alt="Full photo"
                   fill
                   className="object-contain"
                   priority
                 />
-              </div>
-
-              <div className="mt-3 flex w-full max-w-2xl items-center justify-between px-2 text-white">
-                <div>
-                  <h4 className="text-sm font-bold">{activePhoto.title}</h4>
-                  <p className="text-xs text-white/70">
-                    Cosplayer: {activePhoto.authorName}
-                  </p>
-                </div>
-                {activePhoto.likesCount && (
-                  <Badge
-                    variant="secondary"
-                    className="gap-1 bg-white/10 text-white"
-                  >
-                    <Heart className="size-3 fill-rose-500 text-rose-500" />
-                    <span>{activePhoto.likesCount}</span>
-                  </Badge>
-                )}
               </div>
             </div>
           )}
@@ -455,11 +421,11 @@ export function ProfileSavedCollections({
 
       {/* Create Collection Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="rounded-2xl sm:max-w-md">
+        <DialogContent className="border-border/80 bg-background/95 rounded-3xl backdrop-blur-xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <FolderHeart className="text-primary size-5" />
-              {t("createCollection")}
+              <span>{t("createCollection")}</span>
             </DialogTitle>
           </DialogHeader>
 
@@ -479,7 +445,7 @@ export function ProfileSavedCollections({
                     <FormControl>
                       <Input
                         placeholder={t("collectionPlaceholder")}
-                        className="h-10 rounded-xl"
+                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -488,26 +454,22 @@ export function ProfileSavedCollections({
                 )}
               />
 
-              <DialogFooter className="gap-2 sm:gap-0">
+              <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="button"
-                  variant="ghost"
-                  disabled={createMutation.isPending}
+                  variant="outline"
                   onClick={() => setIsCreateOpen(false)}
-                  className="rounded-xl"
+                  className="rounded-xl text-xs font-semibold"
                 >
-                  {tCommon("cancel")}
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
+                  className="bg-primary text-primary-foreground rounded-xl text-xs font-semibold"
                 >
                   {createMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      {t("createCollection")}
-                    </>
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
                     t("createCollection")
                   )}

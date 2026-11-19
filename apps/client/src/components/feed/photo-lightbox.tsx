@@ -11,7 +11,7 @@ import { useTranslations } from "next-intl";
 export interface LightboxAuthor {
   name: string;
   handle?: string;
-  avatarUrl: string;
+  avatarUrl?: string | null;
 }
 
 export interface PhotoLightboxProps {
@@ -89,14 +89,20 @@ export function PhotoLightbox({
             <div className="flex items-center gap-3">
               {author ? (
                 <div className="flex items-center gap-2.5">
-                  <div className="relative size-9 shrink-0 overflow-hidden rounded-full border border-white/20">
-                    <Image
-                      src={author.avatarUrl}
-                      alt={author.name}
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                    />
+                  <div className="bg-muted relative size-9 shrink-0 overflow-hidden rounded-full border border-white/20">
+                    {author.avatarUrl ? (
+                      <Image
+                        src={author.avatarUrl}
+                        alt={author.name}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-xs font-bold">
+                        {author.name.slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-white sm:text-sm">
