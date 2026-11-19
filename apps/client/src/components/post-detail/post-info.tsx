@@ -62,6 +62,7 @@ export function PostInfo({
     queryKey: ["post-detail", postSlugOrId],
     queryFn: () => getPostBySlug(postSlugOrId),
     initialData: initialPost,
+    staleTime: 60 * 1000,
   });
 
   const { isLiked, likesCount, toggleLike } = usePostLike({

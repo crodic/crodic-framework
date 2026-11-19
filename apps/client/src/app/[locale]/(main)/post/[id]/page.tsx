@@ -104,9 +104,13 @@ export default async function PostPage({ params }: PostPageProps) {
       notFound();
     }
 
+    const commentsData = Array.isArray(rawComments)
+      ? rawComments
+      : (rawComments as any)?.data || [];
+
     return (
       <Layout>
-        <PostStandaloneView post={rawPost} comments={rawComments} />
+        <PostStandaloneView post={rawPost} comments={commentsData} />
       </Layout>
     );
   } catch {

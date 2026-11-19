@@ -26,7 +26,11 @@ export default async function InterceptedPostPage({
       notFound();
     }
 
-    return <PostDetailModal post={rawPost} comments={rawComments} />;
+    const commentsData = Array.isArray(rawComments)
+      ? rawComments
+      : (rawComments as any)?.data || [];
+
+    return <PostDetailModal post={rawPost} comments={commentsData} />;
   } catch {
     notFound();
   }
