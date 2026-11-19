@@ -21,6 +21,10 @@ export async function generateMetadata({
     },
     description:
       "Manage personal profile, collections, and followed cosplayers on Kosume.",
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

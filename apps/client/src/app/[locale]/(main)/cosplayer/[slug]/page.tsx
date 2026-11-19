@@ -23,16 +23,40 @@ export async function generateMetadata({
 
   try {
     const profile = await getCosplayerBySlug(slug);
-    const title = `${profile.displayName} (${profile.handle}) - Hồ sơ Cosplayer chuyên nghiệp | ${siteName}`;
-    const description = `${profile.bio || profile.displayName}. Khám phá hồ sơ cosplay ${profile.displayName} trên ${siteName}.`;
+    const isVi = locale === "vi";
+    const handleSuffix = profile.handle ? ` (${profile.handle})` : "";
+    const title = isVi
+      ? `${profile.displayName}${handleSuffix} - Hồ sơ Cosplayer | ${siteName}`
+      : `${profile.displayName}${handleSuffix} - Cosplayer Profile | ${siteName}`;
+
+    const description = isVi
+      ? `${profile.bio ? `${profile.bio}. ` : ""}Khám phá các bộ ảnh và tác phẩm cosplay của ${profile.displayName} trên ${siteName}.`
+      : `${profile.bio ? `${profile.bio}. ` : ""}Explore cosplay photosets, characters, and albums by ${profile.displayName} on ${siteName}.`;
 
     const canonicalUrl = `${baseUrl}/${locale}/cosplayer/${slug}`;
     const languages = Object.fromEntries(
       routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/cosplayer/${slug}`])
     );
 
-    const coverUrl = profile.coverUrl || "/landing/hero-banner.png";
-    const avatarUrl = profile.avatarUrl || coverUrl;
+    const toAbsoluteUrl = (
+      url: string | null | undefined,
+      fallback: string
+    ) => {
+      const target = url || fallback;
+      if (target.startsWith("http://") || target.startsWith("https://")) {
+        return target;
+      }
+      return `${baseUrl}${target.startsWith("/") ? "" : "/"}${target}`;
+    };
+
+    const absoluteCoverUrl = toAbsoluteUrl(
+      profile.coverUrl,
+      "/landing/hero-banner.png"
+    );
+    const absoluteAvatarUrl = toAbsoluteUrl(
+      profile.avatarUrl,
+      profile.coverUrl || "/landing/hero-banner.png"
+    );
 
     return {
       title: {
@@ -49,15 +73,17 @@ export async function generateMetadata({
         url: canonicalUrl,
         siteName,
         type: "profile",
+        firstName: profile.displayName,
+        username: profile.handle?.replace(/^@/, ""),
         images: [
           {
-            url: coverUrl,
+            url: absoluteCoverUrl,
             width: 1200,
             height: 630,
             alt: `${profile.displayName} Cosplayer Banner`,
           },
           {
-            url: avatarUrl,
+            url: absoluteAvatarUrl,
             width: 400,
             height: 400,
             alt: `${profile.displayName} Avatar`,
@@ -68,12 +94,18 @@ export async function generateMetadata({
         card: "summary_large_image",
         title,
         description,
-        images: [coverUrl],
+        images: [absoluteCoverUrl],
+        creator: profile.twitterUrl
+          ? `@${profile.twitterUrl.replace(/.*(?:twitter\.com|x\.com)\/?@?/, "")}`
+          : undefined,
       },
     };
   } catch {
+    const isVi = locale === "vi";
     return {
-      title: `Hồ sơ Cosplayer | ${siteName}`,
+      title: isVi
+        ? `Hồ sơ Cosplayer | ${siteName}`
+        : `Cosplayer Profile | ${siteName}`,
     };
   }
 }
@@ -92,6 +124,20 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
     }).catch(() => ({ data: [] }));
 
     // Rich SEO Schema (ProfilePage & Person)
+    const isVi = locale === "vi";
+    const avatarUrl = profile.avatarUrl?.startsWith("http")
+      ? profile.avatarUrl
+      : profile.avatarUrl
+        ? `${baseUrl}${profile.avatarUrl.startsWith("/") ? "" : "/"}${profile.avatarUrl}`
+        : `${baseUrl}/landing/hero-banner.png`;
+
+    const sameAs = [
+      profile.facebookUrl,
+      profile.instagramUrl,
+      profile.tiktokUrl,
+      profile.twitterUrl,
+    ].filter((url): url is string => Boolean(url && url.startsWith("http")));
+
     const jsonLd: WithContext<ProfilePage> = {
       "@context": "https://schema.org",
       "@type": "ProfilePage",
@@ -103,14 +149,14 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
         name: profile.displayName,
         alternateName: profile.handle,
         description: profile.bio || profile.displayName,
-        image: profile.avatarUrl?.startsWith("http")
-          ? profile.avatarUrl
-          : `${baseUrl}${profile.avatarUrl || ""}`,
+        image: avatarUrl,
         jobTitle: profile.roleBadge || "Cosplayer",
         address: {
           "@type": "PostalAddress",
-          addressLocality: profile.locationLabel || "Việt Nam",
+          addressLocality:
+            profile.locationLabel || (isVi ? "Việt Nam" : "Vietnam"),
         },
+        sameAs: sameAs.length > 0 ? sameAs : undefined,
       } as Person,
     };
 

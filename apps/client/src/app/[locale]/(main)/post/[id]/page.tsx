@@ -21,17 +21,26 @@ export async function generateMetadata({
 
   try {
     const post = await getPostBySlug(id);
+    const isVi = locale === "vi";
     const authorName = post.author?.displayName || "Cosplayer";
     const title = `${post.title} - ${authorName} | ${siteName}`;
-    const description = `${post.caption || post.title}. Xem bộ ảnh cosplay ${post.title} của ${authorName} trên ${siteName}.`;
+    const description = isVi
+      ? `${post.caption ? `${post.caption}. ` : ""}Xem bộ ảnh cosplay ${post.title} của ${authorName} trên ${siteName}.`
+      : `${post.caption ? `${post.caption}. ` : ""}View cosplay album ${post.title} by ${authorName} on ${siteName}.`;
 
     const canonicalUrl = `${baseUrl}/${locale}/post/${id}`;
     const languages = Object.fromEntries(
       routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/post/${id}`])
     );
 
-    const imageUrl =
+    const rawImageUrl =
       post.coverImageUrl || (post.media && post.media[0]?.mediaUrl);
+
+    const absoluteImageUrl = rawImageUrl
+      ? rawImageUrl.startsWith("http://") || rawImageUrl.startsWith("https://")
+        ? rawImageUrl
+        : `${baseUrl}${rawImageUrl.startsWith("/") ? "" : "/"}${rawImageUrl}`
+      : `${baseUrl}/landing/hero-banner.png`;
 
     return {
       title: {
@@ -48,27 +57,28 @@ export async function generateMetadata({
         url: canonicalUrl,
         siteName,
         type: "article",
-        images: imageUrl
-          ? [
-              {
-                url: imageUrl,
-                width: 1200,
-                height: 630,
-                alt: post.title,
-              },
-            ]
-          : [],
+        images: [
+          {
+            url: absoluteImageUrl,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ],
       },
       twitter: {
         card: "summary_large_image",
         title,
         description,
-        images: imageUrl ? [imageUrl] : [],
+        images: [absoluteImageUrl],
       },
     };
   } catch {
+    const isVi = locale === "vi";
     return {
-      title: `Tác phẩm Cosplay | ${siteName}`,
+      title: isVi
+        ? `Tác phẩm Cosplay | ${siteName}`
+        : `Cosplay Album | ${siteName}`,
     };
   }
 }
