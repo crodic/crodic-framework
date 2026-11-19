@@ -29,11 +29,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { cn } from "@/lib/utils";
-import {
-  toggleLikePost,
-  addPostComment,
-  getPostBySlug,
-} from "@/services/posts";
+import { addPostComment, getPostBySlug } from "@/services/posts";
 import { toggleFollow } from "@/services/social";
 import {
   getMyCollections,
@@ -42,6 +38,7 @@ import {
 } from "@/services/collections";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
+import { usePostLike } from "@/hooks/use-post-like";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface PostInfoProps {
@@ -67,25 +64,24 @@ export function PostInfo({
     initialData: initialPost,
   });
 
+  const { isLiked, likesCount, toggleLike } = usePostLike({
+    postId: post.id,
+    initialLiked: post.isLikedByCurrentUser,
+    initialLikesCount: post.likesCount,
+    postSlugOrId,
+  });
+
   const [isFollowing, setIsFollowing] = useState(false);
-  const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser ?? false);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
   const [isSaved, setIsSaved] = useState(post.isSavedByCurrentUser ?? false);
   const [copiedShare, setCopiedShare] = useState(false);
   const [comments, setComments] =
     useState<PostCommentResDto[]>(initialComments);
 
   React.useEffect(() => {
-    if (typeof post.isLikedByCurrentUser === "boolean") {
-      setIsLiked(post.isLikedByCurrentUser);
-    }
-    if (typeof post.likesCount === "number") {
-      setLikesCount(post.likesCount);
-    }
     if (typeof post.isSavedByCurrentUser === "boolean") {
       setIsSaved(post.isSavedByCurrentUser);
     }
-  }, [post.isLikedByCurrentUser, post.likesCount, post.isSavedByCurrentUser]);
+  }, [post.isSavedByCurrentUser]);
 
   const authorHandle = post.author.handle.replace("@", "") || post.author.id;
 
@@ -97,45 +93,6 @@ export function PostInfo({
     ),
     defaultValues: {
       comment: "",
-    },
-  });
-
-  const likeMutation = useMutation({
-    mutationFn: () => toggleLikePost(post.id),
-    onMutate: () => {
-      const nextLiked = !isLiked;
-      setIsLiked(nextLiked);
-      setLikesCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
-      return { prevLiked: isLiked, prevCount: likesCount };
-    },
-    onSuccess: (res) => {
-      if (typeof res?.liked === "boolean") {
-        setIsLiked(res.liked);
-      }
-      if (typeof res?.likesCount === "number") {
-        setLikesCount(res.likesCount);
-      }
-      queryClient.setQueryData<PostDetailResDto>(
-        ["post-detail", postSlugOrId],
-        (old) =>
-          old
-            ? {
-                ...old,
-                isLikedByCurrentUser: res.liked,
-                likesCount: res.likesCount,
-              }
-            : old
-      );
-      queryClient.invalidateQueries({ queryKey: ["public-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
-    },
-    onError: (_err, _vars, context) => {
-      if (context) {
-        setIsLiked(context.prevLiked);
-        setLikesCount(context.prevCount);
-      }
-      toast.error(t("likeError") || "Không thể thích bài viết");
     },
   });
 
@@ -201,14 +158,6 @@ export function PostInfo({
     const next = !isFollowing;
     setIsFollowing(next);
     followMutation.mutate();
-  };
-
-  const handleToggleLike = () => {
-    if (!isAuthenticated) {
-      toast.info(t("loginToLike"));
-      return;
-    }
-    likeMutation.mutate();
   };
 
   const handleToggleSave = () => {
@@ -430,7 +379,7 @@ export function PostInfo({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={handleToggleLike}
+              onClick={() => toggleLike()}
               className={cn(
                 "h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs font-semibold",
                 isLiked

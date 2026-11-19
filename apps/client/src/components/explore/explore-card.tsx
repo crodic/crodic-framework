@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { BadgeCheck, Bookmark, Heart } from "lucide-react";
 import type { PostSummaryResDto } from "@/services/posts";
-import { toggleLikePost } from "@/services/posts";
+import { usePostLike } from "@/hooks/use-post-like";
 import { cn } from "@/lib/utils";
 
 interface ExploreCardProps {
@@ -13,34 +13,18 @@ interface ExploreCardProps {
 }
 
 export function ExploreCard({ item }: ExploreCardProps) {
-  const [isLiked, setIsLiked] = useState(item.isLikedByCurrentUser ?? false);
-  const [likesCount, setLikesCount] = useState(item.likesCount);
+  const { isLiked, likesCount, toggleLike } = usePostLike({
+    postId: item.id,
+    initialLiked: item.isLikedByCurrentUser,
+    initialLikesCount: item.likesCount,
+    postSlugOrId: item.slug || item.id,
+  });
   const [isBookmarked, setIsBookmarked] = useState(
     item.isSavedByCurrentUser ?? false
   );
 
   const postSlugOrId = item.slug || item.id;
   const authorHandle = item.author.handle.replace("@", "") || item.author.id;
-
-  const handleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const next = !isLiked;
-    setIsLiked(next);
-    setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
-    try {
-      const res = await toggleLikePost(item.id);
-      if (typeof res?.liked === "boolean") {
-        setIsLiked(res.liked);
-      }
-      if (typeof res?.likesCount === "number") {
-        setLikesCount(res.likesCount);
-      }
-    } catch {
-      setIsLiked(!next);
-      setLikesCount((prev) => (!next ? prev + 1 : Math.max(0, prev - 1)));
-    }
-  };
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -117,7 +101,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={handleLike}
+            onClick={toggleLike}
             className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium transition-colors select-none hover:text-rose-400"
             aria-label={`Thích ${item.title}`}
           >

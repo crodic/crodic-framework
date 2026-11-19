@@ -6,7 +6,7 @@ import { Heart } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PostSummaryResDto } from "@/services/posts";
-import { toggleLikePost } from "@/services/posts";
+import { usePostLike } from "@/hooks/use-post-like";
 import { useTranslations } from "next-intl";
 
 interface AlbumCardProps {
@@ -15,28 +15,16 @@ interface AlbumCardProps {
 
 export function AlbumCard({ album }: AlbumCardProps) {
   const t = useTranslations("Landing.albums");
-  const [isLiked, setIsLiked] = useState(album.isLikedByCurrentUser || false);
-  const [likes, setLikes] = useState(album.likesCount);
-
-  const handleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const nextLiked = !isLiked;
-    setIsLiked(nextLiked);
-    setLikes((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
-    try {
-      const res = await toggleLikePost(album.id);
-      if (typeof res?.liked === "boolean") {
-        setIsLiked(res.liked);
-      }
-      if (typeof res?.likesCount === "number") {
-        setLikes(res.likesCount);
-      }
-    } catch {
-      setIsLiked(!nextLiked);
-      setLikes((prev) => (!nextLiked ? prev + 1 : Math.max(0, prev - 1)));
-    }
-  };
+  const {
+    isLiked,
+    likesCount: likes,
+    toggleLike,
+  } = usePostLike({
+    postId: album.id,
+    initialLiked: album.isLikedByCurrentUser,
+    initialLikesCount: album.likesCount,
+    postSlugOrId: album.slug || album.id,
+  });
 
   return (
     <Link
@@ -68,7 +56,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
         <div>
           <button
             type="button"
-            onClick={handleLike}
+            onClick={toggleLike}
             className={cn(
               "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur-md transition-all",
               isLiked

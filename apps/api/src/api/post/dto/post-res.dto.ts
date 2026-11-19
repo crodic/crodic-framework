@@ -231,3 +231,14 @@ export class PostCommentResDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class ToggleLikeResDto {
+  @ApiProperty({ example: true, description: 'Trạng thái like sau khi toggle' })
+  liked!: boolean;
+
+  @ApiProperty({
+    example: 42,
+    description: 'Tổng số like của post sau khi toggle',
+  })
+  likesCount!: number;
+}

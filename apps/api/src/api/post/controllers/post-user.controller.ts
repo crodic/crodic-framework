@@ -18,7 +18,11 @@ import {
   CreatePostReqDto,
   UpdatePostReqDto,
 } from '../dto/post-req.dto';
-import { PostCommentResDto, PostDetailResDto } from '../dto/post-res.dto';
+import {
+  PostCommentResDto,
+  PostDetailResDto,
+  ToggleLikeResDto,
+} from '../dto/post-res.dto';
 import { PostService } from '../services/post.service';
 
 @ApiTags('User Posts & Social Interactions')
@@ -69,6 +73,7 @@ export class PostUserController {
 
   @Post(':id/like')
   @ApiAuth({
+    type: ToggleLikeResDto,
     summary: 'Toggle like on post',
   })
   @ApiParam({ name: 'id', type: String })

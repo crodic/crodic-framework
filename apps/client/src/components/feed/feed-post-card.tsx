@@ -36,7 +36,8 @@ import type { PostSummaryResDto } from "@/services/posts";
 import { PhotoLightbox } from "./photo-lightbox";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
-import { toggleLikePost, addPostComment } from "@/services/posts";
+import { usePostLike } from "@/hooks/use-post-like";
+import { addPostComment } from "@/services/posts";
 import {
   getMyCollections,
   createCollection,
@@ -66,8 +67,17 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const currentAuthorName = profile?.fullName || profile?.firstName || "You";
   const currentAuthorAvatar = profile?.avatar || "/logo.png";
 
-  const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser ?? false);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const {
+    isLiked,
+    likesCount,
+    toggleLike: handleToggleLike,
+  } = usePostLike({
+    postId: post.id,
+    initialLiked: post.isLikedByCurrentUser,
+    initialLikesCount: post.likesCount,
+    postSlugOrId: post.slug || post.id,
+  });
+
   const [isBookmarked, setIsBookmarked] = useState(
     post.isSavedByCurrentUser ?? false
   );
@@ -99,33 +109,6 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
     resolver: zodResolver(commentSchema),
     defaultValues: {
       comment: "",
-    },
-  });
-
-  const likeMutation = useMutation({
-    mutationFn: () => toggleLikePost(post.id),
-    onMutate: () => {
-      const nextState = !isLiked;
-      setIsLiked(nextState);
-      setLikesCount((prev) => (nextState ? prev + 1 : prev - 1));
-      return { previousLiked: isLiked, previousCount: likesCount };
-    },
-    onSuccess: (data) => {
-      if (typeof data?.liked === "boolean") {
-        setIsLiked(data.liked);
-      }
-      if (typeof data?.likesCount === "number") {
-        setLikesCount(data.likesCount);
-      }
-      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-    },
-    onError: (_err, _variables, context) => {
-      if (context) {
-        setIsLiked(context.previousLiked);
-        setLikesCount(context.previousCount);
-      }
-      toast.error(t("likeError"));
     },
   });
 
@@ -178,14 +161,6 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
       toast.error(t("commentError"));
     },
   });
-
-  const handleToggleLike = () => {
-    if (!isAuthenticated) {
-      toast.info(t("loginToLike"));
-      return;
-    }
-    likeMutation.mutate();
-  };
 
   const handleToggleBookmark = () => {
     if (!isAuthenticated) {

@@ -8,37 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import {
-  getPosts,
-  toggleLikePost,
-  type PostSummaryResDto,
-} from "@/services/posts";
+import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { usePostLike } from "@/hooks/use-post-like";
 import { cn } from "@/lib/utils";
 
 function WorkCard({ post }: { post: PostSummaryResDto }) {
   const t = useTranslations("Home.featuredWorks");
-  const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser ?? false);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
-
-  const handleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const next = !isLiked;
-    setIsLiked(next);
-    setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
-    try {
-      const res = await toggleLikePost(post.id);
-      if (typeof res?.liked === "boolean") {
-        setIsLiked(res.liked);
-      }
-      if (typeof res?.likesCount === "number") {
-        setLikesCount(res.likesCount);
-      }
-    } catch {
-      setIsLiked(!next);
-      setLikesCount((prev) => (!next ? prev + 1 : Math.max(0, prev - 1)));
-    }
-  };
+  const { isLiked, likesCount, toggleLike } = usePostLike({
+    postId: post.id,
+    initialLiked: post.isLikedByCurrentUser,
+    initialLikesCount: post.likesCount,
+    postSlugOrId: post.slug || post.id,
+  });
 
   const coverUrl = post.coverImageUrl || "/logo.png";
   const likesDisplay =
@@ -93,7 +74,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
         {/* Bottom-Right Heart Like Badge */}
         <button
           type="button"
-          onClick={handleLike}
+          onClick={toggleLike}
           className={cn(
             "absolute right-2.5 bottom-2.5 z-10 inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold backdrop-blur-md transition-all select-none",
             isLiked

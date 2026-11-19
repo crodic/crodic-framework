@@ -168,10 +168,15 @@ export const createPost = async (
   return data;
 };
 
+export interface ToggleLikeResDto {
+  liked: boolean;
+  likesCount: number;
+}
+
 export const toggleLikePost = async (
   postId: string
-): Promise<{ liked: boolean; likesCount: number }> => {
-  const { data } = await http.post<{ liked: boolean; likesCount: number }>(
+): Promise<ToggleLikeResDto> => {
+  const { data } = await http.post<ToggleLikeResDto>(
     `/api/v1/posts/${postId}/like`
   );
   return data;
