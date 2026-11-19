@@ -127,7 +127,6 @@ export const uploadMyCover = async (
 ): Promise<{ coverUrl: string }> => {
   const formData = new FormData();
   formData.append("cover", file);
-  formData.append("file", file);
   const { data } = await http.post<{ coverUrl: string }>(
     "/api/v1/cosplayer/me/cover",
     formData
@@ -140,7 +139,6 @@ export const uploadMyAvatar = async (
 ): Promise<{ avatarUrl: string }> => {
   const formData = new FormData();
   formData.append("avatar", file);
-  formData.append("file", file);
   const { data } = await http.post<{ avatarUrl: string }>(
     "/api/v1/cosplayer/me/avatar",
     formData

@@ -142,8 +142,10 @@ export function ProfileHero({
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success(tCos("editDialog.success"));
     },
-    onError: () => {
-      toast.error(tCos("editDialog.saving"));
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.message || err?.message || tCos("followError");
+      toast.error(msg);
     },
   });
 
@@ -160,8 +162,10 @@ export function ProfileHero({
       await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       toast.success(tCos("editDialog.success"));
     },
-    onError: () => {
-      toast.error(tCos("editDialog.saving"));
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.message || err?.message || tCos("followError");
+      toast.error(msg);
     },
   });
 

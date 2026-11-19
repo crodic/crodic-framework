@@ -3,6 +3,7 @@ import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiAuth } from '../../../decorators/http.decorators';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -15,10 +16,14 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateCosplayerCharacterReqDto,
@@ -63,27 +68,30 @@ export class CosplayerUserController {
     summary: 'Upload current user profile cover image',
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('cover'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'cover', maxCount: 1 },
+      { name: 'file', maxCount: 1 },
+    ]),
+  )
   async uploadCover(
     @CurrentUser('id') userId: AutoIncrementID,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: /^image\/(png|webp|jpeg|jpg)$/,
-            skipMagicNumbersValidation: true,
-            errorMessage: 'Invalid file type. Supported: PNG, WEBP, JPEG',
-          }),
-          new MaxFileSizeValidator({
-            maxSize: 10 * 1024 * 1024,
-            errorMessage: 'File too large (max 10MB)',
-          }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: { cover?: Express.Multer.File[]; file?: Express.Multer.File[] },
   ) {
+    const file = files?.cover?.[0] || files?.file?.[0];
+    if (!file) {
+      throw new BadRequestException('Cover image file is required');
+    }
+    const allowed = /^image\/(png|webp|jpeg|jpg)$/;
+    if (!allowed.test(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Supported: PNG, WEBP, JPEG',
+      );
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      throw new BadRequestException('File too large (max 10MB)');
+    }
     return this.cosplayerService.uploadCover(userId, file);
   }
 
@@ -92,27 +100,30 @@ export class CosplayerUserController {
     summary: 'Upload current user profile avatar image',
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'file', maxCount: 1 },
+    ]),
+  )
   async uploadAvatar(
     @CurrentUser('id') userId: AutoIncrementID,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: /^image\/(png|webp|jpeg|jpg)$/,
-            skipMagicNumbersValidation: true,
-            errorMessage: 'Invalid file type. Supported: PNG, WEBP, JPEG',
-          }),
-          new MaxFileSizeValidator({
-            maxSize: 5 * 1024 * 1024,
-            errorMessage: 'File too large (max 5MB)',
-          }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: { avatar?: Express.Multer.File[]; file?: Express.Multer.File[] },
   ) {
+    const file = files?.avatar?.[0] || files?.file?.[0];
+    if (!file) {
+      throw new BadRequestException('Avatar image file is required');
+    }
+    const allowed = /^image\/(png|webp|jpeg|jpg)$/;
+    if (!allowed.test(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Supported: PNG, WEBP, JPEG',
+      );
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      throw new BadRequestException('File too large (max 5MB)');
+    }
     return this.cosplayerService.uploadAvatar(userId, file);
   }
 
@@ -121,28 +132,31 @@ export class CosplayerUserController {
     summary: 'Upload general media (photosets, artwork, character covers)',
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'file', maxCount: 1 },
+      { name: 'media', maxCount: 1 },
+    ]),
+  )
   async uploadMedia(
     @CurrentUser('id') userId: AutoIncrementID,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: /^image\/(png|webp|jpeg|jpg|gif)$/,
-            skipMagicNumbersValidation: true,
-            errorMessage: 'Invalid file type. Supported: PNG, WEBP, JPEG, GIF',
-          }),
-          new MaxFileSizeValidator({
-            maxSize: 15 * 1024 * 1024,
-            errorMessage: 'File too large (max 15MB)',
-          }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: { file?: Express.Multer.File[]; media?: Express.Multer.File[] },
     @Body('folder') folder?: string,
   ) {
+    const file = files?.file?.[0] || files?.media?.[0];
+    if (!file) {
+      throw new BadRequestException('Media file is required');
+    }
+    const allowed = /^image\/(png|webp|jpeg|jpg|gif)$/;
+    if (!allowed.test(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Supported: PNG, WEBP, JPEG, GIF',
+      );
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      throw new BadRequestException('File too large (max 15MB)');
+    }
     return this.cosplayerService.uploadMedia(userId, file, folder);
   }
 

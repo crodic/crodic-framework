@@ -132,15 +132,7 @@ export function useUpdateAvatar() {
     }) => {
       const formData = new FormData();
       if (file) {
-        let filename = "avatar.jpg";
-        if (file instanceof File) {
-          filename = file.name;
-        } else if (file.type === "image/png") {
-          filename = "avatar.png";
-        } else if (file.type === "image/webp") {
-          filename = "avatar.webp";
-        }
-        formData.append("avatar", file, filename);
+        formData.append("avatar", file);
       }
       if (removeAvatar) {
         formData.append("removeAvatar", "true");

@@ -136,6 +136,11 @@ export class CosplayerService {
       throw new NotFoundException(`Cosplayer "${slugOrHandle}" not found`);
     }
 
+    if (!profile.avatarUrl && profile.user?.avatar) {
+      profile.avatarUrl = profile.user.avatar;
+      await this.profileRepo.save(profile);
+    }
+
     const characters = await this.characterRepo.find({
       where: { userId: profile.userId },
       order: { sortOrder: 'ASC', id: 'ASC' },
@@ -176,6 +181,7 @@ export class CosplayerService {
         slug: candidateSlug,
         displayName: baseName,
         roleBadge: 'Cosplayer',
+        avatarUrl: user.avatar || null,
         skills: [],
         specialties: [],
         awardsBadges: [],
@@ -187,6 +193,9 @@ export class CosplayerService {
 
       profile = await this.profileRepo.save(profile);
       profile.user = user;
+    } else if (!profile.avatarUrl && profile.user?.avatar) {
+      profile.avatarUrl = profile.user.avatar;
+      await this.profileRepo.save(profile);
     }
 
     const characters = await this.characterRepo.find({
@@ -500,7 +509,7 @@ export class CosplayerService {
       handle: `@${p.slug}`,
       roleBadge: p.roleBadge ?? 'Cosplayer',
       tagline: p.tagline ?? null,
-      avatarUrl: p.avatarUrl ?? null,
+      avatarUrl: p.avatarUrl || p.user?.avatar || null,
       coverUrl: p.coverUrl ?? null,
       locationLabel: p.locationLabel ?? null,
       workArea: p.workArea ?? null,

@@ -515,6 +515,13 @@ export class UserAuthService extends AuthService<
       });
 
       if (user) {
+        if (
+          profile.avatarUrl &&
+          (!user.avatar || user.avatar.includes('googleusercontent.com'))
+        ) {
+          user.avatar = profile.avatarUrl;
+          await this.userRepository.save(user);
+        }
         return this.createLoginResponse(user, requestInfo);
       }
 
@@ -542,15 +549,23 @@ export class UserAuthService extends AuthService<
           avatar: profile.avatarUrl,
           verifiedAt: new Date(),
         });
-      } else if (!user.verifiedAt) {
-        // SECURITY: If an unverified local account was registered previously with this email,
-        // invalidate unconfirmed local password credentials so an attacker who registered
-        // the victim's email cannot retain access once the legitimate owner signs in with Google.
-        await accountRepo.delete({
-          userId: user.id,
-          provider: EAccountProvider.LOCAL,
-        });
-        user.verifiedAt = new Date();
+      } else {
+        if (
+          profile.avatarUrl &&
+          (!user.avatar || user.avatar.includes('googleusercontent.com'))
+        ) {
+          user.avatar = profile.avatarUrl;
+        }
+        if (!user.verifiedAt) {
+          // SECURITY: If an unverified local account was registered previously with this email,
+          // invalidate unconfirmed local password credentials so an attacker who registered
+          // the victim's email cannot retain access once the legitimate owner signs in with Google.
+          await accountRepo.delete({
+            userId: user.id,
+            provider: EAccountProvider.LOCAL,
+          });
+          user.verifiedAt = new Date();
+        }
         await userRepo.save(user);
       }
 

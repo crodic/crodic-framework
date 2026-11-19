@@ -36,10 +36,10 @@ export default function OAuthCallback() {
       try {
         const { data } = await xior.post<LoginResponseData>(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/exchange`,
-          { token },
+          { token }
         );
 
-        await xior.post(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/tokens`, {
+        await xior.post("/api/auth/tokens", {
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         });
@@ -47,6 +47,10 @@ export default function OAuthCallback() {
         useAuthStore.getState().setTokens({ accessToken: data.accessToken });
 
         await queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
+        await queryClient.invalidateQueries({
+          queryKey: ["my-cosplayer-profile"],
+        });
+        await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         toast.success(t("successToast"));
         router.replace("/profile");
       } catch {
