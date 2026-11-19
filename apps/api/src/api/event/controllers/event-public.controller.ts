@@ -3,13 +3,15 @@ import { AuthOptional } from '../../../decorators/auth-optional.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiPublic } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import { EventDetailResDto, EventSummaryResDto } from '../dto/event-res.dto';
 import { EventService } from '../services/event.service';
 
 @ApiTags('Public Events & Festivals')
 @Controller({ path: 'public/events', version: '1' })
+@UseGuards(UserAuthGuard)
 export class EventPublicController {
   constructor(private readonly eventService: EventService) {}
 

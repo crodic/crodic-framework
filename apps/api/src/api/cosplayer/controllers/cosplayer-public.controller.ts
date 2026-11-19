@@ -9,8 +9,9 @@ import {
 } from '../../../decorators/http.decorators';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
   CosplayerCharacterResDto,
   CosplayerDetailResDto,
@@ -20,6 +21,7 @@ import { CosplayerService } from '../services/cosplayer.service';
 
 @ApiTags('Public Cosplayers')
 @Controller({ path: 'public/cosplayers', version: '1' })
+@UseGuards(UserAuthGuard)
 export class CosplayerPublicController {
   constructor(private readonly cosplayerService: CosplayerService) {}
 

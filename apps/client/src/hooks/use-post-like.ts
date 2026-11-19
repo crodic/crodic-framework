@@ -31,11 +31,6 @@ export function usePostLike({
     Math.max(0, Number(initialLikesCount || 0))
   );
 
-  useEffect(() => {
-    setIsLiked(Boolean(initialLiked));
-    setLikesCount(Math.max(0, Number(initialLikesCount || 0)));
-  }, [initialLiked, initialLikesCount]);
-
   const likeMutation = useMutation({
     mutationFn: () => toggleLikePost(postId),
     onMutate: () => {
@@ -55,10 +50,26 @@ export function usePostLike({
       setIsLiked(res.liked);
       setLikesCount(res.likesCount);
 
+      const updateDetailCache = (old: unknown) =>
+        old
+          ? {
+              ...(old as Record<string, unknown>),
+              isLikedByCurrentUser: res.liked,
+              likesCount: res.likesCount,
+            }
+          : old;
+
       if (postSlugOrId) {
+        queryClient.setQueryData(
+          ["post-detail", postSlugOrId],
+          updateDetailCache
+        );
         queryClient.invalidateQueries({
           queryKey: ["post-detail", postSlugOrId],
         });
+      }
+      if (postId) {
+        queryClient.setQueryData(["post-detail", postId], updateDetailCache);
       }
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
       queryClient.invalidateQueries({ queryKey: ["public-posts"] });
@@ -76,6 +87,13 @@ export function usePostLike({
       toast.error(t("likeError"));
     },
   });
+
+  useEffect(() => {
+    if (!likeMutation.isPending) {
+      setIsLiked(Boolean(initialLiked));
+      setLikesCount(Math.max(0, Number(initialLikesCount || 0)));
+    }
+  }, [initialLiked, initialLikesCount, likeMutation.isPending]);
 
   const toggleLike = (e?: React.MouseEvent) => {
     if (e) {

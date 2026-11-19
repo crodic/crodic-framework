@@ -2,8 +2,9 @@ import { AllowedFilter, QueryParams } from '../../../common/query-builder';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiAuthOptional } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
   PostCommentResDto,
   PostDetailResDto,
@@ -13,6 +14,7 @@ import { PostService } from '../services/post.service';
 
 @ApiTags('Public Posts & Studio Feed')
 @Controller({ path: 'public/posts', version: '1' })
+@UseGuards(UserAuthGuard)
 export class PostPublicController {
   constructor(private readonly postService: PostService) {}
 
