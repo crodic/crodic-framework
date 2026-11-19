@@ -23,19 +23,10 @@ export function SuggestedCosplayersWidget() {
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
-  const { data: cosplayersResponse } = useQuery({
+  const { data: cosplayers = [] } = useQuery({
     queryKey: ["suggested-cosplayers", currentUser?.id],
-    queryFn: () => getSuggestedCosplayers({ limit: 5 }),
+    queryFn: () => getSuggestedCosplayers({ limit: 4 }),
   });
-
-  // Exclude self and anyone already followed
-  const cosplayers = (cosplayersResponse || [])
-    .filter(
-      (item) =>
-        !currentUser?.id || String(item.userId) !== String(currentUser.id)
-    )
-    .filter((item) => followingMap[item.userId] !== true)
-    .slice(0, 4);
 
   const handleToggleFollow = async (userId: string, name: string) => {
     if (!isAuthenticated) {

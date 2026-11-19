@@ -24,7 +24,12 @@ export class AdminAuthGuard extends AuthGuard('admin-jwt') {
       context.getClass(),
     ]);
 
-    if (isPublic) return true;
+    const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_AUTH_OPTIONAL,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (isPublic && !isAuthOptional) return true;
 
     return super.canActivate(context);
   }

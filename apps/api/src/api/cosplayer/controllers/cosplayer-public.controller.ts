@@ -3,8 +3,10 @@ import {
   AllowedSort,
   QueryParams,
 } from '../../../common/query-builder';
-import { ApiPublic } from '../../../decorators/http.decorators';
-import { AuthOptional } from '../../../decorators/auth-optional.decorator';
+import {
+  ApiAuthOptional,
+  ApiPublic,
+} from '../../../decorators/http.decorators';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query } from '@nestjs/common';
@@ -52,8 +54,7 @@ export class CosplayerPublicController {
   }
 
   @Get('suggested')
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: CosplayerSummaryResDto,
     summary: 'Get smart suggested cosplayers excluding self and followed',
   })
