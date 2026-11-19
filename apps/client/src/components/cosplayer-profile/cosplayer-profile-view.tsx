@@ -83,40 +83,40 @@ export function CosplayerProfileView({
 
       {/* 2. Main Content Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="border-border/60 mb-6 border-b">
-          <TabsList className="no-scrollbar h-auto w-full justify-start gap-4 rounded-none bg-transparent p-0 sm:gap-8">
+        <div className="border-border/60 no-scrollbar mb-6 overflow-x-auto border-b">
+          <TabsList className="no-scrollbar flex h-auto w-max min-w-full justify-start gap-3 rounded-none bg-transparent p-0 sm:gap-6 md:gap-8">
             {effectiveOwnerMode ? (
               /* OWNER TABS */
               <>
                 <TabsTrigger
                   value="following"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("followingTab", { count: initialFollowed.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="liked"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("likedTab", { count: initialLikedWorks.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="collections"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("collectionsTab", { count: initialCollections.length })}
                 </TabsTrigger>
                 {initialAlbums.length > 0 && (
                   <TabsTrigger
                     value="albums"
-                    className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                    className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                   >
                     {t("myWorksTab", { count: initialAlbums.length })}
                   </TabsTrigger>
                 )}
                 <TabsTrigger
                   value="about"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("aboutTab")}
                 </TabsTrigger>
@@ -126,7 +126,7 @@ export function CosplayerProfileView({
               <>
                 <TabsTrigger
                   value="albums"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("allAlbumsTab", {
                     count: profile.albumsCount || initialAlbums.length,
@@ -134,13 +134,13 @@ export function CosplayerProfileView({
                 </TabsTrigger>
                 <TabsTrigger
                   value="characters"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("charactersTab", { count: activeCharacters.length })}
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
-                  className="data-[state=active]:text-primary after:bg-primary relative px-1 py-2 text-sm font-bold transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
                 >
                   {t("aboutTab")}
                 </TabsTrigger>

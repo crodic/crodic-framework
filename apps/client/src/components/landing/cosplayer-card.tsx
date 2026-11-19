@@ -12,6 +12,7 @@ import type { CosplayerSummaryResDto } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useTranslations } from "next-intl";
+import { useProfile } from "@/hooks/use-profile";
 
 interface CosplayerCardProps {
   cosplayer: CosplayerSummaryResDto;
@@ -20,6 +21,7 @@ interface CosplayerCardProps {
 export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
   const t = useTranslations("CosplayerProfile");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { data: currentUser } = useProfile();
   const router = useRouter();
   const [following, setFollowing] = useState(false);
 
@@ -98,30 +100,32 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
           </div>
         </Link>
 
-        {/* Follow Button */}
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleToggleFollow}
-          className={cn(
-            "h-7 shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium transition-all",
-            following
-              ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
-              : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-2xs"
-          )}
-        >
-          {following ? (
-            <span className="flex items-center gap-1">
-              <Check className="size-3" />
-              {t("followingBtn")}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1">
-              <Plus className="size-3" />
-              {t("followBtn")}
-            </span>
-          )}
-        </Button>
+        {/* Follow Button - Only show when authenticated and not self */}
+        {isAuthenticated && currentUser?.id !== cosplayer.userId && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleToggleFollow}
+            className={cn(
+              "h-7 shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium transition-all",
+              following
+                ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
+                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-2xs"
+            )}
+          >
+            {following ? (
+              <span className="flex items-center gap-1">
+                <Check className="size-3" />
+                {t("followingBtn")}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Plus className="size-3" />
+                {t("followBtn")}
+              </span>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Card Body: Cover Image or Specialties Preview */}

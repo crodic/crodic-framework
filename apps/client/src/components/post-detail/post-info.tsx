@@ -238,29 +238,32 @@ export function PostInfo({
             </div>
           </Link>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={isFollowing ? "outline" : "default"}
-            onClick={handleToggleFollow}
-            className={cn(
-              "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
-              !isFollowing &&
-                "bg-primary text-primary-foreground hover:bg-primary/90"
+          {isAuthenticated &&
+            String(profile?.id) !== String(post.author.id) && (
+              <Button
+                type="button"
+                size="sm"
+                variant={isFollowing ? "outline" : "default"}
+                onClick={handleToggleFollow}
+                className={cn(
+                  "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
+                  !isFollowing &&
+                    "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                {isFollowing ? (
+                  <>
+                    <Check className="mr-1 size-3" />
+                    <span>{t("following")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-1 size-3" />
+                    <span>{t("follow")}</span>
+                  </>
+                )}
+              </Button>
             )}
-          >
-            {isFollowing ? (
-              <>
-                <Check className="mr-1 size-3" />
-                <span>{t("following")}</span>
-              </>
-            ) : (
-              <>
-                <Plus className="mr-1 size-3" />
-                <span>{t("follow")}</span>
-              </>
-            )}
-          </Button>
         </div>
 
         {/* Title, Caption & Tags */}

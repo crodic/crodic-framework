@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { LeaderboardItemResDto } from "@/services/ranking";
 import { toggleFollow } from "@/services/social";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useProfile } from "@/hooks/use-profile";
 
 export interface RankingTableProps {
   items: LeaderboardItemResDto[];
@@ -32,6 +34,8 @@ export interface RankingTableProps {
 
 export function RankingTable({ items }: RankingTableProps) {
   const tTable = useTranslations("Ranking.table");
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { data: currentUser } = useProfile();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
   const handleToggleFollow = async (item: LeaderboardItemResDto) => {
@@ -208,25 +212,28 @@ export function RankingTable({ items }: RankingTableProps) {
                   {/* Action CTA */}
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isFollowing ? "secondary" : "outline"}
-                        onClick={() => handleToggleFollow(item)}
-                        className="h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold"
-                      >
-                        {isFollowing ? (
-                          <>
-                            <UserCheck className="mr-1.5 size-3 text-emerald-500" />
-                            <span>{tTable("following")}</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="mr-1.5 size-3" />
-                            <span>{tTable("follow")}</span>
-                          </>
+                      {isAuthenticated &&
+                        String(currentUser?.id) !== String(item.userId) && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={isFollowing ? "secondary" : "outline"}
+                            onClick={() => handleToggleFollow(item)}
+                            className="h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold"
+                          >
+                            {isFollowing ? (
+                              <>
+                                <UserCheck className="mr-1.5 size-3 text-emerald-500" />
+                                <span>{tTable("following")}</span>
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus className="mr-1.5 size-3" />
+                                <span>{tTable("follow")}</span>
+                              </>
+                            )}
+                          </Button>
                         )}
-                      </Button>
 
                       <Button
                         asChild
@@ -304,20 +311,25 @@ export function RankingTable({ items }: RankingTableProps) {
 
               {/* Right: Actions */}
               <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={isFollowing ? "secondary" : "outline"}
-                  onClick={() => handleToggleFollow(item)}
-                  className="size-8 cursor-pointer rounded-xl"
-                  title={isFollowing ? tTable("following") : tTable("follow")}
-                >
-                  {isFollowing ? (
-                    <UserCheck className="size-3.5 text-emerald-500" />
-                  ) : (
-                    <UserPlus className="size-3.5" />
+                {isAuthenticated &&
+                  String(currentUser?.id) !== String(item.userId) && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant={isFollowing ? "secondary" : "outline"}
+                      onClick={() => handleToggleFollow(item)}
+                      className="size-8 cursor-pointer rounded-xl"
+                      title={
+                        isFollowing ? tTable("following") : tTable("follow")
+                      }
+                    >
+                      {isFollowing ? (
+                        <UserCheck className="size-3.5 text-emerald-500" />
+                      ) : (
+                        <UserPlus className="size-3.5" />
+                      )}
+                    </Button>
                   )}
-                </Button>
 
                 <Button
                   asChild

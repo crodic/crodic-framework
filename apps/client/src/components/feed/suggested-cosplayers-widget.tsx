@@ -12,11 +12,13 @@ import { getCosplayers } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
+import { useProfile } from "@/hooks/use-profile";
 
 export function SuggestedCosplayersWidget() {
   const t = useTranslations("Feed");
   const tCos = useTranslations("CosplayerProfile");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { data: currentUser } = useProfile();
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
@@ -109,31 +111,33 @@ export function SuggestedCosplayersWidget() {
                 </div>
               </Link>
 
-              {/* Follow Toggle Button */}
-              <Button
-                size="sm"
-                variant={isFollowing ? "outline" : "default"}
-                onClick={() =>
-                  handleToggleFollow(item.userId, item.displayName)
-                }
-                className={`h-7.5 shrink-0 cursor-pointer rounded-lg px-3 text-xs font-semibold ${
-                  isFollowing
-                    ? "border-border/80 text-muted-foreground hover:text-foreground"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
-                }`}
-              >
-                {isFollowing ? (
-                  <>
-                    <Check className="mr-1 size-3" />
-                    <span>{t("following")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-1 size-3" />
-                    <span>{t("follow")}</span>
-                  </>
-                )}
-              </Button>
+              {/* Follow Toggle Button - Only show when authenticated and not self */}
+              {isAuthenticated && currentUser?.id !== item.userId && (
+                <Button
+                  size="sm"
+                  variant={isFollowing ? "outline" : "default"}
+                  onClick={() =>
+                    handleToggleFollow(item.userId, item.displayName)
+                  }
+                  className={`h-7.5 shrink-0 cursor-pointer rounded-lg px-3 text-xs font-semibold ${
+                    isFollowing
+                      ? "border-border/80 text-muted-foreground hover:text-foreground"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <Check className="mr-1 size-3" />
+                      <span>{t("following")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-1 size-3" />
+                      <span>{t("follow")}</span>
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           );
         })}

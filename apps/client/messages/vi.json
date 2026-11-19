@@ -203,6 +203,9 @@
     "emptyCollections": "Chưa có bộ sưu tập nào",
     "collectionCreated": "Đã tạo bộ sưu tập thành công",
     "copyUrlSuccess": "Đã sao chép liên kết trang cá nhân!",
+    "copyLink": "Sao chép liên kết",
+    "copied": "Đã sao chép",
+    "shareProfile": "Chia sẻ trang cá nhân",
     "viewModeOwner": "Chế độ xem: Chủ sở hữu",
     "viewModeVisitor": "Chế độ xem: Khách xem",
     "sendMessage": "Gửi tin nhắn",
@@ -852,7 +855,12 @@
       "trendSame": "Giữ nguyên hạng",
       "verified": "Đã xác minh"
     },
-    "empty": "Chưa có dữ liệu bảng xếp hạng"
+    "empty": "Chưa có dữ liệu bảng xếp hạng",
+    "emptyState": {
+      "title": "Chưa có bảng xếp hạng trong khoảng thời gian này",
+      "desc": "Hãy khám phá các tác phẩm cosplay đặc sắc và ủng hộ cosplayer yêu thích của bạn để giúp họ vươn lên bảng xếp hạng!",
+      "cta": "Khám phá Cosplayer"
+    }
   },
   "Feed": {
     "title": "Bảng Tin Cộng Đồng Cosplay",

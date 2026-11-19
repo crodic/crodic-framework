@@ -12,6 +12,7 @@ import { SkipPolicies } from '../../../decorators/skip-policies.decorator';
 import { GoogleOAuthGuard } from '../../../guards/google-oauth.guard';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -26,11 +27,15 @@ import {
   Request,
   Res,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
@@ -365,28 +370,28 @@ export class UserAuthenticationController {
   })
   @ApiConsumes('multipart/form-data', 'application/json')
   @SkipThrottle()
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'file', maxCount: 1 },
+    ]),
+  )
   async updateMe(
     @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: UpdateAuthUserMeReqDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: /^image\/(png|webp|jpeg)$/,
-            skipMagicNumbersValidation: true,
-            errorMessage: 'Invalid file type',
-          }),
-          new MaxFileSizeValidator({
-            maxSize: 5 * 1024 * 1024,
-            errorMessage: 'File too large',
-          }),
-        ],
-        fileIsRequired: false,
-      }),
-    )
-    image?: Express.Multer.File,
+    @UploadedFiles()
+    files?: { avatar?: Express.Multer.File[]; file?: Express.Multer.File[] },
   ): Promise<{ message: string }> {
+    const image = files?.avatar?.[0] || files?.file?.[0];
+    if (image) {
+      const allowed = /^image\/(png|webp|jpeg|jpg)$/;
+      if (!allowed.test(image.mimetype)) {
+        throw new BadRequestException('Invalid file type');
+      }
+      if (image.size > 5 * 1024 * 1024) {
+        throw new BadRequestException('File too large (max 5MB)');
+      }
+    }
     return await this.userAuthService.updateMe(userId, reqDto, image);
   }
 

@@ -203,6 +203,9 @@
     "emptyCollections": "No collections created yet",
     "collectionCreated": "Collection created successfully",
     "copyUrlSuccess": "Profile link copied to clipboard!",
+    "copyLink": "Copy profile link",
+    "copied": "Copied",
+    "shareProfile": "Share profile",
     "viewModeOwner": "View Mode: Owner",
     "viewModeVisitor": "View Mode: Visitor",
     "sendMessage": "Send Message",
@@ -852,7 +855,12 @@
       "trendSame": "Rank Unchanged",
       "verified": "Verified"
     },
-    "empty": "No leaderboard rankings available"
+    "empty": "No leaderboard rankings available",
+    "emptyState": {
+      "title": "No rankings available for this period",
+      "desc": "Discover outstanding cosplay works and like your favorite cosplayers to help them rise on the leaderboard!",
+      "cta": "Explore Cosplayers"
+    }
   },
   "Feed": {
     "title": "Cosplay Community Feed",

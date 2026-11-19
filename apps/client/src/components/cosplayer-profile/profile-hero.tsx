@@ -59,6 +59,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import { useTranslations } from "next-intl";
+import { useProfile } from "@/hooks/use-profile";
 
 interface ProfileHeroProps {
   profile: CosplayerDetailResDto;
@@ -78,6 +79,7 @@ export function ProfileHero({
   const t = useTranslations("Profile");
   const tCos = useTranslations("CosplayerProfile");
   const queryClient = useQueryClient();
+  const { data: currentUser } = useProfile();
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(
     profile.followersCount || 0
@@ -91,6 +93,11 @@ export function ProfileHero({
   const avatarFileRef = useRef<HTMLInputElement>(null);
 
   const isOwnerView = isOwner && viewMode === "owner";
+  const isSelf =
+    isOwner ||
+    (!!currentUser?.id &&
+      !!profile.userId &&
+      String(currentUser.id) === String(profile.userId));
 
   const messageForm = useForm<MessageFormValues>({
     resolver: zodResolver(createMessageFormSchema(t)),
@@ -105,12 +112,12 @@ export function ProfileHero({
   }, [profile.followersCount, profile.totalLikesCount]);
 
   useEffect(() => {
-    if (!isOwner && profile.userId) {
+    if (!isSelf && profile.userId) {
       checkIsFollowing(profile.userId)
         .then((res) => setIsFollowing(res))
         .catch(() => {});
     }
-  }, [isOwner, profile.userId]);
+  }, [isSelf, profile.userId]);
 
   const followMutation = useMutation({
     mutationFn: (targetUserId: string) => toggleFollow(targetUserId),
@@ -417,14 +424,14 @@ export function ProfileHero({
           </div>
 
           {/* Right Column: Actions */}
-          <div className="mt-2 flex w-full items-center justify-center gap-2.5 md:mt-0 md:w-auto md:justify-end">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-2.5 md:mt-0 md:w-auto md:flex-nowrap md:justify-end">
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-1 gap-1.5 rounded-xl px-4 font-semibold shadow-sm md:flex-initial"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-1 gap-1.5 rounded-xl px-4 font-semibold shadow-sm sm:flex-initial"
                 >
                   <Pencil className="size-4" />
                   <span>{t("editProfile")}</span>
@@ -460,40 +467,59 @@ export function ProfileHero({
             ) : (
               /* VISITOR ACTIONS */
               <>
-                <Button
-                  type="button"
-                  disabled={isFollowLoading}
-                  onClick={handleToggleFollow}
-                  className={`h-10 flex-1 cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all md:flex-initial ${
-                    isFollowing
-                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
-                >
-                  {isFollowLoading ? (
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                  ) : isFollowing ? (
-                    <>
-                      <Check className="mr-1.5 size-4" />
-                      {tCos("followingBtn")}
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="mr-1.5 size-4" />
-                      {tCos("followBtn")}
-                    </>
-                  )}
-                </Button>
+                {!isSelf && (
+                  <Button
+                    type="button"
+                    disabled={isFollowLoading}
+                    onClick={handleToggleFollow}
+                    className={`h-10 flex-1 cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all sm:flex-initial ${
+                      isFollowing
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
+                  >
+                    {isFollowLoading ? (
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                    ) : isFollowing ? (
+                      <>
+                        <Check className="mr-1.5 size-4" />
+                        {tCos("followingBtn")}
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-1.5 size-4" />
+                        {tCos("followBtn")}
+                      </>
+                    )}
+                  </Button>
+                )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsMessageOpen(true)}
-                  className="border-border/80 hover:bg-accent h-10 flex-1 cursor-pointer rounded-xl px-4 font-medium transition-colors md:flex-initial"
-                >
-                  <MessageCircle className="text-primary mr-1.5 size-4" />
-                  {t("sendMessage")}
-                </Button>
+                {onToggleViewMode && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onToggleViewMode}
+                    className="border-border/80 hover:bg-accent h-10 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-medium"
+                    title={t("viewModeOwner")}
+                  >
+                    <Eye className="size-4" />
+                    <span className="hidden sm:inline">
+                      {t("viewModeOwner")}
+                    </span>
+                  </Button>
+                )}
+
+                {!isSelf && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsMessageOpen(true)}
+                    className="border-border/80 hover:bg-accent h-10 flex-1 cursor-pointer rounded-xl px-4 font-medium transition-colors sm:flex-initial"
+                  >
+                    <MessageCircle className="text-primary mr-1.5 size-4" />
+                    {t("sendMessage")}
+                  </Button>
+                )}
               </>
             )}
 
@@ -515,16 +541,22 @@ export function ProfileHero({
                   onClick={handleCopyProfileUrl}
                   className="cursor-pointer"
                 >
-                  <Copy className="mr-2 size-4" />
-                  {copiedLink ? t("copyUrlSuccess") : t("copyUrlSuccess")}
+                  {copiedLink ? (
+                    <Check className="mr-2 size-4 text-emerald-500" />
+                  ) : (
+                    <Copy className="mr-2 size-4" />
+                  )}
+                  {copiedLink ? t("copied") : t("copyLink")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `${profile.displayName} - Profile`,
-                        url: window.location.href,
-                      });
+                    if (typeof navigator !== "undefined" && navigator.share) {
+                      navigator
+                        .share({
+                          title: `${profile.displayName} - Kosume`,
+                          url: window.location.href,
+                        })
+                        .catch(() => {});
                     } else {
                       handleCopyProfileUrl();
                     }
@@ -532,7 +564,7 @@ export function ProfileHero({
                   className="cursor-pointer"
                 >
                   <Share2 className="mr-2 size-4" />
-                  {t("copyUrlSuccess")}
+                  {t("shareProfile")}
                 </DropdownMenuItem>
                 {profile.facebookUrl && (
                   <DropdownMenuItem

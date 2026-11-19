@@ -136,7 +136,11 @@ export class CosplayerService {
       throw new NotFoundException(`Cosplayer "${slugOrHandle}" not found`);
     }
 
-    if (!profile.avatarUrl && profile.user?.avatar) {
+    if (
+      (!profile.avatarUrl ||
+        profile.avatarUrl.includes('googleusercontent.com')) &&
+      profile.user?.avatar
+    ) {
       profile.avatarUrl = profile.user.avatar;
       await this.profileRepo.save(profile);
     }
@@ -193,7 +197,11 @@ export class CosplayerService {
 
       profile = await this.profileRepo.save(profile);
       profile.user = user;
-    } else if (!profile.avatarUrl && profile.user?.avatar) {
+    } else if (
+      (!profile.avatarUrl ||
+        profile.avatarUrl.includes('googleusercontent.com')) &&
+      profile.user?.avatar
+    ) {
       profile.avatarUrl = profile.user.avatar;
       await this.profileRepo.save(profile);
     }

@@ -485,6 +485,41 @@ export class UserAuthService extends AuthService<
     });
   }
 
+  private async downloadAndSaveGoogleAvatar(
+    userId: AutoIncrementID,
+    googlePhotoUrl?: string,
+  ): Promise<string | null> {
+    if (!googlePhotoUrl || !googlePhotoUrl.startsWith('http')) {
+      return null;
+    }
+
+    try {
+      // In Google photo URLs, request high quality image =s400-c
+      const highResUrl = googlePhotoUrl.replace(/=s\d+(-c)?$/, '=s400-c');
+      let response = await fetch(highResUrl);
+      if (!response.ok) {
+        response = await fetch(googlePhotoUrl);
+      }
+      if (!response.ok) return null;
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const mimeType = response.headers.get('content-type') || 'image/jpeg';
+      const ext = mimeType.includes('png')
+        ? '.png'
+        : mimeType.includes('webp')
+          ? '.webp'
+          : '.jpg';
+      const filename = `avatars/google-user-${userId}-${Date.now()}${ext}`;
+
+      await this.filesystemService.disk().put(filename, buffer, { mimeType });
+
+      return this.filesystemService.disk().url(filename);
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Signs in an existing social account user or auto-registers a new account.
    *
@@ -519,8 +554,14 @@ export class UserAuthService extends AuthService<
           profile.avatarUrl &&
           (!user.avatar || user.avatar.includes('googleusercontent.com'))
         ) {
-          user.avatar = profile.avatarUrl;
-          await this.userRepository.save(user);
+          const localAvatar = await this.downloadAndSaveGoogleAvatar(
+            user.id,
+            profile.avatarUrl,
+          );
+          if (localAvatar) {
+            user.avatar = localAvatar;
+            await this.userRepository.save(user);
+          }
         }
         return this.createLoginResponse(user, requestInfo);
       }
@@ -546,15 +587,30 @@ export class UserAuthService extends AuthService<
           firstName: profile.firstName || profile.displayName || 'User',
           lastName: profile.lastName || '',
           email: profile.email,
-          avatar: profile.avatarUrl,
           verifiedAt: new Date(),
         });
+        if (profile.avatarUrl) {
+          const localAvatar = await this.downloadAndSaveGoogleAvatar(
+            user.id,
+            profile.avatarUrl,
+          );
+          if (localAvatar) {
+            user.avatar = localAvatar;
+            await userRepo.save(user);
+          }
+        }
       } else {
         if (
           profile.avatarUrl &&
           (!user.avatar || user.avatar.includes('googleusercontent.com'))
         ) {
-          user.avatar = profile.avatarUrl;
+          const localAvatar = await this.downloadAndSaveGoogleAvatar(
+            user.id,
+            profile.avatarUrl,
+          );
+          if (localAvatar) {
+            user.avatar = localAvatar;
+          }
         }
         if (!user.verifiedAt) {
           // SECURITY: If an unverified local account was registered previously with this email,
