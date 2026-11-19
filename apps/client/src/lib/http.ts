@@ -24,38 +24,8 @@ export const http = xior.create({
   credentials: "same-origin",
 });
 
-let hydrationPromise: Promise<string | null> | null = null;
-
-async function waitForAuthHydration(): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  if (!useAuthStore.getState().isHydrating) {
-    return useAuthStore.getState().accessToken;
-  }
-  if (!hydrationPromise) {
-    hydrationPromise = xior
-      .get<{ accessToken?: string }>("/api/auth/tokens")
-      .then((res) => {
-        const token = res.data?.accessToken || null;
-        if (token) {
-          useAuthStore.getState().setTokens({ accessToken: token });
-        } else {
-          useAuthStore.getState().setIsHydrating(false);
-        }
-        return token;
-      })
-      .catch(() => {
-        useAuthStore.getState().setIsHydrating(false);
-        return null;
-      })
-      .finally(() => {
-        hydrationPromise = null;
-      });
-  }
-  return hydrationPromise;
-}
-
 http.interceptors.request.use(
-  async (config) => {
+  (config) => {
     // If request payload is FormData, remove Content-Type so browser fetch automatically sets multipart/form-data with the correct boundary
     if (typeof FormData !== "undefined" && config.data instanceof FormData) {
       if (config.headers) {
@@ -79,11 +49,7 @@ http.interceptors.request.use(
       return config;
     }
 
-    let accessToken = useAuthStore.getState().accessToken;
-    if (!accessToken && useAuthStore.getState().isHydrating) {
-      accessToken = await waitForAuthHydration();
-    }
-
+    const accessToken = useAuthStore.getState().accessToken;
     if (accessToken) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${accessToken}`;
