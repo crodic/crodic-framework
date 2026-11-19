@@ -1013,6 +1013,7 @@
       "save": "Save Changes",
       "saving": "Saving...",
       "success": "Profile changes saved successfully!",
+      "error": "Failed to save profile changes. Please try again.",
       "valDisplayName": "Please enter display name",
       "valHandle": "Please enter username (handle)"
     }

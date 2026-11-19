@@ -1013,6 +1013,7 @@
       "save": "Lưu thay đổi",
       "saving": "Đang lưu...",
       "success": "Đã lưu thay đổi hồ sơ thành công!",
+      "error": "Không thể lưu thay đổi hồ sơ. Vui lòng thử lại.",
       "valDisplayName": "Vui lòng nhập tên hiển thị",
       "valHandle": "Vui lòng nhập tên người dùng (handle)"
     }

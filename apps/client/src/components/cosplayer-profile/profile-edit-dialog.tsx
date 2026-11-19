@@ -152,7 +152,14 @@ export function ProfileEditDialog({
       }, 800);
     },
     onError: (err: any) => {
-      toast.error(err?.message || t("saving"));
+      const msg = err?.response?.data?.message || err?.message || t("error");
+      toast.error(
+        typeof msg === "string"
+          ? msg
+          : Array.isArray(msg)
+            ? msg.join(", ")
+            : t("error")
+      );
     },
   });
 
