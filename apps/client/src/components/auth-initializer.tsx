@@ -5,11 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import xior from "xior";
 import { useAuthStore } from "@/store/use-auth-store";
 
-export function AuthInitializer({
-  initialToken,
-}: {
-  initialToken?: string | null;
-}) {
+export function AuthInitializer() {
   const currentToken = useAuthStore((state) => state.accessToken);
   const setTokens = useAuthStore((state) => state.setTokens);
   const setIsHydrating = useAuthStore((state) => state.setIsHydrating);
@@ -20,13 +16,13 @@ export function AuthInitializer({
       const res = await xior.get<{ accessToken?: string }>("/api/auth/tokens");
       return res.data || {};
     },
-    enabled: !currentToken && !initialToken,
+    enabled: !currentToken,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
   useEffect(() => {
-    if (currentToken || initialToken) {
+    if (currentToken) {
       setIsHydrating(false);
       return;
     }
@@ -38,7 +34,7 @@ export function AuthInitializer({
         setIsHydrating(false);
       }
     }
-  }, [data, isLoading, currentToken, initialToken, setTokens, setIsHydrating]);
+  }, [data, isLoading, currentToken, setTokens, setIsHydrating]);
 
   return null;
 }

@@ -10,13 +10,16 @@ import { FeedPostCard } from "./feed-post-card";
 import { SuggestedCosplayersWidget } from "./suggested-cosplayers-widget";
 import { UpcomingEventsWidget } from "./upcoming-events-widget";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { useAuthStore } from "@/store/use-auth-store";
 
 export function FeedView() {
   const t = useTranslations("Feed");
+  const isHydrating = useAuthStore((state) => state.isHydrating);
 
   const { data: postsResponse, isLoading } = useQuery({
     queryKey: ["public-feed-posts"],
     queryFn: () => getPosts({ limit: 30 }),
+    enabled: !isHydrating,
   });
 
   const posts: PostSummaryResDto[] = useMemo(() => {
@@ -50,7 +53,7 @@ export function FeedView() {
           </div>
 
           {/* 4. List of Feed Post Cards */}
-          {isLoading ? (
+          {isLoading || isHydrating ? (
             <div className="flex min-h-[300px] items-center justify-center">
               <Loader2 className="text-primary size-8 animate-spin" />
             </div>

@@ -9,8 +9,6 @@ import {
 } from "@/lib/white-label";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
 import { routing } from "@/i18n/routing";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { dancingScript, geistMono, geistSans } from "@/fonts";
@@ -129,10 +127,6 @@ export default async function LocaleLayout({
   // Fetch active white label on server (SSR)
   const whiteLabel = await fetchActiveClientWhiteLabel();
 
-  // Read auth token from HttpOnly cookie on server (SSR) to hydrate auth store with 0ms delay and zero UI flickering
-  const cookieStore = await cookies();
-  const initialToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value || null;
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -142,7 +136,7 @@ export default async function LocaleLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <Provider initialToken={initialToken}>
+          <Provider>
             <WhiteLabelProvider initialData={whiteLabel}>
               <ThemeProvider
                 attribute="class"

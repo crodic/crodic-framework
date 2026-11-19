@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { useAuthStore } from "@/store/use-auth-store";
 import {
   getCosplayers,
   type CosplayerSummaryResDto,
@@ -47,9 +48,12 @@ export function ExploreFeed() {
     router.replace("/explore");
   };
 
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+
   const { data: postsResponse, isLoading: isLoadingPosts } = useQuery({
     queryKey: ["explore-posts", searchQuery],
     queryFn: () => getPosts({ search: searchQuery || undefined, limit: 50 }),
+    enabled: !isHydrating,
   });
 
   const { data: cosplayersResponse, isLoading: isLoadingCosplayers } = useQuery(
