@@ -622,6 +622,10 @@
     },
     "featuredWorks": {
       "title": "Tác phẩm mới nổi bật",
+      "exploreMore": "Khám phá thêm",
+      "loadMore": "Xem thêm tác phẩm",
+      "loadingMore": "Đang tải thêm...",
+      "allLoaded": "Bạn đã xem hết các tác phẩm nổi bật",
       "viewProject": "Xem dự án",
       "booking": "Booking",
       "noWorks": "Chưa có tác phẩm nào",

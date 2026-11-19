@@ -6,9 +6,9 @@ import { Link } from "@/i18n/navigation";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { getCosplayers } from "@/services/cosplayer";
+import { getSuggestedCosplayers } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
@@ -17,17 +17,25 @@ import { useProfile } from "@/hooks/use-profile";
 export function SuggestedCosplayersWidget() {
   const t = useTranslations("Feed");
   const tCos = useTranslations("CosplayerProfile");
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: currentUser } = useProfile();
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
   const { data: cosplayersResponse } = useQuery({
-    queryKey: ["suggested-cosplayers-feed"],
-    queryFn: () => getCosplayers({ limit: 4 }),
+    queryKey: ["suggested-cosplayers", currentUser?.id],
+    queryFn: () => getSuggestedCosplayers({ limit: 5 }),
   });
 
-  const cosplayers = cosplayersResponse?.data || [];
+  // Exclude self and anyone already followed
+  const cosplayers = (cosplayersResponse || [])
+    .filter(
+      (item) =>
+        !currentUser?.id || String(item.userId) !== String(currentUser.id)
+    )
+    .filter((item) => followingMap[item.userId] !== true)
+    .slice(0, 4);
 
   const handleToggleFollow = async (userId: string, name: string) => {
     if (!isAuthenticated) {
@@ -39,6 +47,8 @@ export function SuggestedCosplayersWidget() {
     try {
       const res = await toggleFollow(userId);
       setFollowingMap((prev) => ({ ...prev, [userId]: res.following }));
+      queryClient.invalidateQueries({ queryKey: ["suggested-cosplayers"] });
+      queryClient.invalidateQueries({ queryKey: ["my-following"] });
       if (res.following) {
         toast.success(tCos("followedSuccess", { name }));
       } else {

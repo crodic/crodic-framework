@@ -622,6 +622,10 @@
     },
     "featuredWorks": {
       "title": "Featured New Works",
+      "exploreMore": "Explore More",
+      "loadMore": "Load more artworks",
+      "loadingMore": "Loading more...",
+      "allLoaded": "You've viewed all featured artworks",
       "viewProject": "View Project",
       "booking": "Book Now",
       "noWorks": "No featured works yet",

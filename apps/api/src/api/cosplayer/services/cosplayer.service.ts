@@ -120,6 +120,34 @@ export class CosplayerService {
   }
 
   /**
+   * Get smart suggested cosplayers excluding self and followed creators.
+   */
+  async getSuggested(
+    currentUserId?: AutoIncrementID,
+    limit: number = 4,
+  ): Promise<CosplayerSummaryResDto[]> {
+    const qb = this.profileRepo
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.user', 'user');
+
+    if (currentUserId) {
+      qb.andWhere('profile.userId != :currentUserId', { currentUserId });
+      qb.andWhere(
+        'NOT EXISTS (SELECT 1 FROM user_follows follow WHERE follow.follower_id = :currentUserId AND follow.following_id = profile.userId)',
+      );
+    }
+
+    qb.orderBy('profile.isVerified', 'DESC')
+      .addOrderBy('profile.rankingScore', 'DESC')
+      .addOrderBy('profile.totalLikesCount', 'DESC')
+      .addOrderBy('profile.albumsCount', 'DESC')
+      .take(limit);
+
+    const profiles = await qb.getMany();
+    return profiles.map((p) => this.toSummaryDto(p));
+  }
+
+  /**
    * Find full public cosplayer profile by slug or handle.
    */
   async findBySlugOrHandle(

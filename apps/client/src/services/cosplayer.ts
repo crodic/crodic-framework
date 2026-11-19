@@ -86,6 +86,16 @@ export const getCosplayers = async (
   return data;
 };
 
+export const getSuggestedCosplayers = async (query?: {
+  limit?: number;
+}): Promise<CosplayerSummaryResDto[]> => {
+  const qs = query?.limit ? `?limit=${query.limit}` : "";
+  const { data } = await http.get<CosplayerSummaryResDto[]>(
+    `/api/v1/public/cosplayers/suggested${qs}`
+  );
+  return data;
+};
+
 export const getCosplayerBySlug = async (
   slug: string
 ): Promise<CosplayerDetailResDto> => {

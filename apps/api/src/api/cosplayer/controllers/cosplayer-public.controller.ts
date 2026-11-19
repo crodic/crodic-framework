@@ -4,8 +4,11 @@ import {
   QueryParams,
 } from '../../../common/query-builder';
 import { ApiPublic } from '../../../decorators/http.decorators';
+import { AuthOptional } from '../../../decorators/auth-optional.decorator';
+import { CurrentUser } from '../../../decorators/current-user.decorator';
+import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CosplayerCharacterResDto,
   CosplayerDetailResDto,
@@ -46,6 +49,23 @@ export class CosplayerPublicController {
   })
   findAll(@Query() query: QueryParams) {
     return this.cosplayerService.findAll(query);
+  }
+
+  @Get('suggested')
+  @AuthOptional()
+  @ApiPublic({
+    type: CosplayerSummaryResDto,
+    summary: 'Get smart suggested cosplayers excluding self and followed',
+  })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 4 })
+  getSuggested(
+    @CurrentUser('id') currentUserId?: AutoIncrementID,
+    @Query('limit') limit?: number,
+  ) {
+    return this.cosplayerService.getSuggested(
+      currentUserId,
+      limit ? Number(limit) : 4,
+    );
   }
 
   @Get(':slug')
