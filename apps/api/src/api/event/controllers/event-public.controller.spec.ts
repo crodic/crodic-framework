@@ -1,4 +1,5 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventPublicController } from './event-public.controller';
 import { EventService } from '../services/event.service';
@@ -12,19 +13,20 @@ describe('EventPublicController', () => {
   beforeEach(async () => {
     service = {
       findAll: jest.fn().mockResolvedValue({ data: [], meta: {} }),
-      findBySlug: jest
-        .fn()
-        .mockResolvedValue({
-          id: id('1'),
-          slug: 'winter-fest',
-          title: 'Winter Fest',
-        }),
+      findBySlug: jest.fn().mockResolvedValue({
+        id: id('1'),
+        slug: 'winter-fest',
+        title: 'Winter Fest',
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EventPublicController],
       providers: [{ provide: EventService, useValue: service }],
-    }).compile();
+    })
+      .overrideGuard(UserAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<EventPublicController>(EventPublicController);
   });

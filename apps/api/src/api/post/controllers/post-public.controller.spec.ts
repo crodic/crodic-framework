@@ -1,4 +1,5 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostPublicController } from './post-public.controller';
 import { PostService } from '../services/post.service';
@@ -21,7 +22,10 @@ describe('PostPublicController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PostPublicController],
       providers: [{ provide: PostService, useValue: service }],
-    }).compile();
+    })
+      .overrideGuard(UserAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<PostPublicController>(PostPublicController);
   });

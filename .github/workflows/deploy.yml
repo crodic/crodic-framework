@@ -1,9 +1,12 @@
 name: Deploy to Production (VPS)
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
     branches:
       - main
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       skip_migration:
@@ -19,6 +22,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy Monorepo to VPS
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     runs-on: self-hosted
 
     steps:
