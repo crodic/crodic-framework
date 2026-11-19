@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   pull_request:
@@ -9,6 +9,13 @@ on:
       - develop
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      skip_migration:
+        description: "Skip running database migrations"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -161,3 +168,28 @@ jobs:
 
       - name: Build client
         run: pnpm --filter client build
+
+  deploy:
+    name: Deploy Monorepo to VPS
+    needs: [api, web, client]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: self-hosted
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+
+    steps:
+      - name: Execute Deployment Script
+        run: |
+          set -e
+          cd /var/www/crodic-framework
+          git checkout main
+          git pull origin main
+          chmod +x scripts/deploy.sh
+
+          DEPLOY_FLAGS=""
+          if [ "${{ inputs.skip_migration }}" = "true" ]; then
+            DEPLOY_FLAGS="--skip-migration"
+          fi
+
+          ./scripts/deploy.sh $DEPLOY_FLAGS
