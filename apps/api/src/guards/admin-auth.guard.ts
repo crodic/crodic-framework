@@ -19,18 +19,25 @@ export class AdminAuthGuard extends AuthGuard('admin-jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
     const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
       IS_AUTH_OPTIONAL,
       [context.getHandler(), context.getClass()],
     );
 
-    if (isPublic && !isAuthOptional) return true;
+    // 1. If Optional Auth, always run Passport to decode token if provided
+    if (isAuthOptional) {
+      return super.canActivate(context);
+    }
 
+    // 2. Purely public routes without optional auth -> bypass immediately
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) return true;
+
+    // 3. Protected routes requiring authentication
     return super.canActivate(context);
   }
 
@@ -40,8 +47,14 @@ export class AdminAuthGuard extends AuthGuard('admin-jwt') {
       [context.getHandler(), context.getClass()],
     );
 
-    if (isAuthOptional && (err || !user)) {
-      return null;
+    if (isAuthOptional) {
+      // Re-throw unexpected system / database errors instead of swallowing
+      if (err && !(err instanceof UnauthorizedException)) {
+        throw err;
+      }
+      if (!user) {
+        return null;
+      }
     }
 
     if (err || !user) {

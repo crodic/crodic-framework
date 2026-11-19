@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
+import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
 import Layout from "@/components/layouts/layout";
 import { PostStandaloneView } from "@/components/post-detail/post-standalone-view";
 import { getPostBySlug, getPostComments } from "@/services/posts";
@@ -87,10 +89,13 @@ export default async function PostPage({ params }: PostPageProps) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
+
   try {
     const [rawPost, rawComments] = await Promise.all([
-      getPostBySlug(id).catch(() => null),
-      getPostComments(id).catch(() => []),
+      getPostBySlug(id, { token }).catch(() => null),
+      getPostComments(id, { token }).catch(() => []),
     ]);
 
     if (!rawPost) {

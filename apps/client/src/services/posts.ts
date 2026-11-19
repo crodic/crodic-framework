@@ -110,8 +110,13 @@ export interface CreatePostPayload {
   }[];
 }
 
+export interface RequestOptions {
+  token?: string;
+}
+
 export const getPosts = async (
-  query?: Record<string, any>
+  query?: Record<string, any>,
+  options?: RequestOptions
 ): Promise<PaginatedResponse<PostSummaryResDto>> => {
   const searchParams = new URLSearchParams();
   if (query) {
@@ -139,24 +144,42 @@ export const getPosts = async (
   }
   const qs = searchParams.toString();
   const url = `/api/v1/public/posts${qs ? `?${qs}` : ""}`;
-  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url);
+  const headers: Record<string, string> = {};
+  if (options?.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url, {
+    headers,
+  });
   return data;
 };
 
 export const getPostBySlug = async (
-  slug: string
+  slug: string,
+  options?: RequestOptions
 ): Promise<PostDetailResDto> => {
+  const headers: Record<string, string> = {};
+  if (options?.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
   const { data } = await http.get<PostDetailResDto>(
-    `/api/v1/public/posts/${slug}`
+    `/api/v1/public/posts/${slug}`,
+    { headers }
   );
   return data;
 };
 
 export const getPostComments = async (
-  postId: string
+  postId: string,
+  options?: RequestOptions
 ): Promise<PostCommentResDto[]> => {
+  const headers: Record<string, string> = {};
+  if (options?.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
   const { data } = await http.get<PostCommentResDto[]>(
-    `/api/v1/public/posts/${postId}/comments`
+    `/api/v1/public/posts/${postId}/comments`,
+    { headers }
   );
   return data || [];
 };

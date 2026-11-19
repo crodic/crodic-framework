@@ -1,8 +1,10 @@
 import { AllowedFilter, QueryParams } from '../../../common/query-builder';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import { AuthOptional } from '../../../decorators/auth-optional.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
-import { ApiPublic } from '../../../decorators/http.decorators';
+import {
+  ApiAuthOptional,
+  ApiPublic,
+} from '../../../decorators/http.decorators';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -80,8 +82,7 @@ export class TagPublicController {
 
   @Get('search-content')
   @UseGuards(UserAuthGuard)
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     summary:
       'Evaluate boolean tag expression (AND, OR, -NOT, taxonomy hierarchy expansion, and user NG-tag mutes)',
   })
@@ -146,8 +147,7 @@ export class TagPublicController {
 
   @Get('by-slug/:slug')
   @UseGuards(UserAuthGuard)
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: TagDetailResDto,
     summary:
       'Resolve canonical tag by slug or alias with semantic DAG neighborhood',

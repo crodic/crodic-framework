@@ -1,7 +1,6 @@
 import { AllowedFilter, QueryParams } from '../../../common/query-builder';
-import { AuthOptional } from '../../../decorators/auth-optional.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
-import { ApiPublic } from '../../../decorators/http.decorators';
+import { ApiAuthOptional } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -16,8 +15,7 @@ export class EventPublicController {
   constructor(private readonly eventService: EventService) {}
 
   @Get()
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: EventSummaryResDto,
     summary: 'Browse events and cosplay festivals directory',
     isQueryBuilder: true,
@@ -44,8 +42,7 @@ export class EventPublicController {
   }
 
   @Get(':slug')
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: EventDetailResDto,
     summary: 'Get full festival details, schedule and guest lineup by slug',
   })

@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
+import { COOKIE_ACCESS_TOKEN } from "@/lib/cookies";
 import Layout from "@/components/layouts/layout";
 import { CosplayerProfileView } from "@/components/cosplayer-profile/cosplayer-profile-view";
 import { getCosplayerBySlug } from "@/services/cosplayer";
@@ -116,12 +118,18 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value;
+
   try {
     const profile = await getCosplayerBySlug(slug);
-    const albumsRes = await getPosts({
-      authorId: profile.userId,
-      limit: 50,
-    }).catch(() => ({ data: [] }));
+    const albumsRes = await getPosts(
+      {
+        authorId: profile.userId,
+        limit: 50,
+      },
+      { token }
+    ).catch(() => ({ data: [] }));
 
     // Rich SEO Schema (ProfilePage & Person)
     const isVi = locale === "vi";
