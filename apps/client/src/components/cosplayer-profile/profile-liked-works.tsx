@@ -35,6 +35,7 @@ export function ProfileLikedWorks({
       setLikedList((prev) => prev.filter((item) => item.id !== id));
       await queryClient.invalidateQueries({ queryKey: ["public-posts"] });
       await queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
+      await queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
       toast.info(t("unlike"));
     } catch {
       // Keep state if failed

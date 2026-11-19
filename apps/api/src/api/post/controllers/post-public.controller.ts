@@ -1,7 +1,6 @@
 import { AllowedFilter, QueryParams } from '../../../common/query-builder';
-import { AuthOptional } from '../../../decorators/auth-optional.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
-import { ApiPublic } from '../../../decorators/http.decorators';
+import { ApiAuthOptional } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -18,8 +17,7 @@ export class PostPublicController {
   constructor(private readonly postService: PostService) {}
 
   @Get()
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: PostSummaryResDto,
     summary: 'Browse and search posts / studio albums feed',
     isQueryBuilder: true,
@@ -57,8 +55,7 @@ export class PostPublicController {
   }
 
   @Get(':slug')
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: PostDetailResDto,
     summary: 'Get full post details by slug (includes media array and author)',
   })
@@ -75,8 +72,7 @@ export class PostPublicController {
   }
 
   @Get(':id/comments')
-  @AuthOptional()
-  @ApiPublic({
+  @ApiAuthOptional({
     type: PostCommentResDto,
     summary: 'Get paginated comments for a post',
     isQueryBuilder: true,

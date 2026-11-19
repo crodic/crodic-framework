@@ -25,7 +25,13 @@ export function AlbumCard({ album }: AlbumCardProps) {
     setIsLiked(nextLiked);
     setLikes((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
     try {
-      await toggleLikePost(album.id);
+      const res = await toggleLikePost(album.id);
+      if (typeof res?.liked === "boolean") {
+        setIsLiked(res.liked);
+      }
+      if (typeof res?.likesCount === "number") {
+        setLikes(res.likesCount);
+      }
     } catch {
       setIsLiked(!nextLiked);
       setLikes((prev) => (!nextLiked ? prev + 1 : Math.max(0, prev - 1)));

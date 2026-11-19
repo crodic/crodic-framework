@@ -23,9 +23,21 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked((prev) => !prev);
-    setLikesCount((prev) => (isLiked ? Math.max(0, prev - 1) : prev + 1));
-    await toggleLikePost(post.id).catch(() => undefined);
+    const next = !isLiked;
+    setIsLiked(next);
+    setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
+    try {
+      const res = await toggleLikePost(post.id);
+      if (typeof res?.liked === "boolean") {
+        setIsLiked(res.liked);
+      }
+      if (typeof res?.likesCount === "number") {
+        setLikesCount(res.likesCount);
+      }
+    } catch {
+      setIsLiked(!next);
+      setLikesCount((prev) => (!next ? prev + 1 : Math.max(0, prev - 1)));
+    }
   };
 
   const coverUrl = post.coverImageUrl || "/logo.png";

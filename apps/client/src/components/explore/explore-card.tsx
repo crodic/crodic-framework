@@ -27,12 +27,18 @@ export function ExploreCard({ item }: ExploreCardProps) {
     e.stopPropagation();
     const next = !isLiked;
     setIsLiked(next);
-    setLikesCount((prev) => (next ? prev + 1 : prev - 1));
+    setLikesCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
     try {
-      await toggleLikePost(item.id);
+      const res = await toggleLikePost(item.id);
+      if (typeof res?.liked === "boolean") {
+        setIsLiked(res.liked);
+      }
+      if (typeof res?.likesCount === "number") {
+        setLikesCount(res.likesCount);
+      }
     } catch {
       setIsLiked(!next);
-      setLikesCount((prev) => (!next ? prev + 1 : prev - 1));
+      setLikesCount((prev) => (!next ? prev + 1 : Math.max(0, prev - 1)));
     }
   };
 

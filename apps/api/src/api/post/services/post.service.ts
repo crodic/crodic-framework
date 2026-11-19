@@ -604,7 +604,11 @@ export class PostService {
         const updated = await em.findOneOrFail(PostEntity, {
           where: { id: postId },
         });
-        return { liked: false, likesCount: Number(updated.likesCount) };
+        const safeCount = Math.max(0, Number(updated.likesCount));
+        if (Number(updated.likesCount) < 0) {
+          await em.update(PostEntity, { id: postId }, { likesCount: 0 });
+        }
+        return { liked: false, likesCount: safeCount };
       } else {
         const like = em.create(PostLikeEntity, { userId, postId });
         await em.save(like);
@@ -618,7 +622,10 @@ export class PostService {
         const updated = await em.findOneOrFail(PostEntity, {
           where: { id: postId },
         });
-        return { liked: true, likesCount: Number(updated.likesCount) };
+        return {
+          liked: true,
+          likesCount: Math.max(0, Number(updated.likesCount)),
+        };
       }
     });
   }

@@ -29,7 +29,11 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { cn } from "@/lib/utils";
-import { toggleLikePost, addPostComment } from "@/services/posts";
+import {
+  toggleLikePost,
+  addPostComment,
+  getPostBySlug,
+} from "@/services/posts";
 import { toggleFollow } from "@/services/social";
 import {
   getMyCollections,
@@ -38,7 +42,7 @@ import {
 } from "@/services/collections";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface PostInfoProps {
   post: PostDetailResDto;
@@ -46,7 +50,7 @@ interface PostInfoProps {
 }
 
 export function PostInfo({
-  post,
+  post: initialPost,
   comments: initialComments = [],
 }: PostInfoProps) {
   const t = useTranslations("Feed");
@@ -56,6 +60,13 @@ export function PostInfo({
   const currentAuthorName = profile?.fullName || profile?.firstName || "You";
   const currentAuthorAvatar = profile?.avatar || "/logo.png";
 
+  const postSlugOrId = initialPost.slug || initialPost.id;
+  const { data: post = initialPost } = useQuery({
+    queryKey: ["post-detail", postSlugOrId],
+    queryFn: () => getPostBySlug(postSlugOrId),
+    initialData: initialPost,
+  });
+
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser ?? false);
   const [likesCount, setLikesCount] = useState(post.likesCount);
@@ -63,6 +74,18 @@ export function PostInfo({
   const [copiedShare, setCopiedShare] = useState(false);
   const [comments, setComments] =
     useState<PostCommentResDto[]>(initialComments);
+
+  React.useEffect(() => {
+    if (typeof post.isLikedByCurrentUser === "boolean") {
+      setIsLiked(post.isLikedByCurrentUser);
+    }
+    if (typeof post.likesCount === "number") {
+      setLikesCount(post.likesCount);
+    }
+    if (typeof post.isSavedByCurrentUser === "boolean") {
+      setIsSaved(post.isSavedByCurrentUser);
+    }
+  }, [post.isLikedByCurrentUser, post.likesCount, post.isSavedByCurrentUser]);
 
   const authorHandle = post.author.handle.replace("@", "") || post.author.id;
 
@@ -79,15 +102,40 @@ export function PostInfo({
 
   const likeMutation = useMutation({
     mutationFn: () => toggleLikePost(post.id),
+    onMutate: () => {
+      const nextLiked = !isLiked;
+      setIsLiked(nextLiked);
+      setLikesCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
+      return { prevLiked: isLiked, prevCount: likesCount };
+    },
     onSuccess: (res) => {
-      setLikesCount(res.likesCount);
+      if (typeof res?.liked === "boolean") {
+        setIsLiked(res.liked);
+      }
+      if (typeof res?.likesCount === "number") {
+        setLikesCount(res.likesCount);
+      }
+      queryClient.setQueryData<PostDetailResDto>(
+        ["post-detail", postSlugOrId],
+        (old) =>
+          old
+            ? {
+                ...old,
+                isLikedByCurrentUser: res.liked,
+                likesCount: res.likesCount,
+              }
+            : old
+      );
       queryClient.invalidateQueries({ queryKey: ["public-posts"] });
       queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
       queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
     },
-    onError: () => {
-      setIsLiked((prev) => !prev);
-      setLikesCount((prev) => (isLiked ? prev + 1 : prev - 1));
+    onError: (_err, _vars, context) => {
+      if (context) {
+        setIsLiked(context.prevLiked);
+        setLikesCount(context.prevCount);
+      }
+      toast.error(t("likeError") || "Không thể thích bài viết");
     },
   });
 
@@ -160,9 +208,6 @@ export function PostInfo({
       toast.info(t("loginToLike"));
       return;
     }
-    const next = !isLiked;
-    setIsLiked(next);
-    setLikesCount((prev) => (next ? prev + 1 : prev - 1));
     likeMutation.mutate();
   };
 
