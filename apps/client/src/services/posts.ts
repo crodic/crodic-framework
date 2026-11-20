@@ -243,3 +243,16 @@ export const addPostComment = async (
   );
   return data;
 };
+
+export const toggleLikeComment = async (
+  commentId: string
+): Promise<{ liked: boolean; likesCount: number }> => {
+  const { data } = await http.post<{ liked: boolean; likesCount: number }>(
+    `/api/v1/posts/comments/${commentId}/like`
+  );
+  return data;
+};
+
+export const deletePostComment = async (commentId: string): Promise<void> => {
+  await http.delete(`/api/v1/posts/comments/${commentId}`);
+};

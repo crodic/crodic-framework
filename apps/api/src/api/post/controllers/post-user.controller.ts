@@ -128,4 +128,16 @@ export class PostUserController {
   ) {
     await this.postService.deleteComment(userId, commentId);
   }
+
+  @Post('comments/:commentId/like')
+  @ApiAuth({
+    summary: 'Toggle like on post comment',
+  })
+  @ApiParam({ name: 'commentId', type: String })
+  toggleCommentLike(
+    @CurrentUser('id') userId: AutoIncrementID,
+    @Param('commentId') commentId: AutoIncrementID,
+  ) {
+    return this.postService.toggleCommentLike(userId, commentId);
+  }
 }

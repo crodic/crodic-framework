@@ -901,6 +901,62 @@ export class PostService {
     });
   }
 
+  async toggleCommentLike(
+    userId: AutoIncrementID,
+    commentId: AutoIncrementID,
+  ): Promise<{ liked: boolean; likesCount: number }> {
+    const comment = await this.commentRepo.findOne({
+      where: { id: commentId },
+    });
+    if (!comment) {
+      throw new NotFoundException(`Comment #${commentId} not found`);
+    }
+
+    return await this.dataSource.transaction(async (em) => {
+      const existing = await em.findOne(PostCommentLikeEntity, {
+        where: { userId, commentId },
+      });
+
+      if (existing) {
+        await em.delete(PostCommentLikeEntity, { id: existing.id });
+        await em.decrement(
+          PostCommentEntity,
+          { id: commentId },
+          'likesCount',
+          1,
+        );
+        const updated = await em.findOneOrFail(PostCommentEntity, {
+          where: { id: commentId },
+        });
+        const safeCount = Math.max(0, Number(updated.likesCount));
+        if (Number(updated.likesCount) < 0) {
+          await em.update(
+            PostCommentEntity,
+            { id: commentId },
+            { likesCount: 0 },
+          );
+        }
+        return { liked: false, likesCount: safeCount };
+      } else {
+        const like = em.create(PostCommentLikeEntity, { userId, commentId });
+        await em.save(like);
+        await em.increment(
+          PostCommentEntity,
+          { id: commentId },
+          'likesCount',
+          1,
+        );
+        const updated = await em.findOneOrFail(PostCommentEntity, {
+          where: { id: commentId },
+        });
+        return {
+          liked: true,
+          likesCount: Math.max(0, Number(updated.likesCount)),
+        };
+      }
+    });
+  }
+
   // =================== MAPPERS ===================
 
   private async loadProfileMap(

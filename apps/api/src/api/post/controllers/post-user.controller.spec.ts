@@ -23,6 +23,9 @@ describe('PostUserController', () => {
         .fn()
         .mockResolvedValue({ id: id('40'), content: 'Nice!' }),
       deleteComment: jest.fn().mockResolvedValue(undefined),
+      toggleCommentLike: jest
+        .fn()
+        .mockResolvedValue({ liked: true, likesCount: 2 }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -91,5 +94,11 @@ describe('PostUserController', () => {
   it('deleteComment delegates to service', async () => {
     await controller.deleteComment(id('100'), id('40'));
     expect(service.deleteComment).toHaveBeenCalledWith(id('100'), id('40'));
+  });
+
+  it('toggleCommentLike delegates to service', async () => {
+    const res = await controller.toggleCommentLike(id('100'), id('40'));
+    expect(res.liked).toBe(true);
+    expect(service.toggleCommentLike).toHaveBeenCalledWith(id('100'), id('40'));
   });
 });
