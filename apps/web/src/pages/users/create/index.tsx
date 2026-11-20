@@ -24,10 +24,22 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
 import { PasswordInput } from '@/components/password-input'
+import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
 import { apiCreateUser } from '../queries'
-import { userCreateSchema, type UserCreateSchema } from '../schema'
+import {
+  serializeCosplayerProfilePayload,
+  userCreateSchema,
+  type UserCreateSchema,
+} from '../schema'
 
 export function PageUserCreate() {
   const navigate = useNavigate()
@@ -40,9 +52,13 @@ export function PageUserCreate() {
   const queryClient = useQueryClient()
 
   const form = useForm<UserCreateSchema>({
-    defaultValues: {},
+    defaultValues: {
+      role: 'fan',
+    },
     resolver: zodResolver(userCreateSchema),
   })
+
+  const watchedRole = form.watch('role')
 
   const createUserMutation = useMutation({
     mutationFn: apiCreateUser,
@@ -55,7 +71,26 @@ export function PageUserCreate() {
   })
 
   const onSubmit = (values: UserCreateSchema) => {
-    createUserMutation.mutate(values)
+    const payload: Record<string, unknown> = {
+      firstName: values.firstName,
+      lastName: values.lastName ?? '',
+      email: values.email,
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+      role: values.role || 'fan',
+    }
+    if (values.username?.trim()) {
+      payload.username = values.username.trim()
+    }
+    if (values.role === 'cosplayer' && values.cosplayerProfile) {
+      const serialized = serializeCosplayerProfilePayload(
+        values.cosplayerProfile
+      )
+      if (serialized) {
+        payload.cosplayerProfile = serialized
+      }
+    }
+    createUserMutation.mutate(payload)
   }
 
   return (
@@ -128,12 +163,49 @@ export function PageUserCreate() {
                   name='lastName'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>
-                        {t('users.create.lastName')}
-                      </FormLabel>
+                      <FormLabel>{t('users.create.lastName')}</FormLabel>
                       <FormControl>
                         <Input placeholder='Doe' {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='username'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder='kiriko_cos' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='role'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel required>
+                        {t('users.table.role', 'Vai trò')}
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || 'fan'}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Chọn vai trò' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value='fan'>Fan</SelectItem>
+                          <SelectItem value='cosplayer'>Cosplayer</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -170,6 +242,10 @@ export function PageUserCreate() {
                 />
               </CardContent>
             </Card>
+
+            {watchedRole === 'cosplayer' && (
+              <CosplayerProfileFields control={form.control} />
+            )}
 
             <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
               <div className='flex flex-row space-x-2'></div>

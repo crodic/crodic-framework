@@ -1,10 +1,15 @@
 import { OmitType } from '@nestjs/swagger';
-import { CreateUserReqDto } from './create-user.req.dto';
 import {
+  BooleanField,
+  ClassFieldOptional,
   EnumFieldOptional,
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
 import { EUserRole } from '../constants/user.constant';
+import {
+  AdminCosplayerProfileInputDto,
+  CreateUserReqDto,
+} from './create-user.req.dto';
 
 export class UpdateUserReqDto extends OmitType(CreateUserReqDto, [
   'email',
@@ -14,6 +19,14 @@ export class UpdateUserReqDto extends OmitType(CreateUserReqDto, [
   @EnumFieldOptional(() => EUserRole)
   role?: EUserRole;
 
-  @StringFieldOptional()
+  @StringFieldOptional({ maxLength: 80 })
   username?: string;
+
+  @ClassFieldOptional(() => AdminCosplayerProfileInputDto)
+  cosplayerProfile?: AdminCosplayerProfileInputDto;
+}
+
+export class HandleCosplayerRequestReqDto {
+  @BooleanField()
+  approved!: boolean;
 }

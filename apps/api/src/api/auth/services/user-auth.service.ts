@@ -473,6 +473,7 @@ export class UserAuthService extends AuthService<
   private async createLoginResponse(
     user: UserEntity,
     requestInfo?: SessionRequestInfo,
+    isNewUser = false,
   ): Promise<UserLoginResDto> {
     const { tokens } = await this.createLoginSessionAndTokens(
       user.id,
@@ -482,6 +483,7 @@ export class UserAuthService extends AuthService<
     return plainToInstance(UserLoginResDto, {
       userId: user.id,
       ...tokens,
+      needsOnboarding: isNewUser || !user.username,
     });
   }
 
@@ -577,12 +579,14 @@ export class UserAuthService extends AuthService<
     let user = await this.userRepository.findOne({
       where: { email: profile.email },
     });
+    let isNewUser = false;
 
     const persistSocialUser = async (
       userRepo: Repository<UserEntity>,
       accountRepo: Repository<UserAccountEntity>,
     ) => {
       if (!user) {
+        isNewUser = true;
         user = await userRepo.save({
           firstName: profile.firstName || profile.displayName || 'User',
           lastName: profile.lastName || '',
@@ -641,7 +645,7 @@ export class UserAuthService extends AuthService<
           this.userAccountRepository,
         );
 
-    return this.createLoginResponse(resolvedUser, requestInfo);
+    return this.createLoginResponse(resolvedUser, requestInfo, isNewUser);
   }
 
   private async linkSocialAccount(

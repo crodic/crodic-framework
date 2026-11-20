@@ -27,6 +27,40 @@ import type { ImagePayload } from "@/components/form/types";
 import { TagPicker } from "./tag-picker";
 import { getAlbumSchema, type CreateAlbumFormValues } from "./schema";
 
+export function captureVideoPoster(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.src = URL.createObjectURL(file);
+    video.muted = true;
+    video.playsInline = true;
+    video.currentTime = 0.2;
+    video.onloadeddata = () => {
+      video.currentTime = 0.2;
+    };
+    video.onseeked = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 720;
+      canvas.height = video.videoHeight || 1280;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(video.src);
+          if (blob) resolve(blob);
+          else reject(new Error("Failed to capture video poster"));
+        },
+        "image/jpeg",
+        0.85
+      );
+    };
+    video.onerror = (e) => {
+      URL.revokeObjectURL(video.src);
+      reject(e);
+    };
+  });
+}
+
 export interface CreateAlbumFormProps {
   onSuccess?: (values: CreateAlbumFormValues) => void;
   onCancel?: () => void;
@@ -34,6 +68,9 @@ export interface CreateAlbumFormProps {
   isMobile?: boolean;
   imagesPayload?: ImagePayload[];
   coverIndex?: number | null;
+  postType?: "photoset" | "video";
+  videoFile?: File | null;
+  customCoverFile?: File | null;
 }
 
 export function CreateAlbumForm({
@@ -43,6 +80,9 @@ export function CreateAlbumForm({
   isMobile = false,
   imagesPayload = [],
   coverIndex = 0,
+  postType = "photoset",
+  videoFile = null,
+  customCoverFile = null,
 }: CreateAlbumFormProps) {
   const t = useTranslations("Studio");
   const tCommon = useTranslations("Common");
@@ -69,6 +109,58 @@ export function CreateAlbumForm({
 
   const createPostMutation = useMutation({
     mutationFn: async (values: CreateAlbumFormValues) => {
+      if (postType === "video") {
+        if (!videoFile) {
+          throw new Error("Vui lòng tải lên một tệp video (MP4, WebM, MOV)!");
+        }
+
+        let coverBlob: Blob;
+        if (customCoverFile) {
+          coverBlob = customCoverFile;
+        } else {
+          try {
+            coverBlob = await captureVideoPoster(videoFile);
+          } catch {
+            throw new Error(
+              "Không thể tạo ảnh bìa từ video. Vui lòng chọn ảnh bìa tùy chỉnh!"
+            );
+          }
+        }
+
+        const coverFileToUpload =
+          coverBlob instanceof File
+            ? coverBlob
+            : new File([coverBlob], "cover.jpg", { type: "image/jpeg" });
+
+        const [videoRes, coverRes] = await Promise.all([
+          uploadMyMedia(videoFile, "videos"),
+          uploadMyMedia(coverFileToUpload, "covers"),
+        ]);
+
+        const created = await createPost({
+          title: values.title,
+          caption: values.description,
+          postType: "video",
+          albumCategory: "series",
+          characterName: values.character || undefined,
+          fandomName: values.fandom || undefined,
+          isPublic: values.isPublic,
+          enableWatermark: values.enableWatermark,
+          tags: values.tags,
+          coverImageUrl: coverRes.url,
+          media: [
+            {
+              mediaUrl: videoRes.url,
+              mediaType: "video",
+              sortOrder: 0,
+              isCover: true,
+            },
+          ],
+        });
+
+        return { created, values };
+      }
+
       const newPayloads = (imagesPayload || []).filter(
         (p): p is ImagePayload & { type: "new" } => p.type === "new"
       );
@@ -88,12 +180,6 @@ export function CreateAlbumForm({
           sortOrder: item.order ?? i,
           isCover: coverIndex === i || (coverIndex === null && i === 0),
         });
-      }
-
-      if (uploadedMediaList.length === 0) {
-        throw new Error(
-          t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!"
-        );
       }
 
       if (uploadedMediaList.length === 0) {
@@ -145,7 +231,12 @@ export function CreateAlbumForm({
   const isSubmitting = createPostMutation.isPending;
 
   const onSubmit = (values: CreateAlbumFormValues) => {
-    if (!imagesPayload || imagesPayload.length === 0) {
+    if (postType === "video") {
+      if (!videoFile) {
+        toast.error("Vui lòng chọn video để đăng tải!");
+        return;
+      }
+    } else if (!imagesPayload || imagesPayload.length === 0) {
       toast.error(t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!");
       return;
     }

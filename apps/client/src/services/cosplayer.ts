@@ -60,6 +60,8 @@ export interface CosplayerDetailResDto extends CosplayerSummaryResDto {
   followingCount: number;
   collectionsCount: number;
   characters: CosplayerCharacterResDto[];
+  role?: string;
+  cosplayerRequestPending?: boolean;
   updatedAt: string;
 }
 
@@ -131,6 +133,14 @@ export const updateMyCosplayerProfile = async (
   );
   return data;
 };
+
+export const requestCosplayerRole =
+  async (): Promise<CosplayerDetailResDto> => {
+    const { data } = await http.post<CosplayerDetailResDto>(
+      "/api/v1/cosplayer/me/request-role"
+    );
+    return data;
+  };
 
 export const uploadMyCover = async (
   file: File

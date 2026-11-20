@@ -42,11 +42,15 @@ export class SpotlightService {
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
 
-    const profileMap = await this.loadProfileMap(
-      banners.map((b) => b.cosplayerUserId),
+    const activeBanners = banners.filter(
+      (b) => b.cosplayerUser !== null && !b.cosplayerUser?.deletedAt,
     );
 
-    return banners.map((b) =>
+    const profileMap = await this.loadProfileMap(
+      activeBanners.map((b) => b.cosplayerUserId),
+    );
+
+    return activeBanners.map((b) =>
       this.toBannerDto(b, profileMap.get(String(b.cosplayerUserId))),
     );
   }

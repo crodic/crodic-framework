@@ -109,7 +109,7 @@ export function PostStandaloneView({
 
         <div className="flex items-center gap-2">
           {/* View Mode Switcher for multi-photo sets */}
-          {photos.length > 1 && (
+          {photos.length > 1 && post.postType !== "video" && !post.videoUrl && (
             <div className="border-border/60 bg-card/70 flex items-center gap-1 rounded-2xl border p-1 shadow-xs backdrop-blur-md">
               <button
                 type="button"
@@ -161,7 +161,21 @@ export function PostStandaloneView({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start lg:gap-8">
         {/* Left Column: Artwork Showcase Stage */}
         <div className="min-w-0 lg:col-span-7 xl:col-span-8">
-          {viewMode === "scroll" ? (
+          {post.postType === "video" || Boolean(post.videoUrl) ? (
+            <div className="border-border/60 relative overflow-hidden rounded-2xl border bg-black shadow-2xl sm:rounded-3xl">
+              <video
+                src={
+                  post.videoUrl || (post.media && post.media[0]?.mediaUrl) || ""
+                }
+                poster={post.coverImageUrl}
+                controls
+                autoPlay
+                playsInline
+                preload="auto"
+                className="aspect-video max-h-[85vh] w-full object-contain"
+              />
+            </div>
+          ) : viewMode === "scroll" ? (
             /* Vertical Scroll Gallery Mode (ArtStation / Behance Style) */
             <div className="space-y-4 sm:space-y-6">
               {photos.map((photo, index) => (

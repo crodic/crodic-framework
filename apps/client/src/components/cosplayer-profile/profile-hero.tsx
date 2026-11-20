@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   Camera,
   Check,
+  Clock,
   Copy,
   ExternalLink,
   Eye,
@@ -18,6 +19,7 @@ import {
   Pencil,
   Plus,
   Settings,
+  Sparkles,
   Award,
   Share2,
 } from "lucide-react";
@@ -52,6 +54,7 @@ import { createMessageFormSchema, type MessageFormValues } from "./schema";
 import {
   uploadMyCover,
   uploadMyAvatar,
+  requestCosplayerRole,
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
 import { toggleFollow, checkIsFollowing } from "@/services/social";
@@ -124,6 +127,23 @@ export function ProfileHero({
     setFollowersCount(profile.followersCount || 0);
     setLikesCount(profile.totalLikesCount || 0);
   }, [profile.followersCount, profile.totalLikesCount]);
+
+  const requestRoleMutation = useMutation({
+    mutationFn: requestCosplayerRole,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["my-cosplayer-profile"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(
+        "Đã gửi yêu cầu nâng cấp vai trò Cosplayer đến Admin phê duyệt!"
+      );
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Không thể gửi yêu cầu");
+    },
+  });
 
   const followMutation = useMutation({
     mutationFn: (targetUserId: string) => toggleFollow(targetUserId),
@@ -443,6 +463,32 @@ export function ProfileHero({
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
+                {profile.role !== "cosplayer" &&
+                  (profile.cosplayerRequestPending ? (
+                    <Badge
+                      variant="outline"
+                      className="h-10 gap-1.5 rounded-xl border-amber-500/40 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 dark:text-amber-300"
+                    >
+                      <Clock className="size-3.5" />
+                      <span>Chờ duyệt Cosplayer</span>
+                    </Badge>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => requestRoleMutation.mutate()}
+                      disabled={requestRoleMutation.isPending}
+                      className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-3.5 text-xs font-semibold"
+                    >
+                      {requestRoleMutation.isPending ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="size-3.5" />
+                      )}
+                      <span>Đăng ký Cosplayer</span>
+                    </Button>
+                  ))}
+
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}

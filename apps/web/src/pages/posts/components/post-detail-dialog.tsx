@@ -23,11 +23,21 @@ export function PostDetailDialog({
   onOpenChange,
 }: PostDetailDialogProps) {
   const { t } = useTranslation()
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
 
   if (!post) return null
 
-  const activeImage = selectedImage || post.coverImageUrl
+  const videoItem = post.media?.find((m) => m.mediaType === 'video')
+  const fallbackVideoUrl = post.videoUrl || videoItem?.mediaUrl || null
+  const activeUrl =
+    selectedUrl ||
+    (post.postType === 'video' && fallbackVideoUrl
+      ? fallbackVideoUrl
+      : post.coverImageUrl)
+  const selectedMedia = post.media?.find((m) => m.mediaUrl === activeUrl)
+  const isActiveVideo =
+    selectedMedia?.mediaType === 'video' ||
+    (Boolean(fallbackVideoUrl) && activeUrl === fallbackVideoUrl)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,13 +58,23 @@ export function PostDetailDialog({
 
         <ScrollArea className='flex-1 pr-3'>
           <div className='space-y-4'>
-            {/* Main Preview Image */}
+            {/* Main Preview Image or Video */}
             <div className='bg-muted/40 relative flex h-80 w-full items-center justify-center overflow-hidden rounded-lg border'>
-              <img
-                src={activeImage}
-                alt={post.title}
-                className='h-full w-full object-contain'
-              />
+              {isActiveVideo && activeUrl ? (
+                <video
+                  src={activeUrl}
+                  poster={post.coverImageUrl}
+                  controls
+                  playsInline
+                  className='h-full w-full bg-black object-contain'
+                />
+              ) : (
+                <img
+                  src={activeUrl}
+                  alt={post.title}
+                  className='h-full w-full object-contain'
+                />
+              )}
             </div>
 
             {/* Media Gallery Thumbnails if multiple */}
@@ -64,18 +84,26 @@ export function PostDetailDialog({
                   <button
                     key={m.id || idx}
                     type='button'
-                    onClick={() => setSelectedImage(m.mediaUrl)}
+                    onClick={() => setSelectedUrl(m.mediaUrl)}
                     className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border transition-all ${
-                      activeImage === m.mediaUrl
+                      activeUrl === m.mediaUrl
                         ? 'ring-primary border-primary ring-2'
                         : 'opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img
-                      src={m.mediaUrl}
-                      alt={m.caption || `photo-${idx}`}
-                      className='h-full w-full object-cover'
-                    />
+                    {m.mediaType === 'video' ? (
+                      <video
+                        src={m.mediaUrl}
+                        muted
+                        className='h-full w-full bg-black object-cover'
+                      />
+                    ) : (
+                      <img
+                        src={m.mediaUrl}
+                        alt={m.caption || `photo-${idx}`}
+                        className='h-full w-full object-cover'
+                      />
+                    )}
                   </button>
                 ))}
               </div>

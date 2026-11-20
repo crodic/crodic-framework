@@ -25,7 +25,10 @@ import {
   PaginateQuery,
 } from 'nestjs-paginate';
 import { CreateUserReqDto } from './dto/create-user.req.dto';
-import { UpdateUserReqDto } from './dto/update-user.req.dto';
+import {
+  HandleCosplayerRequestReqDto,
+  UpdateUserReqDto,
+} from './dto/update-user.req.dto';
 import { UserResDto } from './dto/user.res.dto';
 import { UserService } from './user.service';
 
@@ -142,6 +145,22 @@ Response includes paginated data, metadata, and navigation links.`,
   )
   toggleCosplayerVerify(@Param('id') id: AutoIncrementID): Promise<UserResDto> {
     return this.userService.toggleCosplayerVerify(id);
+  }
+
+  @Patch(':id/cosplayer-request')
+  @ApiAuth({
+    type: UserResDto,
+    summary: 'Approve or reject a user request to become a Cosplayer',
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Update, AppSubjects.User),
+  )
+  handleCosplayerRequest(
+    @Param('id') id: AutoIncrementID,
+    @Body() dto: HandleCosplayerRequestReqDto,
+  ): Promise<UserResDto> {
+    return this.userService.handleCosplayerRequest(id, dto.approved);
   }
 
   @Delete(':id')

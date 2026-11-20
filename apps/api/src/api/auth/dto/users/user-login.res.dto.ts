@@ -1,4 +1,5 @@
 import {
+  BooleanFieldOptional,
   NumberField,
   StringField,
 } from '../../../../decorators/field.decorators';
@@ -18,4 +19,8 @@ export class UserLoginResDto extends LoginResDto {
   @Expose()
   @NumberField()
   declare tokenExpires: number;
+
+  @Expose()
+  @BooleanFieldOptional()
+  needsOnboarding?: boolean;
 }

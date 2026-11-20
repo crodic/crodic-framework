@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { Images, Eye, Calendar } from "lucide-react";
+import { Images, Eye, Calendar, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -80,6 +80,13 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
             >
               {/* Cover Image Container */}
               <div className="bg-muted/40 border-border/50 group-hover:border-primary/50 relative aspect-[4/5] w-full overflow-hidden rounded-2xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-3xl">
+                {/* Video Badge */}
+                {(album.postType === "video" || Boolean(album.videoUrl)) && (
+                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">
+                    <Video className="size-3 text-pink-400" />
+                    <span>Video</span>
+                  </div>
+                )}
                 {album.coverImageUrl && (
                   <Image
                     src={album.coverImageUrl}

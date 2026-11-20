@@ -5,14 +5,7 @@ import { getEvents } from "@/services/events";
 import { getPosts } from "@/services/posts";
 import { getCosplayers } from "@/services/cosplayer";
 
-export async function generateSitemaps() {
-  return [
-    { id: "pages" },
-    { id: "events" },
-    { id: "posts" },
-    { id: "cosplayers" },
-  ];
-}
+export const dynamic = "force-dynamic";
 
 type SitemapFrequency = NonNullable<
   MetadataRoute.Sitemap[number]["changeFrequency"]
@@ -37,7 +30,17 @@ function buildLocalizedEntries(
   }));
 }
 
-export default async function sitemap(props: {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const sections = ["pages", "events", "posts", "cosplayers"] as const;
+  const results = await Promise.allSettled(
+    sections.map((id) => sitemapSection({ id }))
+  );
+  return results.flatMap((result) =>
+    result.status === "fulfilled" ? result.value : []
+  );
+}
+
+async function sitemapSection(props: {
   id: Promise<string> | string;
 }): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

@@ -63,6 +63,16 @@ export class CosplayerUserController {
     return this.cosplayerService.updateProfile(userId, dto);
   }
 
+  @Post('me/request-role')
+  @ApiAuth({
+    type: CosplayerDetailResDto,
+    summary: 'Submit request to Admin to upgrade account role to Cosplayer',
+    statusCode: HttpStatus.OK,
+  })
+  requestCosplayerRole(@CurrentUser('id') userId: AutoIncrementID) {
+    return this.cosplayerService.requestCosplayerRole(userId);
+  }
+
   @Post('me/cover')
   @ApiAuth({
     summary: 'Upload current user profile cover image',
@@ -148,14 +158,19 @@ export class CosplayerUserController {
     if (!file) {
       throw new BadRequestException('Media file is required');
     }
-    const allowed = /^image\/(png|webp|jpeg|jpg|gif)$/;
-    if (!allowed.test(file.mimetype)) {
+    const allowedImage = /^image\/(png|webp|jpeg|jpg|gif)$/;
+    const allowedVideo = /^video\/(mp4|webm|quicktime)$/;
+    const isVideo = allowedVideo.test(file.mimetype);
+    if (!allowedImage.test(file.mimetype) && !isVideo) {
       throw new BadRequestException(
-        'Invalid file type. Supported: PNG, WEBP, JPEG, GIF',
+        'Invalid file type. Supported images: PNG, WEBP, JPEG, GIF; videos: MP4, WEBM, MOV',
       );
     }
-    if (file.size > 15 * 1024 * 1024) {
-      throw new BadRequestException('File too large (max 15MB)');
+    const maxSize = isVideo ? 100 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException(
+        isVideo ? 'Video too large (max 100MB)' : 'File too large (max 15MB)',
+      );
     }
     return this.cosplayerService.uploadMedia(userId, file, folder);
   }

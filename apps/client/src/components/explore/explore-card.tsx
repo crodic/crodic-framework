@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { BadgeCheck, Bookmark, Heart } from "lucide-react";
+import { BadgeCheck, Bookmark, Heart, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { PostSummaryResDto } from "@/services/posts";
 import { usePostLike } from "@/hooks/use-post-like";
@@ -56,6 +56,14 @@ export function ExploreCard({ item }: ExploreCardProps) {
 
         {/* Subtle hover gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Top-Left Video Short Badge */}
+        {(item.postType === "video" || Boolean(item.videoUrl)) && (
+          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">
+            <Video className="size-3 text-pink-400" />
+            <span>Video</span>
+          </div>
+        )}
 
         {/* Top-Right Tag Badge from Tag Management */}
         {(item.tagNamesCache?.[0] || item.characterName || item.fandomName) && (

@@ -1261,6 +1261,16 @@
     "postWork": "Post work",
     "photoAlbum": "Photo album",
     "videoReel": "Video reel",
+    "videoPostType": "Video Short",
+    "photoPostType": "Photoset",
+    "videoUploadLabel": "Upload Video",
+    "videoDropzone": "Drag & drop video here or click to select",
+    "videoLimitHint": "Supports MP4, WebM, MOV up to 100MB.",
+    "customCoverLabel": "Video Cover (Thumbnail)",
+    "customCoverHint": "A cover frame is extracted automatically from the video. You can also upload a custom thumbnail.",
+    "changeVideo": "Change video",
+    "uploadCustomCover": "Upload custom cover",
+    "removeCustomCover": "Remove custom cover",
     "tagCharacter": "Tag character",
     "valTitle": "Album title is required",
     "valCharacter": "Cosplayed character is required",
@@ -1384,7 +1394,9 @@
       "locationLabel": "Location",
       "specialtiesLabel": "Interests",
       "exploreBtn": "Start Exploring",
-      "profileBtn": "View My Profile"
+      "profileBtn": "View My Profile",
+      "pendingRoleTitle": "Cosplayer role request is pending Admin approval",
+      "pendingRoleDesc": "Your profile is ready and will appear on the leaderboard and explore feed once reviewed by Admin."
     },
     "toasts": {
       "savedSuccess": "Profile configured successfully!",

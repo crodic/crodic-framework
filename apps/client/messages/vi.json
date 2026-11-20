@@ -1261,6 +1261,16 @@
     "postWork": "Đăng tác phẩm",
     "photoAlbum": "Album ảnh",
     "videoReel": "Video ngắn",
+    "videoPostType": "Video Short",
+    "photoPostType": "Bộ ảnh",
+    "videoUploadLabel": "Tải lên Video",
+    "videoDropzone": "Kéo thả video vào đây hoặc nhấn để chọn tệp",
+    "videoLimitHint": "Hỗ trợ MP4, WebM, MOV tối đa 100MB.",
+    "customCoverLabel": "Ảnh bìa video (Thumbnail)",
+    "customCoverHint": "Hệ thống sẽ tự động trích xuất frame đầu tiên. Bạn cũng có thể tải lên ảnh bìa tùy chỉnh.",
+    "changeVideo": "Chọn video khác",
+    "uploadCustomCover": "Tải ảnh bìa tùy chỉnh",
+    "removeCustomCover": "Xóa ảnh bìa tùy chỉnh",
     "tagCharacter": "Gắn thẻ nhân vật",
     "valTitle": "Vui lòng nhập tiêu đề album",
     "valCharacter": "Vui lòng nhập nhân vật cosplay",
@@ -1384,7 +1394,9 @@
       "locationLabel": "Khu vực",
       "specialtiesLabel": "Quan tâm",
       "exploreBtn": "Khám phá cộng đồng ngay",
-      "profileBtn": "Xem trang cá nhân của tôi"
+      "profileBtn": "Xem trang cá nhân của tôi",
+      "pendingRoleTitle": "Yêu cầu vai trò Cosplayer đang chờ Admin phê duyệt",
+      "pendingRoleDesc": "Hồ sơ của bạn đã sẵn sàng và sẽ xuất hiện đầy đủ trên bảng xếp hạng và trang khám phá khi Admin duyệt."
     },
     "toasts": {
       "savedSuccess": "Đã thiết lập hồ sơ thành công!",

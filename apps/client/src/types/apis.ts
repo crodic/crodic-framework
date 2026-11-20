@@ -3,10 +3,13 @@ export type LoginResponseData = {
   refreshToken: string;
   userId: string;
   tokenExpires: number;
+  needsOnboarding?: boolean;
 };
 
 export type User = {
   id: string;
+  username?: string | null;
+  role?: "fan" | "cosplayer" | string;
   email: string;
   firstName: string;
   lastName: string;
@@ -15,6 +18,7 @@ export type User = {
   hasPassword: boolean;
   verifiedAt: string | null;
   notifications?: Record<string, boolean>;
+  cosplayerRequestPending?: boolean;
   createdAt: string;
   updatedAt: string;
 };

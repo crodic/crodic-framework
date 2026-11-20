@@ -17,6 +17,7 @@ import {
 import { FilesystemService } from '../../../filesystem/filesystem.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
+import { EUserRole } from '../../user/constants/user.constant';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
@@ -66,7 +67,8 @@ export class CosplayerService {
   ): Promise<Paginated<CosplayerSummaryResDto>> {
     const baseQb = this.profileRepo
       .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user');
+      .leftJoinAndSelect('profile.user', 'user')
+      .where('user.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -128,7 +130,8 @@ export class CosplayerService {
   ): Promise<CosplayerSummaryResDto[]> {
     const qb = this.profileRepo
       .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user');
+      .leftJoinAndSelect('profile.user', 'user')
+      .where('user.deletedAt IS NULL');
 
     if (currentUserId) {
       qb.andWhere('profile.userId != :currentUserId', { currentUserId });
@@ -160,7 +163,7 @@ export class CosplayerService {
       relations: ['user'],
     });
 
-    if (!profile) {
+    if (!profile || profile.user === null || profile.user?.deletedAt) {
       throw new NotFoundException(`Cosplayer "${slugOrHandle}" not found`);
     }
 
@@ -262,20 +265,26 @@ export class CosplayerService {
       });
     }
 
-    if (
-      dto.handle &&
-      dto.handle.replace(/^@+/, '').trim().toLowerCase() !== profile.slug
-    ) {
+    if (dto.handle) {
       const rawHandle = dto.handle.replace(/^@+/, '').trim();
       const cleanSlug = slugify(rawHandle) || rawHandle.toLowerCase();
-      const existing = await this.profileRepo.findOne({
-        where: { slug: cleanSlug },
-      });
-      if (existing && String(existing.userId) !== String(userId)) {
-        throw new ConflictException(`Handle "@${cleanSlug}" is already taken`);
+      if (cleanSlug && cleanSlug !== profile.slug) {
+        const existing = await this.profileRepo.findOne({
+          where: { slug: cleanSlug },
+        });
+        if (existing && String(existing.userId) !== String(userId)) {
+          throw new ConflictException(
+            `Handle "@${cleanSlug}" is already taken`,
+          );
+        }
+        profile.slug = cleanSlug;
       }
-      profile.slug = cleanSlug;
-      await this.userRepo.update({ id: userId }, { username: cleanSlug });
+      if (cleanSlug && cleanSlug !== profile.user?.username) {
+        await this.userRepo.update({ id: userId }, { username: cleanSlug });
+        if (profile.user) {
+          profile.user.username = cleanSlug;
+        }
+      }
     }
 
     if (dto.displayName !== undefined) profile.displayName = dto.displayName;
@@ -313,6 +322,28 @@ export class CosplayerService {
     });
 
     return this.toDetailDto(profile, characters);
+  }
+
+  /**
+   * Mark current user as requesting Admin approval to become a Cosplayer.
+   */
+  async requestCosplayerRole(
+    userId: AutoIncrementID,
+  ): Promise<CosplayerDetailResDto> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== EUserRole.COSPLAYER) {
+      user.notifications = {
+        ...(user.notifications || {}),
+        cosplayerRoleRequested: true,
+      };
+      await this.userRepo.save(user);
+    }
+
+    return this.getMyProfile(userId);
   }
 
   /**
@@ -404,9 +435,16 @@ export class CosplayerService {
     }
 
     const cleanFolder = (folder || 'posts').replace(/[^a-z0-9_-]/gi, '');
+    const defaultExt = file.mimetype.startsWith('video/webm')
+      ? '.webm'
+      : file.mimetype === 'video/quicktime'
+        ? '.mov'
+        : file.mimetype.startsWith('video/')
+          ? '.mp4'
+          : '.jpg';
     const ext = file.originalname.includes('.')
       ? file.originalname.substring(file.originalname.lastIndexOf('.'))
-      : '.jpg';
+      : defaultExt;
     const filename = `${cleanFolder}/user-${userId}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
 
     await this.filesystemService
@@ -603,6 +641,11 @@ export class CosplayerService {
       followingCount: Number(p.user?.followingCount ?? 0),
       collectionsCount: Number(p.user?.collectionsCount ?? 0),
       characters: characters.map((c) => this.toCharacterDto(c)),
+      role: p.user?.role,
+      cosplayerRequestPending: Boolean(
+        p.user?.notifications?.cosplayerRoleRequested &&
+        p.user?.role !== EUserRole.COSPLAYER,
+      ),
       updatedAt: p.updatedAt,
     };
   }

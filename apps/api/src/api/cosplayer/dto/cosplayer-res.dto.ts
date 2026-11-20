@@ -219,6 +219,12 @@ export class CosplayerDetailResDto extends CosplayerSummaryResDto {
   @ApiProperty({ type: () => [CosplayerCharacterResDto] })
   characters!: CosplayerCharacterResDto[];
 
+  @ApiPropertyOptional({ example: 'fan' })
+  role?: string;
+
+  @ApiPropertyOptional({ example: false })
+  cosplayerRequestPending?: boolean;
+
   @ApiProperty()
   updatedAt!: Date;
 }

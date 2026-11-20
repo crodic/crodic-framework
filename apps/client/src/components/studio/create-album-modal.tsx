@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogClose,
@@ -20,25 +20,37 @@ import {
 import SortableImageUpload from "@/components/form/sortable-image-upload";
 import type { ImagePayload } from "@/components/form/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { X } from "lucide-react";
+import { X, Images, Film } from "lucide-react";
 import { CreateAlbumForm } from "./create-album-form";
+import { VideoUploadSection } from "./video-upload-section";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export interface CreateAlbumModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: React.ReactNode;
+  initialPostType?: "photoset" | "video";
 }
 
 export function CreateAlbumModal({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   trigger,
+  initialPostType = "photoset",
 }: CreateAlbumModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [postType, setPostType] = useState<"photoset" | "video">(
+    initialPostType
+  );
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [customCoverFile, setCustomCoverFile] = useState<File | null>(null);
+  const [imagesPayload, setImagesPayload] = useState<ImagePayload[]>([]);
+  const [coverIndex, setCoverIndex] = useState<number | null>(0);
+
   const isMobile = useIsMobile();
   const router = useRouter();
   const t = useTranslations("Studio");
@@ -47,6 +59,12 @@ export function CreateAlbumModal({
 
   const isControlled = typeof controlledOpen === "boolean";
   const isOpen = isControlled ? controlledOpen : internalOpen;
+
+  useEffect(() => {
+    if (isOpen && initialPostType) {
+      setPostType(initialPostType);
+    }
+  }, [isOpen, initialPostType]);
 
   const handleOpenChange = (val: boolean) => {
     if (val && !isAuthenticated) {
@@ -63,10 +81,38 @@ export function CreateAlbumModal({
 
   const setIsOpen = handleOpenChange;
 
-  const [imagesPayload, setImagesPayload] = useState<ImagePayload[]>([]);
-  const [coverIndex, setCoverIndex] = useState<number | null>(0);
+  const typeSwitcher = (
+    <div className="border-border/60 bg-muted/40 mb-4 flex items-center gap-1.5 rounded-xl border p-1">
+      <button
+        type="button"
+        onClick={() => setPostType("photoset")}
+        className={cn(
+          "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all",
+          postType === "photoset"
+            ? "bg-background text-foreground shadow-xs"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <Images className="size-3.5 text-purple-400" />
+        <span>{t("photoPostType")}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setPostType("video")}
+        className={cn(
+          "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all",
+          postType === "video"
+            ? "bg-background text-foreground shadow-xs"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <Film className="size-3.5 text-pink-400" />
+        <span>{t("videoPostType")}</span>
+      </button>
+    </div>
+  );
 
-  // Common content for both dialog and drawer
+  // Common content for image upload
   const sortableUploadSection = (
     <SortableImageUpload
       variant="studio"
@@ -82,6 +128,22 @@ export function CreateAlbumModal({
       }
       className="max-none w-full"
     />
+  );
+
+  const mediaSection = (
+    <div>
+      {typeSwitcher}
+      {postType === "photoset" ? (
+        sortableUploadSection
+      ) : (
+        <VideoUploadSection
+          videoFile={videoFile}
+          onVideoFileChange={setVideoFile}
+          customCoverFile={customCoverFile}
+          onCustomCoverFileChange={setCustomCoverFile}
+        />
+      )}
+    </div>
   );
 
   if (isMobile) {
@@ -111,7 +173,7 @@ export function CreateAlbumModal({
 
           <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
             {/* Upload Area */}
-            <div>{sortableUploadSection}</div>
+            <div>{mediaSection}</div>
 
             {/* Form Fields */}
             <div className="border-border/60 border-t pt-4">
@@ -119,6 +181,9 @@ export function CreateAlbumModal({
                 isMobile={true}
                 imagesPayload={imagesPayload}
                 coverIndex={coverIndex}
+                postType={postType}
+                videoFile={videoFile}
+                customCoverFile={customCoverFile}
                 onSuccess={() => setIsOpen(false)}
                 onCancel={() => setIsOpen(false)}
               />
@@ -141,9 +206,9 @@ export function CreateAlbumModal({
         </DialogHeader>
 
         <div className="flex max-h-[88vh] flex-col overflow-hidden md:flex-row">
-          {/* Left Column: Image grid (58%) */}
+          {/* Left Column: Media Section (58%) */}
           <div className="border-border/60 flex flex-1 flex-col overflow-y-auto border-r p-6 md:w-[58%]">
-            {sortableUploadSection}
+            {mediaSection}
           </div>
 
           {/* Right Column: Studio Upload Form (42%) */}
@@ -172,6 +237,9 @@ export function CreateAlbumModal({
               <CreateAlbumForm
                 imagesPayload={imagesPayload}
                 coverIndex={coverIndex}
+                postType={postType}
+                videoFile={videoFile}
+                customCoverFile={customCoverFile}
                 onSuccess={() => setIsOpen(false)}
                 onCancel={() => setIsOpen(false)}
               />

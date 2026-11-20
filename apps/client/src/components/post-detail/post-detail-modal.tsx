@@ -206,9 +206,26 @@ export function PostDetailModal({ post, comments = [] }: PostDetailModalProps) {
 
             {/* Mobile Scrollable Body: Single Continuous Scroll */}
             <div className="flex-1 overflow-y-auto">
-              {/* Photo Showcase Stage */}
+              {/* Photo / Video Showcase Stage */}
               <div className="w-full bg-zinc-950">
-                <PostCarousel photos={photos} title={post.title} />
+                {post.postType === "video" || Boolean(post.videoUrl) ? (
+                  <div className="aspect-video w-full bg-black">
+                    <video
+                      src={
+                        post.videoUrl ||
+                        (post.media && post.media[0]?.mediaUrl) ||
+                        ""
+                      }
+                      poster={post.coverImageUrl}
+                      controls
+                      autoPlay
+                      playsInline
+                      className="size-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <PostCarousel photos={photos} title={post.title} />
+                )}
               </div>
 
               {/* Post Details & Threaded Comments */}
@@ -228,9 +245,26 @@ export function PostDetailModal({ post, comments = [] }: PostDetailModalProps) {
           {/* DESKTOP EXPERIENCE (>= md): High-End Theater 2-Column    */}
           {/* ======================================================== */}
           <div className="hidden flex-1 overflow-hidden md:grid md:h-[680px] md:grid-cols-12 md:overflow-hidden lg:h-[760px] xl:h-[800px]">
-            {/* Photo Carousel Stage */}
+            {/* Photo / Video Showcase Stage */}
             <div className="border-border/40 relative h-full shrink-0 overflow-hidden border-r bg-zinc-950 md:col-span-7 lg:col-span-8">
-              <PostCarousel photos={photos} title={post.title} />
+              {post.postType === "video" || Boolean(post.videoUrl) ? (
+                <div className="flex size-full items-center justify-center bg-black">
+                  <video
+                    src={
+                      post.videoUrl ||
+                      (post.media && post.media[0]?.mediaUrl) ||
+                      ""
+                    }
+                    poster={post.coverImageUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <PostCarousel photos={photos} title={post.title} />
+              )}
             </div>
 
             {/* Right Column: Author, Metadata & Threaded Comments */}

@@ -40,6 +40,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useProfile, PROFILE_QUERY_KEY } from "@/hooks/use-profile";
 import {
   getMyCosplayerProfile,
+  requestCosplayerRole,
   updateMyCosplayerProfile,
   type CosplayerDetailResDto,
 } from "@/services/cosplayer";
@@ -224,6 +225,17 @@ export function OnboardingWizard() {
         specialties: selectedSpecialties,
         bio: bio.trim() || undefined,
       });
+
+      if (
+        (selectedRole === "cosplayer" || selectedRole === "photographer") &&
+        userProfile?.role !== "cosplayer"
+      ) {
+        try {
+          await requestCosplayerRole();
+        } catch {
+          // Non-blocking if already requested
+        }
+      }
 
       await queryClient.invalidateQueries({
         queryKey: ["my-cosplayer-profile"],
@@ -707,6 +719,20 @@ export function OnboardingWizard() {
                     </div>
                   )}
                 </div>
+
+                {/* Role Request Notice */}
+                {(selectedRole === "cosplayer" ||
+                  selectedRole === "photographer") &&
+                  userProfile?.role !== "cosplayer" && (
+                    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-left">
+                      <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                        {t("step3.pendingRoleTitle")}
+                      </p>
+                      <p className="text-muted-foreground mt-0.5 text-xs">
+                        {t("step3.pendingRoleDesc")}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Destination CTAs */}
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center">

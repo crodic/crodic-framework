@@ -6,12 +6,7 @@ import {
   type PaginateQueryParams,
 } from '@/global'
 import http from '@/lib/http'
-import {
-  type UserCreateSchema,
-  type UserEditSchema,
-  userSchema,
-  type UserSchema,
-} from './schema'
+import { userSchema, type UserSchema } from './schema'
 
 async function getUserListing(
   params: PaginateQueryParams
@@ -39,7 +34,17 @@ export async function apiToggleCosplayerVerify(id: string) {
   return await http.patch(`/users/${id}/cosplayer-verify`)
 }
 
-export async function apiCreateUser(data: UserCreateSchema) {
+export async function apiHandleCosplayerRequest({
+  id,
+  approved,
+}: {
+  id: string
+  approved: boolean
+}) {
+  return await http.patch(`/users/${id}/cosplayer-request`, { approved })
+}
+
+export async function apiCreateUser(data: Record<string, unknown>) {
   return await http.post('/users', data)
 }
 
@@ -54,7 +59,7 @@ export async function apiEditUser({
   data,
 }: {
   id: string
-  data: UserEditSchema
+  data: Record<string, unknown>
 }) {
   return await http.put(`/users/${id}`, data)
 }

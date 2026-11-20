@@ -5,6 +5,12 @@ import { ClsService } from 'nestjs-cls';
 import { DataSource, Repository } from 'typeorm';
 import { UserAccountRecoveryService } from '../auth/services/user-account-recovery.service';
 import { UserSessionEntity } from '../auth/entities/user-session.entity';
+import { CollectionEntity } from '../collection/entities/collection.entity';
+import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
+import { NotificationEntity } from '../notification/entities/notification.entity';
+import { PostCommentEntity } from '../post/entities/post-comment.entity';
+import { PostEntity } from '../post/entities/post.entity';
+import { EUserRole } from './constants/user.constant';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
@@ -20,6 +26,13 @@ describe('UserService', () => {
   let userSessionRepositoryValue: Partial<
     Record<keyof Repository<UserSessionEntity>, jest.Mock>
   >;
+  let cascadeRepositoryMock: {
+    softDelete: jest.Mock;
+    restore: jest.Mock;
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
   let dataSourceMock: { transaction: jest.Mock; getRepository: jest.Mock };
   let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
 
@@ -40,6 +53,13 @@ describe('UserService', () => {
     userSessionRepositoryValue = {
       delete: jest.fn(),
     };
+    cascadeRepositoryMock = {
+      softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
+      restore: jest.fn().mockResolvedValue({ affected: 1 }),
+      findOne: jest.fn().mockResolvedValue(null),
+      create: jest.fn((v) => v),
+      save: jest.fn().mockImplementation(async (v) => v),
+    };
     dataSourceMock = {
       getRepository: jest.fn().mockReturnValue({
         save: jest.fn().mockResolvedValue({}),
@@ -51,6 +71,15 @@ describe('UserService', () => {
             if (entity === UserEntity) return userRepositoryValue;
             if (entity === UserAccountEntity) return userAccountRepositoryValue;
             if (entity === UserSessionEntity) return userSessionRepositoryValue;
+            if (
+              entity === CosplayerProfileEntity ||
+              entity === PostEntity ||
+              entity === CollectionEntity ||
+              entity === PostCommentEntity ||
+              entity === NotificationEntity
+            ) {
+              return cascadeRepositoryMock;
+            }
             return {};
           }),
         };
@@ -260,7 +289,35 @@ describe('UserService', () => {
       expect(userSessionRepositoryValue.delete).toHaveBeenCalledWith({
         userId: '1',
       });
+      expect(cascadeRepositoryMock.softDelete).toHaveBeenCalledWith({
+        userId: '1',
+      });
+      expect(cascadeRepositoryMock.softDelete).toHaveBeenCalledWith({
+        authorId: '1',
+      });
       expect(userRepositoryValue.softRemove).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('handleCosplayerRequest', () => {
+    it('approves user cosplayer request, creates profile, and emits notification', async () => {
+      const user = new UserEntity({
+        id: '1' as any,
+        firstName: 'Cos',
+        lastName: 'Player',
+        email: 'cos@example.com',
+        role: EUserRole.FAN,
+        notifications: { cosplayerRoleRequested: true },
+      });
+
+      userRepositoryValue.findOneOrFail.mockResolvedValue(user);
+      userRepositoryValue.save.mockResolvedValue(user);
+
+      await service.handleCosplayerRequest('1' as any, true);
+
+      expect(user.role).toBe(EUserRole.COSPLAYER);
+      expect(user.notifications.cosplayerRoleRequested).toBe(false);
+      expect(cascadeRepositoryMock.save).toHaveBeenCalled();
     });
   });
 

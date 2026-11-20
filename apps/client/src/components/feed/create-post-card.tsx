@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 export function CreatePostCard() {
   const t = useTranslations("Feed");
   const [modalOpen, setModalOpen] = useState(false);
+  const [postType, setPostType] = useState<"photoset" | "video">("photoset");
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
@@ -22,12 +23,13 @@ export function CreatePostCard() {
   const displayName = profile?.fullName || profile?.firstName || "Creator";
   const initials = displayName.slice(0, 2).toUpperCase();
 
-  const handleAction = () => {
+  const handleAction = (type: "photoset" | "video" = "photoset") => {
     if (!isAuthenticated) {
       toast.info(t("createPlaceholder"));
       router.push("/auth/login?from=/feed");
       return;
     }
+    setPostType(type);
     setModalOpen(true);
   };
 
@@ -45,7 +47,7 @@ export function CreatePostCard() {
         {/* Fake input trigger */}
         <button
           type="button"
-          onClick={handleAction}
+          onClick={() => handleAction("photoset")}
           className="text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground flex h-10 flex-1 cursor-pointer items-center rounded-xl px-4 text-left text-xs transition-colors sm:text-sm"
         >
           <span>
@@ -61,7 +63,7 @@ export function CreatePostCard() {
         <div className="flex items-center gap-1 sm:gap-2">
           <button
             type="button"
-            onClick={handleAction}
+            onClick={() => handleAction("photoset")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <ImageIcon className="size-4 shrink-0 text-purple-400" />
@@ -70,7 +72,7 @@ export function CreatePostCard() {
 
           <button
             type="button"
-            onClick={handleAction}
+            onClick={() => handleAction("video")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <Video className="size-4 shrink-0 text-pink-400" />
@@ -79,7 +81,7 @@ export function CreatePostCard() {
 
           <button
             type="button"
-            onClick={handleAction}
+            onClick={() => handleAction("photoset")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <Tag className="size-4 shrink-0 text-indigo-400" />
@@ -90,7 +92,7 @@ export function CreatePostCard() {
         {/* Post Button */}
         <Button
           size="sm"
-          onClick={handleAction}
+          onClick={() => handleAction("photoset")}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02]"
         >
           <Send className="mr-1 size-3.5" />
@@ -99,7 +101,11 @@ export function CreatePostCard() {
       </div>
 
       {/* Create Album Modal dialog/drawer */}
-      <CreateAlbumModal open={modalOpen} onOpenChange={setModalOpen} />
+      <CreateAlbumModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        initialPostType={postType}
+      />
     </div>
   );
 }

@@ -52,7 +52,7 @@ export default function OAuthCallback() {
         });
         await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         toast.success(t("successToast"));
-        router.replace("/profile");
+        router.replace(data.needsOnboarding ? "/onboarding" : "/profile");
       } catch {
         toast.error(t("failedToast"));
         router.replace("/auth/login?social=failed");

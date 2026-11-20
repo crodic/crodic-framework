@@ -52,6 +52,7 @@ export interface PostSummaryResDto {
   characterName?: string | null;
   fandomName?: string | null;
   coverImageUrl: string;
+  videoUrl?: string | null;
   isCollage: boolean;
   collagePreviewUrls: string[];
   tagNamesCache: string[];

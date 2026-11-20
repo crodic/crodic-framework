@@ -6,6 +6,8 @@ import {
   Edit2Icon,
   RotateCcw,
   Trash2Icon,
+  UserCheck,
+  UserX,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -22,6 +24,7 @@ import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import {
   apiDeleteUser,
+  apiHandleCosplayerRequest,
   apiRestoreUser,
   apiToggleCosplayerVerify,
   apiToggleVerifyUser,
@@ -65,6 +68,25 @@ export default function ComponentTableRowActions({
           'users.messages.cosplayerVerifyToggleSuccess',
           'Cosplayer verification status updated'
         )
+      )
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const handleCosplayerRequestMutation = useMutation({
+    mutationFn: apiHandleCosplayerRequest,
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success(
+        vars.approved
+          ? t(
+              'users.messages.cosplayerRequestApproved',
+              'Đã phê duyệt người dùng trở thành Cosplayer'
+            )
+          : t(
+              'users.messages.cosplayerRequestRejected',
+              'Đã từ chối yêu cầu trở thành Cosplayer'
+            )
       )
     },
     onError: restApiErrorHandler,
@@ -238,6 +260,63 @@ export default function ComponentTableRowActions({
               : t('users.actions.verifyCosplayer', 'Duyệt tích xanh Cosplayer')}
           </TooltipContent>
         </Tooltip>
+      )}
+
+      {Boolean(
+        row.original.cosplayerRequestPending ||
+        (row.original.notifications?.cosplayerRoleRequested &&
+          row.original.role !== 'cosplayer')
+      ) && (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon'
+                aria-label='Approve Cosplayer request'
+                onClick={() =>
+                  handleCosplayerRequestMutation.mutate({
+                    id: row.original.id,
+                    approved: true,
+                  })
+                }
+                disabled={handleCosplayerRequestMutation.isPending}
+              >
+                <UserCheck
+                  className='size-4 text-emerald-600 dark:text-emerald-400'
+                  aria-hidden='true'
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side='left'>
+              {t('users.actions.approveCosplayer', 'Duyệt làm Cosplayer')}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon'
+                aria-label='Reject Cosplayer request'
+                onClick={() =>
+                  handleCosplayerRequestMutation.mutate({
+                    id: row.original.id,
+                    approved: false,
+                  })
+                }
+                disabled={handleCosplayerRequestMutation.isPending}
+              >
+                <UserX
+                  className='size-4 text-amber-600 dark:text-amber-400'
+                  aria-hidden='true'
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side='left'>
+              {t('users.actions.rejectCosplayer', 'Từ chối yêu cầu Cosplayer')}
+            </TooltipContent>
+          </Tooltip>
+        </>
       )}
 
       <Button

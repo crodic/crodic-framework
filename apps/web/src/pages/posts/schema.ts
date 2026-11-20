@@ -56,6 +56,7 @@ export const postSchema = z.object({
   characterName: z.string().nullable().optional(),
   fandomName: z.string().nullable().optional(),
   coverImageUrl: z.string(),
+  videoUrl: z.string().nullable().optional(),
   isCollage: z.boolean().default(false),
   collagePreviewUrls: z.array(z.string()).default([]),
   tagNamesCache: z.array(z.string()).default([]),

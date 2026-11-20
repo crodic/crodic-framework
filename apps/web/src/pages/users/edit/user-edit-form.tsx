@@ -31,13 +31,25 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
-import { apiEditUser } from '../queries'
-import { type UserEditSchema, userEditSchema, type UserSchema } from '../schema'
+import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
+import { apiEditUser, apiHandleCosplayerRequest } from '../queries'
+import {
+  serializeCosplayerProfilePayload,
+  type UserEditSchema,
+  userEditSchema,
+  type UserSchema,
+} from '../schema'
 
 export function UserEditForm({ data }: { data: UserSchema }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+
+  const cp = data.cosplayerProfile
+  const isPendingRequest =
+    Boolean(data.cosplayerRequestPending) ||
+    (Boolean(data.notifications?.cosplayerRoleRequested) &&
+      data.role !== 'cosplayer')
 
   const form = useForm<UserEditSchema>({
     defaultValues: {
@@ -46,8 +58,54 @@ export function UserEditForm({ data }: { data: UserSchema }) {
       lastName: data.lastName ?? undefined,
       username: data.username ?? undefined,
       role: data.role || 'fan',
+      cosplayerProfile: cp
+        ? {
+            displayName: cp.displayName ?? '',
+            slug: cp.slug ?? '',
+            roleBadge: cp.roleBadge ?? '',
+            tagline: cp.tagline ?? '',
+            bio: cp.bio ?? '',
+            artisticBio: cp.artisticBio ?? '',
+            avatarUrl: cp.avatarUrl ?? '',
+            coverUrl: cp.coverUrl ?? '',
+            locationLabel: cp.locationLabel ?? '',
+            workArea: cp.workArea ?? '',
+            heightCm: cp.heightCm ?? undefined,
+            experienceYearsNum: cp.experienceYearsNum ?? undefined,
+            skillsText: (cp.skills || []).join(', '),
+            specialtiesText: (cp.specialties || []).join(', '),
+            awardsBadgesText: (cp.awardsBadges || []).join(', '),
+            contactEmail: cp.contactEmail ?? '',
+            contactPhone: cp.contactPhone ?? '',
+            facebookUrl: cp.facebookUrl ?? '',
+            instagramUrl: cp.instagramUrl ?? '',
+            tiktokUrl: cp.tiktokUrl ?? '',
+            twitterUrl: cp.twitterUrl ?? '',
+            isVerified: Boolean(cp.isVerified),
+            isCraftingCreator: Boolean(cp.isCraftingCreator),
+          }
+        : undefined,
     },
     resolver: zodResolver(userEditSchema),
+  })
+
+  const watchedRole = form.watch('role')
+
+  const requestMutation = useMutation({
+    mutationFn: apiHandleCosplayerRequest,
+    onSuccess: async (_res, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['users'] })
+      await queryClient.invalidateQueries({ queryKey: ['user', data.id] })
+      toast.success(
+        vars.approved
+          ? 'Đã duyệt yêu cầu trở thành Cosplayer'
+          : 'Đã từ chối yêu cầu trở thành Cosplayer'
+      )
+      if (vars.approved) {
+        form.setValue('role', 'cosplayer')
+      }
+    },
+    onError: restApiErrorHandler,
   })
 
   const editUserMutation = useMutation({
@@ -63,7 +121,21 @@ export function UserEditForm({ data }: { data: UserSchema }) {
 
   const onSubmit = (values: UserEditSchema) => {
     if (data.id) {
-      editUserMutation.mutate({ id: data.id, data: values })
+      const payload: Record<string, unknown> = {
+        firstName: values.firstName,
+        lastName: values.lastName ?? '',
+        username: values.username?.trim() ?? '',
+        role: values.role || 'fan',
+      }
+      if (values.role === 'cosplayer' || Boolean(cp)) {
+        const serialized = serializeCosplayerProfilePayload(
+          values.cosplayerProfile
+        )
+        if (serialized) {
+          payload.cosplayerProfile = serialized
+        }
+      }
+      editUserMutation.mutate({ id: data.id, data: payload })
     }
   }
 
@@ -94,6 +166,44 @@ export function UserEditForm({ data }: { data: UserSchema }) {
               </Button>
             </div>
           </div>
+
+          {isPendingRequest && (
+            <Card className='border-amber-500/40 bg-amber-500/10'>
+              <CardContent className='flex flex-col items-start justify-between gap-3 pt-6 sm:flex-row sm:items-center'>
+                <div>
+                  <p className='text-sm font-semibold text-amber-700 dark:text-amber-300'>
+                    Người dùng này đã gửi yêu cầu trở thành Cosplayer
+                  </p>
+                  <p className='text-muted-foreground text-xs'>
+                    Bạn có thể phê duyệt ngay tại đây hoặc từ chối yêu cầu.
+                  </p>
+                </div>
+                <div className='flex gap-2'>
+                  <Button
+                    type='button'
+                    size='sm'
+                    variant='outline'
+                    disabled={requestMutation.isPending}
+                    onClick={() =>
+                      requestMutation.mutate({ id: data.id, approved: false })
+                    }
+                  >
+                    Từ chối
+                  </Button>
+                  <Button
+                    type='button'
+                    size='sm'
+                    disabled={requestMutation.isPending}
+                    onClick={() =>
+                      requestMutation.mutate({ id: data.id, approved: true })
+                    }
+                  >
+                    Phê duyệt Cosplayer
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -136,7 +246,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
                 name='lastName'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>{t('users.edit.lastName')}</FormLabel>
+                    <FormLabel>{t('users.edit.lastName')}</FormLabel>
                     <FormControl>
                       <Input placeholder='Doe' {...field} />
                     </FormControl>
@@ -167,7 +277,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || 'fan'}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -185,6 +295,10 @@ export function UserEditForm({ data }: { data: UserSchema }) {
               />
             </CardContent>
           </Card>
+
+          {(watchedRole === 'cosplayer' || Boolean(cp)) && (
+            <CosplayerProfileFields control={form.control} />
+          )}
 
           <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
             <div className='flex flex-row space-x-2'></div>

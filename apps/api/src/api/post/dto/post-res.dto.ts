@@ -117,6 +117,12 @@ export class PostSummaryResDto {
   })
   coverImageUrl!: string;
 
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/posts/video-short.mp4',
+    nullable: true,
+  })
+  videoUrl?: string | null;
+
   @ApiProperty({ example: false })
   isCollage!: boolean;
 

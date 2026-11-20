@@ -90,7 +90,9 @@ export class RankingService {
         'cosplayer',
         'cosplayer.userId = snap.userId',
       )
-      .where('snap.isCurrent = true');
+      .where('snap.isCurrent = true')
+      .andWhere('user.deletedAt IS NULL')
+      .andWhere('cosplayer.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -173,7 +175,8 @@ export class RankingService {
     const qb = this.profileRepo
       .createQueryBuilder('cosplayer')
       .leftJoinAndSelect('cosplayer.user', 'user')
-      .where('cosplayer.deletedAt IS NULL');
+      .where('cosplayer.deletedAt IS NULL')
+      .andWhere('user.deletedAt IS NULL');
 
     if (category === ERankingFilterCategory.CRAFTING) {
       qb.andWhere('cosplayer.isCraftingCreator = true');

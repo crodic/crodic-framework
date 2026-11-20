@@ -354,8 +354,19 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
           </p>
         </div>
 
-        {/* 3. Media Grid / Image Preview (Clicking photo opens Fullscreen Lightbox) */}
-        {images.length > 0 && (
+        {/* 3. Media Grid / Image / Video Preview */}
+        {post.postType === "video" || Boolean(post.videoUrl) ? (
+          <div className="border-border/60 relative mt-3 aspect-video w-full overflow-hidden rounded-2xl border bg-black shadow-xs">
+            <video
+              src={post.videoUrl || images[0] || ""}
+              poster={post.coverImageUrl}
+              controls
+              playsInline
+              preload="metadata"
+              className="size-full object-contain"
+            />
+          </div>
+        ) : images.length > 0 ? (
           <div className="mt-3 overflow-hidden rounded-2xl">
             {images.length === 1 ? (
               <div
@@ -460,7 +471,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
               </div>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* 4. Hashtags */}
         {post.tagNamesCache && post.tagNamesCache.length > 0 && (

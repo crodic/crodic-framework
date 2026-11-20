@@ -15,7 +15,11 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
-import { EAlbumCategory, EPostStatus } from '../constants/post.constant';
+import {
+  EAlbumCategory,
+  EMediaType,
+  EPostStatus,
+} from '../constants/post.constant';
 import {
   CreatePostCommentReqDto,
   CreatePostReqDto,
@@ -85,7 +89,8 @@ export class PostService {
   ): Promise<Paginated<PostSummaryResDto>> {
     const baseQb = this.postRepo
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author');
+      .leftJoinAndSelect('post.author', 'author')
+      .where('author.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -166,15 +171,16 @@ export class PostService {
 
     const mapped = paginated.data.map((post) => {
       const profile = profileMap.get(String(post.authorId));
-      const previews = mediaByPostId.get(String(post.id));
+      const mediaSummary = mediaByPostId.get(String(post.id));
       const tags = tagsByPostId.get(String(post.id));
       return this.toSummaryDto(
         post,
         profile,
         likedPostIds.has(String(post.id)),
-        previews,
+        mediaSummary?.previews,
         savedPostIds.has(String(post.id)),
         tags,
+        mediaSummary?.videoUrl,
       );
     });
 
@@ -195,6 +201,7 @@ export class PostService {
       .where('post.status = :publishedStatus', {
         publishedStatus: EPostStatus.PUBLISHED,
       })
+      .andWhere('author.deletedAt IS NULL')
       .andWhere(
         new Brackets((b) => {
           b.where('post.isPublic = true').orWhere(
@@ -266,15 +273,16 @@ export class PostService {
 
     const mapped = paginated.data.map((post) => {
       const profile = profileMap.get(String(post.authorId));
-      const previews = mediaByPostId.get(String(post.id));
+      const mediaSummary = mediaByPostId.get(String(post.id));
       const tags = tagsByPostId.get(String(post.id));
       return this.toSummaryDto(
         post,
         profile,
         likedPostIds.has(String(post.id)),
-        previews,
+        mediaSummary?.previews,
         savedPostIds.has(String(post.id)),
         tags,
+        mediaSummary?.videoUrl,
       );
     });
 
@@ -300,7 +308,7 @@ export class PostService {
       });
     }
 
-    if (!post) {
+    if (!post || post.author === null || post.author?.deletedAt) {
       throw new NotFoundException(`Post "${slugOrId}" not found`);
     }
 
@@ -596,7 +604,8 @@ export class PostService {
   ): Promise<Paginated<PostSummaryResDto>> {
     const baseQb = this.postRepo
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author');
+      .leftJoinAndSelect('post.author', 'author')
+      .where('author.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -652,16 +661,18 @@ export class PostService {
       this.loadTagsByPostIds(postIds),
     ]);
 
-    const mapped = paginated.data.map((post) =>
-      this.toSummaryDto(
+    const mapped = paginated.data.map((post) => {
+      const mediaSummary = mediaByPostId.get(String(post.id));
+      return this.toSummaryDto(
         post,
         profileMap.get(String(post.authorId)),
         false,
-        mediaByPostId.get(String(post.id)),
+        mediaSummary?.previews,
         false,
         tagsByPostId.get(String(post.id)),
-      ),
-    );
+        mediaSummary?.videoUrl,
+      );
+    });
 
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
@@ -1034,8 +1045,11 @@ export class PostService {
 
   private async loadMediaPreviewsByPostIds(
     postIds: AutoIncrementID[],
-  ): Promise<Map<string, string[]>> {
-    const mediaByPostId = new Map<string, string[]>();
+  ): Promise<Map<string, { previews: string[]; videoUrl: string | null }>> {
+    const mediaByPostId = new Map<
+      string,
+      { previews: string[]; videoUrl: string | null }
+    >();
     if (postIds.length === 0) {
       return mediaByPostId;
     }
@@ -1045,11 +1059,18 @@ export class PostService {
     });
     for (const item of mediaRows) {
       const key = String(item.postId);
-      const existing = mediaByPostId.get(key) ?? [];
-      if (existing.length < 4) {
-        existing.push(item.url);
-        mediaByPostId.set(key, existing);
+      const existing = mediaByPostId.get(key) ?? {
+        previews: [],
+        videoUrl: null,
+      };
+      if (item.mediaType === EMediaType.VIDEO) {
+        if (!existing.videoUrl) {
+          existing.videoUrl = item.url;
+        }
+      } else if (existing.previews.length < 4) {
+        existing.previews.push(item.url);
       }
+      mediaByPostId.set(key, existing);
     }
     return mediaByPostId;
   }
@@ -1091,6 +1112,7 @@ export class PostService {
     previewUrls?: string[],
     isSaved = false,
     tagsFromManagement?: string[],
+    videoUrl?: string | null,
   ): PostSummaryResDto {
     const collagePreviewUrls =
       previewUrls && previewUrls.length > 0
@@ -1120,6 +1142,7 @@ export class PostService {
       characterName: post.characterName ?? null,
       fandomName: post.fandomName ?? null,
       coverImageUrl: post.coverImageUrl,
+      videoUrl: videoUrl ?? null,
       isCollage: collagePreviewUrls.length >= 2,
       collagePreviewUrls,
       tagNamesCache,
@@ -1163,7 +1186,12 @@ export class PostService {
     isSaved = false,
     tagsFromManagement?: string[],
   ): PostDetailResDto {
-    const previewUrls = media.slice(0, 4).map((m) => m.url);
+    const previewUrls = media
+      .filter((m) => m.mediaType !== EMediaType.VIDEO)
+      .slice(0, 4)
+      .map((m) => m.url);
+    const videoUrl =
+      media.find((m) => m.mediaType === EMediaType.VIDEO)?.url ?? null;
     return {
       ...this.toSummaryDto(
         post,
@@ -1172,6 +1200,7 @@ export class PostService {
         previewUrls,
         isSaved,
         tagsFromManagement,
+        videoUrl,
       ),
       enableWatermark: post.enableWatermark,
       cosplayerCharacterId: post.cosplayerCharacterId ?? null,
