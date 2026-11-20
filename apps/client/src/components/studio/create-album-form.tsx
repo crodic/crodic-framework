@@ -261,7 +261,7 @@ export function CreateAlbumForm({
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
                         className="hover:bg-primary/20 hover:text-primary-foreground ml-0.5 cursor-pointer rounded-full p-0.5 transition-colors"
-                        title={`Remove #${tag}`}
+                        title={t("removeTag", { tag })}
                       >
                         <X className="size-3" />
                       </button>
@@ -395,10 +395,10 @@ export function CreateAlbumForm({
                 <FormItem className="border-border/40 flex items-center justify-between gap-3 space-y-0 border-t pt-2">
                   <div className="space-y-0.5">
                     <FormLabel className="text-foreground cursor-pointer text-xs font-medium">
-                      Watermark
+                      {t("watermark")}
                     </FormLabel>
                     <FormDescription className="text-muted-foreground text-[11px]">
-                      Kosume Watermark Protection
+                      {t("watermarkDesc")}
                     </FormDescription>
                   </div>
                   <FormControl>

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
@@ -18,11 +18,17 @@ export async function generateMetadata({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const whiteLabel = await fetchActiveClientWhiteLabel();
   const siteName = whiteLabel?.brandName || "Kosume";
+  const t = await getTranslations({ locale, namespace: "Events" });
 
   try {
     const event = await getEventBySlug(id);
-    const title = `${event.title} - Sự kiện Cosplay | ${siteName}`;
-    const description = `${event.description || event.title}. Diễn ra ${event.dateString} tại ${event.venue}, ${event.locationLabel}.`;
+    const title = `${event.title} - ${t("eventMetaSuffix")} | ${siteName}`;
+    const description = t("eventMetaDesc", {
+      desc: event.description || event.title,
+      date: event.dateString,
+      venue: event.venue,
+      location: event.locationLabel,
+    });
 
     const canonicalUrl = `${baseUrl}/${locale}/events/${id}`;
     const languages = Object.fromEntries(

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useFileUpload, type FileWithPreview } from "@/hooks/use-file-upload";
 import {
   Alert,
@@ -50,6 +51,7 @@ export default function CoverUpload({
   disabled = false,
   name,
 }: CoverUploadProps) {
+  const t = useTranslations("FileUpload");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [position, setPosition] = useState<CoverPosition>(DEFAULT_POSITION);
   const [imageLoading, setImageLoading] = useState(false);
@@ -320,7 +322,7 @@ export default function CoverUpload({
               <div className="bg-muted absolute inset-0 flex animate-pulse items-center justify-center">
                 <div className="text-muted-foreground flex flex-col items-center gap-2">
                   <ImageIcon className="size-5" />
-                  <span className="text-sm">Loading image...</span>
+                  <span className="text-sm">{t("loadingImage")}</span>
                 </div>
               </div>
             )}
@@ -347,7 +349,7 @@ export default function CoverUpload({
             {!disabled && canReposition && (
               <div className="pointer-events-none absolute start-3 bottom-3 flex items-center gap-1 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white opacity-100 shadow-sm select-none sm:opacity-0 sm:group-hover:opacity-100">
                 <Move className="size-3.5" />
-                Drag to crop
+                {t("dragToCrop")}
               </div>
             )}
 
@@ -363,7 +365,7 @@ export default function CoverUpload({
                     className="pointer-events-auto bg-white/90 text-gray-900 hover:bg-white"
                   >
                     <Upload />
-                    <span className="hidden sm:inline">Change Cover</span>
+                    <span className="hidden sm:inline">{t("changeCover")}</span>
                   </Button>
                   <Button
                     type="button"
@@ -374,7 +376,7 @@ export default function CoverUpload({
                     className="pointer-events-auto"
                   >
                     <XIcon />
-                    <span className="hidden sm:inline">Remove</span>
+                    <span className="hidden sm:inline">{t("remove")}</span>
                   </Button>
                 </div>
               </div>
@@ -409,14 +411,12 @@ export default function CoverUpload({
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Upload Cover Image</h3>
+              <h3 className="text-lg font-semibold">{t("uploadCoverTitle")}</h3>
               <p className="text-muted-foreground text-sm">
-                {disabled
-                  ? "Upload is disabled"
-                  : "Drag and drop an image here, or click to browse"}
+                {disabled ? t("uploadDisabled") : t("dragDropOrBrowse")}
               </p>
               <p className="text-muted-foreground text-xs">
-                Recommended size: 1200x514px - Max size: {displaySize}
+                {t("recommendedCoverSize", { maxSize: displaySize })}
               </p>
             </div>
 
@@ -428,7 +428,7 @@ export default function CoverUpload({
                 className="bg-transparent"
               >
                 <ImageIcon />
-                Browse Files
+                {t("browseFiles")}
               </Button>
             )}
           </div>
@@ -441,7 +441,7 @@ export default function CoverUpload({
             <TriangleAlert />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>File upload error(s)</AlertTitle>
+            <AlertTitle>{t("fileUploadErrors")}</AlertTitle>
             <AlertDescription>
               {errors.map((error, index) => (
                 <p key={index} className="last:mb-0">
@@ -459,19 +459,19 @@ export default function CoverUpload({
             <TriangleAlert />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>Crop failed</AlertTitle>
+            <AlertTitle>{t("cropFailed")}</AlertTitle>
             <AlertDescription>{cropError}</AlertDescription>
           </AlertContent>
         </Alert>
       )}
 
       <div className="bg-muted/50 rounded-lg p-4">
-        <h4 className="mb-2 text-sm font-medium">Cover Image Guidelines</h4>
+        <h4 className="mb-2 text-sm font-medium">{t("guidelinesTitle")}</h4>
         <ul className="text-muted-foreground space-y-1 text-xs">
-          <li>Use high-quality images with good lighting and composition</li>
-          <li>Recommended aspect ratio: 21:9 for best results</li>
-          <li>Drag the image inside the frame to crop before submit</li>
-          <li>Supported formats: JPG, PNG, WebP</li>
+          <li>{t("guidelineQuality")}</li>
+          <li>{t("guidelineRatio")}</li>
+          <li>{t("guidelineCrop")}</li>
+          <li>{t("guidelineFormats")}</li>
         </ul>
       </div>
     </div>

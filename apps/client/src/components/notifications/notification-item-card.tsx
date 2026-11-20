@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   Bell,
   Calendar,
@@ -31,6 +32,7 @@ export function NotificationItemCard({
   onMarkAsRead,
   onDelete,
 }: NotificationItemCardProps) {
+  const t = useTranslations("Notifications");
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "like":
@@ -151,7 +153,7 @@ export function NotificationItemCard({
               size="sm"
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-lg px-3 text-xs font-semibold shadow-xs"
             >
-              <Link href={notification.actionUrl}>Xem chi tiết</Link>
+              <Link href={notification.actionUrl}>{t("viewDetail")}</Link>
             </Button>
           </div>
         )}
@@ -177,8 +179,8 @@ export function NotificationItemCard({
               size="icon"
               onClick={() => onMarkAsRead(notification.id)}
               className="text-muted-foreground hover:text-primary hover:bg-primary/10 size-7.5 cursor-pointer rounded-lg"
-              title="Đánh dấu đã đọc"
-              aria-label="Đánh dấu đã đọc"
+              title={t("markAsRead")}
+              aria-label={t("markAsRead")}
             >
               <Check className="size-3.5" />
             </Button>
@@ -189,8 +191,8 @@ export function NotificationItemCard({
             size="icon"
             onClick={() => onDelete(notification.id)}
             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-7.5 cursor-pointer rounded-lg"
-            title="Xóa thông báo"
-            aria-label="Xóa thông báo"
+            title={t("delete")}
+            aria-label={t("delete")}
           >
             <Trash2 className="size-3.5" />
           </Button>

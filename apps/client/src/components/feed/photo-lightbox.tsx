@@ -118,7 +118,7 @@ export function PhotoLightbox({
               ) : (
                 <div className="flex items-center gap-2 text-white/80">
                   <User className="size-4" />
-                  <span className="text-xs font-medium">Kosume Gallery</span>
+                  <span className="text-xs font-medium">{t("gallery")}</span>
                 </div>
               )}
             </div>

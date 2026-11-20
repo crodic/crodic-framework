@@ -73,14 +73,14 @@ export function RankingView() {
       ) : (
         <>
           {podiumItems.length > 0 && (
-            <section aria-label="Top 3 Cosplayer">
+            <section aria-label={t("podiumAria")}>
               <RankingPodium podiumItems={podiumItems} />
             </section>
           )}
 
           {/* 3. Leaderboard Table (#4+) */}
           {tableItems.length > 0 && (
-            <section aria-label="Bảng xếp hạng">
+            <section aria-label={t("rankingTableAria")}>
               <RankingTable items={tableItems} />
             </section>
           )}

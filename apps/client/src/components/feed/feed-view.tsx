@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/use-auth-store";
 
 export function FeedView() {
   const t = useTranslations("Feed");
+  const tCommon = useTranslations("Common");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
@@ -138,7 +139,7 @@ export function FeedView() {
 
           {/* Mini Footer */}
           <div className="text-muted-foreground/60 px-2 text-[11px] leading-relaxed">
-            <p>© 2026 Kosume Platform.</p>
+            <p>{tCommon("copyright", { year: "2026" })}</p>
           </div>
         </aside>
       </div>

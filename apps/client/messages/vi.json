@@ -4,7 +4,8 @@
   },
   "Languages": {
     "en": "Tiếng Anh",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "selectLanguage": "Chọn ngôn ngữ"
   },
   "Navigation": {
     "home": "Trang chủ",
@@ -107,7 +108,8 @@
         "privacy": "Quy định & Bảo mật",
         "contact": "Liên hệ",
         "ranking": "Bảng xếp hạng"
-      }
+      },
+      "copyright": "© {year} Kosume. Bản quyền được bảo lưu."
     }
   },
   "Profile": {
@@ -224,7 +226,14 @@
     "locationLabel": "Khu vực hoạt động",
     "height": "Chiều cao",
     "experience": "Kinh nghiệm",
-    "emptyBio": "Cosplayer chưa cập nhật phần giới thiệu cá nhân."
+    "emptyBio": "Cosplayer chưa cập nhật phần giới thiệu cá nhân.",
+    "likes": "Lượt thích",
+    "albums": "Bộ ảnh",
+    "followers": "Người theo dõi",
+    "settingsAria": "Cài đặt",
+    "optionsAria": "Tùy chọn",
+    "phoneLabel": "Số điện thoại",
+    "socialChannels": "Kênh mạng xã hội"
   },
   "GeneralInfo": {
     "title": "Thông tin cá nhân",
@@ -360,7 +369,8 @@
       "feature3Desc": "Vinh danh cống hiến nghệ thuật, cập nhật lịch lễ hội cosplay và sự kiện giao lưu.",
       "statUptime": "50K+ Cosplayers",
       "statLatency": "10K+ Bộ ảnh",
-      "statScale": "100+ Lễ hội ACG"
+      "statScale": "100+ Lễ hội ACG",
+      "copyright": "© {year} Nền tảng Kosume."
     },
     "login": {
       "metaTitle": "Đăng nhập",
@@ -652,7 +662,9 @@
       "title": "Dự án đang tuyển mẫu/craft",
       "searchPlaceholder": "Tìm dự án tuyển mẫu, cosplayer...",
       "noJobs": "Không tìm thấy dự án nào"
-    }
+    },
+    "metaTitle": "Kosume - Trang chủ Portfolio Hub & Showcase",
+    "metaDescription": "Cộng đồng Cosplayer - Nơi chia sẻ bộ ảnh, theo dõi nghệ sĩ và kết nối sự kiện."
   },
   "Jobs": {
     "title": "Kết nối thương hiệu & nhận Job chuyên nghiệp",
@@ -818,7 +830,11 @@
       "applyCardDesc": "Bạn muốn trở thành khách mời cosplayer, người biểu diễn hoặc gian hàng nghệ nhân tại sự kiện?",
       "rules": "Quy định & Lưu ý sự kiện",
       "rulesDesc": "Vui lòng tuân thủ quy tắc ứng xử văn minh, kiểm tra an toàn đạo cụ (không mang vũ khí sắc nhọn) và bảo quản tư trang cá nhân."
-    }
+    },
+    "metaTitle": "Sự kiện & Festival | Kosume",
+    "metaDescription": "Khám phá các sự kiện, lễ hội Anime & Cosplay hàng đầu tại Việt Nam. Đăng ký tham gia gian hàng, khách mời và giao lưu cùng cộng đồng.",
+    "eventMetaSuffix": "Sự kiện Cosplay",
+    "eventMetaDesc": "{desc} Diễn ra {date} tại {venue}, {location}."
   },
   "Ranking": {
     "title": "Bảng Xếp Hạng Cosplayer Việt Nam",
@@ -864,7 +880,12 @@
       "title": "Chưa có bảng xếp hạng trong khoảng thời gian này",
       "desc": "Hãy khám phá các tác phẩm cosplay đặc sắc và ủng hộ cosplayer yêu thích của bạn để giúp họ vươn lên bảng xếp hạng!",
       "cta": "Khám phá Cosplayer"
-    }
+    },
+    "error": "Có lỗi xảy ra, vui lòng thử lại!",
+    "podiumAria": "Top 3 Cosplayer",
+    "rankingTableAria": "Bảng xếp hạng",
+    "metaTitle": "Bảng Xếp Hạng Cosplayer | Kosume",
+    "metaDescription": "Bảng xếp hạng Cosplayer và Leaderboard dự án cosplay xuất sắc nhất theo tuần, tháng và toàn thời gian."
   },
   "Feed": {
     "title": "Bảng Tin Cộng Đồng Cosplay",
@@ -914,7 +935,7 @@
     "loginToComment": "Vui lòng đăng nhập để bình luận!",
     "commentSuccess": "Đã đăng bình luận!",
     "commentError": "Có lỗi xảy ra khi đăng bình luận.",
-    "optionsAria": "Tùy chọn bài viết",
+    "optionsAria": "Tùy chọn",
     "copyLink": "Sao chép liên kết",
     "savePost": "Lưu bài viết",
     "unsavePost": "Bỏ lưu bài viết",
@@ -958,7 +979,13 @@
       "retoucher": "Hậu kỳ",
       "staff": "Hỗ trợ"
     },
-    "emptyFeedDesc": "Hãy theo dõi thêm các cosplayer để nhận cập nhật mới nhất!"
+    "emptyFeedDesc": "Hãy theo dõi thêm các cosplayer để nhận cập nhật mới nhất!",
+    "pageTitle": "Bảng tin Hoạt động",
+    "pageDescription": "Cập nhật những hoạt động, tác phẩm và nhật ký mới nhất từ các cosplayer bạn đang theo dõi.",
+    "you": "Bạn",
+    "likeArtwork": "Thích {title}",
+    "saveArtwork": "Lưu tác phẩm",
+    "verified": "Đã xác minh"
   },
   "Explore": {
     "title": "Khám Phá Vũ Trụ Cosplay",
@@ -986,7 +1013,12 @@
     "exploreDesc": "Tìm kiếm cosplayer, tác phẩm nổi bật và nhân vật yêu thích của bạn.",
     "trendingFandoms": "Fandom thịnh hành",
     "searchResultsFor": "Kết quả cho: \"{query}\" ({count, number} tác phẩm)",
-    "clearFilter": "Xóa bộ lọc"
+    "clearFilter": "Xóa bộ lọc",
+    "verifiedBadge": "Đã xác minh",
+    "likeArtwork": "Thích {title}",
+    "saveArtwork": "Lưu tác phẩm",
+    "metaTitle": "Khám phá tác phẩm Cosplay nổi bật & Xu hướng | Kosume",
+    "metaDescription": "Khám phá các bộ ảnh cosplay, nhân vật yêu thích từ Genshin Impact, Honkai Star Rail và nhiều hơn nữa trên Kosume."
   },
   "CosplayerProfile": {
     "bio": "Tiểu sử",
@@ -1055,7 +1087,8 @@
       "error": "Không thể lưu thay đổi hồ sơ. Vui lòng thử lại.",
       "valDisplayName": "Vui lòng nhập tên hiển thị",
       "valHandle": "Vui lòng nhập tên người dùng (handle)"
-    }
+    },
+    "contactEmailSubject": "Liên hệ từ khách truy cập qua Kosume"
   },
   "Notifications": {
     "title": "Thông Báo Của Bạn",
@@ -1074,7 +1107,10 @@
     "settings": "Cài đặt thông báo",
     "newCount": "{count} mới",
     "errorOccurred": "Có lỗi xảy ra",
-    "deleteSuccess": "Đã xóa thông báo."
+    "deleteSuccess": "Đã xóa thông báo.",
+    "viewDetail": "Xem chi tiết",
+    "markAsRead": "Đánh dấu đã đọc",
+    "delete": "Xóa thông báo"
   },
   "Common": {
     "loading": "Đang tải...",
@@ -1091,7 +1127,24 @@
     "closeFullscreen": "Đóng toàn màn hình",
     "prevPhoto": "Ảnh trước",
     "nextPhoto": "Ảnh tiếp theo",
-    "jumpToPhoto": "Chuyển đến ảnh {index, number}"
+    "jumpToPhoto": "Chuyển đến ảnh {index, number}",
+    "previous": "Trước",
+    "next": "Tiếp theo",
+    "morePages": "Thêm trang",
+    "goToPreviousPage": "Đến trang trước",
+    "goToNextPage": "Đến trang tiếp theo",
+    "pagination": "Phân trang",
+    "rowsPerPage": "Số dòng mỗi trang",
+    "selectPageSize": "Chọn kích thước trang",
+    "you": "Bạn",
+    "verified": "Đã xác minh",
+    "options": "Tùy chọn",
+    "sidebar": "Thanh bên",
+    "sidebarDesc": "Hiển thị thanh bên trên thiết bị di động.",
+    "toggleSidebar": "Đóng/mở thanh bên",
+    "copyright": "© {year} Nền tảng Kosume.",
+    "gallery": "Thư viện Kosume",
+    "breadcrumb": "Thanh điều hướng"
   },
   "Settings": {
     "title": "Cài đặt & Thiết lập tài khoản",
@@ -1160,7 +1213,9 @@
       "deleteAccount": "Xóa tài khoản vĩnh viễn",
       "deleteAccountDesc": "Tất cả bộ sưu tập, lịch sử và thông tin sẽ bị xóa hoàn toàn không thể khôi phục.",
       "deleteAccountBtn": "Xóa tài khoản"
-    }
+    },
+    "metaTitle": "Cài đặt & Thiết lập tài khoản | {siteName}",
+    "metaDescription": "Quản lý bảo mật tài khoản, thông báo, giao diện sáng tối và quyền riêng tư trên Kosume."
   },
   "Studio": {
     "createAlbumTitle": "Đăng Album Mới",
@@ -1204,7 +1259,10 @@
     "valCharacter": "Vui lòng nhập nhân vật cosplay",
     "valFandom": "Vui lòng nhập series / tác phẩm gốc",
     "valTags": "Vui lòng thêm ít nhất 1 thẻ tag",
-    "valPhotos": "Vui lòng tải lên ít nhất 1 hình ảnh"
+    "valPhotos": "Vui lòng tải lên ít nhất 1 hình ảnh",
+    "watermark": "Đóng dấu bản quyền (Watermark)",
+    "watermarkDesc": "Bảo vệ tác phẩm với dấu chìm Kosume",
+    "removeTag": "Xóa #{tag}"
   },
   "Onboarding": {
     "pageTitle": "Chào mừng bạn đến với Kosume",
@@ -1322,5 +1380,66 @@
       "cta": "Thiết lập ngay",
       "dismiss": "Đóng"
     }
+  },
+  "PostDetail": {
+    "previous": "Trước",
+    "next": "Tiếp theo",
+    "breadcrumb": "Điều hướng",
+    "defaultCollectionTitle": "Tác phẩm đã lưu"
+  },
+  "FileUpload": {
+    "loadingImage": "Đang tải ảnh...",
+    "dragToCrop": "Kéo để căn chỉnh",
+    "changeCover": "Đổi ảnh bìa",
+    "remove": "Xóa",
+    "uploadCoverTitle": "Tải lên ảnh bìa",
+    "uploadDisabled": "Tải lên đang bị vô hiệu hóa",
+    "dragDropOrBrowse": "Kéo và thả ảnh vào đây, hoặc nhấn để chọn tệp",
+    "recommendedCoverSize": "Kích thước khuyên dùng: 1200x514px - Tối đa: {maxSize}",
+    "browseFiles": "Chọn tệp",
+    "fileUploadErrors": "Lỗi tải tệp lên",
+    "cropFailed": "Căn chỉnh ảnh thất bại",
+    "guidelinesTitle": "Quy chuẩn ảnh bìa",
+    "guidelineQuality": "Sử dụng hình ảnh chất lượng cao với ánh sáng và bố cục tốt",
+    "guidelineRatio": "Tỷ lệ khung hình khuyến nghị: 21:9 để hiển thị tốt nhất",
+    "guidelineCrop": "Kéo ảnh trong khung để căn góc trước khi gửi",
+    "guidelineFormats": "Định dạng hỗ trợ: JPG, PNG, WebP",
+    "chooseOrDrag": "Chọn tệp hoặc kéo thả vào đây.",
+    "formatNotice": "JPEG, PNG, tối đa {maxSize}.",
+    "browseFile": "Chọn tệp",
+    "uploadingWithPercent": "Đang tải lên... {percent}%",
+    "completed": "Hoàn tất",
+    "removeFile": "Xóa tệp",
+    "imagePreview": "Xem trước ảnh",
+    "closePreview": "Đóng xem trước",
+    "prevImage": "Ảnh trước",
+    "nextImage": "Ảnh tiếp theo",
+    "coverBadge": "Ảnh bìa",
+    "removeThisPhoto": "Xóa ảnh này",
+    "addImage": "Thêm ảnh",
+    "fileMustBeImage": "Tệp phải là hình ảnh"
+  },
+  "Editor": {
+    "link": "Đường dẫn",
+    "insertEditLink": "Thêm hoặc chỉnh sửa đường dẫn",
+    "linkUrl": "Địa chỉ liên kết",
+    "remove": "Xóa",
+    "cancel": "Hủy",
+    "apply": "Áp dụng",
+    "paragraph": "Đoạn văn",
+    "heading2": "Tiêu đề 2",
+    "heading3": "Tiêu đề 3",
+    "codeBlock": "Khối mã",
+    "bold": "In đậm",
+    "italic": "In nghiêng",
+    "strikethrough": "Gạch ngang",
+    "inlineCode": "Mã nội dòng",
+    "bulletList": "Danh sách dấu chấm",
+    "numberedList": "Danh sách đánh số",
+    "blockquote": "Trích dẫn",
+    "divider": "Đường phân cách",
+    "clearFormatting": "Xóa định dạng",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại"
   }
 }

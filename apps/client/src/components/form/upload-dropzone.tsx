@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CloudUpload } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,12 +29,14 @@ export function UploadDropzone({
   onDrop,
   onBrowseClick,
 }: UploadDropzoneProps) {
+  const t = useTranslations("FileUpload");
+
   return (
     <Card
       className={cn(
-        "border-muted-foreground/25 hover:border-muted-foreground/50 flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors shadow-none",
+        "border-muted-foreground/25 hover:border-muted-foreground/50 flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 shadow-none transition-colors",
         isDragging && "border-primary bg-primary/5",
-        disabled && "cursor-not-allowed opacity-60",
+        disabled && "cursor-not-allowed opacity-60"
       )}
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
@@ -45,10 +48,10 @@ export function UploadDropzone({
           <CloudUpload className="size-4" />
         </div>
         <h3 className="text-2sm text-foreground mb-0.5 font-semibold">
-          Choose a file or drag & drop here.
+          {t("chooseOrDrag")}
         </h3>
         <span className="text-secondary-foreground mb-3 block text-xs font-normal">
-          JPEG, PNG, up to {formatBytes(maxSize)}.
+          {t("formatNotice", { maxSize: formatBytes(maxSize) })}
         </span>
         <Button
           size="sm"
@@ -57,7 +60,7 @@ export function UploadDropzone({
           disabled={disabled}
           type="button"
         >
-          Browse File
+          {t("browseFile")}
         </Button>
       </CardContent>
     </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   Pagination,
   PaginationContent,
@@ -281,16 +282,18 @@ function SelectRowsPerPage({
   setPageSize: (newSize: number) => void;
   pageSize: number;
 }) {
+  const t = useTranslations("Common");
+
   return (
     <div className="flex items-center gap-4">
-      <span className="text-sm whitespace-nowrap">Rows per page</span>
+      <span className="text-sm whitespace-nowrap">{t("rowsPerPage")}</span>
 
       <Select
         value={String(pageSize)}
         onValueChange={(value: string) => setPageSize(Number(value))}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Select page size">
+          <SelectValue placeholder={t("selectPageSize")}>
             {String(pageSize)}
           </SelectValue>
         </SelectTrigger>

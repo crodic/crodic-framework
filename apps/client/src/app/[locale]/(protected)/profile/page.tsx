@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
 import { MyProfileContainer } from "@/components/cosplayer-profile/my-profile-container";
@@ -12,15 +12,15 @@ export async function generateMetadata({
   params,
 }: ProfilePageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Profile" });
   const whiteLabel = await fetchActiveClientWhiteLabel();
   const siteName = whiteLabel?.brandName || "Kosume";
 
   return {
     title: {
-      absolute: `Profile | ${siteName}`,
+      absolute: `${t("pageTitle")} | ${siteName}`,
     },
-    description:
-      "Manage personal profile, collections, and followed cosplayers on Kosume.",
+    description: t("pageDescription"),
     robots: {
       index: false,
       follow: false,

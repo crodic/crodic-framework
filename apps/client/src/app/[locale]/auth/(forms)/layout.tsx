@@ -180,7 +180,7 @@ export default async function AuthLayout({
                 {t("statScale")}
               </span>
             </div>
-            <p>© {new Date().getFullYear()} Kosume Platform.</p>
+            <p>{t("copyright", { year: String(new Date().getFullYear()) })}</p>
           </div>
         </div>
 

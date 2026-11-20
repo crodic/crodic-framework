@@ -245,7 +245,7 @@ export function PostCommentsThread({
   };
 
   const currentAuthorAvatar = profile?.avatar || "/logo.png";
-  const currentAuthorName = profile?.fullName || profile?.firstName || "You";
+  const currentAuthorName = profile?.fullName || profile?.firstName || t("you");
 
   return (
     <div className="flex h-full flex-col justify-between overflow-hidden">
@@ -396,7 +396,7 @@ export function PostCommentsThread({
                               <button
                                 type="button"
                                 className="text-muted-foreground hover:text-foreground cursor-pointer opacity-0 transition-opacity group-hover/root:opacity-100"
-                                aria-label="Tùy chọn"
+                                aria-label={t("optionsAria")}
                               >
                                 <MoreHorizontal className="size-3.5" />
                               </button>
@@ -541,7 +541,7 @@ export function PostCommentsThread({
                                           <button
                                             type="button"
                                             className="text-muted-foreground hover:text-foreground cursor-pointer opacity-0 transition-opacity group-hover/reply:opacity-100"
-                                            aria-label="Tùy chọn"
+                                            aria-label={t("optionsAria")}
                                           >
                                             <MoreHorizontal className="size-3.5" />
                                           </button>

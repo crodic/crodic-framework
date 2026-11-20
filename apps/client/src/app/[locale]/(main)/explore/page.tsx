@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
@@ -22,9 +22,10 @@ export async function generateMetadata({
     routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/explore`])
   );
 
-  const title = "Khám phá tác phẩm Cosplay nổi bật & Xu hướng | Kosume";
-  const description =
-    "Khám phá các bộ ảnh cosplay, nhân vật yêu thích từ Genshin Impact, Honkai Star Rail, Fate Series, Frieren và nhiều hơn nữa trên Kosume.";
+  const t = await getTranslations({ locale, namespace: "Explore" });
+
+  const title = whiteLabel?.metaTitle || t("metaTitle");
+  const description = whiteLabel?.metaDescription || t("metaDescription");
 
   const canonicalUrl = `${baseUrl}/${locale}/explore`;
   const siteName = whiteLabel?.brandName || "Kosume";

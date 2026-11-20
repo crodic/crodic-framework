@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -70,6 +71,7 @@ function ToolbarItem({
 }
 
 function LinkPopover({ editor }: { editor: Editor }) {
+  const t = useTranslations("Editor");
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const isLinkActive = editor.isActive("link");
@@ -113,7 +115,7 @@ function LinkPopover({ editor }: { editor: Editor }) {
             <Toggle
               size="sm"
               pressed={isLinkActive}
-              aria-label="Link"
+              aria-label={t("link")}
               className="size-8 p-0"
             >
               <LinkIcon className="size-4" />
@@ -121,14 +123,14 @@ function LinkPopover({ editor }: { editor: Editor }) {
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={4} className="text-xs">
-          Insert or edit link
+          {t("insertEditLink")}
         </TooltipContent>
       </Tooltip>
 
       <PopoverContent className="w-80 p-3" align="start">
         <form onSubmit={handleApply} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs font-semibold">Link URL</label>
+            <label className="text-xs font-semibold">{t("linkUrl")}</label>
             <Input
               type="url"
               placeholder="https://example.com"
@@ -147,7 +149,7 @@ function LinkPopover({ editor }: { editor: Editor }) {
                 className="h-7 px-2 text-xs"
                 onClick={handleRemove}
               >
-                Remove
+                {t("remove")}
               </Button>
             ) : (
               <div />
@@ -160,10 +162,10 @@ function LinkPopover({ editor }: { editor: Editor }) {
                 className="h-7 px-2 text-xs"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" size="sm" className="h-7 px-3 text-xs">
-                Apply
+                {t("apply")}
               </Button>
             </div>
           </div>
@@ -174,11 +176,13 @@ function LinkPopover({ editor }: { editor: Editor }) {
 }
 
 function BlockTypeSelector({ editor }: { editor: Editor }) {
+  const t = useTranslations("Editor");
+
   const getCurrentLabel = () => {
-    if (editor.isActive("heading", { level: 2 })) return "Heading 2";
-    if (editor.isActive("heading", { level: 3 })) return "Heading 3";
-    if (editor.isActive("codeBlock")) return "Code block";
-    return "Paragraph";
+    if (editor.isActive("heading", { level: 2 })) return t("heading2");
+    if (editor.isActive("heading", { level: 3 })) return t("heading3");
+    if (editor.isActive("codeBlock")) return t("codeBlock");
+    return t("paragraph");
   };
 
   return (
@@ -199,7 +203,7 @@ function BlockTypeSelector({ editor }: { editor: Editor }) {
           onClick={() => editor.chain().focus().setParagraph().run()}
           className="cursor-pointer text-xs"
         >
-          Paragraph
+          {t("paragraph")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() =>
@@ -207,7 +211,7 @@ function BlockTypeSelector({ editor }: { editor: Editor }) {
           }
           className="cursor-pointer text-xs font-semibold"
         >
-          Heading 2
+          {t("heading2")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() =>
@@ -215,13 +219,13 @@ function BlockTypeSelector({ editor }: { editor: Editor }) {
           }
           className="cursor-pointer text-xs font-medium"
         >
-          Heading 3
+          {t("heading3")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className="cursor-pointer font-mono text-xs"
         >
-          Code block
+          {t("codeBlock")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -236,6 +240,7 @@ export function TiptapEditor({
   minHeight = "200px",
   className,
 }: TiptapEditorProps) {
+  const t = useTranslations("Editor");
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -303,20 +308,20 @@ export function TiptapEditor({
           <Separator orientation="vertical" className="mx-0.5 h-5" />
 
           {/* Text Formatting Toggles */}
-          <ToolbarItem label="Bold">
+          <ToolbarItem label={t("bold")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("bold")}
               onPressedChange={() => editor?.chain().focus().toggleBold().run()}
               disabled={disabled || !editor}
-              aria-label="Bold"
+              aria-label={t("bold")}
               className="size-8 p-0"
             >
               <Bold className="size-4" />
             </Toggle>
           </ToolbarItem>
 
-          <ToolbarItem label="Italic">
+          <ToolbarItem label={t("italic")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("italic")}
@@ -324,14 +329,14 @@ export function TiptapEditor({
                 editor?.chain().focus().toggleItalic().run()
               }
               disabled={disabled || !editor}
-              aria-label="Italic"
+              aria-label={t("italic")}
               className="size-8 p-0"
             >
               <Italic className="size-4" />
             </Toggle>
           </ToolbarItem>
 
-          <ToolbarItem label="Strikethrough">
+          <ToolbarItem label={t("strikethrough")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("strike")}
@@ -339,20 +344,20 @@ export function TiptapEditor({
                 editor?.chain().focus().toggleStrike().run()
               }
               disabled={disabled || !editor}
-              aria-label="Strikethrough"
+              aria-label={t("strikethrough")}
               className="size-8 p-0"
             >
               <Strikethrough className="size-4" />
             </Toggle>
           </ToolbarItem>
 
-          <ToolbarItem label="Inline code">
+          <ToolbarItem label={t("inlineCode")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("code")}
               onPressedChange={() => editor?.chain().focus().toggleCode().run()}
               disabled={disabled || !editor}
-              aria-label="Inline code"
+              aria-label={t("inlineCode")}
               className="size-8 p-0"
             >
               <Code className="size-4" />
@@ -362,7 +367,7 @@ export function TiptapEditor({
           <Separator orientation="vertical" className="mx-0.5 h-5" />
 
           {/* Lists & Quotes */}
-          <ToolbarItem label="Bullet list">
+          <ToolbarItem label={t("bulletList")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("bulletList")}
@@ -370,14 +375,14 @@ export function TiptapEditor({
                 editor?.chain().focus().toggleBulletList().run()
               }
               disabled={disabled || !editor}
-              aria-label="Bullet list"
+              aria-label={t("bulletList")}
               className="size-8 p-0"
             >
               <List className="size-4" />
             </Toggle>
           </ToolbarItem>
 
-          <ToolbarItem label="Numbered list">
+          <ToolbarItem label={t("numberedList")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("orderedList")}
@@ -385,14 +390,14 @@ export function TiptapEditor({
                 editor?.chain().focus().toggleOrderedList().run()
               }
               disabled={disabled || !editor}
-              aria-label="Numbered list"
+              aria-label={t("numberedList")}
               className="size-8 p-0"
             >
               <ListOrdered className="size-4" />
             </Toggle>
           </ToolbarItem>
 
-          <ToolbarItem label="Blockquote">
+          <ToolbarItem label={t("blockquote")}>
             <Toggle
               size="sm"
               pressed={editor?.isActive("blockquote")}
@@ -400,7 +405,7 @@ export function TiptapEditor({
                 editor?.chain().focus().toggleBlockquote().run()
               }
               disabled={disabled || !editor}
-              aria-label="Blockquote"
+              aria-label={t("blockquote")}
               className="size-8 p-0"
             >
               <Quote className="size-4" />
@@ -410,7 +415,7 @@ export function TiptapEditor({
           {/* Link Popover */}
           {editor && <LinkPopover editor={editor} />}
 
-          <ToolbarItem label="Divider">
+          <ToolbarItem label={t("divider")}>
             <Button
               type="button"
               variant="ghost"
@@ -418,13 +423,13 @@ export function TiptapEditor({
               className="size-8 p-0"
               onClick={() => editor?.chain().focus().setHorizontalRule().run()}
               disabled={disabled || !editor}
-              aria-label="Divider"
+              aria-label={t("divider")}
             >
               <Minus className="size-4" />
             </Button>
           </ToolbarItem>
 
-          <ToolbarItem label="Clear formatting">
+          <ToolbarItem label={t("clearFormatting")}>
             <Button
               type="button"
               variant="ghost"
@@ -434,7 +439,7 @@ export function TiptapEditor({
                 editor?.chain().focus().clearNodes().unsetAllMarks().run()
               }
               disabled={disabled || !editor}
-              aria-label="Clear formatting"
+              aria-label={t("clearFormatting")}
             >
               <RemoveFormatting className="size-4" />
             </Button>
@@ -443,7 +448,7 @@ export function TiptapEditor({
           <Separator orientation="vertical" className="mx-0.5 h-5" />
 
           {/* History */}
-          <ToolbarItem label="Undo">
+          <ToolbarItem label={t("undo")}>
             <Button
               type="button"
               variant="ghost"
@@ -451,13 +456,13 @@ export function TiptapEditor({
               className="size-8 p-0"
               onClick={() => editor?.chain().focus().undo().run()}
               disabled={disabled || !editor || !editor.can().undo()}
-              aria-label="Undo"
+              aria-label={t("undo")}
             >
               <Undo className="size-4" />
             </Button>
           </ToolbarItem>
 
-          <ToolbarItem label="Redo">
+          <ToolbarItem label={t("redo")}>
             <Button
               type="button"
               variant="ghost"
@@ -465,7 +470,7 @@ export function TiptapEditor({
               className="size-8 p-0"
               onClick={() => editor?.chain().focus().redo().run()}
               disabled={disabled || !editor || !editor.can().redo()}
-              aria-label="Redo"
+              aria-label={t("redo")}
             >
               <Redo className="size-4" />
             </Button>

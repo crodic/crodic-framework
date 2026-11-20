@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { BadgeCheck, Bookmark, Heart } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { PostSummaryResDto } from "@/services/posts";
 import { usePostLike } from "@/hooks/use-post-like";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ interface ExploreCardProps {
 }
 
 export function ExploreCard({ item }: ExploreCardProps) {
+  const t = useTranslations("Explore");
   const { isLiked, likesCount, toggleLike } = usePostLike({
     postId: item.id,
     initialLiked: item.isLikedByCurrentUser,
@@ -99,7 +101,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
           {item.author.isVerified && (
             <BadgeCheck
               className="size-3 shrink-0 fill-sky-400/20 text-sky-400"
-              aria-label="Đã xác minh"
+              aria-label={t("verifiedBadge")}
             />
           )}
         </Link>
@@ -110,7 +112,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
             type="button"
             onClick={toggleLike}
             className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium transition-colors select-none hover:text-rose-400"
-            aria-label={`Thích ${item.title}`}
+            aria-label={t("likeArtwork", { title: item.title })}
           >
             <Heart
               className={cn(
@@ -128,7 +130,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
               "text-muted-foreground hover:text-primary cursor-pointer p-0.5 transition-colors select-none",
               isBookmarked && "text-primary"
             )}
-            aria-label="Lưu tác phẩm"
+            aria-label={t("saveArtwork")}
           >
             <Bookmark
               className={cn(

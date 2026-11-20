@@ -24,16 +24,15 @@ export async function generateMetadata({
     routing.locales.map((loc) => [loc, `${baseUrl}/${loc}`])
   );
 
+  const t = await getTranslations({ locale, namespace: "Home" });
+
   const title =
-    whiteLabel?.metaTitle ||
-    whiteLabel?.siteTitle ||
-    whiteLabel?.brandName ||
-    "Kosume - Trang chủ Portfolio Hub & Showcase";
+    whiteLabel?.metaTitle || whiteLabel?.siteTitle || t("metaTitle");
 
   const description =
     whiteLabel?.metaDescription ||
     whiteLabel?.siteTagline ||
-    "Cộng đồng Cosplayer Việt Nam - Nơi chia sẻ bộ ảnh, theo dõi nghệ sĩ và kết nối sự kiện.";
+    t("metaDescription");
 
   const canonicalUrl = whiteLabel?.canonicalUrl || `${baseUrl}/${locale}`;
   const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";

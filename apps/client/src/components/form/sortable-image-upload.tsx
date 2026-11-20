@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   KeyboardSensor,
   MouseSensor,
@@ -142,6 +143,7 @@ export default function SortableImageUpload({
   headerTitle,
   headerExtra,
 }: SortableImageUploadProps) {
+  const t = useTranslations("FileUpload");
   // UI state for display and drag/drop - contains ALL visible images
   const [uiImages, setUiImages] = useState<UIImage[]>([]);
 
@@ -320,7 +322,7 @@ export default function SortableImageUpload({
   const validateFile = useCallback(
     (file: File): string | null => {
       if (!file.type.startsWith("image/")) {
-        return "File must be an image";
+        return t("fileMustBeImage");
       }
       if (file.size > maxSize) {
         return `File size must be less than ${(maxSize / 1024 / 1024).toFixed(1)}MB`;
@@ -804,13 +806,13 @@ export default function SortableImageUpload({
                   onClick={openFileDialog}
                   disabled={isDisabled}
                   className="border-border/70 hover:border-primary/80 hover:bg-primary/5 group flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed transition-all select-none"
-                  aria-label="Thêm ảnh"
+                  aria-label={t("addImage")}
                 >
                   <div className="bg-muted group-hover:bg-primary group-hover:text-primary-foreground text-muted-foreground flex size-8 items-center justify-center rounded-full transition-colors">
                     <Plus className="size-4" />
                   </div>
                   <span className="text-muted-foreground group-hover:text-foreground text-xs font-medium">
-                    + Thêm ảnh
+                    + {t("addImage")}
                   </span>
                 </button>
               )}
@@ -876,7 +878,7 @@ export default function SortableImageUpload({
             <TriangleAlert />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>File upload error(s)</AlertTitle>
+            <AlertTitle>{t("fileUploadErrors")}</AlertTitle>
             <AlertDescription>
               {errors.map((error, index) => (
                 <p key={index} className="last:mb-0">

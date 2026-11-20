@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 function WorkCard({ post }: { post: PostSummaryResDto }) {
   const t = useTranslations("Home.featuredWorks");
+  const tCommon = useTranslations("Common");
   const { isLiked, likesCount, toggleLike } = usePostLike({
     postId: post.id,
     initialLiked: post.isLikedByCurrentUser,
@@ -131,7 +132,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
             {post.author.isVerified && (
               <BadgeCheck
                 className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400"
-                aria-label="Verified"
+                aria-label={tCommon("verified")}
               />
             )}
           </Link>

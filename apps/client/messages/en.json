@@ -4,7 +4,8 @@
   },
   "Languages": {
     "en": "English",
-    "vi": "Vietnamese"
+    "vi": "Vietnamese",
+    "selectLanguage": "Select a language"
   },
   "Navigation": {
     "home": "Home",
@@ -107,7 +108,8 @@
         "privacy": "Privacy & Terms",
         "contact": "Contact",
         "ranking": "Leaderboard"
-      }
+      },
+      "copyright": "© {year} Kosume, All rights reserved."
     }
   },
   "Profile": {
@@ -224,7 +226,14 @@
     "locationLabel": "Work Area",
     "height": "Height",
     "experience": "Experience",
-    "emptyBio": "The creator has not written a biography yet."
+    "emptyBio": "The creator has not written a biography yet.",
+    "likes": "Likes",
+    "albums": "Albums",
+    "followers": "Followers",
+    "settingsAria": "Settings",
+    "optionsAria": "Options",
+    "phoneLabel": "Phone",
+    "socialChannels": "Social Channels"
   },
   "GeneralInfo": {
     "title": "Personal Information",
@@ -360,7 +369,8 @@
       "feature3Desc": "Gain recognition, climb leaderboards and follow major ACG conventions.",
       "statUptime": "50K+ Cosplayers",
       "statLatency": "10K+ Albums Shared",
-      "statScale": "100+ ACG Festivals"
+      "statScale": "100+ ACG Festivals",
+      "copyright": "© {year} Kosume Platform."
     },
     "login": {
       "metaTitle": "Sign In",
@@ -652,7 +662,9 @@
       "title": "Active Casting & Projects",
       "searchPlaceholder": "Search casting calls, cosplayers...",
       "noJobs": "No casting calls found"
-    }
+    },
+    "metaTitle": "Kosume - Creative Platform & Cosplay Showcase",
+    "metaDescription": "Cosplay Community - Share albums, follow creators, and discover anime events."
   },
   "Jobs": {
     "title": "Connect with Brands & Get Professional Gigs",
@@ -818,7 +830,11 @@
       "applyCardDesc": "Want to be a guest cosplayer, stage performer, or artist booth at this event?",
       "rules": "Event Rules & Safety",
       "rulesDesc": "Please follow code of conduct, observe prop safety regulations (no sharp or metal weapons), and safeguard personal belongings."
-    }
+    },
+    "metaTitle": "Events & Festivals | Kosume",
+    "metaDescription": "Explore top anime and cosplay events, festivals, guest lineups, and community meetups.",
+    "eventMetaSuffix": "Cosplay Event",
+    "eventMetaDesc": "{desc} Taking place {date} at {venue}, {location}."
   },
   "Ranking": {
     "title": "Vietnam Cosplayer Leaderboard",
@@ -864,7 +880,12 @@
       "title": "No rankings available for this period",
       "desc": "Discover outstanding cosplay works and like your favorite cosplayers to help them rise on the leaderboard!",
       "cta": "Explore Cosplayers"
-    }
+    },
+    "error": "An error occurred, please try again!",
+    "podiumAria": "Top 3 Cosplayers",
+    "rankingTableAria": "Leaderboard table",
+    "metaTitle": "Cosplayer Leaderboard | Kosume",
+    "metaDescription": "Cosplayer leaderboard and top creative projects rankings by week, month, and all time."
   },
   "Feed": {
     "title": "Cosplay Community Feed",
@@ -914,7 +935,7 @@
     "loginToComment": "Please log in to comment!",
     "commentSuccess": "Comment posted!",
     "commentError": "An error occurred while posting comment.",
-    "optionsAria": "Post options",
+    "optionsAria": "Options",
     "copyLink": "Copy link",
     "savePost": "Save post",
     "unsavePost": "Unsave post",
@@ -958,7 +979,13 @@
       "retoucher": "Retoucher",
       "staff": "Staff"
     },
-    "emptyFeedDesc": "Follow more creators to see their latest photosets!"
+    "emptyFeedDesc": "Follow more creators to see their latest photosets!",
+    "pageTitle": "Activity Feed",
+    "pageDescription": "Catch up on the latest posts, cosplay photosets, and updates from creators you follow.",
+    "you": "You",
+    "likeArtwork": "Like {title}",
+    "saveArtwork": "Save artwork",
+    "verified": "Verified"
   },
   "Explore": {
     "title": "Explore the Cosplay Universe",
@@ -986,7 +1013,12 @@
     "exploreDesc": "Discover cosplayers, featured photosets, and your favorite characters.",
     "trendingFandoms": "Trending Fandoms",
     "searchResultsFor": "Results for: \"{query}\" ({count, number} works)",
-    "clearFilter": "Clear filter"
+    "clearFilter": "Clear filter",
+    "verifiedBadge": "Verified",
+    "likeArtwork": "Like {title}",
+    "saveArtwork": "Save artwork",
+    "metaTitle": "Explore Featured & Trending Cosplay Works | Kosume",
+    "metaDescription": "Discover popular cosplay albums, photosets, and favorite characters from Honkai: Star Rail, Genshin Impact, and more on Kosume."
   },
   "CosplayerProfile": {
     "bio": "Biography",
@@ -1055,7 +1087,8 @@
       "error": "Failed to save profile changes. Please try again.",
       "valDisplayName": "Please enter display name",
       "valHandle": "Please enter username (handle)"
-    }
+    },
+    "contactEmailSubject": "Contact via Kosume from visitor"
   },
   "Notifications": {
     "title": "Your Notifications",
@@ -1074,7 +1107,10 @@
     "settings": "Notification Settings",
     "newCount": "{count} new",
     "errorOccurred": "An error occurred",
-    "deleteSuccess": "Notification deleted."
+    "deleteSuccess": "Notification deleted.",
+    "viewDetail": "View details",
+    "markAsRead": "Mark as read",
+    "delete": "Delete notification"
   },
   "Common": {
     "loading": "Loading...",
@@ -1091,7 +1127,24 @@
     "closeFullscreen": "Close full screen",
     "prevPhoto": "Previous photo",
     "nextPhoto": "Next photo",
-    "jumpToPhoto": "Go to photo {index, number}"
+    "jumpToPhoto": "Go to photo {index, number}",
+    "previous": "Previous",
+    "next": "Next",
+    "morePages": "More pages",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page",
+    "pagination": "Pagination",
+    "rowsPerPage": "Rows per page",
+    "selectPageSize": "Select page size",
+    "you": "You",
+    "verified": "Verified",
+    "options": "Options",
+    "sidebar": "Sidebar",
+    "sidebarDesc": "Displays the mobile sidebar.",
+    "toggleSidebar": "Toggle Sidebar",
+    "copyright": "© {year} Kosume Platform.",
+    "gallery": "Kosume Gallery",
+    "breadcrumb": "Breadcrumb"
   },
   "Settings": {
     "title": "Settings & Preferences",
@@ -1160,7 +1213,9 @@
       "deleteAccount": "Delete Account Permanently",
       "deleteAccountDesc": "All collections, works, and profile history will be permanently wiped.",
       "deleteAccountBtn": "Delete Account"
-    }
+    },
+    "metaTitle": "Account Settings | {siteName}",
+    "metaDescription": "Manage your account security, notifications, appearance, and privacy settings."
   },
   "Studio": {
     "createAlbumTitle": "Publish New Album",
@@ -1204,7 +1259,10 @@
     "valCharacter": "Cosplayed character is required",
     "valFandom": "Series / franchise is required",
     "valTags": "Please add at least 1 tag",
-    "valPhotos": "Please upload at least 1 photo"
+    "valPhotos": "Please upload at least 1 photo",
+    "watermark": "Watermark",
+    "watermarkDesc": "Kosume Watermark Protection",
+    "removeTag": "Remove #{tag}"
   },
   "Onboarding": {
     "pageTitle": "Welcome to Kosume",
@@ -1322,5 +1380,66 @@
       "cta": "Set Up Now",
       "dismiss": "Dismiss"
     }
+  },
+  "PostDetail": {
+    "previous": "Previous",
+    "next": "Next",
+    "breadcrumb": "Breadcrumb",
+    "defaultCollectionTitle": "Saved Works"
+  },
+  "FileUpload": {
+    "loadingImage": "Loading image...",
+    "dragToCrop": "Drag to crop",
+    "changeCover": "Change Cover",
+    "remove": "Remove",
+    "uploadCoverTitle": "Upload Cover Image",
+    "uploadDisabled": "Upload is disabled",
+    "dragDropOrBrowse": "Drag and drop an image here, or click to browse",
+    "recommendedCoverSize": "Recommended size: 1200x514px - Max size: {maxSize}",
+    "browseFiles": "Browse Files",
+    "fileUploadErrors": "File upload error(s)",
+    "cropFailed": "Crop failed",
+    "guidelinesTitle": "Cover Image Guidelines",
+    "guidelineQuality": "Use high-quality images with good lighting and composition",
+    "guidelineRatio": "Recommended aspect ratio: 21:9 for best results",
+    "guidelineCrop": "Drag the image inside the frame to crop before submit",
+    "guidelineFormats": "Supported formats: JPG, PNG, WebP",
+    "chooseOrDrag": "Choose a file or drag & drop here.",
+    "formatNotice": "JPEG, PNG, up to {maxSize}.",
+    "browseFile": "Browse File",
+    "uploadingWithPercent": "Uploading... {percent}%",
+    "completed": "Completed",
+    "removeFile": "Remove file",
+    "imagePreview": "Image preview",
+    "closePreview": "Close image preview",
+    "prevImage": "Previous image",
+    "nextImage": "Next image",
+    "coverBadge": "Cover photo",
+    "removeThisPhoto": "Remove this photo",
+    "addImage": "Add image",
+    "fileMustBeImage": "File must be an image"
+  },
+  "Editor": {
+    "link": "Link",
+    "insertEditLink": "Insert or edit link",
+    "linkUrl": "Link URL",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "paragraph": "Paragraph",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "codeBlock": "Code block",
+    "bold": "Bold",
+    "italic": "Italic",
+    "strikethrough": "Strikethrough",
+    "inlineCode": "Inline code",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "blockquote": "Blockquote",
+    "divider": "Divider",
+    "clearFormatting": "Clear formatting",
+    "undo": "Undo",
+    "redo": "Redo"
   }
 }

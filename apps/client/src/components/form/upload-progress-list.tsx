@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CircleX, ImageIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,8 @@ export function UploadProgressList({
   onRemove,
   disabled = false,
 }: UploadProgressListProps) {
+  const t = useTranslations("FileUpload");
+
   if (entries.length === 0) {
     return null;
   }
@@ -43,11 +46,13 @@ export function UploadProgressList({
                   </span>
                   {item.status === "uploading" && (
                     <p className="text-muted-foreground text-xs">
-                      Uploading... {Math.round(item.progress)}%
+                      {t("uploadingWithPercent", {
+                        percent: String(Math.round(item.progress)),
+                      })}
                     </p>
                   )}
                   {item.status === "completed" && (
-                    <p className="text-xs text-green-600">Completed</p>
+                    <p className="text-xs text-green-600">{t("completed")}</p>
                   )}
                 </div>
                 <Button
@@ -56,7 +61,7 @@ export function UploadProgressList({
                   size="icon"
                   className="size-6"
                   disabled={disabled}
-                  aria-label="Remove file"
+                  aria-label={t("removeFile")}
                 >
                   <CircleX className="size-3.5" />
                 </Button>

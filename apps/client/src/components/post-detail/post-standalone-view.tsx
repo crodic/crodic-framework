@@ -43,6 +43,7 @@ export function PostStandaloneView({
   const router = useRouter();
   const t = useTranslations("Feed");
   const tNav = useTranslations("Navigation");
+  const tPost = useTranslations("PostDetail");
 
   const [viewMode, setViewMode] = useState<"scroll" | "carousel">("scroll");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -83,7 +84,7 @@ export function PostStandaloneView({
           </Button>
 
           <nav
-            aria-label="Breadcrumb"
+            aria-label={tPost("breadcrumb")}
             className="text-muted-foreground hidden items-center gap-1.5 text-xs sm:flex"
           >
             <Link

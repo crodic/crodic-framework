@@ -114,7 +114,7 @@ export function LanguageSwitcher({
         disabled={isPending}
       >
         <SelectTrigger className={cn("w-full max-w-48", triggerClassName)}>
-          <SelectValue placeholder="Select a language" />
+          <SelectValue placeholder={t("selectLanguage")} />
         </SelectTrigger>
         <SelectContent position="popper" align={align}>
           {routing.locales.map((cur) => {

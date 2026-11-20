@@ -34,6 +34,7 @@ export interface RankingTableProps {
 
 export function RankingTable({ items }: RankingTableProps) {
   const tTable = useTranslations("Ranking.table");
+  const tRanking = useTranslations("Ranking");
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: currentUser } = useProfile();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
@@ -56,7 +57,7 @@ export function RankingTable({ items }: RankingTableProps) {
         ...prev,
         [item.id]: !isNow,
       }));
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      toast.error(tRanking("error"));
     }
   };
 

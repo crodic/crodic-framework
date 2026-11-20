@@ -64,7 +64,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
-  const currentAuthorName = profile?.fullName || profile?.firstName || "You";
+  const currentAuthorName = profile?.fullName || profile?.firstName || t("you");
   const currentAuthorAvatar = profile?.avatar || "/logo.png";
 
   const {

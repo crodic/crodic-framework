@@ -148,7 +148,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
                 <Phone className="text-muted-foreground size-4 shrink-0" />
                 <div className="flex-1 truncate">
                   <span className="text-muted-foreground block text-[11px]">
-                    Phone
+                    {t("phoneLabel")}
                   </span>
                   <span className="text-foreground font-medium">
                     {profile.contactPhone}
@@ -178,7 +178,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
               profile.twitterUrl) && (
               <div className="space-y-2 pt-2">
                 <p className="text-muted-foreground text-xs font-semibold">
-                  Social Channels
+                  {t("socialChannels")}
                 </p>
                 {profile.facebookUrl && (
                   <Button

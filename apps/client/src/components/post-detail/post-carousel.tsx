@@ -22,6 +22,7 @@ interface PostCarouselProps {
 
 export function PostCarousel({ photos, title }: PostCarouselProps) {
   const t = useTranslations("Feed");
+  const tPost = useTranslations("PostDetail");
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -188,7 +189,7 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
               type="button"
               onClick={scrollPrev}
               className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Previous"
+              aria-label={tPost("previous")}
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -228,7 +229,7 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
               type="button"
               onClick={scrollNext}
               className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Next"
+              aria-label={tPost("next")}
             >
               <ChevronRight className="size-4" />
             </button>

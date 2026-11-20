@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Check, GripVertical, Star, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UIImage } from "./types";
@@ -33,6 +34,7 @@ export function SortableImageTile({
   onSelectCover,
   onRemove,
 }: SortableImageTileProps) {
+  const t = useTranslations("FileUpload");
   const isStudio = variant === "studio";
 
   return (
@@ -76,7 +78,7 @@ export function SortableImageTile({
           {isCover && (
             <div className="bg-primary/95 text-primary-foreground absolute inset-x-1.5 bottom-1.5 z-10 flex items-center justify-center gap-1 rounded py-0.5 text-center text-[10px] font-semibold shadow-sm backdrop-blur-xs sm:py-1 sm:text-[11px]">
               <Star className="size-3 fill-current" />
-              <span>Ảnh bìa</span>
+              <span>{t("coverBadge")}</span>
             </div>
           )}
 
@@ -89,7 +91,7 @@ export function SortableImageTile({
                 event.stopPropagation();
                 onSelectCover?.(index);
               }}
-              title={isCover ? "Ảnh bìa hiện tại" : "Chọn làm ảnh bìa"}
+              title={isCover ? t("coverBadge") : t("addImage")}
               className={cn(
                 "absolute top-1.5 right-1.5 z-10 flex size-5.5 cursor-pointer items-center justify-center rounded transition-all sm:top-2 sm:right-2",
                 isCover
@@ -119,7 +121,7 @@ export function SortableImageTile({
                 event.stopPropagation();
                 onRemove(item.id);
               }}
-              title="Xóa ảnh này"
+              title={t("removeThisPhoto")}
               className="hover:bg-destructive absolute bottom-1.5 left-1.5 z-10 flex size-5.5 cursor-pointer items-center justify-center rounded bg-black/60 text-white/80 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
             >
               <XIcon className="size-3" />
@@ -181,7 +183,7 @@ export function SortableImageTile({
               variant="outline"
               size="icon"
               type="button"
-              aria-label="Remove image"
+              aria-label={t("removeThisPhoto")}
               className={cn(
                 "bg-background/80 absolute size-8 rounded-full opacity-100 shadow-sm sm:size-6 sm:opacity-0 sm:group-hover:opacity-100",
                 canSelectCover ? "end-2 bottom-2" : "end-2 top-2"

@@ -201,7 +201,7 @@ export function ProfileHero({
   const onSendMessageSubmit = (values: MessageFormValues) => {
     if (profile.contactEmail) {
       window.location.href = `mailto:${profile.contactEmail}?subject=${encodeURIComponent(
-        `Contact via Kosume from visitor`
+        tCos("contactEmailSubject")
       )}&body=${encodeURIComponent(values.message)}`;
       toast.success(t("sentSuccess"));
       messageForm.reset();
@@ -415,7 +415,9 @@ export function ProfileHero({
                   <strong className="text-foreground font-bold">
                     {formattedFollowers}
                   </strong>{" "}
-                  <span className="text-muted-foreground">Followers</span>
+                  <span className="text-muted-foreground">
+                    {t("followers")}
+                  </span>
                 </span>
                 <span className="text-muted-foreground/40">•</span>
                 <span className="inline-flex items-center gap-1">
@@ -423,14 +425,14 @@ export function ProfileHero({
                   <strong className="text-foreground font-bold">
                     {formattedLikes}
                   </strong>{" "}
-                  <span className="text-muted-foreground">Likes</span>
+                  <span className="text-muted-foreground">{t("likes")}</span>
                 </span>
                 <span className="text-muted-foreground/40">•</span>
                 <span>
                   <strong className="text-foreground font-bold">
                     {profile.albumsCount}
                   </strong>{" "}
-                  <span className="text-muted-foreground">Albums</span>
+                  <span className="text-muted-foreground">{t("albums")}</span>
                 </span>
               </div>
             </div>
@@ -470,7 +472,7 @@ export function ProfileHero({
                   variant="outline"
                   size="icon"
                   className="border-border/80 size-10 shrink-0 rounded-xl"
-                  aria-label="Settings"
+                  aria-label={t("settingsAria")}
                 >
                   <Link href="/settings">
                     <Settings className="size-4" />
@@ -544,7 +546,7 @@ export function ProfileHero({
                   variant="outline"
                   size="icon"
                   className="border-border/80 size-10 shrink-0 cursor-pointer rounded-xl"
-                  aria-label="Options"
+                  aria-label={t("optionsAria")}
                 >
                   <MoreVertical className="size-4" />
                 </Button>

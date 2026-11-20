@@ -1,15 +1,32 @@
 import React from "react";
 import { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
 import { EventsView } from "@/components/events/events-view";
 
-export const metadata: Metadata = {
-  title: "Sự kiện & Festival | Kosume",
-  description:
-    "Khám phá các sự kiện, lễ hội Anime & Cosplay hàng đầu tại Việt Nam. Đăng ký tham gia gian hàng, khách mời và giao lưu cùng cộng đồng.",
-};
+interface EventsPageProps {
+  params: Promise<{ locale: string }>;
+}
 
-export default function EventsPage() {
+export async function generateMetadata({
+  params,
+}: EventsPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Events" });
+  const whiteLabel = await fetchActiveClientWhiteLabel();
+  const siteName = whiteLabel?.brandName || "Kosume";
+
+  return {
+    title: `${t("metaTitle")} | ${siteName}`,
+    description: t("metaDescription"),
+  };
+}
+
+export default async function EventsPage({ params }: EventsPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   return (
     <Layout>
       <EventsView />

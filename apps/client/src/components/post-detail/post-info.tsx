@@ -47,6 +47,7 @@ export function PostInfo({
   isModal = false,
 }: PostInfoProps) {
   const t = useTranslations("Feed");
+  const tPost = useTranslations("PostDetail");
   const locale = useLocale();
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -126,7 +127,7 @@ export function PostInfo({
       let targetColId = myCols?.data?.[0]?.id;
       if (!targetColId) {
         const created = await createCollection({
-          title: "Saved Works",
+          title: tPost("defaultCollectionTitle"),
           isPublic: false,
         });
         targetColId = created.id;

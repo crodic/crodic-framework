@@ -2,6 +2,7 @@
 
 import React, { useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { UIImage } from "./types";
 
@@ -27,6 +28,7 @@ export function ImageLightbox({
   onClose,
   onIndexChange,
 }: ImageLightboxProps) {
+  const t = useTranslations("FileUpload");
   const safeIndex = resolveSafeLightboxIndex(currentIndex, images);
 
   const currentImage = safeIndex !== null ? images[safeIndex] : null;
@@ -72,7 +74,7 @@ export function ImageLightbox({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Image preview"
+      aria-label={t("imagePreview")}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
       onClick={onClose}
     >
@@ -85,7 +87,7 @@ export function ImageLightbox({
           event.stopPropagation();
           onClose();
         }}
-        aria-label="Close image preview"
+        aria-label={t("closePreview")}
       >
         <XIcon className="size-5" />
       </Button>
@@ -101,7 +103,7 @@ export function ImageLightbox({
               event.stopPropagation();
               showPrevious();
             }}
-            aria-label="Previous image"
+            aria-label={t("prevImage")}
           >
             <ChevronLeft className="size-7" />
           </Button>
@@ -115,7 +117,7 @@ export function ImageLightbox({
               event.stopPropagation();
               showNext();
             }}
-            aria-label="Next image"
+            aria-label={t("nextImage")}
           >
             <ChevronRight className="size-7" />
           </Button>
