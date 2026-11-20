@@ -41,7 +41,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
     <div className="group flex cursor-pointer flex-col">
       {/* Top Image Thumbnail */}
       <Link
-        href={`/post/${postSlugOrId}`}
+        href={`/posts/${postSlugOrId}`}
         className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/5 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-all duration-300 group-hover:shadow-md"
       >
         <Image
@@ -57,7 +57,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
       </Link>
 
       {/* Line 1: Character / Post Title */}
-      <Link href={`/post/${postSlugOrId}`} className="block">
+      <Link href={`/posts/${postSlugOrId}`} className="block">
         <h3 className="text-foreground group-hover:text-primary mt-2 truncate text-sm font-bold transition-colors">
           {item.title}
         </h3>

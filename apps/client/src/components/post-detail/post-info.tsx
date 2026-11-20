@@ -2,35 +2,33 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, getPathname } from "@/i18n/navigation";
 import {
   BadgeCheck,
   Bookmark,
   Check,
+  ExternalLink,
+  Eye,
   Heart,
+  MessageCircle,
   Plus,
   Send,
   Share2,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createPostCommentSchema, type PostCommentFormValues } from "./schema";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { cn } from "@/lib/utils";
 import { addPostComment, getPostBySlug } from "@/services/posts";
-import { toggleFollow } from "@/services/social";
+import { checkIsFollowing, toggleFollow } from "@/services/social";
 import {
   getMyCollections,
   createCollection,
@@ -44,13 +42,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 interface PostInfoProps {
   post: PostDetailResDto;
   comments?: PostCommentResDto[];
+  onClose?: () => void;
+  isModal?: boolean;
 }
 
 export function PostInfo({
   post: initialPost,
   comments: initialComments = [],
+  onClose,
+  isModal = false,
 }: PostInfoProps) {
   const t = useTranslations("Feed");
+  const locale = useLocale();
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
@@ -72,7 +75,19 @@ export function PostInfo({
     postSlugOrId,
   });
 
-  const [isFollowing, setIsFollowing] = useState(false);
+  const isOwnPost =
+    Boolean(profile?.id) && String(profile?.id) === String(post.author.id);
+
+  const { data: remoteIsFollowing = false } = useQuery({
+    queryKey: ["is-following", post.author.id],
+    queryFn: () => checkIsFollowing(post.author.id),
+    enabled: Boolean(isAuthenticated && !isOwnPost && post.author.id),
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const [followOverride, setFollowOverride] = useState<boolean | null>(null);
+  const isFollowing = followOverride ?? remoteIsFollowing;
+
   const [isSaved, setIsSaved] = useState(post.isSavedByCurrentUser ?? false);
   const [copiedShare, setCopiedShare] = useState(false);
   const [comments, setComments] =
@@ -85,6 +100,11 @@ export function PostInfo({
   }, [post.isSavedByCurrentUser]);
 
   const authorHandle = post.author.handle.replace("@", "") || post.author.id;
+  const publishedDateLabel = post.publishedAt
+    ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
+        new Date(post.publishedAt)
+      )
+    : "";
 
   const form = useForm<PostCommentFormValues>({
     resolver: zodResolver(
@@ -100,11 +120,17 @@ export function PostInfo({
   const followMutation = useMutation({
     mutationFn: () => toggleFollow(post.author.id),
     onSuccess: (res) => {
-      setIsFollowing(res.following);
+      setFollowOverride(res.following);
+      queryClient.setQueryData(["is-following", post.author.id], res.following);
+      queryClient.invalidateQueries({
+        queryKey: ["is-following", post.author.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["my-following"] });
+      queryClient.invalidateQueries({ queryKey: ["following-feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["suggested-cosplayers"] });
     },
     onError: () => {
-      setIsFollowing((prev) => !prev);
+      setFollowOverride(null);
     },
   });
 
@@ -157,7 +183,7 @@ export function PostInfo({
       return;
     }
     const next = !isFollowing;
-    setIsFollowing(next);
+    setFollowOverride(next);
     followMutation.mutate();
   };
 
@@ -173,10 +199,24 @@ export function PostInfo({
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
+      const targetPath = getPathname({
+        href: `/posts/${postSlugOrId}`,
+        locale,
+      });
+      navigator.clipboard?.writeText(`${window.location.origin}${targetPath}`);
       setCopiedShare(true);
       toast.success(t("copiedShareLink"));
       setTimeout(() => setCopiedShare(false), 2500);
+    }
+  };
+
+  const handleOpenFullPage = () => {
+    if (typeof window !== "undefined") {
+      const targetPath = getPathname({
+        href: `/posts/${postSlugOrId}`,
+        locale,
+      });
+      window.location.href = targetPath;
     }
   };
 
@@ -194,102 +234,145 @@ export function PostInfo({
       : String(likesCount);
 
   return (
-    <div className="flex h-full flex-col justify-between">
-      {/* Scrollable Information Body */}
-      <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
-        {/* Author Header */}
-        <div className="border-border/50 flex items-center justify-between gap-3 border-b pb-4">
-          <Link
-            href={`/cosplayer/${authorHandle}`}
-            className="group flex items-center gap-3"
-          >
-            <div className="border-border/80 relative size-11 shrink-0 overflow-hidden rounded-full border">
-              {post.author.avatarUrl ? (
-                <Image
-                  src={post.author.avatarUrl}
-                  alt={post.author.displayName}
-                  fill
-                  sizes="44px"
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              ) : (
-                <div className="bg-primary/20 text-primary flex size-full items-center justify-center font-bold">
-                  {post.author.displayName.slice(0, 1)}
-                </div>
+    <div className="flex h-full flex-col justify-between overflow-hidden">
+      {/* 1. Sticky Author Header with Integrated Close Button (no collision) */}
+      <div className="border-border/60 bg-card/85 sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3.5 backdrop-blur-md sm:px-5">
+        <Link
+          href={`/cosplayer/${authorHandle}`}
+          className="group flex min-w-0 items-center gap-3"
+        >
+          <div className="border-border/80 ring-primary/15 group-hover:ring-primary/50 relative size-10 shrink-0 overflow-hidden rounded-full border ring-2 transition-all sm:size-11">
+            {post.author.avatarUrl ? (
+              <Image
+                src={post.author.avatarUrl}
+                alt={post.author.displayName}
+                fill
+                sizes="44px"
+                className="object-cover transition-transform group-hover:scale-105"
+              />
+            ) : (
+              <div className="bg-primary/20 text-primary flex size-full items-center justify-center font-bold">
+                {post.author.displayName.slice(0, 1)}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-foreground group-hover:text-primary truncate text-sm font-bold transition-colors">
+                {post.author.displayName}
+              </span>
+              {post.author.isVerified && (
+                <BadgeCheck className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400" />
               )}
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-foreground group-hover:text-primary text-sm font-bold transition-colors">
-                  {post.author.displayName}
-                </span>
-                {post.author.isVerified && (
-                  <BadgeCheck className="size-3.5 fill-sky-400/20 text-sky-400" />
-                )}
-              </div>
-              <span className="text-muted-foreground text-xs">
-                {post.author.handle}
-              </span>
+            <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              <span className="truncate">{post.author.handle}</span>
+              {publishedDateLabel && (
+                <>
+                  <span>•</span>
+                  <span className="shrink-0">{publishedDateLabel}</span>
+                </>
+              )}
             </div>
-          </Link>
+          </div>
+        </Link>
 
-          {isAuthenticated &&
-            String(profile?.id) !== String(post.author.id) && (
-              <Button
-                type="button"
-                size="sm"
-                variant={isFollowing ? "outline" : "default"}
-                onClick={handleToggleFollow}
-                className={cn(
-                  "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
-                  !isFollowing &&
-                    "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                {isFollowing ? (
-                  <>
-                    <Check className="mr-1 size-3" />
-                    <span>{t("following")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-1 size-3" />
-                    <span>{t("follow")}</span>
-                  </>
-                )}
-              </Button>
-            )}
+        <div className="flex shrink-0 items-center gap-2">
+          {!isOwnPost && (
+            <Button
+              type="button"
+              size="sm"
+              variant={isFollowing ? "outline" : "default"}
+              onClick={handleToggleFollow}
+              className={cn(
+                "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
+                !isFollowing &&
+                  "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+            >
+              {isFollowing ? (
+                <>
+                  <Check className="mr-1 size-3" />
+                  <span>{t("following")}</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-1 size-3" />
+                  <span>{t("follow")}</span>
+                </>
+              )}
+            </Button>
+          )}
+
+          {isModal && onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors"
+              aria-label={t("close")}
+            >
+              <X className="size-4" />
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Title, Caption & Tags */}
-        <div className="space-y-2">
-          <h1 className="text-foreground text-base leading-snug font-bold sm:text-lg">
+      {/* 2. Scrollable Content & Comments Body */}
+      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+        {/* Title, Metadata Pills, Caption & Clickable Tags */}
+        <div className="space-y-3">
+          <h1 className="text-foreground text-base leading-snug font-bold tracking-tight sm:text-lg">
             {post.title}
           </h1>
+
+          {/* Character / Fandom / Views Badges */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {post.characterName && (
+              <span className="bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-medium">
+                <Sparkles className="size-3" />
+                <span className="text-primary/75">{t("characterLabel")}:</span>
+                <span className="font-semibold">{post.characterName}</span>
+              </span>
+            )}
+            {post.fandomName && (
+              <span className="bg-muted/60 text-foreground/85 border-border/60 inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-medium">
+                {post.fandomName}
+              </span>
+            )}
+            <span className="bg-muted/40 text-muted-foreground border-border/50 inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-medium tabular-nums">
+              <Eye className="size-3" />
+              <span>
+                {t("viewsCount", {
+                  count: (post.viewsCount || 0).toLocaleString(locale),
+                })}
+              </span>
+            </span>
+          </div>
+
           {post.caption && (
             <p className="text-foreground/85 text-xs leading-relaxed whitespace-pre-line sm:text-sm">
               {post.caption}
             </p>
           )}
 
-          {/* Tags */}
+          {/* Clickable Tags -> Navigate to /explore?q=tag */}
           {post.tagNamesCache && post.tagNamesCache.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
               {post.tagNamesCache.map((tag, idx) => (
-                <Badge
+                <Link
                   key={idx}
-                  variant="secondary"
-                  className="bg-muted/50 hover:bg-muted text-muted-foreground rounded-lg text-[11px] font-medium"
+                  href={`/explore?q=${encodeURIComponent(tag)}`}
+                  className="bg-muted/50 hover:bg-primary/15 text-muted-foreground hover:text-primary border-border/50 hover:border-primary/30 inline-flex items-center rounded-lg border px-2.5 py-0.5 text-[11px] font-medium transition-colors"
                 >
                   #{tag}
-                </Badge>
+                </Link>
               ))}
             </div>
           )}
 
           {/* Collaborators / Credits */}
           {post.collaborators && post.collaborators.length > 0 && (
-            <div className="border-border/50 bg-muted/20 space-y-1.5 rounded-xl border p-3">
+            <div className="border-border/50 bg-muted/20 space-y-2 rounded-xl border p-3">
               <p className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
                 {t("collaboratorsTitle")}
               </p>
@@ -324,58 +407,90 @@ export function PostInfo({
         </div>
 
         {/* Comments Section */}
-        <div className="space-y-3 pt-2">
-          <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
-            {t("comment")} ({comments.length})
-          </h3>
-
-          <div className="space-y-3">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="flex items-start gap-2.5 text-xs"
-              >
-                <div className="border-border/60 relative size-8 shrink-0 overflow-hidden rounded-full border">
-                  {comment.author?.avatarUrl ? (
-                    <Image
-                      src={comment.author.avatarUrl}
-                      alt={comment.author.displayName}
-                      fill
-                      sizes="32px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[10px] font-bold">
-                      {comment.author?.displayName?.slice(0, 1) || "U"}
-                    </div>
-                  )}
-                </div>
-                <div className="border-border/50 bg-muted/30 flex-1 rounded-2xl border p-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-foreground font-bold">
-                      {comment.author?.displayName || "User"}
-                    </span>
-                    <span className="text-muted-foreground text-[10px]">
-                      {comment.createdAt
-                        ? new Date(comment.createdAt).toLocaleDateString()
-                        : ""}
-                    </span>
-                  </div>
-                  <p className="text-foreground/90 mt-0.5 leading-relaxed">
-                    {comment.content}
-                  </p>
-                </div>
-              </div>
-            ))}
+        <div className="border-border/50 space-y-3 border-t pt-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-foreground flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+              <span>{t("comment")}</span>
+              <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums">
+                {comments.length}
+              </span>
+            </h3>
           </div>
+
+          {comments.length === 0 ? (
+            <div className="border-border/50 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-6 text-center">
+              <div className="bg-muted/60 text-muted-foreground mb-2.5 flex size-10 items-center justify-center rounded-full">
+                <MessageCircle className="size-5" />
+              </div>
+              <p className="text-foreground text-xs font-semibold">
+                {t("noCommentsTitle")}
+              </p>
+              <p className="text-muted-foreground mt-1 max-w-[240px] text-[11px] leading-relaxed">
+                {t("noCommentsDesc")}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {comments.map((comment) => {
+                const commentHandle =
+                  comment.author?.handle?.replace("@", "") ||
+                  comment.author?.id;
+                return (
+                  <div
+                    key={comment.id}
+                    className="flex items-start gap-2.5 text-xs"
+                  >
+                    <Link
+                      href={`/cosplayer/${commentHandle}`}
+                      className="border-border/60 relative size-8 shrink-0 overflow-hidden rounded-full border"
+                    >
+                      {comment.author?.avatarUrl ? (
+                        <Image
+                          src={comment.author.avatarUrl}
+                          alt={comment.author.displayName}
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[10px] font-bold">
+                          {comment.author?.displayName?.slice(0, 1) || "U"}
+                        </div>
+                      )}
+                    </Link>
+                    <div className="border-border/50 bg-muted/30 flex-1 rounded-2xl border p-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Link
+                          href={`/cosplayer/${commentHandle}`}
+                          className="text-foreground hover:text-primary font-bold transition-colors"
+                        >
+                          {comment.author?.displayName || "User"}
+                        </Link>
+                        <span className="text-muted-foreground text-[10px]">
+                          {comment.createdAt
+                            ? new Intl.DateTimeFormat(locale, {
+                                dateStyle: "short",
+                              }).format(new Date(comment.createdAt))
+                            : ""}
+                        </span>
+                      </div>
+                      <p className="text-foreground/90 mt-0.5 leading-relaxed">
+                        {comment.content}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Sticky Bottom Actions & Comment Input Form */}
-      <div className="border-border/50 bg-card/90 shrink-0 space-y-3 border-t p-4 backdrop-blur-md">
+      {/* 3. Sticky Bottom Actions & Comment Input Form */}
+      <div className="border-border/60 bg-card/90 shrink-0 space-y-3 border-t px-4 py-3.5 backdrop-blur-md sm:px-5">
         {/* Interaction Buttons Row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
@@ -394,7 +509,7 @@ export function PostInfo({
                   isLiked && "fill-rose-500 text-rose-500"
                 )}
               />
-              <span>{formattedLikes}</span>
+              <span className="tabular-nums">{formattedLikes}</span>
             </Button>
 
             <Button
@@ -413,28 +528,54 @@ export function PostInfo({
                   isSaved && "fill-primary text-primary"
                 )}
               />
-              <span>{post.savesCount || 0}</span>
+              <span className="tabular-nums">{post.savesCount || 0}</span>
             </Button>
           </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleShare}
-            className="text-muted-foreground h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
-          >
-            <Share2 className="size-4.5" />
-            <span>{copiedShare ? "Đã chép link" : t("share")}</span>
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleShare}
+              className="text-muted-foreground hover:text-foreground h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+            >
+              <Share2 className="size-4" />
+              <span>{copiedShare ? t("copiedShort") : t("share")}</span>
+            </Button>
+
+            {isModal && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleOpenFullPage}
+                className="text-muted-foreground hover:text-foreground size-9 cursor-pointer rounded-xl"
+                title={t("openFullPage")}
+                aria-label={t("openFullPage")}
+              >
+                <ExternalLink className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Comment input form */}
+        {/* Comment input form with current user avatar */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmitComment)}
             className="flex items-center gap-2"
           >
+            <div className="border-border/70 relative size-8 shrink-0 overflow-hidden rounded-full border">
+              <Image
+                src={currentAuthorAvatar}
+                alt={currentAuthorName}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="comment"
@@ -456,6 +597,7 @@ export function PostInfo({
               size="sm"
               disabled={commentMutation.isPending}
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 shrink-0 cursor-pointer rounded-xl px-3"
+              aria-label={t("sendComment")}
             >
               <Send className="size-3.5" />
             </Button>

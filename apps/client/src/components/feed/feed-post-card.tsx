@@ -175,7 +175,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(
-        window.location.origin + `/post/${postSlugOrId}`
+        window.location.origin + `/posts/${postSlugOrId}`
       );
       toast.success(t("copiedShareLink"));
     }
@@ -369,7 +369,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   {/* Bottom right */}
                   {images.length > 3 ? (
                     <Link
-                      href={`/post/${postSlugOrId}`}
+                      href={`/posts/${postSlugOrId}`}
                       scroll={false}
                       className="group border-border/60 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border"
                     >
@@ -442,7 +442,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
 
             {/* Comment button */}
             <Link
-              href={`/post/${postSlugOrId}`}
+              href={`/posts/${postSlugOrId}`}
               scroll={false}
               className="hover:bg-muted/60 hover:text-foreground flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors"
             >

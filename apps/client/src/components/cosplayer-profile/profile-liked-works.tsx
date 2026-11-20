@@ -54,7 +54,7 @@ export function ProfileLikedWorks({
         {likedList.map((work) => (
           <Link
             key={work.id}
-            href={`/post/${work.id}`}
+            href={`/posts/${work.id}`}
             className="group relative flex cursor-pointer flex-col space-y-2 overflow-hidden rounded-2xl"
           >
             {/* Image Thumbnail */}

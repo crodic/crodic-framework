@@ -193,6 +193,31 @@ describe('PostService', () => {
         NotFoundException,
       );
     });
+
+    it('falls back to numeric id when slug lookup returns null', async () => {
+      postRepo.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: id('42'),
+        slug: 'bronya-a1b2c3',
+        authorId: id('100'),
+        title: 'Bronya',
+        postType: EPostType.PHOTOSET,
+        albumCategory: EAlbumCategory.SERIES,
+        coverImageUrl: 'url',
+        photosCount: 1,
+        publishedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mediaRepo.find.mockResolvedValue([]);
+
+      const res = await service.findBySlug('42');
+
+      expect(res.id).toBe(id('42'));
+      expect(postRepo.findOne).toHaveBeenNthCalledWith(2, {
+        where: { id: '42' },
+        relations: ['author'],
+      });
+    });
   });
 
   describe('create', () => {
@@ -205,6 +230,21 @@ describe('PostService', () => {
 
       expect(dataSource.transaction).toHaveBeenCalled();
       expect(res.title).toBe('New Photoset');
+      expect(res.slug).toMatch(/^new-photoset-[a-z0-9]{6}$/);
+    });
+
+    it('retries slug generation on collision and falls back for non-Latin titles', async () => {
+      postRepo.count.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
+
+      const res = await service.create(id('100'), {
+        title: '葬送のフリーレン',
+        characterName: 'Frieren',
+        coverImageUrl: 'url',
+        media: [{ mediaUrl: 'url1', mediaType: EMediaType.IMAGE }],
+      });
+
+      expect(postRepo.count).toHaveBeenCalledTimes(2);
+      expect(res.slug).toMatch(/^frieren-[a-z0-9]{6}$/);
     });
   });
 
@@ -254,6 +294,36 @@ describe('PostService', () => {
         1,
       );
       expect(res.content).toBe('Tuyệt vời!');
+    });
+
+    it('resolves slug to numeric postId in findComments before querying comments', async () => {
+      postRepo.findOne.mockResolvedValue({
+        id: id('77'),
+        slug: 'bronya-x9y8z7',
+      });
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        clone: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(0),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      commentRepo.createQueryBuilder.mockReturnValue(qb);
+
+      const res = await service.findComments(id('bronya-x9y8z7'), {});
+
+      expect(postRepo.findOne).toHaveBeenCalledWith({
+        where: { slug: 'bronya-x9y8z7' },
+      });
+      expect(qb.where).toHaveBeenCalledWith('comment.postId = :postId', {
+        postId: id('77'),
+      });
+      expect(res.data).toEqual([]);
     });
   });
 });

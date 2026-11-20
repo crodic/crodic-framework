@@ -42,7 +42,9 @@ function slugify(text: string): string {
     .trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 150)
+    .replace(/-+$/g, '');
 }
 
 @Injectable()
@@ -266,19 +268,26 @@ export class PostService {
   }
 
   /**
-   * Find post detail by slug.
+   * Find post detail by slug or numeric ID fallback.
    */
   async findBySlug(
-    slug: string,
+    slugOrId: string,
     currentUserId?: AutoIncrementID,
   ): Promise<PostDetailResDto> {
-    const post = await this.postRepo.findOne({
-      where: { slug },
+    let post = await this.postRepo.findOne({
+      where: { slug: slugOrId },
       relations: ['author'],
     });
 
+    if (!post && /^\d+$/.test(String(slugOrId))) {
+      post = await this.postRepo.findOne({
+        where: { id: slugOrId as unknown as AutoIncrementID },
+        relations: ['author'],
+      });
+    }
+
     if (!post) {
-      throw new NotFoundException(`Post "${slug}" not found`);
+      throw new NotFoundException(`Post "${slugOrId}" not found`);
     }
 
     // Increment views count asynchronously
@@ -317,6 +326,27 @@ export class PostService {
     );
   }
 
+  private async generateUniqueSlug(dto: CreatePostReqDto): Promise<string> {
+    let baseSlug = slugify(dto.title);
+    if (!baseSlug) {
+      baseSlug =
+        slugify(dto.characterName || dto.fandomName || '') || 'cosplay-post';
+    }
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const shortHash = Math.random().toString(36).slice(2, 8).padEnd(6, '0');
+      const candidate = `${baseSlug}-${shortHash}`;
+      const existingCount = await this.postRepo.count({
+        where: { slug: candidate },
+      });
+      if (existingCount === 0) {
+        return candidate;
+      }
+    }
+
+    return `${baseSlug}-${Date.now().toString(36)}`;
+  }
+
   /**
    * Create post / studio album.
    */
@@ -324,16 +354,7 @@ export class PostService {
     authorId: AutoIncrementID,
     dto: CreatePostReqDto,
   ): Promise<PostDetailResDto> {
-    let slugCandidate = slugify(dto.title);
-    if (!slugCandidate) {
-      slugCandidate = `post-${Date.now().toString(36)}`;
-    }
-    const slugCollision = await this.postRepo.count({
-      where: { slug: slugCandidate },
-    });
-    if (slugCollision > 0) {
-      slugCandidate = `${slugCandidate}-${Date.now().toString(36).slice(-4)}`;
-    }
+    const slugCandidate = await this.generateUniqueSlug(dto);
 
     return await this.dataSource.transaction(async (em) => {
       const post = em.create(PostEntity, {
@@ -730,14 +751,22 @@ export class PostService {
   // =================== COMMENTS ===================
 
   async findComments(
-    postId: AutoIncrementID,
+    postIdOrSlug: AutoIncrementID,
     query: QueryParams,
     currentUserId?: AutoIncrementID,
   ): Promise<Paginated<PostCommentResDto>> {
+    let resolvedPostId = postIdOrSlug;
+    if (!/^\d+$/.test(String(postIdOrSlug))) {
+      const post = await this.postRepo.findOne({
+        where: { slug: String(postIdOrSlug) },
+      });
+      resolvedPostId = (post ? post.id : '0') as unknown as AutoIncrementID;
+    }
+
     const baseQb = this.commentRepo
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.author', 'author')
-      .where('comment.postId = :postId', { postId });
+      .where('comment.postId = :postId', { postId: resolvedPostId });
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedSorts(['createdAt', 'likesCount'])

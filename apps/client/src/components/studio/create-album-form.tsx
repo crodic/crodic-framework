@@ -116,7 +116,7 @@ export function CreateAlbumForm({
       toast.success(t("publishSuccess"));
       onSuccess?.(values);
       if (created?.slug) {
-        router.push(`/post/${created.slug}`);
+        router.push(`/posts/${created.slug}`);
       } else {
         router.push("/profile");
       }

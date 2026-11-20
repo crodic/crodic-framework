@@ -144,7 +144,7 @@ export default async function sitemap(props: {
         entries.push(
           ...buildLocalizedEntries(
             baseUrl,
-            `/post/${slugOrId}`,
+            `/posts/${slugOrId}`,
             post.publishedAt ? new Date(post.publishedAt) : now,
             "weekly",
             0.7
