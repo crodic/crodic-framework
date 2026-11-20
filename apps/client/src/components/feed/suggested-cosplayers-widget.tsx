@@ -40,6 +40,7 @@ export function SuggestedCosplayersWidget() {
       setFollowingMap((prev) => ({ ...prev, [userId]: res.following }));
       queryClient.invalidateQueries({ queryKey: ["suggested-cosplayers"] });
       queryClient.invalidateQueries({ queryKey: ["my-following"] });
+      queryClient.invalidateQueries({ queryKey: ["following-feed-posts"] });
       if (res.following) {
         toast.success(tCos("followedSuccess", { name }));
       } else {

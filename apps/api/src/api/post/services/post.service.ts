@@ -169,6 +169,103 @@ export class PostService {
   }
 
   /**
+   * Get personalized following feed for current user.
+   * Returns posts from creators that current user follows, plus user's own posts.
+   */
+  async getFeed(
+    currentUserId: AutoIncrementID,
+    query: QueryParams,
+  ): Promise<Paginated<PostSummaryResDto>> {
+    const baseQb = this.postRepo
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .where('post.status = :publishedStatus', {
+        publishedStatus: EPostStatus.PUBLISHED,
+      })
+      .andWhere(
+        new Brackets((b) => {
+          b.where('post.isPublic = true').orWhere(
+            'post.authorId = :currentUserId',
+            { currentUserId },
+          );
+        }),
+      )
+      .andWhere(
+        new Brackets((b) => {
+          b.where('post.authorId = :currentUserId', { currentUserId }).orWhere(
+            'EXISTS (SELECT 1 FROM user_follows uf WHERE uf.follower_id = :currentUserId AND uf.following_id = post.author_id)',
+            { currentUserId },
+          );
+        }),
+      );
+
+    const paginated = await QueryBuilder.for(baseQb, query)
+      .allowedFilters([
+        AllowedFilter.exact('postType'),
+        AllowedFilter.exact('albumCategory'),
+        AllowedFilter.exact('authorId'),
+        AllowedFilter.exact('isFeaturedWork'),
+        AllowedFilter.partial('title'),
+        AllowedFilter.partial('characterName'),
+        AllowedFilter.partial('fandomName'),
+      ])
+      .allowedSorts([
+        'publishedAt',
+        'trendingScore',
+        'likesCount',
+        'viewsCount',
+        'commentsCount',
+        'createdAt',
+      ])
+      .defaultSort('-publishedAt')
+      .paginate();
+
+    const postIds = paginated.data.map((p) => p.id);
+    let likedPostIds = new Set<string>();
+    let savedPostIds = new Set<string>();
+
+    if (currentUserId && postIds.length > 0) {
+      const [likes, savedItems] = await Promise.all([
+        this.likeRepo.find({
+          where: { userId: currentUserId, postId: In(postIds) },
+        }),
+        this.dataSource
+          .getRepository(CollectionItemEntity)
+          .createQueryBuilder('item')
+          .innerJoin('item.collection', 'col')
+          .where('col.userId = :userId', { userId: currentUserId })
+          .andWhere('item.postId IN (:...postIds)', { postIds })
+          .select(['item.postId AS "postId"'])
+          .getRawMany(),
+      ]);
+      likedPostIds = new Set(likes.map((l) => String(l.postId)));
+      savedPostIds = new Set(savedItems.map((s) => String(s.postId)));
+    }
+
+    const authorIds = Array.from(
+      new Set(paginated.data.map((p) => p.authorId)),
+    );
+    const [profileMap, mediaByPostId] = await Promise.all([
+      this.loadProfileMap(authorIds),
+      this.loadMediaPreviewsByPostIds(postIds),
+    ]);
+
+    const mapped = paginated.data.map((post) => {
+      const profile = profileMap.get(String(post.authorId));
+      const previews = mediaByPostId.get(String(post.id));
+      return this.toSummaryDto(
+        post,
+        profile,
+        likedPostIds.has(String(post.id)),
+        previews,
+        savedPostIds.has(String(post.id)),
+      );
+    });
+
+    return new Paginated(mapped, paginated.meta, paginated.links);
+  }
+
+  /**
    * Find post detail by slug.
    */
   async findBySlug(

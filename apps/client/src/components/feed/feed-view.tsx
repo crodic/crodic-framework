@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Loader2, Users } from "lucide-react";
+import { Compass, Loader2, LogIn, Users } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { CreatePostCard } from "./create-post-card";
@@ -9,17 +11,18 @@ import { TrendingTagsBar } from "./trending-tags-bar";
 import { FeedPostCard } from "./feed-post-card";
 import { SuggestedCosplayersWidget } from "./suggested-cosplayers-widget";
 import { UpcomingEventsWidget } from "./upcoming-events-widget";
-import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { getFollowingFeed, type PostSummaryResDto } from "@/services/posts";
 import { useAuthStore } from "@/store/use-auth-store";
 
 export function FeedView() {
   const t = useTranslations("Feed");
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
   const { data: postsResponse, isLoading } = useQuery({
-    queryKey: ["public-feed-posts"],
-    queryFn: () => getPosts({ limit: 30 }),
-    enabled: !isHydrating,
+    queryKey: ["following-feed-posts", isAuthenticated],
+    queryFn: () => getFollowingFeed({ limit: 30 }),
+    enabled: !isHydrating && isAuthenticated,
   });
 
   const posts: PostSummaryResDto[] = useMemo(() => {
@@ -64,13 +67,63 @@ export function FeedView() {
               ))}
             </div>
           ) : (
-            <div className="border-border/70 bg-card/50 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
+            <div className="border-border/70 bg-card/50 flex flex-col items-center justify-center rounded-2xl border border-dashed p-8 py-16 text-center">
               <div className="bg-muted/80 text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
-                <Users className="size-7" />
+                {!isAuthenticated ? (
+                  <LogIn className="size-7" />
+                ) : (
+                  <Users className="size-7" />
+                )}
               </div>
-              <p className="text-muted-foreground mt-4 text-xs font-medium">
-                {t("emptyFeed")}
+              <h3 className="text-foreground mt-4 text-sm font-bold sm:text-base">
+                {!isAuthenticated
+                  ? t("emptyFeedGuestTitle") || "Sign in to view your feed"
+                  : t("emptyFeedAuthTitle") || "Your feed is waiting for you"}
+              </h3>
+              <p className="text-muted-foreground mt-1.5 max-w-sm text-xs leading-relaxed">
+                {!isAuthenticated
+                  ? t("emptyFeedGuestDesc") ||
+                    "Log in to follow creators and see their latest albums and photosets here."
+                  : t("emptyFeedAuthDesc") ||
+                    "You haven't followed any creators yet. Follow creators from the suggestions or check out Explore!"}
               </p>
+              {!isAuthenticated ? (
+                <div className="mt-5 flex items-center gap-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="rounded-xl px-4 text-xs font-semibold"
+                  >
+                    <Link href="/auth/login?from=/feed">
+                      <LogIn className="mr-1.5 size-3.5" />
+                      {t("signInBtn") || "Sign In"}
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl px-4 text-xs"
+                  >
+                    <Link href="/explore">
+                      <Compass className="mr-1.5 size-3.5" />
+                      {t("exploreBtn") || "Explore Community"}
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="mt-5 rounded-xl px-4 text-xs font-semibold"
+                >
+                  <Link href="/explore">
+                    <Compass className="mr-1.5 size-3.5" />
+                    {t("exploreBtn") || "Explore Creators"}
+                  </Link>
+                </Button>
+              )}
             </div>
           )}
         </div>

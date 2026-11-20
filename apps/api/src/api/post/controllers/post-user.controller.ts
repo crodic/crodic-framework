@@ -1,3 +1,4 @@
+import { QueryParams } from '../../../common/query-builder';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiAuth } from '../../../decorators/http.decorators';
@@ -6,10 +7,12 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -21,6 +24,7 @@ import {
 import {
   PostCommentResDto,
   PostDetailResDto,
+  PostSummaryResDto,
   ToggleLikeResDto,
 } from '../dto/post-res.dto';
 import { PostService } from '../services/post.service';
@@ -30,6 +34,19 @@ import { PostService } from '../services/post.service';
 @UseGuards(UserAuthGuard)
 export class PostUserController {
   constructor(private readonly postService: PostService) {}
+
+  @Get('feed')
+  @ApiAuth({
+    type: PostSummaryResDto,
+    summary: 'Get personalized following feed for current user',
+    isQueryBuilder: true,
+  })
+  getFeed(
+    @CurrentUser('id') currentUserId: AutoIncrementID,
+    @Query() query: QueryParams,
+  ) {
+    return this.postService.getFeed(currentUserId, query);
+  }
 
   @Post()
   @ApiAuth({

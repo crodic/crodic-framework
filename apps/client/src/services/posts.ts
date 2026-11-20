@@ -154,6 +154,30 @@ export const getPosts = async (
   return data;
 };
 
+export const getFollowingFeed = async (
+  query?: Record<string, any>,
+  options?: RequestOptions
+): Promise<PaginatedResponse<PostSummaryResDto>> => {
+  const searchParams = new URLSearchParams();
+  if (query) {
+    for (const [key, val] of Object.entries(query)) {
+      if (val !== undefined && val !== null) {
+        searchParams.append(key, String(val));
+      }
+    }
+  }
+  const qs = searchParams.toString();
+  const url = `/api/v1/posts/feed${qs ? `?${qs}` : ""}`;
+  const headers: Record<string, string> = {};
+  if (options?.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url, {
+    headers,
+  });
+  return data;
+};
+
 export const getPostBySlug = async (
   slug: string,
   options?: RequestOptions
