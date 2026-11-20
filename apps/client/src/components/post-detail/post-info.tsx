@@ -56,7 +56,8 @@ export function PostInfo({
   const locale = useLocale();
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const { data: profile } = useProfile();
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const { data: profile, isLoading: isProfileLoading } = useProfile();
   const currentAuthorName = profile?.fullName || profile?.firstName || "You";
   const currentAuthorAvatar = profile?.avatar || "/logo.png";
 
@@ -81,7 +82,13 @@ export function PostInfo({
   const { data: remoteIsFollowing = false } = useQuery({
     queryKey: ["is-following", post.author.id],
     queryFn: () => checkIsFollowing(post.author.id),
-    enabled: Boolean(isAuthenticated && !isOwnPost && post.author.id),
+    enabled: Boolean(
+      !isHydrating &&
+      isAuthenticated &&
+      !isProfileLoading &&
+      !isOwnPost &&
+      post.author.id
+    ),
     staleTime: 1000 * 60 * 2,
   });
 
@@ -278,31 +285,33 @@ export function PostInfo({
         </Link>
 
         <div className="flex shrink-0 items-center gap-2">
-          {!isOwnPost && (
-            <Button
-              type="button"
-              size="sm"
-              variant={isFollowing ? "outline" : "default"}
-              onClick={handleToggleFollow}
-              className={cn(
-                "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
-                !isFollowing &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90"
-              )}
-            >
-              {isFollowing ? (
-                <>
-                  <Check className="mr-1 size-3" />
-                  <span>{t("following")}</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-1 size-3" />
-                  <span>{t("follow")}</span>
-                </>
-              )}
-            </Button>
-          )}
+          {!isHydrating &&
+            !(isAuthenticated && isProfileLoading) &&
+            !isOwnPost && (
+              <Button
+                type="button"
+                size="sm"
+                variant={isFollowing ? "outline" : "default"}
+                onClick={handleToggleFollow}
+                className={cn(
+                  "h-8 cursor-pointer rounded-xl px-3 text-xs font-semibold",
+                  !isFollowing &&
+                    "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                {isFollowing ? (
+                  <>
+                    <Check className="mr-1 size-3" />
+                    <span>{t("following")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-1 size-3" />
+                    <span>{t("follow")}</span>
+                  </>
+                )}
+              </Button>
+            )}
 
           {isModal && onClose && (
             <button

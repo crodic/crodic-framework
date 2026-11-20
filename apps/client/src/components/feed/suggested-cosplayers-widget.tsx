@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,21 +11,20 @@ import { useTranslations } from "next-intl";
 import { getSuggestedCosplayers } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
-import { useRouter } from "@/i18n/navigation";
-import { useProfile } from "@/hooks/use-profile";
 
 export function SuggestedCosplayersWidget() {
   const t = useTranslations("Feed");
   const tCos = useTranslations("CosplayerProfile");
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const { data: currentUser } = useProfile();
+  const isHydrating = useAuthStore((state) => state.isHydrating);
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
-  const { data: cosplayers = [] } = useQuery({
-    queryKey: ["suggested-cosplayers", currentUser?.id],
+  const { data: cosplayers = [], isLoading } = useQuery({
+    queryKey: ["suggested-cosplayers", isAuthenticated],
     queryFn: () => getSuggestedCosplayers({ limit: 4 }),
+    enabled: !isHydrating,
   });
 
   const handleToggleFollow = async (userId: string, name: string) => {
@@ -50,6 +49,34 @@ export function SuggestedCosplayersWidget() {
       toast.error(tCos("followError"));
     }
   };
+
+  if (isHydrating || isLoading) {
+    return (
+      <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
+        <div className="mb-3.5 flex items-center justify-between">
+          <div className="bg-muted h-4 w-36 animate-pulse rounded-md" />
+          <div className="bg-muted h-3 w-12 animate-pulse rounded-md" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between gap-2.5"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="bg-muted size-9 shrink-0 animate-pulse rounded-full" />
+                <div className="space-y-1.5">
+                  <div className="bg-muted h-3 w-24 animate-pulse rounded-sm" />
+                  <div className="bg-muted/70 h-2.5 w-16 animate-pulse rounded-sm" />
+                </div>
+              </div>
+              <div className="bg-muted h-7.5 w-18 shrink-0 animate-pulse rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!cosplayers || cosplayers.length === 0) return null;
 
@@ -113,8 +140,8 @@ export function SuggestedCosplayersWidget() {
                 </div>
               </Link>
 
-              {/* Follow Toggle Button - Only show when authenticated and not self */}
-              {isAuthenticated && currentUser?.id !== item.userId && (
+              {/* Follow Toggle Button - Server excludes current user when hydrated */}
+              {isAuthenticated && (
                 <Button
                   size="sm"
                   variant={isFollowing ? "outline" : "default"}
