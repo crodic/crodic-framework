@@ -231,6 +231,11 @@ const PagePlatformSettings = lazy(() =>
     default: m.PagePlatformSettings,
   }))
 )
+const PageRankingSettings = lazy(() =>
+  import('@/pages/ranking-settings').then((m) => ({
+    default: m.PageRankingSettings,
+  }))
+)
 
 const appRoutes: RouteObject[] = [
   {
@@ -668,6 +673,14 @@ const appRoutes: RouteObject[] = [
         element: (
           <RouteAuthorize action='read' subject='SETTING'>
             <PagePlatformSettings />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/ranking-settings',
+        element: (
+          <RouteAuthorize action='read' subject='RANKING'>
+            <PageRankingSettings />
           </RouteAuthorize>
         ),
       },

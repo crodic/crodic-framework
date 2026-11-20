@@ -73,6 +73,10 @@ export const groupPermission = [
     permissions: ['read', 'update'],
   },
   {
+    group: 'RANKING',
+    permissions: ['read', 'update', 'manage'],
+  },
+  {
     group: 'manage',
     permissions: ['all'],
   },
@@ -179,6 +183,11 @@ export const permissions = [
   // SETTING
   { action: 'read', subject: 'SETTING' },
   { action: 'update', subject: 'SETTING' },
+
+  // RANKING
+  { action: 'read', subject: 'RANKING' },
+  { action: 'update', subject: 'RANKING' },
+  { action: 'manage', subject: 'RANKING' },
 
   // SUPER
   { action: 'manage', subject: 'all' },

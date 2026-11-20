@@ -3,4 +3,5 @@ export enum SettingKeys {
   WEBSITE = 'website',
   RUNTIME_THEMES = 'runtime_themes',
   KOSUME = 'kosume',
+  RANKING = 'ranking',
 }

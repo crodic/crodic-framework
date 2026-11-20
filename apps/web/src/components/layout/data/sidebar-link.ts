@@ -20,6 +20,7 @@ import {
   GalleryHorizontalEnd,
   Image as ImageIcon,
   Sliders,
+  Trophy,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -144,6 +145,12 @@ export const sidebarLink: SidebarData = {
           url: '/spotlight-banners',
           icon: GalleryHorizontalEnd,
           permission: 'SPOTLIGHT',
+        },
+        {
+          title: 'navigation.kosume.ranking',
+          url: '/ranking-settings',
+          icon: Trophy,
+          permission: 'RANKING',
         },
         {
           title: 'navigation.kosume.settings',

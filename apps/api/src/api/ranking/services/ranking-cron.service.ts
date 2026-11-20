@@ -1,0 +1,56 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { RankingService } from './ranking.service';
+
+@Injectable()
+export class RankingCronService {
+  private readonly logger = new Logger(RankingCronService.name);
+
+  constructor(private readonly rankingService: RankingService) {}
+
+  /**
+   * Weekly Cron: Runs every Monday at 00:00 (Midnight)
+   */
+  @Cron(CronExpression.EVERY_WEEK)
+  async handleWeeklyRankingSnapshot() {
+    this.logger.log('Weekly Ranking Snapshot Cron triggered.');
+    const settings = await this.rankingService.getSettings();
+    if (!settings.enableCronJob) {
+      this.logger.log('Ranking Cron Job is disabled in settings. Skipping.');
+      return;
+    }
+
+    try {
+      const result = await this.rankingService.triggerSnapshotRecalculate();
+      this.logger.log(`Weekly Ranking Snapshot completed: ${result.message}`);
+    } catch (err: any) {
+      this.logger.error(
+        `Weekly Ranking Snapshot failed: ${err.message}`,
+        err.stack,
+      );
+    }
+  }
+
+  /**
+   * Monthly Cron: Runs on the 1st of every month at 00:00
+   */
+  @Cron('0 0 1 * *')
+  async handleMonthlyRankingSnapshot() {
+    this.logger.log('Monthly Ranking Snapshot Cron triggered.');
+    const settings = await this.rankingService.getSettings();
+    if (!settings.enableCronJob) {
+      this.logger.log('Ranking Cron Job is disabled in settings. Skipping.');
+      return;
+    }
+
+    try {
+      const result = await this.rankingService.triggerSnapshotRecalculate();
+      this.logger.log(`Monthly Ranking Snapshot completed: ${result.message}`);
+    } catch (err: any) {
+      this.logger.error(
+        `Monthly Ranking Snapshot failed: ${err.message}`,
+        err.stack,
+      );
+    }
+  }
+}
