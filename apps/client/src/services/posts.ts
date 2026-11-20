@@ -57,6 +57,7 @@ export interface PostSummaryResDto {
   tagNamesCache: string[];
   collaborators?: PostCollaboratorDto[];
   isPublic: boolean;
+  enableWatermark?: boolean;
   status: "draft" | "published" | "archived" | "moderation_flagged";
   isFeaturedWork: boolean;
   photosCount: number;
@@ -221,11 +222,47 @@ export const getPostComments = async (
   return data || [];
 };
 
+export interface UpdatePostPayload {
+  title?: string;
+  caption?: string;
+  postType?: "photoset" | "wip" | "crafting" | "video";
+  albumCategory?:
+    | "series"
+    | "general"
+    | "group"
+    | "premium"
+    | "event"
+    | "original"
+    | "studio"
+    | "casual";
+  characterName?: string;
+  fandomName?: string;
+  coverImageUrl?: string;
+  tags?: string[];
+  isPublic?: boolean;
+  enableWatermark?: boolean;
+}
+
 export const createPost = async (
   payload: CreatePostPayload
 ): Promise<PostDetailResDto> => {
   const { data } = await http.post<PostDetailResDto>("/api/v1/posts", payload);
   return data;
+};
+
+export const updatePost = async (
+  postId: string,
+  payload: UpdatePostPayload
+): Promise<PostDetailResDto> => {
+  const { data } = await http.patch<PostDetailResDto>(
+    `/api/v1/posts/${postId}`,
+    payload
+  );
+  return data;
+};
+
+export const deletePost = async (postId: string): Promise<void> => {
+  await http.delete(`/api/v1/posts/${postId}`);
 };
 
 export interface ToggleLikeResDto {

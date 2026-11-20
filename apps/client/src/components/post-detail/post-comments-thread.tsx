@@ -39,6 +39,7 @@ interface PostCommentsThreadProps {
   postId: string;
   initialComments?: PostCommentResDto[];
   headerContent?: React.ReactNode;
+  isMobileView?: boolean;
 }
 
 interface ReplyingTarget {
@@ -50,6 +51,7 @@ export function PostCommentsThread({
   postId,
   initialComments = [],
   headerContent,
+  isMobileView = false,
 }: PostCommentsThreadProps) {
   const t = useTranslations("Feed");
   const locale = useLocale();
@@ -265,7 +267,12 @@ export function PostCommentsThread({
       )}
 
       {/* 2. Scrollable Comments List (with optional headerContent at the top) */}
-      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5">
+      <div
+        className={cn(
+          "space-y-4 px-4 py-4 sm:px-5",
+          isMobileView ? "overflow-visible" : "flex-1 overflow-y-auto"
+        )}
+      >
         {headerContent}
 
         {headerContent && (
@@ -581,7 +588,12 @@ export function PostCommentsThread({
       </div>
 
       {/* 3. Sticky Bottom Reply Form */}
-      <div className="border-border/60 bg-card/95 pb-safe shrink-0 border-t px-3.5 py-3 backdrop-blur-md sm:px-5">
+      <div
+        className={cn(
+          "border-border/60 bg-card/95 pb-safe shrink-0 border-t px-3.5 py-3 backdrop-blur-md sm:px-5",
+          isMobileView && "sticky bottom-0 z-30"
+        )}
+      >
         {/* Replying banner */}
         {replyingTo && (
           <div className="bg-primary/10 text-primary mb-2 flex items-center justify-between rounded-xl px-3 py-1.5 text-xs">

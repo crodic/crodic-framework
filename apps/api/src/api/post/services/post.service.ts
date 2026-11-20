@@ -522,6 +522,19 @@ export class PostService {
 
       const savedPost = await em.save(PostEntity, post);
 
+      if (dto.tags !== undefined && this.entityTaggingService) {
+        try {
+          await this.entityTaggingService.syncAuthorTags(
+            ETaggableEntityType.POST,
+            savedPost.id,
+            { tagNames: dto.tags, ownerUserId: authorId },
+            { userId: authorId },
+          );
+        } catch {
+          // Gracefully continue
+        }
+      }
+
       const [mediaList, profile] = await Promise.all([
         em.find(PostMediaEntity, {
           where: { postId },
@@ -530,7 +543,14 @@ export class PostService {
         em.findOne(CosplayerProfileEntity, { where: { userId: authorId } }),
       ]);
 
-      return this.toDetailDto(savedPost, mediaList, profile, false);
+      return this.toDetailDto(
+        savedPost,
+        mediaList,
+        profile,
+        false,
+        false,
+        dto.tags,
+      );
     });
   }
 

@@ -14,7 +14,11 @@ export function TrendingTagsBar() {
 
   const { data: tags = [] } = useQuery<TagSummaryResDto[]>({
     queryKey: ["feed-trending-tags", locale],
-    queryFn: () => getTrendingTags(10, locale),
+    queryFn: async () => {
+      const fandoms = await getTrendingTags(10, locale, "copyright");
+      if (fandoms && fandoms.length >= 4) return fandoms;
+      return getTrendingTags(10, locale);
+    },
     staleTime: 60 * 1000,
   });
 

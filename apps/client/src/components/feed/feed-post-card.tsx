@@ -13,6 +13,8 @@ import {
   SendHorizontal,
   Share2,
   Loader2,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,8 +22,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { EditPostModal } from "@/components/studio/edit-post-modal";
+import { deletePost, type PostSummaryResDto } from "@/services/posts";
 import {
   Form,
   FormControl,
@@ -32,7 +47,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { PostSummaryResDto } from "@/services/posts";
 import { PhotoLightbox } from "./photo-lightbox";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -87,6 +101,28 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   // Fullscreen Photo Lightbox State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const isOwnPost = Boolean(profile?.id && profile.id === post.author.id);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeletePost = async () => {
+    try {
+      setIsDeleting(true);
+      await deletePost(post.id);
+      toast.success(t("deletePostSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["following-feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["my-cosplayer-profile"] });
+      setIsDeleteDialogOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete post");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const images =
     post.collagePreviewUrls && post.collagePreviewUrls.length > 0
@@ -279,6 +315,25 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 <Bookmark className="mr-2 size-4" />
                 <span>{isBookmarked ? t("unsavePost") : t("savePost")}</span>
               </DropdownMenuItem>
+              {isOwnPost && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="cursor-pointer text-xs"
+                  >
+                    <Pencil className="mr-2 size-4" />
+                    <span>{t("editPost")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="text-destructive focus:text-destructive cursor-pointer text-xs"
+                  >
+                    <Trash2 className="mr-2 size-4" />
+                    <span>{t("deletePost")}</span>
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -578,6 +633,54 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         }}
         caption={captionText}
       />
+
+      {/* Author Actions: Edit Post Modal & Delete Confirm Dialog */}
+      {isOwnPost && (
+        <>
+          <EditPostModal
+            post={post}
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+          />
+
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <AlertDialogContent className="rounded-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-base font-bold">
+                  {t("deletePostConfirmTitle")}
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs">
+                  {t("deletePostConfirmDesc")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  disabled={isDeleting}
+                  className="rounded-xl text-xs"
+                >
+                  {t("close")}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDeletePost();
+                  }}
+                  disabled={isDeleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold"
+                >
+                  {isDeleting && (
+                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                  )}
+                  {t("deletePost")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
+      )}
     </>
   );
 }

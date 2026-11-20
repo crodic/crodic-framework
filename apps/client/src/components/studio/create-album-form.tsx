@@ -24,7 +24,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
 import type { ImagePayload } from "@/components/form/types";
-import { autocompleteTags, type TagAutocompleteItemDto } from "@/services/tags";
+import { TagPicker } from "./tag-picker";
 import { getAlbumSchema, type CreateAlbumFormValues } from "./schema";
 
 export interface CreateAlbumFormProps {
@@ -49,15 +49,6 @@ export function CreateAlbumForm({
   const locale = useLocale();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [newTagInput, setNewTagInput] = useState("");
-  const [isAddingTag, setIsAddingTag] = useState(false);
-
-  const { data: tagSuggestions = [] } = useQuery<TagAutocompleteItemDto[]>({
-    queryKey: ["tag-autocomplete", newTagInput.trim(), locale],
-    queryFn: () => autocompleteTags(newTagInput.trim(), locale),
-    enabled: isAddingTag && newTagInput.trim().length > 0,
-    staleTime: 30 * 1000,
-  });
 
   const albumSchema = useMemo(() => getAlbumSchema(t as any), [t]);
 
@@ -97,6 +88,12 @@ export function CreateAlbumForm({
           sortOrder: item.order ?? i,
           isCover: coverIndex === i || (coverIndex === null && i === 0),
         });
+      }
+
+      if (uploadedMediaList.length === 0) {
+        throw new Error(
+          t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!"
+        );
       }
 
       if (uploadedMediaList.length === 0) {
@@ -146,36 +143,6 @@ export function CreateAlbumForm({
   });
 
   const isSubmitting = createPostMutation.isPending;
-
-  const handleAddTag = () => {
-    const trimmed = newTagInput.trim().replace(/^#/, "");
-    if (!trimmed) {
-      setIsAddingTag(false);
-      return;
-    }
-    if (!tags.includes(trimmed)) {
-      form.setValue("tags", [...tags, trimmed], { shouldValidate: true });
-    }
-    setNewTagInput("");
-    setIsAddingTag(false);
-  };
-
-  const handleSelectSuggestion = (tagName: string) => {
-    const trimmed = tagName.trim().replace(/^#/, "");
-    if (trimmed && !tags.includes(trimmed)) {
-      form.setValue("tags", [...tags, trimmed], { shouldValidate: true });
-    }
-    setNewTagInput("");
-    setIsAddingTag(false);
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    form.setValue(
-      "tags",
-      tags.filter((t) => t !== tagToRemove),
-      { shouldValidate: true }
-    );
-  };
 
   const onSubmit = (values: CreateAlbumFormValues) => {
     if (!imagesPayload || imagesPayload.length === 0) {
@@ -255,101 +222,23 @@ export function CreateAlbumForm({
             )}
           />
 
-          {/* Tag Pills */}
+          {/* Tag Pills (Pixiv Style) */}
           <FormField
             control={form.control}
             name="tags"
-            render={() => (
+            render={({ field }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
                   {t("tagCharacter")}
                 </FormLabel>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-primary/15 text-primary border-primary/25 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium"
-                    >
-                      #{tag}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="hover:bg-primary/20 hover:text-primary-foreground ml-0.5 cursor-pointer rounded-full p-0.5 transition-colors"
-                        title={t("removeTag", { tag })}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </span>
-                  ))}
-
-                  {isAddingTag ? (
-                    <div className="relative inline-flex items-center gap-1">
-                      <Input
-                        autoFocus
-                        value={newTagInput}
-                        onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddTag();
-                          } else if (e.key === "Escape") {
-                            setIsAddingTag(false);
-                            setNewTagInput("");
-                          }
-                        }}
-                        onBlur={() => {
-                          // Allow onMouseDown on dropdown items to fire before blur closes it
-                          setTimeout(() => {
-                            if (newTagInput.trim()) {
-                              handleAddTag();
-                            } else {
-                              setIsAddingTag(false);
-                            }
-                          }, 150);
-                        }}
-                        placeholder={t("tagCharacter")}
-                        className="h-7 w-32 rounded-md px-2 text-xs"
-                      />
-
-                      {/* Tag Management Autocomplete suggestions dropdown */}
-                      {tagSuggestions.length > 0 && (
-                        <div className="border-border/80 bg-popover/95 absolute top-full left-0 z-50 mt-1 max-h-48 w-48 overflow-y-auto rounded-xl border p-1 shadow-xl backdrop-blur-md">
-                          {tagSuggestions.map((sug) => (
-                            <button
-                              key={sug.id}
-                              type="button"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                handleSelectSuggestion(sug.name);
-                              }}
-                              className="hover:bg-muted flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-colors"
-                            >
-                              <span className="text-foreground font-medium">
-                                #{sug.name}
-                              </span>
-                              {sug.usageCount > 0 && (
-                                <span className="text-muted-foreground text-[10px]">
-                                  {sug.usageCount}
-                                </span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsAddingTag(true)}
-                      className="border-border/60 hover:border-primary/60 hover:text-primary h-7 cursor-pointer rounded-lg px-2 text-xs font-medium"
-                    >
-                      <Plus className="mr-1 size-3" />
-                      {t("tagCharacter")}
-                    </Button>
-                  )}
-                </div>
+                <FormControl>
+                  <TagPicker
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    characterHint={form.watch("character")}
+                    fandomHint={form.watch("fandom")}
+                  />
+                </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>
             )}

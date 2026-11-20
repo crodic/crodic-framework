@@ -83,7 +83,7 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
   const activePhoto = photos[current] ?? photos[0] ?? "";
 
   return (
-    <div className="relative flex size-full min-h-[380px] flex-col justify-between overflow-hidden bg-zinc-950 select-none md:min-h-0">
+    <div className="relative flex size-full min-h-0 flex-col justify-between overflow-hidden bg-zinc-950 select-none">
       {/* Ambient blurred backdrop from active image */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {activePhoto && (
@@ -135,8 +135,8 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
                 <div
                   onClick={() => setIsLightboxOpen(true)}
                   className={cn(
-                    "group relative flex h-[380px] w-full cursor-pointer items-center justify-center px-3 pt-12 sm:h-[480px] sm:px-6 md:h-[680px] lg:h-[760px]",
-                    photos.length > 1 ? "pb-10 md:pb-24" : "pb-6"
+                    "group relative flex aspect-[4/5] max-h-[60vh] w-full cursor-pointer items-center justify-center px-2 pt-10 sm:aspect-auto sm:h-[460px] sm:px-6 md:h-[680px] md:pt-12 lg:h-[760px]",
+                    photos.length > 1 ? "pb-8 md:pb-24" : "pb-4"
                   )}
                 >
                   <div className="relative size-full">
