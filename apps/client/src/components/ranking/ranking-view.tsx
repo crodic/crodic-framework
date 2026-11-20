@@ -32,7 +32,7 @@ export function RankingView() {
   }, [rankingResponse]);
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-6">
       {/* 1. Time / Category Filter Pills */}
       <section aria-label={t("title")}>
         <RankingFilterBar

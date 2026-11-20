@@ -89,7 +89,7 @@ export default async function ExplorePage({ params }: ExplorePageProps) {
         }}
       />
 
-      <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
+      <div className="space-y-6">
         <Suspense
           fallback={
             <div className="space-y-6">

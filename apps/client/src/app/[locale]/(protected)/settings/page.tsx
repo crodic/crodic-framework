@@ -34,7 +34,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-[1440px] p-3.5 sm:p-6 lg:p-8">
+      <div className="space-y-6">
         <SettingsView />
       </div>
     </Layout>

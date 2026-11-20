@@ -68,7 +68,7 @@ export function PostStandaloneView({
   const visibleDiscoverPosts = discoverPosts.slice(0, 4);
 
   return (
-    <div className="mx-auto max-w-[1480px] space-y-8 p-3.5 sm:p-6 lg:p-8">
+    <div className="space-y-8">
       {/* 1. Top Navigation & Breadcrumb Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">

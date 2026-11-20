@@ -26,7 +26,7 @@ export default async function StudioUploadPage({ params }: UploadPageProps) {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <div className="space-y-6">
         <div className="mb-6">
           <h1 className="text-foreground text-2xl font-bold tracking-tight">
             {t("createAlbumTitle")}

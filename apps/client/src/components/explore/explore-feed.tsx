@@ -255,7 +255,7 @@ export function ExploreFeed() {
               <Loader2 className="text-primary size-8 animate-spin" />
             </div>
           ) : filteredItems.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
               {filteredItems.map((item) => (
                 <ExploreCard key={item.id} item={item} />
               ))}

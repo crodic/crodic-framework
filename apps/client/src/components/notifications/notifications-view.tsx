@@ -101,7 +101,7 @@ export function NotificationsView() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-6">
       {/* 1. Header Banner & Action Bar */}
       <div className="border-border/70 bg-card/60 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md sm:p-8">
         <div className="bg-primary/15 pointer-events-none absolute -top-24 -right-24 size-72 rounded-full blur-3xl" />

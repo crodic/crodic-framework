@@ -86,7 +86,7 @@ export function EventsView() {
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-6">
       {/* 1. Hero Festival Banner Carousel */}
       {featuredFestivals.length > 0 && (
         <section aria-label={t("spotlightBadge")}>

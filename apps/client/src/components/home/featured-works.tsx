@@ -190,7 +190,7 @@ export function FeaturedWorks() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <div
               key={n}
@@ -202,7 +202,7 @@ export function FeaturedWorks() {
         </div>
       ) : posts.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {posts.map((post) => (
               <WorkCard key={post.id} post={post} />
             ))}
