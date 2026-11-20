@@ -1,11 +1,28 @@
 import { http } from "@/lib/http";
 import type { PaginatedResponse } from "@repo/query-builder";
 
+export interface TagCategoryResDto {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  color: string;
+  icon: string;
+  sortOrder: number;
+  isSystem: boolean;
+  isActive: boolean;
+  tagCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TagSummaryResDto {
   id: string;
   name: string;
   slug: string;
   category?: string;
+  categoryId?: string | null;
+  categoryDetail?: TagCategoryResDto | null;
   usageCount: number;
   trendingScore: number;
   isOfficial?: boolean;
@@ -60,6 +77,22 @@ export const getTrendingTags = async (
 ): Promise<TagSummaryResDto[]> => {
   const { data } = await http.get<TagSummaryResDto[]>(
     `/api/v1/public/tags/trending?limit=${limit}&locale=${locale}`
+  );
+  return data;
+};
+
+export const getTagCategories = async (): Promise<TagCategoryResDto[]> => {
+  const { data } = await http.get<TagCategoryResDto[]>(
+    "/api/v1/public/tag-categories"
+  );
+  return data;
+};
+
+export const getTagCategoryBySlug = async (
+  slug: string
+): Promise<TagCategoryResDto> => {
+  const { data } = await http.get<TagCategoryResDto>(
+    `/api/v1/public/tag-categories/${encodeURIComponent(slug)}`
   );
   return data;
 };

@@ -9,6 +9,7 @@ import {
   ETagStatus,
   ETagTranslationSource,
 } from '../constants/tag.constant';
+import { TagCategoryResDto } from './tag-category-res.dto';
 
 export class TagTranslationResDto {
   @ApiProperty({ type: String })
@@ -60,8 +61,14 @@ export class TagSummaryResDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   featuredImageUrl?: string | null;
 
-  @ApiProperty({ enum: ETagCategory })
-  category!: ETagCategory;
+  @ApiProperty({ type: String, example: 'character' })
+  category!: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  categoryId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({ type: () => TagCategoryResDto, nullable: true })
+  categoryDetail?: TagCategoryResDto | null;
 
   @ApiProperty({ enum: ETagSafetyRating })
   safetyRating!: ETagSafetyRating;
@@ -144,8 +151,8 @@ export class TagAutocompleteItemDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   matchedAlias?: string | null;
 
-  @ApiProperty({ enum: ETagCategory })
-  category!: ETagCategory;
+  @ApiProperty({ type: String, example: 'character' })
+  category!: string;
 
   @ApiProperty({ enum: ETagSafetyRating })
   safetyRating!: ETagSafetyRating;
@@ -176,8 +183,14 @@ export class TagTooltipResDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   featuredImageUrl?: string | null;
 
-  @ApiProperty({ enum: ETagCategory })
-  category!: ETagCategory;
+  @ApiProperty({ type: String, example: 'character' })
+  category!: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  categoryId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({ type: () => TagCategoryResDto, nullable: true })
+  categoryDetail?: TagCategoryResDto | null;
 
   @ApiProperty({ enum: ETagSafetyRating })
   safetyRating!: ETagSafetyRating;
@@ -272,8 +285,8 @@ export class EntityTagItemDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   translatedName?: string | null;
 
-  @ApiProperty({ enum: ETagCategory })
-  category!: ETagCategory;
+  @ApiProperty({ type: String, example: 'character' })
+  category!: string;
 
   @ApiProperty({ enum: ETagSafetyRating })
   safetyRating!: ETagSafetyRating;

@@ -85,10 +85,16 @@ export class CreateTagReqDto {
   @MaxLength(140)
   slug?: string;
 
-  @ApiPropertyOptional({ enum: ETagCategory, default: ETagCategory.GENERAL })
+  @ApiPropertyOptional({ example: 'character', default: 'general' })
   @IsOptional()
-  @IsEnum(ETagCategory)
-  category?: ETagCategory;
+  @IsString()
+  @MaxLength(60)
+  category?: string;
+
+  @ApiPropertyOptional({ type: String, example: '1' })
+  @IsOptional()
+  @IsString()
+  categoryId?: AutoIncrementID;
 
   @ApiPropertyOptional({
     enum: ETagSafetyRating,
@@ -141,10 +147,16 @@ export class UpdateTagReqDto {
   @MaxLength(140)
   slug?: string;
 
-  @ApiPropertyOptional({ enum: ETagCategory })
+  @ApiPropertyOptional({ example: 'character' })
   @IsOptional()
-  @IsEnum(ETagCategory)
-  category?: ETagCategory;
+  @IsString()
+  @MaxLength(60)
+  category?: string;
+
+  @ApiPropertyOptional({ type: String, example: '1' })
+  @IsOptional()
+  @IsString()
+  categoryId?: AutoIncrementID;
 
   @ApiPropertyOptional({ enum: ETagSafetyRating })
   @IsOptional()

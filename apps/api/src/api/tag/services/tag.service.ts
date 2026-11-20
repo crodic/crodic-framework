@@ -38,6 +38,7 @@ import {
 import { EntityTagLogEntity } from '../entities/entity-tag-log.entity';
 import { EntityTagEntity } from '../entities/entity-tag.entity';
 import { TagAliasEntity } from '../entities/tag-alias.entity';
+import { TagCategoryEntity } from '../entities/tag-category.entity';
 import { TagEncyclopediaEntity } from '../entities/tag-encyclopedia.entity';
 import { TagRelationEntity } from '../entities/tag-relation.entity';
 import { TagTranslationEntity } from '../entities/tag-translation.entity';
@@ -100,6 +101,22 @@ export class TagService {
         preferredEnc?.featuredFile?.url ||
         null,
       category: tag.category,
+      categoryId: tag.categoryId ?? null,
+      categoryDetail: tag.categoryRel
+        ? {
+            id: tag.categoryRel.id,
+            slug: tag.categoryRel.slug,
+            name: tag.categoryRel.name,
+            description: tag.categoryRel.description ?? null,
+            color: tag.categoryRel.color,
+            icon: tag.categoryRel.icon,
+            sortOrder: tag.categoryRel.sortOrder,
+            isSystem: tag.categoryRel.isSystem,
+            isActive: tag.categoryRel.isActive,
+            createdAt: tag.categoryRel.createdAt,
+            updatedAt: tag.categoryRel.updatedAt,
+          }
+        : null,
       safetyRating: tag.safetyRating,
       status: tag.status,
       isOfficial: tag.isOfficial,
@@ -130,6 +147,7 @@ export class TagService {
   async findAll(query: QueryParams, locale = 'en', publicOnly = false) {
     const baseQb = this.tagRepository
       .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.categoryRel', 'categoryRel')
       .leftJoinAndSelect('tag.translations', 'translations')
       .leftJoinAndSelect('tag.aliases', 'aliases')
       .leftJoinAndSelect('tag.encyclopedias', 'encyclopedias')
@@ -226,12 +244,27 @@ export class TagService {
         );
       }
 
+      let categoryId = dto.categoryId;
+      let categorySlug = dto.category ?? ETagCategory.GENERAL;
+      if (categoryId && !dto.category) {
+        const cat = await manager.findOne(TagCategoryEntity, {
+          where: { id: categoryId },
+        });
+        if (cat) categorySlug = cat.slug;
+      } else if (categorySlug && !categoryId) {
+        const cat = await manager.findOne(TagCategoryEntity, {
+          where: { slug: categorySlug },
+        });
+        if (cat) categoryId = cat.id;
+      }
+
       const tag = manager.create(TagEntity, {
         name: parsed.displayName,
         slug: parsed.slug,
         normalizedName: parsed.normalizedName,
         unaccentedName: parsed.unaccentedName,
-        category: dto.category ?? ETagCategory.GENERAL,
+        category: categorySlug,
+        categoryId: categoryId ?? null,
         safetyRating: dto.safetyRating ?? ETagSafetyRating.SAFE,
         status: dto.status ?? ETagStatus.ACTIVE,
         isOfficial: dto.isOfficial ?? false,
@@ -302,7 +335,23 @@ export class TagService {
         tag.slug = parsed.slug;
       }
 
-      if (dto.category !== undefined) tag.category = dto.category;
+      if (dto.categoryId !== undefined) {
+        tag.categoryId = dto.categoryId;
+        if (dto.categoryId) {
+          const cat = await manager.findOne(TagCategoryEntity, {
+            where: { id: dto.categoryId },
+          });
+          if (cat) tag.category = cat.slug;
+        }
+      }
+
+      if (dto.category !== undefined) {
+        tag.category = dto.category;
+        const cat = await manager.findOne(TagCategoryEntity, {
+          where: { slug: dto.category },
+        });
+        tag.categoryId = cat ? cat.id : null;
+      }
       if (dto.safetyRating !== undefined) tag.safetyRating = dto.safetyRating;
       if (dto.status !== undefined) tag.status = dto.status;
       if (dto.isOfficial !== undefined) tag.isOfficial = dto.isOfficial;
@@ -355,7 +404,7 @@ export class TagService {
   ): Promise<TagDetailResDto> {
     const tag = await this.tagRepository.findOne({
       where: { id },
-      relations: ['translations', 'aliases', 'mergedInto'],
+      relations: ['categoryRel', 'translations', 'aliases', 'mergedInto'],
     });
 
     if (!tag) {
@@ -385,7 +434,7 @@ export class TagService {
         { slug: slugCandidate },
         { normalizedName: normalized },
       ],
-      relations: ['translations', 'aliases', 'mergedInto'],
+      relations: ['categoryRel', 'translations', 'aliases', 'mergedInto'],
     });
 
     let matchedViaAlias = false;
@@ -401,7 +450,7 @@ export class TagService {
         matchedViaAlias = true;
         tag = await this.tagRepository.findOne({
           where: { id: alias.tagId },
-          relations: ['translations', 'aliases', 'mergedInto'],
+          relations: ['categoryRel', 'translations', 'aliases', 'mergedInto'],
         });
       }
     }
@@ -414,7 +463,7 @@ export class TagService {
         matchedViaAlias = true;
         tag = await this.tagRepository.findOne({
           where: { id: tr.tagId },
-          relations: ['translations', 'aliases', 'mergedInto'],
+          relations: ['categoryRel', 'translations', 'aliases', 'mergedInto'],
         });
       }
     }
@@ -426,7 +475,7 @@ export class TagService {
     if (tag.status === ETagStatus.MERGED && tag.mergedIntoId) {
       const canonical = await this.tagRepository.findOne({
         where: { id: tag.mergedIntoId },
-        relations: ['translations', 'aliases', 'mergedInto'],
+        relations: ['categoryRel', 'translations', 'aliases', 'mergedInto'],
       });
       if (canonical) {
         const detail = await this.hydrateTagDetail(
@@ -563,12 +612,17 @@ export class TagService {
         uniqueSlug = `${parsed.slug}-${Date.now().toString(36).slice(-4)}`;
       }
 
+      const defaultCat = await em.findOne(TagCategoryEntity, {
+        where: { slug: 'general' },
+      });
+
       const created = em.create(TagEntity, {
         name: parsed.displayName,
         slug: uniqueSlug,
         normalizedName: parsed.normalizedName,
         unaccentedName: parsed.unaccentedName,
-        category: ETagCategory.GENERAL,
+        category: defaultCat?.slug ?? ETagCategory.GENERAL,
+        categoryId: defaultCat?.id ?? null,
         safetyRating: ETagSafetyRating.SAFE,
         status: ETagStatus.ACTIVE,
         isOfficial: false,

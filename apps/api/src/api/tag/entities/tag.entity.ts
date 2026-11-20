@@ -19,6 +19,7 @@ import {
   ETagStatus,
 } from '../constants/tag.constant';
 import { TagAliasEntity } from './tag-alias.entity';
+import { TagCategoryEntity } from './tag-category.entity';
 import { TagEncyclopediaEntity } from './tag-encyclopedia.entity';
 import { TagRelationEntity } from './tag-relation.entity';
 import { TagTranslationEntity } from './tag-translation.entity';
@@ -62,11 +63,24 @@ export class TagEntity extends AbstractEntity {
   unaccentedName!: string;
 
   @Column({
-    type: 'enum',
-    enum: ETagCategory,
-    default: ETagCategory.GENERAL,
+    type: 'varchar',
+    length: 60,
+    default: 'general',
   })
-  category!: ETagCategory;
+  category!: string;
+
+  @Column({ name: 'category_id', type: 'bigint', nullable: true })
+  categoryId?: AutoIncrementID | null;
+
+  @ManyToOne(() => TagCategoryEntity, (cat) => cat.tags, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({
+    name: 'category_id',
+    foreignKeyConstraintName: 'FK_tags_category_id',
+  })
+  categoryRel?: Relation<TagCategoryEntity> | null;
 
   @Column({
     name: 'safety_rating',
