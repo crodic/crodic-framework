@@ -54,6 +54,13 @@ export function ExploreCard({ item }: ExploreCardProps) {
 
         {/* Subtle hover gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Top-Right Tag Badge from Tag Management */}
+        {(item.tagNamesCache?.[0] || item.characterName || item.fandomName) && (
+          <span className="absolute top-2 right-2 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md select-none">
+            #{item.tagNamesCache?.[0] || item.characterName || item.fandomName}
+          </span>
+        )}
       </Link>
 
       {/* Line 1: Character / Post Title */}

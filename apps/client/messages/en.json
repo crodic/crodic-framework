@@ -872,6 +872,8 @@
     "filterFollowing": "Following",
     "filterTrending": "Trending",
     "suggestedCosplayers": "Suggested Cosplayers",
+    "noSuggestedCosplayersTitle": "You're all caught up!",
+    "noSuggestedCosplayersDesc": "You've followed all suggested creators. Explore more works in the community.",
     "upcomingEvents": "Upcoming Events",
     "trendingTags": "Trending Tags",
     "follow": "Follow",

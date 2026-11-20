@@ -9,6 +9,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
@@ -32,6 +33,9 @@ import { PostLikeEntity } from '../entities/post-like.entity';
 import { PostMediaEntity } from '../entities/post-media.entity';
 import { PostEntity } from '../entities/post.entity';
 import { CollectionItemEntity } from '../../collection/entities/collection-item.entity';
+import { ETaggableEntityType } from '../../tag/constants/tag.constant';
+import { EntityTagEntity } from '../../tag/entities/entity-tag.entity';
+import { EntityTaggingService } from '../../tag/services/entity-tagging.service';
 
 function slugify(text: string): string {
   return text
@@ -66,6 +70,10 @@ export class PostService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(CosplayerProfileEntity)
     private readonly profileRepo: Repository<CosplayerProfileEntity>,
+    @InjectRepository(EntityTagEntity)
+    private readonly entityTagRepo: Repository<EntityTagEntity>,
+    @Optional()
+    private readonly entityTaggingService?: EntityTaggingService,
   ) {}
 
   /**
@@ -150,20 +158,23 @@ export class PostService {
     const authorIds = Array.from(
       new Set(paginated.data.map((p) => p.authorId)),
     );
-    const [profileMap, mediaByPostId] = await Promise.all([
+    const [profileMap, mediaByPostId, tagsByPostId] = await Promise.all([
       this.loadProfileMap(authorIds),
       this.loadMediaPreviewsByPostIds(postIds),
+      this.loadTagsByPostIds(postIds),
     ]);
 
     const mapped = paginated.data.map((post) => {
       const profile = profileMap.get(String(post.authorId));
       const previews = mediaByPostId.get(String(post.id));
+      const tags = tagsByPostId.get(String(post.id));
       return this.toSummaryDto(
         post,
         profile,
         likedPostIds.has(String(post.id)),
         previews,
         savedPostIds.has(String(post.id)),
+        tags,
       );
     });
 
@@ -247,20 +258,23 @@ export class PostService {
     const authorIds = Array.from(
       new Set(paginated.data.map((p) => p.authorId)),
     );
-    const [profileMap, mediaByPostId] = await Promise.all([
+    const [profileMap, mediaByPostId, tagsByPostId] = await Promise.all([
       this.loadProfileMap(authorIds),
       this.loadMediaPreviewsByPostIds(postIds),
+      this.loadTagsByPostIds(postIds),
     ]);
 
     const mapped = paginated.data.map((post) => {
       const profile = profileMap.get(String(post.authorId));
       const previews = mediaByPostId.get(String(post.id));
+      const tags = tagsByPostId.get(String(post.id));
       return this.toSummaryDto(
         post,
         profile,
         likedPostIds.has(String(post.id)),
         previews,
         savedPostIds.has(String(post.id)),
+        tags,
       );
     });
 
@@ -295,27 +309,29 @@ export class PostService {
       .increment({ id: post.id }, 'viewsCount', 1)
       .catch(() => undefined);
 
-    const [mediaList, profile, likeRecord, savedItem] = await Promise.all([
-      this.mediaRepo.find({
-        where: { postId: post.id },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
-      this.profileRepo.findOne({ where: { userId: post.authorId } }),
-      currentUserId
-        ? this.likeRepo.findOne({
-            where: { userId: currentUserId, postId: post.id },
-          })
-        : null,
-      currentUserId
-        ? this.dataSource
-            .getRepository(CollectionItemEntity)
-            .createQueryBuilder('item')
-            .innerJoin('item.collection', 'col')
-            .where('col.userId = :userId', { userId: currentUserId })
-            .andWhere('item.postId = :postId', { postId: post.id })
-            .getOne()
-        : null,
-    ]);
+    const [mediaList, profile, likeRecord, savedItem, tagsByPostId] =
+      await Promise.all([
+        this.mediaRepo.find({
+          where: { postId: post.id },
+          order: { sortOrder: 'ASC', id: 'ASC' },
+        }),
+        this.profileRepo.findOne({ where: { userId: post.authorId } }),
+        currentUserId
+          ? this.likeRepo.findOne({
+              where: { userId: currentUserId, postId: post.id },
+            })
+          : null,
+        currentUserId
+          ? this.dataSource
+              .getRepository(CollectionItemEntity)
+              .createQueryBuilder('item')
+              .innerJoin('item.collection', 'col')
+              .where('col.userId = :userId', { userId: currentUserId })
+              .andWhere('item.postId = :postId', { postId: post.id })
+              .getOne()
+          : null,
+        this.loadTagsByPostIds([post.id]),
+      ]);
 
     return this.toDetailDto(
       post,
@@ -323,6 +339,7 @@ export class PostService {
       profile,
       Boolean(likeRecord),
       Boolean(savedItem),
+      tagsByPostId.get(String(post.id)),
     );
   }
 
@@ -412,10 +429,31 @@ export class PostService {
         1,
       );
 
+      // Sync tags with Tag Management system
+      if (dto.tags && dto.tags.length > 0 && this.entityTaggingService) {
+        try {
+          await this.entityTaggingService.syncAuthorTags(
+            ETaggableEntityType.POST,
+            savedPost.id,
+            { tagNames: dto.tags, ownerUserId: authorId },
+            { userId: authorId },
+          );
+        } catch {
+          // Ignore if tag sync fails gracefully
+        }
+      }
+
       const profile = await em.findOne(CosplayerProfileEntity, {
         where: { userId: authorId },
       });
-      return this.toDetailDto(savedPost, savedMedia, profile, false);
+      return this.toDetailDto(
+        savedPost,
+        savedMedia,
+        profile,
+        false,
+        false,
+        dto.tags,
+      );
     });
   }
 
@@ -588,9 +626,10 @@ export class PostService {
     const authorIds = Array.from(
       new Set(paginated.data.map((p) => p.authorId)),
     );
-    const [profileMap, mediaByPostId] = await Promise.all([
+    const [profileMap, mediaByPostId, tagsByPostId] = await Promise.all([
       this.loadProfileMap(authorIds),
       this.loadMediaPreviewsByPostIds(postIds),
+      this.loadTagsByPostIds(postIds),
     ]);
 
     const mapped = paginated.data.map((post) =>
@@ -599,6 +638,8 @@ export class PostService {
         profileMap.get(String(post.authorId)),
         false,
         mediaByPostId.get(String(post.id)),
+        false,
+        tagsByPostId.get(String(post.id)),
       ),
     );
 
@@ -993,12 +1034,43 @@ export class PostService {
     return mediaByPostId;
   }
 
+  private async loadTagsByPostIds(
+    postIds: (AutoIncrementID | string)[],
+  ): Promise<Map<string, string[]>> {
+    const map = new Map<string, string[]>();
+    if (!postIds || postIds.length === 0) return map;
+
+    try {
+      const entityTags = await this.entityTagRepo.find({
+        where: {
+          entityType: ETaggableEntityType.POST,
+          entityId: In(postIds.map((id) => Number(id))),
+        },
+        relations: ['tag'],
+        order: { sortOrder: 'ASC' },
+      });
+
+      for (const et of entityTags) {
+        if (et.tag?.name) {
+          const key = String(et.entityId);
+          const existing = map.get(key) || [];
+          existing.push(et.tag.name);
+          map.set(key, existing);
+        }
+      }
+    } catch {
+      // Ignore if entity_tags table is not populated yet
+    }
+    return map;
+  }
+
   private toSummaryDto(
     post: PostEntity,
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
     previewUrls?: string[],
     isSaved = false,
+    tagsFromManagement?: string[],
   ): PostSummaryResDto {
     const collagePreviewUrls =
       previewUrls && previewUrls.length > 0
@@ -1008,7 +1080,11 @@ export class PostService {
           : [];
     const tagNamesCache = Array.from(
       new Set(
-        [post.characterName, post.fandomName].filter(
+        [
+          ...(tagsFromManagement || []),
+          post.characterName,
+          post.fandomName,
+        ].filter(
           (v): v is string => typeof v === 'string' && v.trim().length > 0,
         ),
       ),
@@ -1065,10 +1141,18 @@ export class PostService {
     profile?: CosplayerProfileEntity | null,
     isLiked = false,
     isSaved = false,
+    tagsFromManagement?: string[],
   ): PostDetailResDto {
     const previewUrls = media.slice(0, 4).map((m) => m.url);
     return {
-      ...this.toSummaryDto(post, profile, isLiked, previewUrls, isSaved),
+      ...this.toSummaryDto(
+        post,
+        profile,
+        isLiked,
+        previewUrls,
+        isSaved,
+        tagsFromManagement,
+      ),
       enableWatermark: post.enableWatermark,
       cosplayerCharacterId: post.cosplayerCharacterId ?? null,
       characterTagId: post.characterTagId ?? null,

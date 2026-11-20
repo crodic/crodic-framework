@@ -93,6 +93,9 @@ export class CreatePostReqDto {
   @StringFieldOptional()
   copyrightTagId?: AutoIncrementID;
 
+  @ArrayFieldOptional(() => String)
+  tags?: string[];
+
   @StringField({ maxLength: 500 })
   coverImageUrl!: string;
 
@@ -143,6 +146,9 @@ export class UpdatePostReqDto {
 
   @StringFieldOptional()
   copyrightTagId?: AutoIncrementID;
+
+  @ArrayFieldOptional(() => String)
+  tags?: string[];
 
   @StringFieldOptional({ maxLength: 500 })
   coverImageUrl?: string;

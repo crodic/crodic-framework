@@ -872,6 +872,8 @@
     "filterFollowing": "Đang theo dõi",
     "filterTrending": "Thịnh hành",
     "suggestedCosplayers": "Cosplayer gợi ý",
+    "noSuggestedCosplayersTitle": "Bạn đã theo dõi tất cả gợi ý!",
+    "noSuggestedCosplayersDesc": "Hiện chưa có thêm gợi ý mới. Khám phá thêm các tác phẩm tại mục Khám phá.",
     "upcomingEvents": "Sự kiện sắp diễn ra",
     "trendingTags": "Thẻ thịnh hành",
     "follow": "Theo dõi",

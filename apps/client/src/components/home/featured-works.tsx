@@ -45,8 +45,16 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
     "casual",
   ];
 
-  const categoryLabel =
-    post.albumCategory && knownCategories.includes(post.albumCategory)
+  const primaryTag =
+    (post.tagNamesCache && post.tagNamesCache.length > 0
+      ? post.tagNamesCache[0]
+      : null) ||
+    post.characterName ||
+    post.fandomName;
+
+  const tagBadgeLabel = primaryTag
+    ? `#${primaryTag}`
+    : post.albumCategory && knownCategories.includes(post.albumCategory)
       ? t(`categories.${post.albumCategory as CategoryKey}`)
       : post.albumCategory || t("photoset");
 
@@ -68,7 +76,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
 
         {/* Top-Right Tag Badge */}
         <span className="absolute top-2.5 right-2.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md select-none">
-          {categoryLabel}
+          {tagBadgeLabel}
         </span>
 
         {/* Bottom-Right Heart Like Badge */}

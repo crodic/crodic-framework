@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
+import { EntityTagEntity } from '../tag/entities/entity-tag.entity';
+import { TagModule } from '../tag/tag.module';
 import { UserEntity } from '../user/entities/user.entity';
 import { PostAdminController } from './controllers/post-admin.controller';
 import { PostPublicController } from './controllers/post-public.controller';
@@ -22,7 +24,9 @@ import { PostService } from './services/post.service';
       PostCommentLikeEntity,
       UserEntity,
       CosplayerProfileEntity,
+      EntityTagEntity,
     ]),
+    TagModule,
   ],
   controllers: [PostPublicController, PostUserController, PostAdminController],
   providers: [PostService],

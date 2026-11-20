@@ -16,6 +16,7 @@ import { PostCommentEntity } from '../entities/post-comment.entity';
 import { PostLikeEntity } from '../entities/post-like.entity';
 import { PostMediaEntity } from '../entities/post-media.entity';
 import { PostEntity } from '../entities/post.entity';
+import { EntityTagEntity } from '../../tag/entities/entity-tag.entity';
 import { PostService } from './post.service';
 
 const id = (val: string) => val as unknown as AutoIncrementID;
@@ -29,6 +30,7 @@ describe('PostService', () => {
   let commentLikeRepo: any;
   let userRepo: any;
   let profileRepo: any;
+  let entityTagRepo: any;
   let dataSource: any;
   let mockEm: any;
 
@@ -107,6 +109,10 @@ describe('PostService', () => {
       decrement: jest.fn().mockResolvedValue(undefined),
     };
 
+    entityTagRepo = {
+      find: jest.fn().mockResolvedValue([]),
+    };
+
     mockEm = {
       findOne: jest.fn(),
       findOneOrFail: jest
@@ -147,6 +153,10 @@ describe('PostService', () => {
         {
           provide: getRepositoryToken(CosplayerProfileEntity),
           useValue: profileRepo,
+        },
+        {
+          provide: getRepositoryToken(EntityTagEntity),
+          useValue: entityTagRepo,
         },
       ],
     }).compile();

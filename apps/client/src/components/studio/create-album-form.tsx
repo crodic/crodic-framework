@@ -20,10 +20,11 @@ import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createPost } from "@/services/posts";
 import { uploadMyMedia } from "@/services/cosplayer";
-import { useTranslations } from "next-intl";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
 import type { ImagePayload } from "@/components/form/types";
+import { autocompleteTags, type TagAutocompleteItemDto } from "@/services/tags";
 import { getAlbumSchema, type CreateAlbumFormValues } from "./schema";
 
 export interface CreateAlbumFormProps {
@@ -45,10 +46,18 @@ export function CreateAlbumForm({
 }: CreateAlbumFormProps) {
   const t = useTranslations("Studio");
   const tCommon = useTranslations("Common");
+  const locale = useLocale();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [newTagInput, setNewTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
+
+  const { data: tagSuggestions = [] } = useQuery<TagAutocompleteItemDto[]>({
+    queryKey: ["tag-autocomplete", newTagInput.trim(), locale],
+    queryFn: () => autocompleteTags(newTagInput.trim(), locale),
+    enabled: isAddingTag && newTagInput.trim().length > 0,
+    staleTime: 30 * 1000,
+  });
 
   const albumSchema = useMemo(() => getAlbumSchema(t as any), [t]);
 
@@ -135,6 +144,15 @@ export function CreateAlbumForm({
       return;
     }
     if (!tags.includes(trimmed)) {
+      form.setValue("tags", [...tags, trimmed], { shouldValidate: true });
+    }
+    setNewTagInput("");
+    setIsAddingTag(false);
+  };
+
+  const handleSelectSuggestion = (tagName: string) => {
+    const trimmed = tagName.trim().replace(/^#/, "");
+    if (trimmed && !tags.includes(trimmed)) {
       form.setValue("tags", [...tags, trimmed], { shouldValidate: true });
     }
     setNewTagInput("");
@@ -251,7 +269,7 @@ export function CreateAlbumForm({
                   ))}
 
                   {isAddingTag ? (
-                    <div className="inline-flex items-center gap-1">
+                    <div className="relative inline-flex items-center gap-1">
                       <Input
                         autoFocus
                         value={newTagInput}
@@ -265,10 +283,45 @@ export function CreateAlbumForm({
                             setNewTagInput("");
                           }
                         }}
-                        onBlur={handleAddTag}
+                        onBlur={() => {
+                          // Allow onMouseDown on dropdown items to fire before blur closes it
+                          setTimeout(() => {
+                            if (newTagInput.trim()) {
+                              handleAddTag();
+                            } else {
+                              setIsAddingTag(false);
+                            }
+                          }, 150);
+                        }}
                         placeholder={t("tagCharacter")}
-                        className="h-7 w-28 rounded-md px-2 text-xs"
+                        className="h-7 w-32 rounded-md px-2 text-xs"
                       />
+
+                      {/* Tag Management Autocomplete suggestions dropdown */}
+                      {tagSuggestions.length > 0 && (
+                        <div className="border-border/80 bg-popover/95 absolute top-full left-0 z-50 mt-1 max-h-48 w-48 overflow-y-auto rounded-xl border p-1 shadow-xl backdrop-blur-md">
+                          {tagSuggestions.map((sug) => (
+                            <button
+                              key={sug.id}
+                              type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSelectSuggestion(sug.name);
+                              }}
+                              className="hover:bg-muted flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition-colors"
+                            >
+                              <span className="text-foreground font-medium">
+                                #{sug.name}
+                              </span>
+                              {sug.usageCount > 0 && (
+                                <span className="text-muted-foreground text-[10px]">
+                                  {sug.usageCount}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <Button

@@ -11,6 +11,17 @@ export interface TagSummaryResDto {
   isOfficial?: boolean;
 }
 
+export interface TagAutocompleteItemDto {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  usageCount: number;
+  isOfficial: boolean;
+  matchType?: string;
+  matchedAlias?: string;
+}
+
 export const getTags = async (
   query?: Record<string, any>
 ): Promise<PaginatedResponse<TagSummaryResDto>> => {
@@ -30,5 +41,25 @@ export const getTags = async (
   const qs = searchParams.toString();
   const url = `/api/v1/public/tags${qs ? `?${qs}` : ""}`;
   const { data } = await http.get<PaginatedResponse<TagSummaryResDto>>(url);
+  return data;
+};
+
+export const autocompleteTags = async (
+  q: string,
+  locale = "en"
+): Promise<TagAutocompleteItemDto[]> => {
+  const { data } = await http.get<TagAutocompleteItemDto[]>(
+    `/api/v1/public/tags/autocomplete?q=${encodeURIComponent(q)}&locale=${locale}`
+  );
+  return data;
+};
+
+export const getTrendingTags = async (
+  limit = 10,
+  locale = "en"
+): Promise<TagSummaryResDto[]> => {
+  const { data } = await http.get<TagSummaryResDto[]>(
+    `/api/v1/public/tags/trending?limit=${limit}&locale=${locale}`
+  );
   return data;
 };

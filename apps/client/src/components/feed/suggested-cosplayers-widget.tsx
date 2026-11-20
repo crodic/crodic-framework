@@ -78,7 +78,35 @@ export function SuggestedCosplayersWidget() {
     );
   }
 
-  if (!cosplayers || cosplayers.length === 0) return null;
+  if (!cosplayers || cosplayers.length === 0) {
+    return (
+      <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
+        <div className="mb-3.5 flex items-center justify-between">
+          <h3 className="text-foreground text-sm font-bold sm:text-base">
+            {t("suggestedCosplayers")}
+          </h3>
+          <Link
+            href="/explore"
+            className="text-primary text-xs font-medium hover:underline"
+          >
+            {t("viewAll")}
+          </Link>
+        </div>
+
+        <div className="border-border/50 bg-muted/20 flex flex-col items-center justify-center rounded-xl border border-dashed px-3 py-6 text-center">
+          <div className="bg-primary/10 text-primary mb-2 flex size-9 items-center justify-center rounded-full">
+            <Check className="size-4 stroke-[2.5]" />
+          </div>
+          <p className="text-foreground text-xs font-semibold">
+            {t("noSuggestedCosplayersTitle")}
+          </p>
+          <p className="text-muted-foreground mt-0.5 max-w-[210px] text-[11px] leading-relaxed">
+            {t("noSuggestedCosplayersDesc")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">

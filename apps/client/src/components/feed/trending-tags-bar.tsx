@@ -2,22 +2,21 @@
 
 import React from "react";
 import { Flame } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { getTags, type TagSummaryResDto } from "@/services/tags";
-import type { PaginatedResponse } from "@repo/query-builder";
+import { getTrendingTags, type TagSummaryResDto } from "@/services/tags";
 import { useRouter } from "@/i18n/navigation";
 
 export function TrendingTagsBar() {
   const t = useTranslations("Feed");
+  const locale = useLocale();
   const router = useRouter();
 
-  const { data: tagsResponse } = useQuery<PaginatedResponse<TagSummaryResDto>>({
-    queryKey: ["feed-trending-tags"],
-    queryFn: () => getTags({ limit: 8, sort: "-trendingScore" }),
+  const { data: tags = [] } = useQuery<TagSummaryResDto[]>({
+    queryKey: ["feed-trending-tags", locale],
+    queryFn: () => getTrendingTags(10, locale),
+    staleTime: 60 * 1000,
   });
-
-  const tags = tagsResponse?.data || [];
 
   if (!tags || tags.length === 0) return null;
 
