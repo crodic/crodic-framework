@@ -646,19 +646,28 @@ export class TagService {
   async getTrendingTags(
     locale = 'en',
     limit = 16,
+    category?: string,
   ): Promise<TagSummaryResDto[]> {
     const safeLimit = Math.min(Math.max(limit, 1), 50);
-    const redisIds = await this.cacheService.getTopTrendingTagIds(safeLimit);
+    const redisIds = await this.cacheService.getTopTrendingTagIds(
+      safeLimit * 2,
+    );
 
     let tags: TagEntity[] = [];
     if (redisIds.length > 0) {
+      const whereCondition: any = {
+        id: In(redisIds),
+        status: ETagStatus.ACTIVE,
+        safetyRating: ETagSafetyRating.SAFE,
+        isSystem: false,
+      };
+      if (category) {
+        whereCondition.category = category;
+      }
       const found = await this.tagRepository.find({
-        where: {
-          id: In(redisIds),
-          status: ETagStatus.ACTIVE,
-          safetyRating: ETagSafetyRating.SAFE,
-        },
+        where: whereCondition,
         relations: [
+          'categoryRel',
           'translations',
           'encyclopedias',
           'encyclopedias.featuredFile',
@@ -667,13 +676,16 @@ export class TagService {
       const mapById = new Map(found.map((t) => [String(t.id), t]));
       tags = redisIds
         .map((id) => mapById.get(String(id)))
-        .filter((t): t is TagEntity => Boolean(t));
+        .filter((t): t is TagEntity => Boolean(t))
+        .filter((t) => !t.isSystem && t.category !== 'system')
+        .slice(0, safeLimit);
     }
 
     if (tags.length < safeLimit) {
       const existingIds = tags.map((t) => t.id);
       const fallbackQb = this.tagRepository
         .createQueryBuilder('tag')
+        .leftJoinAndSelect('tag.categoryRel', 'categoryRel')
         .leftJoinAndSelect('tag.translations', 'translations')
         .leftJoinAndSelect('tag.encyclopedias', 'encyclopedias')
         .leftJoinAndSelect('encyclopedias.featuredFile', 'featuredFile')
@@ -681,6 +693,14 @@ export class TagService {
         .andWhere('tag.safetyRating = :safe', {
           safe: ETagSafetyRating.SAFE,
         })
+        .andWhere('tag.isSystem = :isSystem', { isSystem: false })
+        .andWhere('tag.category != :sysCategory', { sysCategory: 'system' });
+
+      if (category) {
+        fallbackQb.andWhere('tag.category = :category', { category });
+      }
+
+      fallbackQb
         .orderBy('tag.trendingScore', 'DESC')
         .addOrderBy('tag.usageCount', 'DESC')
         .take(safeLimit - tags.length);

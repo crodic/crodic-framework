@@ -73,10 +73,18 @@ export const autocompleteTags = async (
 
 export const getTrendingTags = async (
   limit = 10,
-  locale = "en"
+  locale = "en",
+  category?: string
 ): Promise<TagSummaryResDto[]> => {
+  const searchParams = new URLSearchParams({
+    limit: String(limit),
+    locale,
+  });
+  if (category) {
+    searchParams.set("category", category);
+  }
   const { data } = await http.get<TagSummaryResDto[]>(
-    `/api/v1/public/tags/trending?limit=${limit}&locale=${locale}`
+    `/api/v1/public/tags/trending?${searchParams.toString()}`
   );
   return data;
 };

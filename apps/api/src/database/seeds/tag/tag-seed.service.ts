@@ -305,6 +305,107 @@ export class TagSeedService {
         ],
       },
       {
+        name: 'Honkai: Star Rail',
+        slug: 'honkai-star-rail',
+        category: ETagCategory.COPYRIGHT,
+        safetyRating: ETagSafetyRating.SAFE,
+        status: ETagStatus.ACTIVE,
+        isOfficial: true,
+        translations: [
+          {
+            locale: 'en',
+            translatedName: 'Honkai: Star Rail',
+            shortSummary:
+              'Space fantasy RPG by HoYoverse featuring the Astral Express journey.',
+          },
+          {
+            locale: 'vi',
+            translatedName: 'Honkai: Star Rail',
+            shortSummary:
+              'Tựa game nhập vai giả tưởng không gian của HoYoverse theo chân chuyến tàu Astral Express.',
+          },
+          {
+            locale: 'jp',
+            translatedName: '崩壊：スターレイル',
+            shortSummary: 'HoYoverseが贈るスペースファンタジーRPG。',
+          },
+        ],
+        aliases: [
+          { aliasName: 'HSR', aliasType: ETagAliasType.ABBREVIATION },
+          { aliasName: 'Star Rail', aliasType: ETagAliasType.SYNONYM },
+          {
+            aliasName: '崩壊スターレイル',
+            aliasType: ETagAliasType.SYNONYM,
+            locale: 'jp',
+          },
+        ],
+      },
+      {
+        name: 'Genshin Impact',
+        slug: 'genshin-impact',
+        category: ETagCategory.COPYRIGHT,
+        safetyRating: ETagSafetyRating.SAFE,
+        status: ETagStatus.ACTIVE,
+        isOfficial: true,
+        translations: [
+          {
+            locale: 'en',
+            translatedName: 'Genshin Impact',
+            shortSummary:
+              'Open-world action RPG set in the fantasy continent of Teyvat.',
+          },
+          {
+            locale: 'vi',
+            translatedName: 'Genshin Impact',
+            shortSummary:
+              'Game nhập vai hành động thế giới mở tại đại lục Teyvat của HoYoverse.',
+          },
+          {
+            locale: 'jp',
+            translatedName: '原神',
+            shortSummary:
+              'オープンワールドRPG『原神』。テイワット大陸を巡る旅。',
+          },
+        ],
+        aliases: [
+          { aliasName: 'GI', aliasType: ETagAliasType.ABBREVIATION },
+          { aliasName: 'Genshin', aliasType: ETagAliasType.SYNONYM },
+          { aliasName: '原神', aliasType: ETagAliasType.SYNONYM, locale: 'jp' },
+        ],
+      },
+      {
+        name: 'Wuthering Waves',
+        slug: 'wuthering-waves',
+        category: ETagCategory.COPYRIGHT,
+        safetyRating: ETagSafetyRating.SAFE,
+        status: ETagStatus.ACTIVE,
+        isOfficial: true,
+        translations: [
+          {
+            locale: 'en',
+            translatedName: 'Wuthering Waves',
+            shortSummary:
+              'Story-rich, open-world action RPG developed by Kuro Games.',
+          },
+          {
+            locale: 'vi',
+            translatedName: 'Wuthering Waves',
+            shortSummary:
+              'Game nhập vai thế giới mở hậu tận thế phát triển bởi Kuro Games.',
+          },
+          {
+            locale: 'jp',
+            translatedName: '鳴潮',
+            shortSummary: 'KURO GAMESが開発するオープンワールドアクションRPG。',
+          },
+        ],
+        aliases: [
+          { aliasName: 'WuWa', aliasType: ETagAliasType.ABBREVIATION },
+          { aliasName: 'Wuthering', aliasType: ETagAliasType.SYNONYM },
+          { aliasName: '鳴潮', aliasType: ETagAliasType.SYNONYM, locale: 'jp' },
+        ],
+      },
+      {
         name: 'アルトリア・ペンドラゴン',
         slug: 'artoria-pendragon',
         category: ETagCategory.CHARACTER,

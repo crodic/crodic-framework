@@ -9,25 +9,18 @@ import { Button } from "@/components/ui/button";
 import { ExploreCard } from "./explore-card";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
+import { getTrendingTags, type TagSummaryResDto } from "@/services/tags";
 import { useAuthStore } from "@/store/use-auth-store";
 import {
   getCosplayers,
   type CosplayerSummaryResDto,
 } from "@/services/cosplayer";
 
-const EXPLORE_TAGS = [
-  { id: "all", label: "All" },
-  { id: "honkai", label: "Honkai: Star Rail" },
-  { id: "genshin", label: "Genshin Impact" },
-  { id: "wuthering", label: "Wuthering Waves" },
-  { id: "cyberpunk", label: "Cyberpunk 2077" },
-  { id: "frieren", label: "Frieren" },
-];
-
 export function ExploreFeed() {
   const t = useTranslations("Explore");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
@@ -37,6 +30,24 @@ export function ExploreFeed() {
     "all" | "works" | "cosplayers" | "characters"
   >("all");
   const [selectedTag, setSelectedTag] = useState("all");
+
+  const { data: trendingFandoms = [] } = useQuery<TagSummaryResDto[]>({
+    queryKey: ["explore-trending-fandoms", locale],
+    queryFn: async () => {
+      const fandoms = await getTrendingTags(8, locale, "copyright");
+      if (fandoms.length > 0) return fandoms;
+      return getTrendingTags(8, locale);
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const exploreTags = useMemo(() => {
+    const list = [{ id: "all", label: t("all") }];
+    trendingFandoms.forEach((item) => {
+      list.push({ id: item.slug || item.name.toLowerCase(), label: item.name });
+    });
+    return list;
+  }, [trendingFandoms, t]);
 
   useEffect(() => {
     setSearchQuery(queryParam);
@@ -69,16 +80,25 @@ export function ExploreFeed() {
   }, [postsResponse]);
 
   const filteredItems = useMemo(() => {
-    if (selectedTag === "all") return posts;
-    const lower = selectedTag.toLowerCase();
-    return posts.filter(
-      (item) =>
-        item.tagNamesCache?.some((t) => t.toLowerCase().includes(lower)) ||
-        item.albumCategory?.toLowerCase().includes(lower) ||
-        item.title.toLowerCase().includes(lower) ||
-        item.characterName?.toLowerCase().includes(lower)
-    );
-  }, [selectedTag, posts]);
+    let result = posts;
+    if (activeTab === "characters") {
+      result = result.filter((item) => Boolean(item.characterName));
+    }
+    if (selectedTag !== "all") {
+      const lower = selectedTag.toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.tagNamesCache?.some(
+            (t) => t.toLowerCase() === lower || t.toLowerCase().includes(lower)
+          ) ||
+          item.albumCategory?.toLowerCase().includes(lower) ||
+          item.title.toLowerCase().includes(lower) ||
+          item.characterName?.toLowerCase().includes(lower) ||
+          item.fandomName?.toLowerCase().includes(lower)
+      );
+    }
+    return result;
+  }, [selectedTag, activeTab, posts]);
 
   const cosplayers: CosplayerSummaryResDto[] = cosplayersResponse?.data || [];
 
@@ -115,33 +135,34 @@ export function ExploreFeed() {
           })}
         </div>
 
-        {/* Trending Tags Section */}
-        <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
-          <div className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs font-bold uppercase select-none">
-            <Flame className="size-3.5 fill-rose-500 text-rose-500" />
-            <span className="hidden sm:inline">{t("trendingFandoms")}:</span>
-          </div>
+        {/* Trending Fandoms / Tags Section */}
+        {exploreTags.length > 1 && (
+          <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
+            <div className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs font-bold uppercase select-none">
+              <Flame className="size-3.5 fill-rose-500 text-rose-500" />
+              <span className="hidden sm:inline">{t("trendingFandoms")}:</span>
+            </div>
 
-          {EXPLORE_TAGS.map((tag) => {
-            const isSelected = selectedTag === tag.id;
-            const label = tag.id === "all" ? t("all") : tag.label;
-            return (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => setSelectedTag(tag.id)}
-                className={cn(
-                  "cursor-pointer rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all select-none",
-                  isSelected
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border/40 border"
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+            {exploreTags.map((tag) => {
+              const isSelected = selectedTag === tag.id;
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => setSelectedTag(tag.id)}
+                  className={cn(
+                    "cursor-pointer rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all select-none",
+                    isSelected
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border/40 border"
+                  )}
+                >
+                  {tag.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Active Search Result Announcement Banner */}

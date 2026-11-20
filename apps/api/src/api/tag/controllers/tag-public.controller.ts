@@ -73,10 +73,12 @@ export class TagPublicController {
   getTrending(
     @Query('locale') locale?: string,
     @Query('limit') limit?: string,
+    @Query('category') category?: string,
   ) {
     return this.tagService.getTrendingTags(
       locale || 'en',
       limit ? Number(limit) : 16,
+      category,
     );
   }
 
