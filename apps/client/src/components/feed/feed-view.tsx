@@ -28,7 +28,7 @@ export function FeedView() {
   }, [postsResponse]);
 
   return (
-    <div className="max-w-[680px] space-y-5">
+    <div className="mx-auto w-full max-w-[680px] space-y-5">
       {/* 1. Create Post Status Box */}
       <CreatePostCard />
 

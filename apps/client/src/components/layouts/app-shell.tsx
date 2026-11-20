@@ -24,7 +24,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="flex-1 overflow-y-auto pb-16 md:pb-6">
           <div className="flex w-full items-start gap-4 px-3 py-4 sm:px-5 sm:py-5 lg:gap-6 lg:px-6">
             <main className="min-w-0 flex-1">{children}</main>
-            <aside className="hidden w-[320px] shrink-0 space-y-5 self-start xl:sticky xl:top-4 xl:block">
+            <aside className="hidden w-[340px] shrink-0 space-y-5 self-start xl:sticky xl:top-4 xl:block">
               <AppRightRail />
             </aside>
           </div>
