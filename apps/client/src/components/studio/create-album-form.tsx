@@ -99,6 +99,12 @@ export function CreateAlbumForm({
         });
       }
 
+      if (uploadedMediaList.length === 0) {
+        throw new Error(
+          t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!"
+        );
+      }
+
       const coverMedia = uploadedMediaList.find((m) => m.isCover);
       const coverImageUrl = coverMedia
         ? coverMedia.mediaUrl
@@ -109,6 +115,10 @@ export function CreateAlbumForm({
         caption: values.description,
         postType: "photoset",
         albumCategory: "series",
+        characterName: values.character || undefined,
+        fandomName: values.fandom || undefined,
+        isPublic: values.isPublic,
+        enableWatermark: values.enableWatermark,
         tags: values.tags,
         coverImageUrl,
         media: uploadedMediaList,
@@ -168,6 +178,10 @@ export function CreateAlbumForm({
   };
 
   const onSubmit = (values: CreateAlbumFormValues) => {
+    if (!imagesPayload || imagesPayload.length === 0) {
+      toast.error(t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!");
+      return;
+    }
     createPostMutation.mutate(values);
   };
 

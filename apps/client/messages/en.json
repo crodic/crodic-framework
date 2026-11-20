@@ -1262,7 +1262,8 @@
     "valPhotos": "Please upload at least 1 photo",
     "watermark": "Watermark",
     "watermarkDesc": "Kosume Watermark Protection",
-    "removeTag": "Remove #{tag}"
+    "removeTag": "Remove #{tag}",
+    "valImages": "Please select at least 1 image for the album!"
   },
   "Onboarding": {
     "pageTitle": "Welcome to Kosume",

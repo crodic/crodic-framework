@@ -582,11 +582,22 @@ export function ArrayField(
   options: Omit<ApiPropertyOptions, 'type' | 'isArray'> &
     IArrayFieldOptions = {},
 ): PropertyDecorator {
-  const decorators = [
-    IsArray(),
-    Type(() => itemType),
-    ValidateNested({ each: true }),
-  ];
+  const resolvedType =
+    typeof itemType === 'function' && !itemType.prototype
+      ? itemType()
+      : itemType;
+
+  const decorators: PropertyDecorator[] = [IsArray(), Type(() => resolvedType)];
+
+  if (resolvedType === String) {
+    decorators.push(IsString({ each: true }));
+  } else if (resolvedType === Number) {
+    decorators.push(IsNumber({}, { each: true }));
+  } else if (resolvedType === Boolean) {
+    decorators.push(IsBoolean({ each: true }));
+  } else {
+    decorators.push(ValidateNested({ each: true }));
+  }
 
   if (options.notEmpty) {
     decorators.push(ArrayNotEmpty());

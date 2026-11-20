@@ -1262,7 +1262,8 @@
     "valPhotos": "Vui lòng tải lên ít nhất 1 hình ảnh",
     "watermark": "Đóng dấu bản quyền (Watermark)",
     "watermarkDesc": "Bảo vệ tác phẩm với dấu chìm Kosume",
-    "removeTag": "Xóa #{tag}"
+    "removeTag": "Xóa #{tag}",
+    "valImages": "Vui lòng chọn ít nhất 1 hình ảnh cho album!"
   },
   "Onboarding": {
     "pageTitle": "Chào mừng bạn đến với Kosume",

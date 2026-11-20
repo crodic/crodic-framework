@@ -97,16 +97,29 @@ export interface PostCommentResDto {
 export interface CreatePostPayload {
   title: string;
   caption?: string;
-  postType?: "photoset" | "single" | "video" | "reel";
-  albumCategory?: "series" | "event" | "original" | "studio" | "casual";
+  postType?: "photoset" | "wip" | "crafting" | "video" | "single" | "reel";
+  albumCategory?:
+    | "series"
+    | "general"
+    | "group"
+    | "premium"
+    | "event"
+    | "original"
+    | "studio"
+    | "casual";
+  characterName?: string;
+  fandomName?: string;
   coverImageUrl?: string;
   tags?: string[];
+  isPublic?: boolean;
+  enableWatermark?: boolean;
   collaborators?: PostCollaboratorDto[];
   media?: {
     mediaUrl: string;
     mediaType?: "image" | "video";
     sortOrder?: number;
     caption?: string;
+    isCover?: boolean;
   }[];
 }
 

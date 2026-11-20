@@ -60,6 +60,42 @@ describe('PostUserController', () => {
     });
   });
 
+  it('validates CreatePostReqDto with ValidationPipe', async () => {
+    const { ValidationPipe, ArgumentMetadata } = await import('@nestjs/common');
+    const { CreatePostReqDto } = await import('../dto/post-req.dto');
+    const pipe = new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      errorHttpStatusCode: 422,
+    });
+    const metadata: any = { type: 'body', metatype: CreatePostReqDto };
+
+    // Test payload that client sends
+    const clientPayload = {
+      title: 'Album Title',
+      caption: 'Some description',
+      postType: 'photoset',
+      albumCategory: 'series',
+      tags: ['genshin', 'cosplay'],
+      coverImageUrl: 'https://example.com/cover.jpg',
+      media: [
+        {
+          mediaUrl: 'https://example.com/cover.jpg',
+          sortOrder: 0,
+          isCover: true,
+        },
+      ],
+    };
+
+    try {
+      const transformed = await pipe.transform(clientPayload, metadata);
+      expect(transformed).toBeDefined();
+    } catch (err: any) {
+      console.log('VALIDATION ERROR:', JSON.stringify(err.response, null, 2));
+      throw err;
+    }
+  });
+
   it('update delegates to service', async () => {
     const res = await controller.update(id('100'), id('1'), {
       title: 'Updated',
