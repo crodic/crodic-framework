@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
