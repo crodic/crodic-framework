@@ -35,7 +35,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AUTH_CODE, AUTH_QUERY_PARAM, AuthCode } from "@/constants/auth";
 import { Link } from "@/i18n/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PROFILE_QUERY_KEY } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
 
@@ -49,7 +49,6 @@ export default function LoginForm() {
   const [deletedAccountEmail, setDeletedAccountEmail] = useState<string | null>(
     null
   );
-  const [isRestoring, setIsRestoring] = useState(false);
   const [restoreRequested, setRestoreRequested] = useState(false);
 
   const rawCode = searchParams.get(AUTH_QUERY_PARAM.CODE);
@@ -66,6 +65,71 @@ export default function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
+    },
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: async (values: LoginFormValues) => {
+      const { data } = await http.post<LoginResponseData>(
+        "api/v1/user/auth/login",
+        values
+      );
+      const { accessToken, refreshToken } = data;
+
+      await xior.post(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/tokens`, {
+        accessToken,
+        refreshToken,
+      });
+
+      useAuthStore.getState().setTokens({ accessToken });
+
+      // Clear the cached null profile so /profile fetches fresh user data
+      await queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
+      return data;
+    },
+    onSuccess: () => {
+      const from = searchParams.get(AUTH_QUERY_PARAM.FROM);
+      const redirectTarget =
+        from && from.startsWith("/") && !from.startsWith("//")
+          ? from
+          : "/profile";
+      router.push(redirectTarget);
+    },
+    onError: (error) => {
+      if (error instanceof XiorError) {
+        const errorData = error.response?.data;
+        if (
+          errorData?.errorCode === "ACCOUNT_DELETED" ||
+          errorData?.canRestore
+        ) {
+          setDeletedAccountEmail(form.getValues("email"));
+          setRestoreRequested(false);
+          toast.error(errorData?.message || t("toasts.accountDeleted"));
+          return;
+        }
+        toast.error(error.response?.data?.message || t("toasts.loginError"));
+      } else {
+        toast.error(t("toasts.loginError"));
+      }
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return http.post("api/v1/user/auth/restore-request", { email });
+    },
+    onSuccess: () => {
+      setRestoreRequested(true);
+      toast.success(t("toasts.restoreRequestSuccess"));
+    },
+    onError: (err) => {
+      if (err instanceof XiorError) {
+        toast.error(
+          err.response?.data?.message || t("toasts.restoreRequestFailed")
+        );
+      } else {
+        toast.error(t("toasts.restoreRequestFailed"));
+      }
     },
   });
 
@@ -116,72 +180,17 @@ export default function LoginForm() {
     router.replace(nextQuery ? `/auth/login?${nextQuery}` : "/auth/login");
   }, [router, searchParams, t]);
 
-  async function onSubmit(values: LoginFormValues) {
-    try {
-      const { data } = await http.post<LoginResponseData>(
-        "api/v1/user/auth/login",
-        values
-      );
-      const { accessToken, refreshToken } = data;
-
-      await xior.post(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/tokens`, {
-        accessToken,
-        refreshToken,
-      });
-
-      useAuthStore.getState().setTokens({ accessToken });
-
-      // Clear the cached null profile so /profile fetches fresh user data
-      await queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
-
-      const from = searchParams.get(AUTH_QUERY_PARAM.FROM);
-      const redirectTarget =
-        from && from.startsWith("/") && !from.startsWith("//")
-          ? from
-          : "/profile";
-      router.push(redirectTarget);
-    } catch (error) {
-      if (error instanceof XiorError) {
-        const errorData = error.response?.data;
-        if (
-          errorData?.errorCode === "ACCOUNT_DELETED" ||
-          errorData?.canRestore
-        ) {
-          setDeletedAccountEmail(values.email);
-          setRestoreRequested(false);
-          toast.error(errorData?.message || t("toasts.accountDeleted"));
-          return;
-        }
-        toast.error(error.response?.data?.message || t("toasts.loginError"));
-      } else {
-        toast.error(t("toasts.loginError"));
-      }
-    }
+  function onSubmit(values: LoginFormValues) {
+    loginMutation.mutate(values);
   }
 
-  async function handleRequestRestore() {
+  function handleRequestRestore() {
     if (!deletedAccountEmail) return;
-    setIsRestoring(true);
-    try {
-      await http.post("api/v1/user/auth/restore-request", {
-        email: deletedAccountEmail,
-      });
-      setRestoreRequested(true);
-      toast.success(t("toasts.restoreRequestSuccess"));
-    } catch (err) {
-      if (err instanceof XiorError) {
-        toast.error(
-          err.response?.data?.message || t("toasts.restoreRequestFailed")
-        );
-      } else {
-        toast.error(t("toasts.restoreRequestFailed"));
-      }
-    } finally {
-      setIsRestoring(false);
-    }
+    restoreMutation.mutate(deletedAccountEmail);
   }
 
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = loginMutation.isPending || form.formState.isSubmitting;
+  const isRestoring = restoreMutation.isPending;
 
   return (
     <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-md lg:px-4">

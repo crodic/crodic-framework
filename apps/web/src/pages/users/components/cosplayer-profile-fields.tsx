@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { DynamicListInput } from '@/components/ui/dynamic-list-input'
 import {
   FormControl,
   FormField,
@@ -16,7 +17,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { TagChipsInput } from '@/components/ui/tag-chips-input'
 import { Textarea } from '@/components/ui/textarea'
 
 export function CosplayerProfileFields<T extends FieldValues = any>({
@@ -337,7 +337,7 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
               <FormItem>
                 <FormLabel>Kỹ năng (Skills)</FormLabel>
                 <FormControl>
-                  <TagChipsInput
+                  <DynamicListInput
                     placeholder='Thêm kỹ năng...'
                     value={
                       field.value
@@ -361,7 +361,7 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
               <FormItem>
                 <FormLabel>Sở trường / Series</FormLabel>
                 <FormControl>
-                  <TagChipsInput
+                  <DynamicListInput
                     placeholder='Thêm series, tác phẩm...'
                     value={
                       field.value
@@ -385,7 +385,7 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
               <FormItem>
                 <FormLabel>Giải thưởng / Danh hiệu</FormLabel>
                 <FormControl>
-                  <TagChipsInput
+                  <DynamicListInput
                     placeholder='Thêm giải thưởng...'
                     value={
                       field.value

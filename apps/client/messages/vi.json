@@ -465,7 +465,15 @@
         "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ.",
         "passwordMin": "Mật khẩu phải có ít nhất 8 ký tự.",
         "passwordsMismatch": "Mật khẩu xác nhận không khớp."
-      }
+      },
+      "continueGoogle": "Tiếp tục với Google",
+      "orContinueWith": "Hoặc tiếp tục với",
+      "nextStep": "Tiếp tục",
+      "backStep": "Quay lại",
+      "step": "Bước",
+      "stepRole": "Chọn vai trò",
+      "stepProfile": "Hồ sơ Cosplay",
+      "stepAccount": "Thông tin tài khoản"
     },
     "forgotPassword": {
       "metaTitle": "Quên mật khẩu",

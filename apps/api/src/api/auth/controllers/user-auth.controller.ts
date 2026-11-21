@@ -104,13 +104,27 @@ export class UserAuthenticationController {
   }
 
   @ApiPublic({
-    type: RegisterResDto,
-    summary: 'Sign-up',
+    type: UserLoginResDto,
+    summary: 'Sign-up and auto login',
   })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('register')
-  async signUp(@Body() dto: UserRegisterReqDto): Promise<RegisterResDto> {
-    return await this.userAuthService.signUp(dto);
+  async signUp(
+    @Body() dto: UserRegisterReqDto,
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UserLoginResDto> {
+    const result = await this.userAuthService.signUp(dto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
+    setAuthCookies({
+      res,
+      configService: this.configService,
+      prefix: 'user',
+      tokens: result,
+    });
+    return result;
   }
 
   @ApiPublic({

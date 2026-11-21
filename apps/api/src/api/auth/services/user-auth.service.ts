@@ -182,7 +182,10 @@ export class UserAuthService extends AuthService<
     return this.createLoginResponse(user, requestInfo);
   }
 
-  async signUp(dto: UserRegisterReqDto): Promise<RegisterResDto> {
+  async signUp(
+    dto: UserRegisterReqDto,
+    requestInfo?: SessionRequestInfo,
+  ): Promise<UserLoginResDto> {
     const isExistUser = await this.userRepository.exists({
       where: { email: dto.email },
     });
@@ -191,16 +194,35 @@ export class UserAuthService extends AuthService<
       throw new ValidationException(ErrorCode.E003);
     }
 
+    const rawHandle = (dto.handle || dto.username || '')
+      .replace(/^@+/, '')
+      .trim()
+      .toLowerCase();
+
+    if (rawHandle) {
+      const isExistUsername = await this.userRepository.exists({
+        where: { username: rawHandle },
+      });
+      if (isExistUsername) {
+        throw new BadRequestException({
+          errorCode: 'HANDLE_CONFLICT',
+          message: `Username or handle "@${rawHandle}" is already taken`,
+        });
+      }
+    }
+
     // Register user
     const newUser = this.userRepository.create({
       firstName: dto.firstName,
       lastName: dto.lastName || '',
       email: dto.email,
+      username: rawHandle || undefined,
     });
 
     const persistUser = async (
       userRepo: Repository<UserEntity>,
       accountRepo: Repository<UserAccountEntity>,
+      manager?: any,
     ) => {
       const savedUser = await userRepo.save(newUser);
 
@@ -223,6 +245,27 @@ export class UserAuthService extends AuthService<
         }),
       );
 
+      // Create initial cosplayer profile if requested or with defaults
+      const cosProfileRepo = manager
+        ? manager.getRepository('cosplayer_profiles')
+        : this.dataSource?.getRepository('cosplayer_profiles');
+
+      if (cosProfileRepo) {
+        const cleanSlug = rawHandle || `user-${savedUser.id}`;
+        const cosProfile = cosProfileRepo.create({
+          userId: savedUser.id,
+          slug: cleanSlug,
+          displayName:
+            dto.displayName?.trim() ||
+            `${savedUser.firstName} ${savedUser.lastName || ''}`.trim(),
+          roleBadge: dto.roleBadge || 'Cosplayer',
+          locationLabel: dto.locationLabel,
+          specialties: dto.specialties || [],
+          bio: dto.bio?.trim() || undefined,
+        });
+        await cosProfileRepo.save(cosProfile);
+      }
+
       return savedUser;
     };
 
@@ -231,18 +274,21 @@ export class UserAuthService extends AuthService<
           persistUser(
             manager.getRepository(UserEntity),
             manager.getRepository(UserAccountEntity),
+            manager,
           ),
         )
       : await persistUser(this.userRepository, this.userAccountRepository);
 
     // Send email verification
-    await this.userAccountRecoveryService.sendVerificationEmail(user, {
-      skipRateLimit: true,
-    });
+    try {
+      await this.userAccountRecoveryService.sendVerificationEmail(user, {
+        skipRateLimit: true,
+      });
+    } catch {
+      // Non-blocking if email delivery fails
+    }
 
-    return plainToInstance(RegisterResDto, {
-      userId: user.id,
-    });
+    return this.createLoginResponse(user, requestInfo, false);
   }
 
   async exchangeSocialLogin(

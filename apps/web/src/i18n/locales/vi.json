@@ -1860,5 +1860,107 @@
   "posts.status.draft": "Bản nháp",
   "posts.actions.view": "Xem chi tiết & Album",
   "posts.actions.moderate": "Kiểm duyệt trạng thái",
-  "posts.actions.delete": "Xóa bài đăng"
+  "posts.actions.delete": "Xóa bài đăng",
+  "tagCategories": {
+    "title": "Danh mục Thẻ",
+    "actions": {
+      "add": "Thêm danh mục",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "options": "Tùy chọn"
+    },
+    "columns": {
+      "icon": "Biểu tượng",
+      "name": "Tên danh mục",
+      "slug": "Slug định danh",
+      "sortOrder": "Thứ tự",
+      "tagCount": "Số lượng thẻ",
+      "type": "Phân loại",
+      "status": "Trạng thái"
+    },
+    "types": {
+      "system": "Hệ thống",
+      "custom": "Tùy biến"
+    },
+    "status": {
+      "active": "Đang hoạt động",
+      "inactive": "Tạm ẩn"
+    },
+    "tagUnit": "{{count}} thẻ",
+    "search": {
+      "namePlaceholder": "Tìm kiếm danh mục...",
+      "slugPlaceholder": "Lọc theo slug..."
+    },
+    "dialog": {
+      "createTitle": "Thêm mới danh mục thẻ",
+      "editTitle": "Chỉnh sửa danh mục thẻ",
+      "createDescription": "Tạo danh mục mới để phân loại và nhóm các thẻ trong hệ thống.",
+      "editDescription": "Chỉnh sửa thông tin định danh và hiển thị cho danh mục \"{{name}}\".",
+      "nameLabel": "Tên danh mục",
+      "namePlaceholder": "Ví dụ: Costume & Props",
+      "slugLabel": "Slug định danh",
+      "slugPlaceholder": "Ví dụ: costume",
+      "slugSystemHelp": "Danh mục hệ thống không cho phép sửa slug",
+      "slugAutoHelp": "Để trống để tự động tạo từ tên danh mục",
+      "descLabel": "Mô tả danh mục",
+      "descPlaceholder": "Mô tả ngắn gọn về loại thẻ thuộc danh mục này...",
+      "colorLabel": "Màu đại diện (Hex)",
+      "iconLabel": "Icon hiển thị",
+      "iconHelp": "Icon Lucide biểu thị danh mục trong giao diện",
+      "sortOrderLabel": "Thứ tự sắp xếp",
+      "sortOrderHelp": "Thứ tự hiển thị (số nhỏ hơn ưu tiên lên đầu)",
+      "activeLabel": "Trạng thái hoạt động",
+      "activeHelp": "Hiển thị danh mục này cho người dùng lựa chọn",
+      "cancel": "Hủy bỏ",
+      "save": "Lưu thay đổi",
+      "create": "Tạo danh mục"
+    },
+    "toasts": {
+      "createSuccess": "Tạo mới danh mục thẻ thành công",
+      "updateSuccess": "Cập nhật danh mục thẻ thành công"
+    },
+    "deleteDialog": {
+      "title": "Xác nhận xóa danh mục thẻ",
+      "description": "Bạn có chắc chắn muốn xóa danh mục {{name}} ({{slug}})?",
+      "tagCountWarning": "Lưu ý: Danh mục này đang gắn với {{count}} thẻ.",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận xóa",
+      "successToast": "Đã xóa danh mục \"{{name}}\"",
+      "errorToast": "Không thể xóa danh mục này"
+    },
+    "items": {
+      "artist": {
+        "name": "Nghệ sĩ / Sáng tạo",
+        "description": "Họa sĩ minh họa, nhiếp ảnh gia, cosplayer và người sáng tạo nội dung..."
+      },
+      "character": {
+        "name": "Nhân vật",
+        "description": "Nhân vật hư cấu hoặc lịch sử có tên"
+      },
+      "copyright": {
+        "name": "Bản quyền / Tác phẩm",
+        "description": "Các thương hiệu, trò chơi, anime và ấn phẩm truyền thông gốc..."
+      },
+      "costume": {
+        "name": "Trang phục / Set đồ",
+        "description": "Trang phục, tóc giả, đạo cụ, phong cách trang điểm và cosplay..."
+      },
+      "event": {
+        "name": "Sự kiện / Lễ hội",
+        "description": "Hội chợ, triển lãm, lễ hội cosplay và buổi gặp gỡ fan..."
+      },
+      "general": {
+        "name": "Chung",
+        "description": "Khái niệm chung, chủ đề, hành động và đồ vật..."
+      },
+      "meta": {
+        "name": "Phân loại / Meta",
+        "description": "Thông số kỹ thuật, độ phân giải và thông tin quản trị..."
+      },
+      "system": {
+        "name": "Đánh dấu hệ thống",
+        "description": "Cờ nền tảng, chỉ số an toàn và đánh dấu AI..."
+      }
+    }
+  }
 }

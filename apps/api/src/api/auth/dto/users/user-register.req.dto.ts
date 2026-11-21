@@ -25,4 +25,22 @@ export class UserRegisterReqDto {
 
   @StringFieldOptional()
   username?: string;
+
+  @StringFieldOptional()
+  handle?: string;
+
+  @StringFieldOptional()
+  displayName?: string;
+
+  @StringFieldOptional()
+  roleBadge?: string;
+
+  @StringFieldOptional()
+  locationLabel?: string;
+
+  @ClassFieldOptional(() => [String])
+  specialties?: string[];
+
+  @StringFieldOptional()
+  bio?: string;
 }

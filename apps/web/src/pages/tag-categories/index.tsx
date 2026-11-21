@@ -58,10 +58,11 @@ export function PageTagCategoriesOverview() {
   const columns = useMemo(
     () =>
       getTagCategoriesColumns({
+        t,
         onEdit: handleEdit,
         onDelete: handleDelete,
       }),
-    [handleEdit, handleDelete]
+    [t, handleEdit, handleDelete]
   )
 
   const buildQuery: ResourceQueryBuilderFn<typeof categoryFilterParsers> =
@@ -100,7 +101,7 @@ export function PageTagCategoriesOverview() {
       >
         <Button onClick={handleCreate} className='gap-2 shadow-xs'>
           <Plus className='size-4' />
-          <span>Thêm danh mục</span>
+          <span>{t('tagCategories.actions.add', 'Thêm danh mục')}</span>
         </Button>
       </PageHeader>
 

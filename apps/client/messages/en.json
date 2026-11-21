@@ -465,7 +465,15 @@
         "emailInvalid": "Please enter a valid email address.",
         "passwordMin": "Password must be at least 8 characters.",
         "passwordsMismatch": "Passwords do not match."
-      }
+      },
+      "continueGoogle": "Continue with Google",
+      "orContinueWith": "Or continue with",
+      "nextStep": "Continue",
+      "backStep": "Back",
+      "step": "Step",
+      "stepRole": "Select Role",
+      "stepProfile": "Cosplay Profile",
+      "stepAccount": "Account Info"
     },
     "forgotPassword": {
       "metaTitle": "Forgot Password",

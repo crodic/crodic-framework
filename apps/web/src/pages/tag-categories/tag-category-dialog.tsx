@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -79,6 +80,7 @@ export function TagCategoryDialog({
   onOpenChange,
   category,
 }: TagCategoryDialogProps) {
+  const { t } = useTranslation()
   const isEditing = Boolean(category)
   const createMutation = useCreateTagCategory()
   const updateMutation = useUpdateTagCategory()
@@ -131,10 +133,20 @@ export function TagCategoryDialog({
           id: category.id,
           data: values,
         })
-        toast.success('Cập nhật danh mục thẻ thành công')
+        toast.success(
+          t(
+            'tagCategories.toasts.updateSuccess',
+            'Cập nhật danh mục thẻ thành công'
+          )
+        )
       } else {
         await createMutation.mutateAsync(values)
-        toast.success('Tạo mới danh mục thẻ thành công')
+        toast.success(
+          t(
+            'tagCategories.toasts.createSuccess',
+            'Tạo mới danh mục thẻ thành công'
+          )
+        )
       }
       onOpenChange(false)
     } catch (error: any) {
@@ -151,12 +163,21 @@ export function TagCategoryDialog({
       <DialogContent className='max-h-[90vh] max-w-xl overflow-y-auto sm:max-w-2xl'>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Chỉnh sửa danh mục thẻ' : 'Thêm mới danh mục thẻ'}
+            {isEditing
+              ? t('tagCategories.dialog.editTitle', 'Chỉnh sửa danh mục thẻ')
+              : t('tagCategories.dialog.createTitle', 'Thêm mới danh mục thẻ')}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? `Chỉnh sửa thông tin định danh và hiển thị cho danh mục "${category?.name}".`
-              : 'Tạo danh mục mới để phân loại và nhóm các thẻ trong hệ thống.'}
+              ? t(
+                  'tagCategories.dialog.editDescription',
+                  `Chỉnh sửa thông tin định danh và hiển thị cho danh mục "${category?.name}".`,
+                  { name: category?.name }
+                )
+              : t(
+                  'tagCategories.dialog.createDescription',
+                  'Tạo danh mục mới để phân loại và nhóm các thẻ trong hệ thống.'
+                )}
           </DialogDescription>
         </DialogHeader>
 
@@ -169,10 +190,17 @@ export function TagCategoryDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tên danh mục <span className='text-destructive'>*</span>
+                      {t('tagCategories.dialog.nameLabel', 'Tên danh mục')}{' '}
+                      <span className='text-destructive'>*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder='Ví dụ: Costume & Props' {...field} />
+                      <Input
+                        placeholder={t(
+                          'tagCategories.dialog.namePlaceholder',
+                          'Ví dụ: Costume & Props'
+                        )}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -184,18 +212,29 @@ export function TagCategoryDialog({
                 name='slug'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slug định danh</FormLabel>
+                    <FormLabel>
+                      {t('tagCategories.dialog.slugLabel', 'Slug định danh')}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='Ví dụ: costume'
+                        placeholder={t(
+                          'tagCategories.dialog.slugPlaceholder',
+                          'Ví dụ: costume'
+                        )}
                         disabled={isEditing && category?.isSystem}
                         {...field}
                       />
                     </FormControl>
                     <FormDescription className='text-xs'>
                       {isEditing && category?.isSystem
-                        ? 'Danh mục hệ thống không cho phép sửa slug'
-                        : 'Để trống để tự động tạo từ tên danh mục'}
+                        ? t(
+                            'tagCategories.dialog.slugSystemHelp',
+                            'Danh mục hệ thống không cho phép sửa slug'
+                          )
+                        : t(
+                            'tagCategories.dialog.slugAutoHelp',
+                            'Để trống để tự động tạo từ tên danh mục'
+                          )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -208,10 +247,15 @@ export function TagCategoryDialog({
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả danh mục</FormLabel>
+                  <FormLabel>
+                    {t('tagCategories.dialog.descLabel', 'Mô tả danh mục')}
+                  </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder='Mô tả ngắn gọn về loại thẻ thuộc danh mục này...'
+                      placeholder={t(
+                        'tagCategories.dialog.descPlaceholder',
+                        'Mô tả ngắn gọn về loại thẻ thuộc danh mục này...'
+                      )}
                       className='resize-none'
                       rows={3}
                       {...field}
@@ -228,7 +272,12 @@ export function TagCategoryDialog({
                 name='color'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Màu đại diện (Hex)</FormLabel>
+                    <FormLabel>
+                      {t(
+                        'tagCategories.dialog.colorLabel',
+                        'Màu đại diện (Hex)'
+                      )}
+                    </FormLabel>
                     <div className='space-y-2'>
                       <div className='flex items-center gap-2'>
                         <div
@@ -266,7 +315,9 @@ export function TagCategoryDialog({
                 name='icon'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Icon hiển thị</FormLabel>
+                    <FormLabel>
+                      {t('tagCategories.dialog.iconLabel', 'Icon hiển thị')}
+                    </FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
@@ -282,7 +333,10 @@ export function TagCategoryDialog({
                       </SelectContent>
                     </Select>
                     <FormDescription className='text-xs'>
-                      Icon Lucide biểu thị danh mục trong giao diện
+                      {t(
+                        'tagCategories.dialog.iconHelp',
+                        'Icon Lucide biểu thị danh mục trong giao diện'
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -296,7 +350,12 @@ export function TagCategoryDialog({
                 name='sortOrder'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thứ tự sắp xếp</FormLabel>
+                    <FormLabel>
+                      {t(
+                        'tagCategories.dialog.sortOrderLabel',
+                        'Thứ tự sắp xếp'
+                      )}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type='number'
@@ -311,7 +370,10 @@ export function TagCategoryDialog({
                       />
                     </FormControl>
                     <FormDescription className='text-xs'>
-                      Thứ tự hiển thị (số nhỏ hơn ưu tiên lên đầu)
+                      {t(
+                        'tagCategories.dialog.sortOrderHelp',
+                        'Thứ tự hiển thị (số nhỏ hơn ưu tiên lên đầu)'
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -325,10 +387,16 @@ export function TagCategoryDialog({
                   <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3 shadow-xs'>
                     <div className='space-y-0.5'>
                       <FormLabel className='text-sm'>
-                        Trạng thái hoạt động
+                        {t(
+                          'tagCategories.dialog.activeLabel',
+                          'Trạng thái hoạt động'
+                        )}
                       </FormLabel>
                       <FormDescription className='text-xs'>
-                        Hiển thị danh mục này cho người dùng lựa chọn
+                        {t(
+                          'tagCategories.dialog.activeHelp',
+                          'Hiển thị danh mục này cho người dùng lựa chọn'
+                        )}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -349,13 +417,15 @@ export function TagCategoryDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Hủy bỏ
+                {t('tagCategories.dialog.cancel', 'Hủy bỏ')}
               </Button>
               <Button type='submit' disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className='mr-2 size-4 animate-spin' />
                 )}
-                {isEditing ? 'Lưu thay đổi' : 'Tạo danh mục'}
+                {isEditing
+                  ? t('tagCategories.dialog.save', 'Lưu thay đổi')
+                  : t('tagCategories.dialog.create', 'Tạo danh mục')}
               </Button>
             </DialogFooter>
           </form>

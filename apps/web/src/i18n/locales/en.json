@@ -1860,5 +1860,107 @@
   "posts.status.draft": "Draft",
   "posts.actions.view": "View Details & Album",
   "posts.actions.moderate": "Moderate Status",
-  "posts.actions.delete": "Delete Post"
+  "posts.actions.delete": "Delete Post",
+  "tagCategories": {
+    "title": "Tag Categories",
+    "actions": {
+      "add": "Add Category",
+      "edit": "Edit",
+      "delete": "Delete",
+      "options": "Options"
+    },
+    "columns": {
+      "icon": "Icon",
+      "name": "Category Name",
+      "slug": "Slug",
+      "sortOrder": "Sort Order",
+      "tagCount": "Tag Count",
+      "type": "Type",
+      "status": "Status"
+    },
+    "types": {
+      "system": "System",
+      "custom": "Custom"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "tagUnit": "{{count}} tags",
+    "search": {
+      "namePlaceholder": "Search categories...",
+      "slugPlaceholder": "Filter by slug..."
+    },
+    "dialog": {
+      "createTitle": "Add New Tag Category",
+      "editTitle": "Edit Tag Category",
+      "createDescription": "Create a new category to organize and group tags in the system.",
+      "editDescription": "Edit identification and display details for category \"{{name}}\".",
+      "nameLabel": "Category Name",
+      "namePlaceholder": "e.g. Costume & Props",
+      "slugLabel": "Slug",
+      "slugPlaceholder": "e.g. costume",
+      "slugSystemHelp": "System categories cannot have their slug modified",
+      "slugAutoHelp": "Leave empty to generate automatically from name",
+      "descLabel": "Description",
+      "descPlaceholder": "Brief description of the tags belonging to this category...",
+      "colorLabel": "Color (Hex)",
+      "iconLabel": "Display Icon",
+      "iconHelp": "Lucide icon representing the category in the interface",
+      "sortOrderLabel": "Sort Order",
+      "sortOrderHelp": "Display order (smaller numbers appear first)",
+      "activeLabel": "Active Status",
+      "activeHelp": "Enable this category for users to select",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "create": "Create Category"
+    },
+    "toasts": {
+      "createSuccess": "Tag category created successfully",
+      "updateSuccess": "Tag category updated successfully"
+    },
+    "deleteDialog": {
+      "title": "Confirm Delete Tag Category",
+      "description": "Are you sure you want to delete category {{name}} ({{slug}})?",
+      "tagCountWarning": "Note: This category is currently associated with {{count}} tags.",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete",
+      "successToast": "Deleted category \"{{name}}\"",
+      "errorToast": "Cannot delete this category"
+    },
+    "items": {
+      "artist": {
+        "name": "Artist / Creator",
+        "description": "Illustrators, photographers, cosplayers, and creators..."
+      },
+      "character": {
+        "name": "Character",
+        "description": "Named fictional or historical characters"
+      },
+      "copyright": {
+        "name": "Copyright / Series",
+        "description": "Original franchises, games, anime, and media..."
+      },
+      "costume": {
+        "name": "Costume / Outfit",
+        "description": "Outfits, wigs, props, makeup styles, and cosplay..."
+      },
+      "event": {
+        "name": "Event / Gathering",
+        "description": "Conventions, expos, fan-gatherings, and festivals..."
+      },
+      "general": {
+        "name": "General",
+        "description": "General concepts, themes, actions, and objects..."
+      },
+      "meta": {
+        "name": "Meta / Taxonomy",
+        "description": "Technical, resolution, and administrative metadata..."
+      },
+      "system": {
+        "name": "System Marker",
+        "description": "Platform flags, safety indicators, and AI markers..."
+      }
+    }
+  }
 }

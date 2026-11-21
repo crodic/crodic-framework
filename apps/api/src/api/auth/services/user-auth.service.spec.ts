@@ -199,10 +199,14 @@ describe('UserAuthService', () => {
         lastName: dto.lastName,
       });
 
+      jwtService.signAsync.mockResolvedValue('jwt-token');
       userRepository.exists.mockResolvedValue(false);
       userRepository.save.mockResolvedValue(user);
       userAccountRepository.save?.mockResolvedValue(
         new UserAccountEntity({ id: '1' as any }),
+      );
+      userAccountRecoveryService.sendVerificationEmail.mockResolvedValue(
+        undefined,
       );
 
       const result = await service.signUp(dto);

@@ -143,7 +143,12 @@ async function sitemapSection(props: {
       const postsRes = await getPosts({ limit: 100 });
       for (const post of postsRes?.data || []) {
         const slugOrId = post.slug || post.id;
-        if (!slugOrId) continue;
+        if (
+          !slugOrId ||
+          (post as any).deletedAt ||
+          (post as any).author?.deletedAt
+        )
+          continue;
         entries.push(
           ...buildLocalizedEntries(
             baseUrl,
@@ -174,7 +179,13 @@ async function sitemapSection(props: {
     try {
       const cosplayersRes = await getCosplayers({ limit: 100 });
       for (const cosplayer of cosplayersRes?.data || []) {
-        if (!cosplayer.slug) continue;
+        if (
+          !cosplayer.slug ||
+          (cosplayer as any).deletedAt ||
+          (cosplayer as any).user?.deletedAt
+        ) {
+          continue;
+        }
         entries.push(
           ...buildLocalizedEntries(
             baseUrl,
