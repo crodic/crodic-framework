@@ -14,7 +14,7 @@ import { Reflector } from '@nestjs/core';
 describe('AdminUserController', () => {
   let controller: AdminUserController;
   let service: AdminUserService;
-  let userServiceValue: Partial<Record<keyof AdminUserService, jest.Mock>>;
+  let userServiceValue: Record<string, jest.Mock>;
 
   beforeAll(async () => {
     userServiceValue = {

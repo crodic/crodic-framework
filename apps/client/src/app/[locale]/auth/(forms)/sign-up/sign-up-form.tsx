@@ -137,7 +137,6 @@ export default function SignUpForm() {
     defaultValues: {
       role: "cosplayer",
       displayName: "",
-      handle: "",
       locationKey: "hcm",
       specialties: [],
       bio: "",
@@ -232,7 +231,6 @@ export default function SignUpForm() {
         password: values.password,
         roleBadge: getRoleBadge(values.role),
         displayName: values.displayName.trim(),
-        handle: values.handle.trim().replace(/^@+/, "").toLowerCase(),
         locationLabel: tOnboard(`step2.cities.${values.locationKey}` as any),
         specialties: values.specialties,
         bio: values.bio?.trim() || undefined,
@@ -269,13 +267,6 @@ export default function SignUpForm() {
         const errorData = error.response?.data;
         const msg = errorData?.message || t("errorToast");
         toast.error(msg);
-        if (
-          errorData?.errorCode === "HANDLE_CONFLICT" ||
-          msg.toLowerCase().includes("handle")
-        ) {
-          form.setError("handle", { message: msg });
-          setStep(2);
-        }
       } else {
         toast.error(t("errorToast"));
       }
@@ -293,11 +284,7 @@ export default function SignUpForm() {
   };
 
   const handleNextFromStep2 = async () => {
-    const isValid = await form.trigger([
-      "displayName",
-      "handle",
-      "locationKey",
-    ]);
+    const isValid = await form.trigger(["displayName", "locationKey"]);
     if (isValid) {
       setStep(3);
     }
@@ -315,10 +302,10 @@ export default function SignUpForm() {
       </div>
 
       <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
-        <CardHeader className="flex w-full min-w-0 flex-col space-y-3 px-4 sm:px-8">
+        <CardHeader className="flex w-full min-w-0 flex-col items-stretch space-y-3 px-4 sm:px-8">
           {/* Progress Indicator */}
-          <div className="space-y-1.5">
-            <div className="text-muted-foreground flex items-center justify-between text-xs font-semibold tracking-wider uppercase">
+          <div className="w-full space-y-1.5">
+            <div className="text-muted-foreground flex w-full items-center justify-between text-xs font-semibold tracking-wider uppercase">
               <span>
                 {t("step")} {step} / 3
               </span>
@@ -330,7 +317,7 @@ export default function SignUpForm() {
                     : t("stepAccount")}
               </span>
             </div>
-            <Progress value={progressPercent} className="h-1.5" />
+            <Progress value={progressPercent} className="h-1.5 w-full" />
           </div>
 
           <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -357,43 +344,53 @@ export default function SignUpForm() {
             >
               {/* STEP 1: ROLE SELECTION */}
               {step === 1 && (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3">
                     {/* Option 1: Cosplayer */}
                     <div
                       onClick={() => form.setValue("role", "cosplayer")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "cosplayer"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
+                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
-                            <Palette className="size-4.5" />
+                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
+                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                          <Palette className="size-5" />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
+                              {tOnboard("step1.roles.cosplayer.title")}
+                            </h2>
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-[10px] tracking-wider uppercase"
+                            >
+                              {tOnboard("step1.roles.cosplayer.badge")}
+                            </Badge>
                           </div>
+                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
+                            {tOnboard("step1.roles.cosplayer.description")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 pl-1">
+                        <div
+                          className={cn(
+                            "flex size-5 items-center justify-center rounded-full border transition-all",
+                            selectedRole === "cosplayer"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/80 bg-background/50"
+                          )}
+                        >
                           {selectedRole === "cosplayer" && (
-                            <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                              <Check className="size-3 stroke-[3]" />
-                            </div>
+                            <Check className="size-3 stroke-[3]" />
                           )}
                         </div>
-                        <div>
-                          <Badge
-                            variant="secondary"
-                            className="mb-1 text-[10px] tracking-wider uppercase"
-                          >
-                            {tOnboard("step1.roles.cosplayer.badge")}
-                          </Badge>
-                          <h2 className="text-foreground text-sm font-bold">
-                            {tOnboard("step1.roles.cosplayer.title")}
-                          </h2>
-                        </div>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                          {tOnboard("step1.roles.cosplayer.description")}
-                        </p>
                       </div>
                     </div>
 
@@ -401,37 +398,47 @@ export default function SignUpForm() {
                     <div
                       onClick={() => form.setValue("role", "photographer")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "photographer"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
+                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
-                            <Camera className="size-4.5" />
+                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
+                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                          <Camera className="size-5" />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
+                              {tOnboard("step1.roles.photographer.title")}
+                            </h2>
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-[10px] tracking-wider uppercase"
+                            >
+                              {tOnboard("step1.roles.photographer.badge")}
+                            </Badge>
                           </div>
+                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
+                            {tOnboard("step1.roles.photographer.description")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 pl-1">
+                        <div
+                          className={cn(
+                            "flex size-5 items-center justify-center rounded-full border transition-all",
+                            selectedRole === "photographer"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/80 bg-background/50"
+                          )}
+                        >
                           {selectedRole === "photographer" && (
-                            <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                              <Check className="size-3 stroke-[3]" />
-                            </div>
+                            <Check className="size-3 stroke-[3]" />
                           )}
                         </div>
-                        <div>
-                          <Badge
-                            variant="secondary"
-                            className="mb-1 text-[10px] tracking-wider uppercase"
-                          >
-                            {tOnboard("step1.roles.photographer.badge")}
-                          </Badge>
-                          <h2 className="text-foreground text-sm font-bold">
-                            {tOnboard("step1.roles.photographer.title")}
-                          </h2>
-                        </div>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                          {tOnboard("step1.roles.photographer.description")}
-                        </p>
                       </div>
                     </div>
 
@@ -439,37 +446,47 @@ export default function SignUpForm() {
                     <div
                       onClick={() => form.setValue("role", "fan")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "fan"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
+                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
-                            <Heart className="size-4.5" />
+                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
+                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                          <Heart className="size-5" />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
+                              {tOnboard("step1.roles.fan.title")}
+                            </h2>
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-[10px] tracking-wider uppercase"
+                            >
+                              {tOnboard("step1.roles.fan.badge")}
+                            </Badge>
                           </div>
+                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
+                            {tOnboard("step1.roles.fan.description")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 pl-1">
+                        <div
+                          className={cn(
+                            "flex size-5 items-center justify-center rounded-full border transition-all",
+                            selectedRole === "fan"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/80 bg-background/50"
+                          )}
+                        >
                           {selectedRole === "fan" && (
-                            <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                              <Check className="size-3 stroke-[3]" />
-                            </div>
+                            <Check className="size-3 stroke-[3]" />
                           )}
                         </div>
-                        <div>
-                          <Badge
-                            variant="secondary"
-                            className="mb-1 text-[10px] tracking-wider uppercase"
-                          >
-                            {tOnboard("step1.roles.fan.badge")}
-                          </Badge>
-                          <h2 className="text-foreground text-sm font-bold">
-                            {tOnboard("step1.roles.fan.title")}
-                          </h2>
-                        </div>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                          {tOnboard("step1.roles.fan.description")}
-                        </p>
                       </div>
                     </div>
                   </div>
@@ -542,80 +559,39 @@ export default function SignUpForm() {
 
                     <FormField
                       control={form.control}
-                      name="handle"
+                      name="locationKey"
                       render={({ field }) => (
                         <FormItem className="space-y-1">
                           <FormLabel className="text-xs font-semibold sm:text-sm">
-                            {tOnboard("step2.fields.handle")}{" "}
+                            {tOnboard("step2.fields.location")}{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2 text-sm font-bold">
-                                @
-                              </span>
-                              <Input
-                                value={field.value}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9_-]/g, "");
-                                  field.onChange(val);
-                                }}
-                                placeholder={tOnboard(
-                                  "step2.fields.handlePlaceholder"
-                                )}
-                                className="h-10 rounded-xl pl-8 text-sm sm:h-10.5"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormDescription className="block max-w-full truncate text-[11px]">
-                            {tOnboard("step2.fields.handlePreview")}{" "}
-                            <span className="text-primary truncate font-mono font-medium">
-                              kosume.click/cosplayer/@
-                              {field.value || "username"}
-                            </span>
-                          </FormDescription>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-10 w-full rounded-xl text-sm sm:h-10.5">
+                                <SelectValue
+                                  placeholder={tOnboard(
+                                    "step2.fields.locationPlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {CITY_KEYS.map((cKey) => (
+                                <SelectItem key={cKey} value={cKey}>
+                                  {tOnboard(`step2.cities.${cKey}` as any)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-
-                  <FormField
-                    control={form.control}
-                    name="locationKey"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1">
-                        <FormLabel className="text-xs font-semibold sm:text-sm">
-                          {tOnboard("step2.fields.location")}{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-10 w-full rounded-xl text-sm sm:h-10.5">
-                              <SelectValue
-                                placeholder={tOnboard(
-                                  "step2.fields.locationPlaceholder"
-                                )}
-                              />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {CITY_KEYS.map((cKey) => (
-                              <SelectItem key={cKey} value={cKey}>
-                                {tOnboard(`step2.cities.${cKey}` as any)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   {/* Specialties & System Tags */}
                   <FormField

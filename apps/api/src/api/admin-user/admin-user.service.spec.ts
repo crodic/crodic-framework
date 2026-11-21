@@ -15,18 +15,10 @@ import { AdminUserEntity } from './entities/admin-user.entity';
 describe('AdminUserService', () => {
   let service: AdminUserService;
 
-  let adminRepoMock: Partial<
-    Record<keyof Repository<AdminUserEntity>, jest.Mock>
-  >;
-  let adminAccountRepoMock: Partial<
-    Record<keyof Repository<AdminAccountEntity>, jest.Mock>
-  >;
-  let adminSessionRepoMock: Partial<
-    Record<keyof Repository<AdminSessionEntity>, jest.Mock>
-  >;
-  let roleRepoMock: Partial<
-    Record<keyof Repository<AdminRoleEntity>, jest.Mock>
-  >;
+  let adminRepoMock: Record<string, jest.Mock>;
+  let adminAccountRepoMock: Record<string, jest.Mock>;
+  let adminSessionRepoMock: Record<string, jest.Mock>;
+  let roleRepoMock: Record<string, jest.Mock>;
   let dataSourceMock: { transaction: jest.Mock };
   let cacheMock: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let adminAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };

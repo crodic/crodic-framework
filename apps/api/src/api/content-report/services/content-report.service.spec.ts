@@ -59,7 +59,7 @@ describe('ContentReportService', () => {
 
   describe('resolveReport', () => {
     it('updates report status and resolution note', async () => {
-      const mockReport = {
+      const mockReport: any = {
         id: id('1'),
         status: EReportStatus.PENDING,
         reporterUserId: id('100'),

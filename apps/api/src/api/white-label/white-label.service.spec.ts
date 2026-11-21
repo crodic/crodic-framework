@@ -13,9 +13,7 @@ import { WhiteLabelService } from './white-label.service';
 
 describe('WhiteLabelService', () => {
   let service: WhiteLabelService;
-  let whiteLabelRepositoryValue: Partial<
-    Record<keyof Repository<WhiteLabelEntity>, jest.Mock>
-  >;
+  let whiteLabelRepositoryValue: Record<string, jest.Mock>;
   let filesystemServiceMock: {
     put: jest.Mock;
     delete: jest.Mock;

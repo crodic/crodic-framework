@@ -14,15 +14,8 @@ import { FileFolderService } from './file-folder.service';
 
 describe('FileChunkUploadService', () => {
   let service: FileChunkUploadService;
-  let repository: {
-    create: jest.Mock;
-    save: jest.Mock;
-  };
-  let sessionRepository: {
-    create: jest.Mock;
-    save: jest.Mock;
-    findOne: jest.Mock;
-  };
+  let repository: Record<string, jest.Mock>;
+  let sessionRepository: Record<string, jest.Mock>;
   let diskRoot: string;
   let disk: {
     put: jest.Mock;

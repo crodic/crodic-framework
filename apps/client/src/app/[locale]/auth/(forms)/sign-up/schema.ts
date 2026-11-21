@@ -15,18 +15,6 @@ export const createSignUpFormSchema = (
             : "Display name is required",
         })
         .max(80),
-      handle: z
-        .string()
-        .min(1, {
-          message: tOnboard
-            ? tOnboard("step2.validation.handleRequired")
-            : "Handle is required",
-        })
-        .regex(/^[a-z0-9_-]{3,30}$/, {
-          message: tOnboard
-            ? tOnboard("step2.validation.handleInvalid")
-            : "Handle must be 3-30 characters (a-z, 0-9, _, -)",
-        }),
       locationKey: z.string().min(1, {
         message: tOnboard
           ? tOnboard("step2.validation.locationRequired")

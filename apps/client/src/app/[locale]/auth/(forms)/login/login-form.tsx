@@ -202,7 +202,7 @@ export default function LoginForm() {
       </div>
 
       <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
-        <CardHeader className="flex w-full min-w-0 flex-col space-y-2 px-4 sm:px-8">
+        <CardHeader className="flex w-full min-w-0 flex-col items-stretch space-y-2 px-4 sm:px-8">
           <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
             {t("title")}
           </CardTitle>

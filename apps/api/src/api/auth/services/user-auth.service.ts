@@ -194,29 +194,16 @@ export class UserAuthService extends AuthService<
       throw new ValidationException(ErrorCode.E003);
     }
 
-    const rawHandle = (dto.handle || dto.username || '')
-      .replace(/^@+/, '')
-      .trim()
-      .toLowerCase();
-
-    if (rawHandle) {
-      const isExistUsername = await this.userRepository.exists({
-        where: { username: rawHandle },
-      });
-      if (isExistUsername) {
-        throw new BadRequestException({
-          errorCode: 'HANDLE_CONFLICT',
-          message: `Username or handle "@${rawHandle}" is already taken`,
-        });
-      }
-    }
+    // Generate a clean, unique username/slug derived from email
+    const emailPrefix = dto.email.split('@')[0];
+    const finalHandle = await this.generateUniqueSlug(emailPrefix);
 
     // Register user
     const newUser = this.userRepository.create({
       firstName: dto.firstName,
       lastName: dto.lastName || '',
       email: dto.email,
-      username: rawHandle || undefined,
+      username: finalHandle,
     });
 
     const persistUser = async (
@@ -251,7 +238,7 @@ export class UserAuthService extends AuthService<
         : this.dataSource?.getRepository('cosplayer_profiles');
 
       if (cosProfileRepo) {
-        const cleanSlug = rawHandle || `user-${savedUser.id}`;
+        const cleanSlug = finalHandle || `user-${savedUser.id}`;
         const cosProfile = cosProfileRepo.create({
           userId: savedUser.id,
           slug: cleanSlug,
@@ -794,5 +781,39 @@ export class UserAuthService extends AuthService<
         avatarUrl: profile.avatarUrl,
       }),
     );
+  }
+
+  private slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9_-]/g, '')
+      .slice(0, 24);
+  }
+
+  private async generateUniqueSlug(baseText: string): Promise<string> {
+    const baseSlug = this.slugify(baseText) || 'user';
+    let candidate = baseSlug;
+    const exists = await this.userRepository.exists({
+      where: { username: candidate },
+    });
+    if (!exists) {
+      return candidate;
+    }
+
+    for (let i = 0; i < 10; i++) {
+      const suffix = Math.floor(100 + Math.random() * 900);
+      const testHandle = `${baseSlug.slice(0, 20)}_${suffix}`;
+      const isTaken = await this.userRepository.exists({
+        where: { username: testHandle },
+      });
+      if (!isTaken) {
+        return testHandle;
+      }
+    }
+
+    return `${baseSlug.slice(0, 16)}_${Date.now().toString(36)}`;
   }
 }

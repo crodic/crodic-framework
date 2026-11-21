@@ -24,12 +24,6 @@ export class UserRegisterReqDto {
   roleId?: AutoIncrementID;
 
   @StringFieldOptional()
-  username?: string;
-
-  @StringFieldOptional()
-  handle?: string;
-
-  @StringFieldOptional()
   displayName?: string;
 
   @StringFieldOptional()
@@ -38,7 +32,7 @@ export class UserRegisterReqDto {
   @StringFieldOptional()
   locationLabel?: string;
 
-  @ClassFieldOptional(() => [String])
+  @StringFieldOptional({ each: true })
   specialties?: string[];
 
   @StringFieldOptional()

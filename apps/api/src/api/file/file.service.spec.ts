@@ -14,15 +14,7 @@ import { FileValidator } from './validators/file.validator';
 
 describe('FileService', () => {
   let service: FileService;
-  let repository: {
-    findOneByOrFail: jest.Mock;
-    create: jest.Mock;
-    save: jest.Mock;
-    delete: jest.Mock;
-    count: jest.Mock;
-    find: jest.Mock;
-    createQueryBuilder: jest.Mock;
-  };
+  let repository: Record<string, jest.Mock>;
   let diskRoot = 'storage/public';
   let disk: {
     getDiskRoot: jest.Mock;

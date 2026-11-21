@@ -26,23 +26,15 @@ jest.mock('../../../utils/password.util', () => ({
 
 describe('UserAuthService', () => {
   let service: UserAuthService;
-  let userRepository: Partial<Record<keyof Repository<UserEntity>, jest.Mock>>;
-  let adminUserRepository: Partial<
-    Record<keyof Repository<AdminUserEntity>, jest.Mock>
-  >;
-  let sessionRepository: Partial<
-    Record<keyof Repository<UserSessionEntity>, jest.Mock>
-  >;
-  let userAccountRepository: Partial<
-    Record<keyof Repository<UserAccountEntity>, jest.Mock>
-  >;
+  let userRepository: Record<string, jest.Mock>;
+  let adminUserRepository: Record<string, jest.Mock>;
+  let sessionRepository: Record<string, jest.Mock>;
+  let userAccountRepository: Record<string, jest.Mock>;
   let jwtService: { signAsync: jest.Mock; verify: jest.Mock };
   let cacheManager: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let emailQueue: { add: jest.Mock };
-  let authSessionService: Partial<Record<keyof AuthSessionService, jest.Mock>>;
-  let userAccountRecoveryService: Partial<
-    Record<keyof UserAccountRecoveryService, jest.Mock>
-  >;
+  let authSessionService: Record<string, jest.Mock>;
+  let userAccountRecoveryService: Record<string, jest.Mock>;
 
   const configValues: Record<string, string> = {
     'auth.userConfirmEmailExpires': '1d',
@@ -200,8 +192,8 @@ describe('UserAuthService', () => {
       });
 
       jwtService.signAsync.mockResolvedValue('jwt-token');
-      userRepository.exists.mockResolvedValue(false);
-      userRepository.save.mockResolvedValue(user);
+      userRepository.exists?.mockResolvedValue(false);
+      userRepository.save?.mockResolvedValue(user);
       userAccountRepository.save?.mockResolvedValue(
         new UserAccountEntity({ id: '1' as any }),
       );
@@ -211,11 +203,13 @@ describe('UserAuthService', () => {
 
       const result = await service.signUp(dto);
 
-      expect(userRepository.create).toHaveBeenCalledWith({
-        firstName: dto.firstName,
-        lastName: dto.lastName || '',
-        email: dto.email,
-      });
+      expect(userRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          firstName: dto.firstName,
+          lastName: dto.lastName || '',
+          email: dto.email,
+        }),
+      );
       expect(userRepository.save).toHaveBeenCalledWith(expect.any(UserEntity));
       expect(userAccountRepository.save).toHaveBeenCalledWith(
         expect.any(UserAccountEntity),
@@ -224,7 +218,7 @@ describe('UserAuthService', () => {
     });
 
     it('throws when the email already exists', async () => {
-      userRepository.exists.mockResolvedValue(true);
+      userRepository.exists?.mockResolvedValue(true);
 
       await expect(service.signUp(dto)).rejects.toMatchObject({
         response: { errorCode: ErrorCode.E003 },
@@ -341,7 +335,7 @@ describe('UserAuthService', () => {
         password: 'hashed-password',
       });
 
-      userRepository.findOneByOrFail.mockResolvedValue(user);
+      userRepository.findOneByOrFail?.mockResolvedValue(user);
       userAccountRepository.findOne?.mockResolvedValue(account);
       (verifyPassword as jest.Mock).mockResolvedValue(true);
 
@@ -353,7 +347,7 @@ describe('UserAuthService', () => {
     });
 
     it('throws when current password is invalid', async () => {
-      userRepository.findOneByOrFail.mockResolvedValue(
+      userRepository.findOneByOrFail?.mockResolvedValue(
         new UserEntity({ id: '10' as any }),
       );
       userAccountRepository.findOne?.mockResolvedValue(
@@ -370,7 +364,7 @@ describe('UserAuthService', () => {
     });
 
     it('throws when new password confirmation does not match', async () => {
-      userRepository.findOneByOrFail.mockResolvedValue(
+      userRepository.findOneByOrFail?.mockResolvedValue(
         new UserEntity({ id: '10' as any }),
       );
       userAccountRepository.findOne?.mockResolvedValue(
