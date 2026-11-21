@@ -44,10 +44,22 @@ export function ExploreFeed() {
   const exploreTags = useMemo(() => {
     const list = [{ id: "all", label: t("all") }];
     trendingFandoms.forEach((item) => {
-      list.push({ id: item.slug || item.name.toLowerCase(), label: item.name });
+      list.push({ id: item.slug || String(item.id), label: item.name });
     });
     return list;
   }, [trendingFandoms, t]);
+
+  const selectedTagObj = useMemo(() => {
+    if (selectedTag === "all") return null;
+    return (
+      trendingFandoms.find(
+        (t) =>
+          t.slug === selectedTag ||
+          String(t.id) === selectedTag ||
+          t.name.toLowerCase() === selectedTag.toLowerCase()
+      ) || null
+    );
+  }, [selectedTag, trendingFandoms]);
 
   useEffect(() => {
     setSearchQuery(queryParam);
@@ -61,9 +73,13 @@ export function ExploreFeed() {
 
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
+  const effectiveSearch =
+    searchQuery || (selectedTagObj ? selectedTagObj.name : undefined);
+
   const { data: postsResponse, isLoading: isLoadingPosts } = useQuery({
-    queryKey: ["explore-posts", searchQuery],
-    queryFn: () => getPosts({ search: searchQuery || undefined, limit: 50 }),
+    queryKey: ["explore-posts", effectiveSearch],
+    queryFn: () =>
+      getPosts({ search: effectiveSearch || undefined, limit: 50 }),
     enabled: !isHydrating,
   });
 
@@ -83,22 +99,35 @@ export function ExploreFeed() {
     let result = posts;
     if (activeTab === "characters") {
       result = result.filter((item) => Boolean(item.characterName));
-    }
-    if (selectedTag !== "all") {
-      const lower = selectedTag.toLowerCase();
+    } else if (activeTab === "works") {
       result = result.filter(
-        (item) =>
-          item.tagNamesCache?.some(
-            (t) => t.toLowerCase() === lower || t.toLowerCase().includes(lower)
-          ) ||
-          item.albumCategory?.toLowerCase().includes(lower) ||
-          item.title.toLowerCase().includes(lower) ||
-          item.characterName?.toLowerCase().includes(lower) ||
-          item.fandomName?.toLowerCase().includes(lower)
+        (item) => item.postType === "photoset" || item.postType === "single"
       );
     }
+    if (selectedTag !== "all" && selectedTagObj) {
+      const lowerName = selectedTagObj.name.toLowerCase();
+      const lowerSlug = (selectedTagObj.slug || "").toLowerCase();
+      result = result.filter((item) => {
+        const matchesTag = item.tagNamesCache?.some((t) => {
+          const l = t.toLowerCase();
+          return (
+            l === lowerName ||
+            (lowerSlug && l === lowerSlug) ||
+            l.includes(lowerName)
+          );
+        });
+        const matchesFandom =
+          item.fandomName?.toLowerCase().includes(lowerName) ||
+          (lowerSlug && item.fandomName?.toLowerCase().includes(lowerSlug));
+        const matchesTitle = item.title.toLowerCase().includes(lowerName);
+        const matchesChar = item.characterName
+          ?.toLowerCase()
+          .includes(lowerName);
+        return matchesTag || matchesFandom || matchesTitle || matchesChar;
+      });
+    }
     return result;
-  }, [selectedTag, activeTab, posts]);
+  }, [selectedTag, selectedTagObj, activeTab, posts]);
 
   const cosplayers: CosplayerSummaryResDto[] = cosplayersResponse?.data || [];
 
@@ -255,7 +284,7 @@ export function ExploreFeed() {
               <Loader2 className="text-primary size-8 animate-spin" />
             </div>
           ) : filteredItems.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
               {filteredItems.map((item) => (
                 <ExploreCard key={item.id} item={item} />
               ))}

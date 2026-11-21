@@ -131,15 +131,20 @@ export function PostCarousel({ photos, title }: PostCarouselProps) {
         >
           <CarouselContent className="-ml-0 h-full">
             {photos.map((photo, index) => (
-              <CarouselItem key={index} className="basis-full pl-0">
+              <CarouselItem
+                key={index}
+                className="flex h-full basis-full items-center justify-center pl-0"
+              >
                 <div
                   onClick={() => setIsLightboxOpen(true)}
                   className={cn(
-                    "group relative flex aspect-[4/5] max-h-[60vh] w-full cursor-pointer items-center justify-center px-2 pt-10 sm:aspect-auto sm:h-[460px] sm:px-6 md:h-[680px] md:pt-12 lg:h-[760px]",
-                    photos.length > 1 ? "pb-8 md:pb-24" : "pb-4"
+                    "group relative flex size-full h-full w-full cursor-pointer items-center justify-center p-3 sm:p-5",
+                    photos.length > 1
+                      ? "pt-12 pb-16 md:pt-12 md:pb-22"
+                      : "p-4 sm:p-6"
                   )}
                 >
-                  <div className="relative size-full">
+                  <div className="relative flex size-full max-h-full max-w-full items-center justify-center">
                     <Image
                       src={photo}
                       alt={`${title} - ${index + 1}`}

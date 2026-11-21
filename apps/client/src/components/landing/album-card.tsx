@@ -28,7 +28,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
 
   return (
     <Link
-      href={`/posts/${album.slug || album.id}`}
+      href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
       className="group border-border/60 bg-muted/20 hover:border-primary/80 hover:shadow-primary/25 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-500 hover:shadow-2xl sm:aspect-[9/13]"
     >
       {/* Background artwork cover */}

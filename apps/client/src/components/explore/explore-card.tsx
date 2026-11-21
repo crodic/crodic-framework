@@ -25,7 +25,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
     item.isSavedByCurrentUser ?? false
   );
 
-  const postSlugOrId = item.slug || item.id;
+  const postSlugOrId = encodeURIComponent(String(item.slug || item.id).trim());
   const authorHandle = item.author.handle.replace("@", "") || item.author.id;
 
   const handleBookmark = (e: React.MouseEvent) => {

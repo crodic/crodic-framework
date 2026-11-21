@@ -131,7 +131,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         ? [post.coverImageUrl]
         : [];
 
-  const postSlugOrId = post.slug || post.id;
+  const postSlugOrId = encodeURIComponent(String(post.slug || post.id).trim());
   const postDateString = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString()
     : "";

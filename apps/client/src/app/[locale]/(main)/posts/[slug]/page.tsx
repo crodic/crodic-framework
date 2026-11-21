@@ -26,8 +26,9 @@ export async function generateMetadata({
   const siteName = whiteLabel?.brandName || "Kosume";
 
   try {
+    const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
     const post = await serverFetch<PostDetailResDto>(
-      `/api/v1/public/posts/${slug}`
+      `/api/v1/public/posts/${cleanSlug}`
     );
     const isVi = locale === "vi";
     const authorName = post.author?.displayName || "Cosplayer";
@@ -100,12 +101,13 @@ export default async function PostPage({ params }: PostPageProps) {
   setRequestLocale(locale);
 
   try {
+    const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
     const [rawPost, rawComments] = await Promise.all([
-      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${slug}`).catch(
+      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${cleanSlug}`).catch(
         () => null
       ),
       serverFetch<PostCommentResDto[]>(
-        `/api/v1/public/posts/${slug}/comments`
+        `/api/v1/public/posts/${cleanSlug}/comments`
       ).catch(() => []),
     ]);
 
@@ -177,7 +179,7 @@ export default async function PostPage({ params }: PostPageProps) {
     };
 
     return (
-      <Layout>
+      <Layout showRightRail={false}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

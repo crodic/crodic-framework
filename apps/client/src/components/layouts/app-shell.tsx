@@ -11,11 +11,16 @@ import { AppRightRail } from "./app-right-rail";
 interface AppShellProps {
   children: React.ReactNode;
   showRightRail?: boolean;
+  defaultOpen?: boolean;
 }
 
-export function AppShell({ children, showRightRail = true }: AppShellProps) {
+export function AppShell({
+  children,
+  showRightRail = true,
+  defaultOpen = true,
+}: AppShellProps) {
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={defaultOpen}>
       {/* Official shadcn Sidebar */}
       <AppSidebar />
 

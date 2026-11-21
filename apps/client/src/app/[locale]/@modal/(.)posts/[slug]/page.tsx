@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { serverFetch } from "@/lib/server-fetch";
 import { PostDetailModal } from "@/components/post-detail/post-detail-modal";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
@@ -13,17 +12,18 @@ export default async function InterceptedPostPage({
   const { slug } = await params;
 
   try {
+    const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
     const [rawPost, rawComments] = await Promise.all([
-      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${slug}`).catch(
+      serverFetch<PostDetailResDto>(`/api/v1/public/posts/${cleanSlug}`).catch(
         () => null
       ),
       serverFetch<PostCommentResDto[]>(
-        `/api/v1/public/posts/${slug}/comments`
+        `/api/v1/public/posts/${cleanSlug}/comments`
       ).catch(() => []),
     ]);
 
     if (!rawPost) {
-      notFound();
+      return null;
     }
 
     const commentsData = Array.isArray(rawComments)
@@ -32,6 +32,6 @@ export default async function InterceptedPostPage({
 
     return <PostDetailModal post={rawPost} comments={commentsData} />;
   } catch {
-    notFound();
+    return null;
   }
 }

@@ -25,7 +25,7 @@ export default async function StudioUploadPage({ params }: UploadPageProps) {
   const t = await getTranslations({ locale, namespace: "Studio" });
 
   return (
-    <Layout>
+    <Layout showRightRail={false}>
       <div className="space-y-6">
         <div className="mb-6">
           <h1 className="text-foreground text-2xl font-bold tracking-tight">

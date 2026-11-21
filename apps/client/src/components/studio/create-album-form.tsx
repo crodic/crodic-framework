@@ -246,68 +246,71 @@ export function CreateAlbumForm({
         className={`flex flex-col justify-between gap-5 ${className || ""}`}
       >
         <div className="space-y-4">
-          {/* Tên Album */}
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  {t("titleLabel")}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t("titlePlaceholder")}
-                    className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+          {/* Metadata Row: Title, Character, Series */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Tên Album */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                    {t("titleLabel")}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("titlePlaceholder")}
+                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
 
-          {/* Nhân vật */}
-          <FormField
-            control={form.control}
-            name="character"
-            render={({ field }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  {t("characterLabel")}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t("characterPlaceholder")}
-                    className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+            {/* Nhân vật */}
+            <FormField
+              control={form.control}
+              name="character"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                    {t("characterLabel")}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("characterPlaceholder")}
+                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
 
-          {/* Fandom / Game */}
-          <FormField
-            control={form.control}
-            name="fandom"
-            render={({ field }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
-                  {t("seriesLabel")}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t("seriesPlaceholder")}
-                    className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+            {/* Fandom / Game */}
+            <FormField
+              control={form.control}
+              name="fandom"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                    {t("seriesLabel")}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("seriesPlaceholder")}
+                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Tag Pills (Pixiv Style) */}
           <FormField
@@ -354,14 +357,14 @@ export function CreateAlbumForm({
           />
 
           {/* Settings Switches */}
-          <div className="border-border/50 bg-background/30 space-y-3 rounded-xl border p-3">
+          <div className="border-border/50 bg-background/30 grid grid-cols-1 gap-3 rounded-xl border p-3 sm:grid-cols-2 sm:gap-4 sm:p-4">
             <FormField
               control={form.control}
               name="isPublic"
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between gap-3 space-y-0">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium">
+                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium sm:text-sm">
                       {t("visibility.public")}
                     </FormLabel>
                     <FormDescription className="text-muted-foreground text-[11px]">
@@ -382,9 +385,9 @@ export function CreateAlbumForm({
               control={form.control}
               name="enableWatermark"
               render={({ field }) => (
-                <FormItem className="border-border/40 flex items-center justify-between gap-3 space-y-0 border-t pt-2">
+                <FormItem className="border-border/40 flex items-center justify-between gap-3 space-y-0 pt-2 sm:border-t-0 sm:pt-0">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium">
+                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium sm:text-sm">
                       {t("watermark")}
                     </FormLabel>
                     <FormDescription className="text-muted-foreground text-[11px]">

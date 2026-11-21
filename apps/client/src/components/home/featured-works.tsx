@@ -59,11 +59,13 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
       ? t(`categories.${post.albumCategory as CategoryKey}`)
       : post.albumCategory || t("photoset");
 
+  const postSlugOrId = encodeURIComponent(String(post.slug || post.id).trim());
+
   return (
     <Card className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/5 flex flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
       {/* Top Image Showcase */}
       <Link
-        href={`/posts/${post.slug || post.id}`}
+        href={`/posts/${postSlugOrId}`}
         className="bg-muted relative block aspect-[4/3.6] w-full cursor-pointer overflow-hidden"
       >
         <Image
@@ -100,7 +102,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
       {/* Info & Actions */}
       <CardContent className="flex flex-1 flex-col justify-between space-y-2.5 p-3 sm:p-3.5">
         <div className="space-y-1.5">
-          <Link href={`/posts/${post.slug || post.id}`} className="block">
+          <Link href={`/posts/${postSlugOrId}`} className="block">
             <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
               {post.title}
             </h3>
@@ -146,9 +148,7 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
             size="sm"
             className="hover:bg-primary/10 hover:text-primary h-7.5 w-full cursor-pointer rounded-lg text-xs font-semibold"
           >
-            <Link href={`/posts/${post.slug || post.id}`}>
-              {t("viewProject")}
-            </Link>
+            <Link href={`/posts/${postSlugOrId}`}>{t("viewProject")}</Link>
           </Button>
         </div>
       </CardContent>

@@ -122,7 +122,25 @@ export class PostService {
                 })
                 .orWhere('LOWER(post.fandomName) LIKE :sTerm', {
                   sTerm: `%${normalized}%`,
-                });
+                })
+                .orWhere(
+                  `EXISTS (
+                    SELECT 1 FROM entity_tags et
+                    INNER JOIN tags t ON t.id = et.tag_id
+                    WHERE et.entity_id = post.id
+                      AND et.entity_type = 'POST'
+                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                  )`,
+                  { sTerm: `%${normalized}%` },
+                )
+                .orWhere(
+                  `EXISTS (
+                    SELECT 1 FROM tags t
+                    WHERE (t.id = post.copyright_tag_id OR t.id = post.character_tag_id)
+                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                  )`,
+                  { sTerm: `%${normalized}%` },
+                );
             }),
           );
         }),
@@ -301,6 +319,28 @@ export class PostService {
       where: { slug: slugOrId },
       relations: ['author'],
     });
+
+    if (!post) {
+      const raw = String(slugOrId || '').trim();
+      let decoded = raw;
+      try {
+        decoded = decodeURIComponent(raw).trim();
+      } catch {
+        // ignore
+      }
+      const hyphenated = decoded.replace(/\s+/g, '-').toLowerCase();
+      const spaced = decoded.replace(/-/g, ' ');
+      const alternateSlugs = Array.from(
+        new Set([decoded, hyphenated, spaced]),
+      ).filter((s) => s && s !== slugOrId);
+
+      if (alternateSlugs.length > 0) {
+        post = await this.postRepo.findOne({
+          where: alternateSlugs.map((slug) => ({ slug })),
+          relations: ['author'],
+        });
+      }
+    }
 
     if (!post && /^\d+$/.test(String(slugOrId))) {
       post = await this.postRepo.findOne({
@@ -635,12 +675,33 @@ export class PostService {
               b.where('LOWER(post.title) LIKE :sTerm', {
                 sTerm: `%${normalized}%`,
               })
+                .orWhere('LOWER(post.caption) LIKE :sTerm', {
+                  sTerm: `%${normalized}%`,
+                })
                 .orWhere('LOWER(post.characterName) LIKE :sTerm', {
                   sTerm: `%${normalized}%`,
                 })
                 .orWhere('LOWER(post.fandomName) LIKE :sTerm', {
                   sTerm: `%${normalized}%`,
-                });
+                })
+                .orWhere(
+                  `EXISTS (
+                    SELECT 1 FROM entity_tags et
+                    INNER JOIN tags t ON t.id = et.tag_id
+                    WHERE et.entity_id = post.id
+                      AND et.entity_type = 'POST'
+                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                  )`,
+                  { sTerm: `%${normalized}%` },
+                )
+                .orWhere(
+                  `EXISTS (
+                    SELECT 1 FROM tags t
+                    WHERE (t.id = post.copyright_tag_id OR t.id = post.character_tag_id)
+                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                  )`,
+                  { sTerm: `%${normalized}%` },
+                );
             }),
           );
         }),
@@ -835,9 +896,29 @@ export class PostService {
   ): Promise<Paginated<PostCommentResDto>> {
     let resolvedPostId = postIdOrSlug;
     if (!/^\d+$/.test(String(postIdOrSlug))) {
-      const post = await this.postRepo.findOne({
+      let post = await this.postRepo.findOne({
         where: { slug: String(postIdOrSlug) },
       });
+      if (!post) {
+        const raw = String(postIdOrSlug || '').trim();
+        let decoded = raw;
+        try {
+          decoded = decodeURIComponent(raw).trim();
+        } catch {
+          // ignore
+        }
+        const hyphenated = decoded.replace(/\s+/g, '-').toLowerCase();
+        const spaced = decoded.replace(/-/g, ' ');
+        const alternateSlugs = Array.from(
+          new Set([decoded, hyphenated, spaced]),
+        ).filter((s) => s && s !== String(postIdOrSlug));
+
+        if (alternateSlugs.length > 0) {
+          post = await this.postRepo.findOne({
+            where: alternateSlugs.map((slug) => ({ slug })),
+          });
+        }
+      }
       resolvedPostId = (post ? post.id : '0') as unknown as AutoIncrementID;
     }
 

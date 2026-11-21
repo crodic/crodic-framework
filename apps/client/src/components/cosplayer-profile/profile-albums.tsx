@@ -75,7 +75,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
           return (
             <Link
               key={album.id}
-              href={`/posts/${album.slug || album.id}`}
+              href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
               className="group flex cursor-pointer flex-col space-y-2 rounded-2xl transition-all duration-300"
             >
               {/* Cover Image Container */}

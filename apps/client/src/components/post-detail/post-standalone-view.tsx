@@ -69,7 +69,7 @@ export function PostStandaloneView({
 
   return (
     <div className="space-y-8">
-      {/* 1. Top Navigation & Breadcrumb Bar */}
+      {/* 1. Top Navigation Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <Button
@@ -82,29 +82,6 @@ export function PostStandaloneView({
             <ArrowLeft className="size-4" />
             <span>{t("back")}</span>
           </Button>
-
-          <nav
-            aria-label={tPost("breadcrumb")}
-            className="text-muted-foreground hidden items-center gap-1.5 text-xs sm:flex"
-          >
-            <Link
-              href="/explore"
-              className="hover:text-foreground transition-colors"
-            >
-              {tNav("explore")}
-            </Link>
-            <ChevronRight className="size-3.5 shrink-0 opacity-60" />
-            <Link
-              href={`/cosplayer/${authorHandle}`}
-              className="hover:text-foreground max-w-[160px] truncate transition-colors"
-            >
-              {post.author.displayName}
-            </Link>
-            <ChevronRight className="size-3.5 shrink-0 opacity-60" />
-            <span className="text-foreground max-w-[260px] truncate font-medium">
-              {post.title}
-            </span>
-          </nav>
         </div>
 
         <div className="flex items-center gap-2">
