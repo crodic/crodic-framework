@@ -124,7 +124,9 @@ export function CreateAlbumModal({
       onCoverIndexChange={setCoverIndex}
       maxFiles={20}
       gridClassName={
-        isMobile ? "grid-cols-4 gap-2" : "grid-cols-3 gap-2.5 sm:gap-3"
+        isMobile
+          ? "grid-cols-4 gap-2"
+          : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"
       }
       className="max-none w-full"
     />
@@ -199,51 +201,45 @@ export function CreateAlbumModal({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         showCloseButton={false}
-        className="bg-card border-border/80 w-[94vw] max-w-4xl gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl sm:max-w-4xl lg:max-w-5xl xl:max-w-6xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-[95vw] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl sm:max-w-4xl lg:max-w-5xl"
       >
-        <DialogHeader className="sr-only">
-          <DialogTitle>{t("createAlbumTitle")}</DialogTitle>
+        <DialogHeader className="border-border/60 flex flex-row items-center justify-between border-b px-6 py-4">
+          <div>
+            <DialogTitle className="text-foreground text-left text-base font-bold sm:text-lg">
+              {t("createAlbumTitle")}
+            </DialogTitle>
+            <p className="text-muted-foreground text-left text-xs">
+              {t("createAlbumDesc")}
+            </p>
+          </div>
+          <DialogClose asChild>
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1.5 transition-colors"
+              aria-label={tCommon("close")}
+            >
+              <X className="size-5" />
+            </button>
+          </DialogClose>
         </DialogHeader>
 
-        <div className="flex max-h-[88vh] flex-col overflow-hidden md:flex-row">
-          {/* Left Column: Media Section (58%) */}
-          <div className="border-border/60 flex flex-1 flex-col overflow-y-auto border-r p-6 md:w-[58%]">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6">
+          {/* Top Section: Upload Media */}
+          <div className="border-border/60 bg-muted/20 rounded-2xl border p-4 sm:p-5">
             {mediaSection}
           </div>
 
-          {/* Right Column: Studio Upload Form (42%) */}
-          <div className="bg-card/60 flex flex-col justify-between overflow-y-auto p-6 md:w-[42%]">
-            <div>
-              <div className="border-border/60 mb-5 flex items-center justify-between border-b pb-3.5">
-                <div>
-                  <h2 className="text-foreground text-base font-bold sm:text-lg">
-                    {t("createAlbumTitle")}
-                  </h2>
-                  <p className="text-muted-foreground text-xs">
-                    {t("createAlbumDesc")}
-                  </p>
-                </div>
-                <DialogClose asChild>
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1 transition-colors"
-                    aria-label={tCommon("close")}
-                  >
-                    <X className="size-5" />
-                  </button>
-                </DialogClose>
-              </div>
-
-              <CreateAlbumForm
-                imagesPayload={imagesPayload}
-                coverIndex={coverIndex}
-                postType={postType}
-                videoFile={videoFile}
-                customCoverFile={customCoverFile}
-                onSuccess={() => setIsOpen(false)}
-                onCancel={() => setIsOpen(false)}
-              />
-            </div>
+          {/* Bottom Section: Form Details */}
+          <div className="border-border/60 rounded-2xl border p-4 sm:p-5">
+            <CreateAlbumForm
+              imagesPayload={imagesPayload}
+              coverIndex={coverIndex}
+              postType={postType}
+              videoFile={videoFile}
+              customCoverFile={customCoverFile}
+              onSuccess={() => setIsOpen(false)}
+              onCancel={() => setIsOpen(false)}
+            />
           </div>
         </div>
       </DialogContent>

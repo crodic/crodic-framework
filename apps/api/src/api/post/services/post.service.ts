@@ -128,7 +128,7 @@ export class PostService {
                     SELECT 1 FROM entity_tags et
                     INNER JOIN tags t ON t.id = et.tag_id
                     WHERE et.entity_id = post.id
-                      AND et.entity_type = 'POST'
+                      AND et.entity_type = 'post'
                       AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
                   )`,
                   { sTerm: `%${normalized}%` },
@@ -689,7 +689,7 @@ export class PostService {
                     SELECT 1 FROM entity_tags et
                     INNER JOIN tags t ON t.id = et.tag_id
                     WHERE et.entity_id = post.id
-                      AND et.entity_type = 'POST'
+                      AND et.entity_type = 'post'
                       AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
                   )`,
                   { sTerm: `%${normalized}%` },
