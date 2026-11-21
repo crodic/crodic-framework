@@ -9,7 +9,6 @@ export type LoginResponseData = {
 export type User = {
   id: string;
   username?: string | null;
-  role?: "fan" | "cosplayer" | string;
   email: string;
   firstName: string;
   lastName: string;

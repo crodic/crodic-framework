@@ -106,7 +106,11 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { firstName?: string; lastName?: string }) => {
+    mutationFn: async (data: {
+      firstName?: string;
+      lastName?: string;
+      username?: string;
+    }) => {
       const response = await http.put<{ message: string }>(
         "/api/v1/user/auth/me",
         data

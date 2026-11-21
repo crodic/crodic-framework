@@ -4,7 +4,6 @@ export const ColumnKey = {
   id: 'id',
   email: 'email',
   username: 'username',
-  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   avatar: 'avatar',
@@ -47,7 +46,6 @@ export type UserCosplayerSummary = z.infer<typeof userCosplayerSummarySchema>
 export const userSchema = z.object({
   id: z.string(),
   username: z.string().nullish(),
-  role: z.string().default('fan'),
   email: z.string(),
   avatar: z.string().nullish(),
   firstName: z.string(),
@@ -202,7 +200,6 @@ export const userCreateSchema = z
     firstName: z.string().min(1, 'First name is required'),
     lastName: z.string().optional(),
     username: z.string().optional(),
-    role: z.enum(['fan', 'cosplayer']).default('fan').optional(),
     email: z.email('Invalid email address'),
     password: passwordSchema,
     confirmPassword: z
@@ -221,7 +218,6 @@ export const userEditSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().optional(),
   username: z.string().optional(),
-  role: z.string().optional(),
   email: z.email('Invalid email address').optional(),
   cosplayerProfile: adminCosplayerProfileFormSchema.optional(),
 })

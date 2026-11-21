@@ -23,13 +23,6 @@ import {
   Form,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
 import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
 import { apiEditUser, apiHandleCosplayerRequest } from '../queries'
@@ -48,8 +41,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
   const cp = data.cosplayerProfile
   const isPendingRequest =
     Boolean(data.cosplayerRequestPending) ||
-    (Boolean(data.notifications?.cosplayerRoleRequested) &&
-      data.role !== 'cosplayer')
+    Boolean(data.notifications?.cosplayerRoleRequested)
 
   const form = useForm<UserEditSchema>({
     defaultValues: {
@@ -57,7 +49,6 @@ export function UserEditForm({ data }: { data: UserSchema }) {
       firstName: data.firstName,
       lastName: data.lastName ?? undefined,
       username: data.username ?? undefined,
-      role: data.role || 'fan',
       cosplayerProfile: cp
         ? {
             displayName: cp.displayName ?? '',
@@ -89,8 +80,6 @@ export function UserEditForm({ data }: { data: UserSchema }) {
     resolver: zodResolver(userEditSchema),
   })
 
-  const watchedRole = form.watch('role')
-
   const requestMutation = useMutation({
     mutationFn: apiHandleCosplayerRequest,
     onSuccess: async (_res, vars) => {
@@ -101,9 +90,6 @@ export function UserEditForm({ data }: { data: UserSchema }) {
           ? 'Đã duyệt yêu cầu trở thành Cosplayer'
           : 'Đã từ chối yêu cầu trở thành Cosplayer'
       )
-      if (vars.approved) {
-        form.setValue('role', 'cosplayer')
-      }
     },
     onError: restApiErrorHandler,
   })
@@ -125,9 +111,8 @@ export function UserEditForm({ data }: { data: UserSchema }) {
         firstName: values.firstName,
         lastName: values.lastName ?? '',
         username: values.username?.trim() ?? '',
-        role: values.role || 'fan',
       }
-      if (values.role === 'cosplayer' || Boolean(cp)) {
+      if (values.cosplayerProfile || Boolean(cp)) {
         const serialized = serializeCosplayerProfilePayload(
           values.cosplayerProfile
         )
@@ -267,38 +252,10 @@ export function UserEditForm({ data }: { data: UserSchema }) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name='role'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>
-                      {t('users.table.role', 'Vai trò')}
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || 'fan'}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Chọn vai trò' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value='fan'>Fan</SelectItem>
-                        <SelectItem value='cosplayer'>Cosplayer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 
-          {(watchedRole === 'cosplayer' || Boolean(cp)) && (
-            <CosplayerProfileFields control={form.control} />
-          )}
+          <CosplayerProfileFields control={form.control} />
 
           <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
             <div className='flex flex-row space-x-2'></div>

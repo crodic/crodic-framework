@@ -37,7 +37,6 @@ import { UpdateUserReqDto } from './dto/update-user.req.dto';
 import { UserResDto } from './dto/user.res.dto';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
-import { EUserRole } from './constants/user.constant';
 import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
 import { PostEntity } from '../post/entities/post.entity';
 import { CollectionEntity } from '../collection/entities/collection.entity';
@@ -103,7 +102,7 @@ export class UserService {
     }
 
     const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt', 'role'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
       searchableColumns: ['email', 'id', 'fullName', 'username'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['cosplayerProfile'],
@@ -112,7 +111,6 @@ export class UserService {
         fullName: [FilterOperator.ILIKE],
         email: [FilterOperator.ILIKE],
         username: [FilterOperator.ILIKE],
-        role: [FilterOperator.EQ, FilterOperator.IN],
         id: [FilterOperator.EQ],
       },
     });
@@ -161,7 +159,6 @@ export class UserService {
     const newUser = new UserEntity({
       ...userEntityInput,
       email,
-      ...(dto.role !== undefined ? { role: dto.role } : {}),
       ...(cleanUsername ? { username: cleanUsername } : {}),
     });
 
@@ -189,7 +186,7 @@ export class UserService {
         );
       }
 
-      if (dto.role === EUserRole.COSPLAYER || dto.cosplayerProfile) {
+      if (dto.cosplayerProfile) {
         saved.cosplayerProfile = await this.upsertCosplayerProfile(
           manager,
           saved,
@@ -226,15 +223,6 @@ export class UserService {
     if (updateUserDto.lastName !== undefined) {
       user.lastName = updateUserDto.lastName;
     }
-    if (updateUserDto.role !== undefined) {
-      user.role = updateUserDto.role;
-      if (updateUserDto.role === EUserRole.COSPLAYER) {
-        user.notifications = {
-          ...(user.notifications || {}),
-          cosplayerRoleRequested: false,
-        };
-      }
-    }
 
     let cleanUsername: string | undefined;
     if (updateUserDto.username !== undefined) {
@@ -257,10 +245,7 @@ export class UserService {
 
     await this.userRepository.save(user);
 
-    if (
-      updateUserDto.cosplayerProfile !== undefined ||
-      updateUserDto.role === EUserRole.COSPLAYER
-    ) {
+    if (updateUserDto.cosplayerProfile !== undefined) {
       const profile = await this.upsertCosplayerProfile(
         this.dataSource,
         user,
@@ -319,10 +304,6 @@ export class UserService {
       ...(user.notifications || {}),
       cosplayerRoleRequested: false,
     };
-
-    if (approved) {
-      user.role = EUserRole.COSPLAYER;
-    }
 
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(UserEntity).save(user);

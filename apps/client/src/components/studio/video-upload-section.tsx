@@ -59,13 +59,11 @@ export function VideoUploadSection({
       !ALLOWED_VIDEO_TYPES.includes(file.type) &&
       !file.name.match(/\.(mp4|webm|mov)$/i)
     ) {
-      toast.error(
-        t("videoLimitHint") || "Chỉ hỗ trợ tệp định dạng MP4, WebM hoặc MOV!"
-      );
+      toast.error(t("videoLimitHint"));
       return;
     }
     if (file.size > MAX_VIDEO_SIZE_BYTES) {
-      toast.error("Kích thước video tối đa là 100MB!");
+      toast.error(t("videoMaxSizeBytes"));
       return;
     }
     onVideoFileChange(file);
@@ -73,11 +71,11 @@ export function VideoUploadSection({
 
   const handleCoverSelect = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Vui lòng chọn tệp hình ảnh hợp lệ!");
+      toast.error(t("invalidCoverFile"));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Kích thước ảnh bìa tối đa là 10MB!");
+      toast.error(t("coverMaxSizeBytes"));
       return;
     }
     onCustomCoverFileChange(file);

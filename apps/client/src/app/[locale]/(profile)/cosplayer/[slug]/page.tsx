@@ -4,7 +4,6 @@ import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import { serverFetch } from "@/lib/server-fetch";
-import Layout from "@/components/layouts/layout";
 import { CosplayerProfileView } from "@/components/cosplayer-profile/cosplayer-profile-view";
 import type { CosplayerDetailResDto } from "@/services/cosplayer";
 import type { PostSummaryResDto } from "@/services/posts";
@@ -172,7 +171,7 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
     };
 
     return (
-      <Layout showRightRail={false}>
+      <>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -187,7 +186,7 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
             initialCharacters={profile.characters || []}
           />
         </div>
-      </Layout>
+      </>
     );
   } catch {
     notFound();

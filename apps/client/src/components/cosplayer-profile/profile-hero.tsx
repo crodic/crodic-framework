@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
+import { CosplayerApplicationDialog } from "@/components/cosplayer-application/cosplayer-application-dialog";
 import {
   BadgeCheck,
   Camera,
@@ -112,6 +113,7 @@ export function ProfileHero({
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
 
   const coverFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
@@ -136,12 +138,10 @@ export function ProfileHero({
       });
       await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success(
-        "Đã gửi yêu cầu nâng cấp vai trò Cosplayer đến Admin phê duyệt!"
-      );
+      toast.success(tCos("roleRequestSuccess"));
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Không thể gửi yêu cầu");
+      toast.error(err?.response?.data?.message || tCos("roleRequestError"));
     },
   });
 
@@ -463,31 +463,17 @@ export function ProfileHero({
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
-                {profile.role !== "cosplayer" &&
-                  (profile.cosplayerRequestPending ? (
-                    <Badge
-                      variant="outline"
-                      className="h-10 gap-1.5 rounded-xl border-amber-500/40 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 dark:text-amber-300"
-                    >
-                      <Clock className="size-3.5" />
-                      <span>Chờ duyệt Cosplayer</span>
-                    </Badge>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => requestRoleMutation.mutate()}
-                      disabled={requestRoleMutation.isPending}
-                      className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-3.5 text-xs font-semibold"
-                    >
-                      {requestRoleMutation.isPending ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <Sparkles className="size-3.5" />
-                      )}
-                      <span>Đăng ký Cosplayer</span>
-                    </Button>
-                  ))}
+                {!profile.isVerified && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsApplicationDialogOpen(true)}
+                    className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-3.5 text-xs font-semibold"
+                  >
+                    <Sparkles className="size-3.5" />
+                    <span>{tCos("applyCosplayer")}</span>
+                  </Button>
+                )}
 
                 <Button
                   type="button"
@@ -717,6 +703,14 @@ export function ProfileHero({
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Cosplayer Application Dialog */}
+      <CosplayerApplicationDialog
+        open={isApplicationDialogOpen}
+        onOpenChange={setIsApplicationDialogOpen}
+        initialStageName={profile.displayName}
+        userEmail={profile.contactEmail || undefined}
+      />
     </div>
   );
 }

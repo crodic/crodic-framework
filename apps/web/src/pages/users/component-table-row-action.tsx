@@ -338,7 +338,7 @@ export default function ComponentTableRowActions({
       {Boolean(
         row.original.cosplayerRequestPending ||
         (row.original.notifications?.cosplayerRoleRequested &&
-          row.original.role !== 'cosplayer')
+          !row.original.cosplayerProfile?.isVerified)
       ) && (
         <>
           <Tooltip>

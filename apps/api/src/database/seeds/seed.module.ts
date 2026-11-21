@@ -14,7 +14,6 @@ import { SettingSeedModule } from './setting/setting-seed.module';
 import { TagSeedModule } from './tag/tag-seed.module';
 import { UserSeedModule } from './user/user-seed.module';
 import { WhiteLabelSeedModule } from './white-label/white-label-seed.module';
-import { KosumeSeedModule } from './kosume/kosume-seed.module';
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { KosumeSeedModule } from './kosume/kosume-seed.module';
     CmsPageSeedModule,
     LocationSeedModule,
     TagSeedModule,
-    KosumeSeedModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig, redisConfig],

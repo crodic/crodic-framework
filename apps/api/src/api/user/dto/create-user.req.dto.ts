@@ -11,7 +11,6 @@ import {
   URLFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Trim } from '../../../decorators/transform.decorators';
-import { EUserRole } from '../constants/user.constant';
 
 export class AdminCosplayerProfileInputDto {
   @StringFieldOptional({ maxLength: 120, nullable: true })
@@ -110,9 +109,6 @@ export class CreateUserReqDto {
 
   @PasswordField()
   confirmPassword: string;
-
-  @EnumFieldOptional(() => EUserRole)
-  role?: EUserRole;
 
   @StringFieldOptional({ maxLength: 80 })
   @Trim()

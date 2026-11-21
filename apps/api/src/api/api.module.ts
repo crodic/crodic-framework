@@ -23,6 +23,7 @@ import { SpotlightModule } from './spotlight/spotlight.module';
 import { NotificationModule } from './notification/notification.module';
 import { ContentReportModule } from './content-report/content-report.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { CosplayerApplicationModule } from './cosplayer-application/cosplayer-application.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     NotificationModule,
     ContentReportModule,
     AnalyticsModule,
+    CosplayerApplicationModule,
   ],
   exports: [
     UserModule,
@@ -76,6 +78,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     NotificationModule,
     ContentReportModule,
     AnalyticsModule,
+    CosplayerApplicationModule,
   ],
 })
 export class ApiModule {}

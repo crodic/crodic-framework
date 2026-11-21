@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
+  CheckCircle2,
   KeyRound,
   Laptop,
   Loader2,
   ShieldCheck,
   Smartphone,
   Trash2,
+  User as UserIcon,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,8 +40,18 @@ import {
   useRevokeSession,
   useSessions,
   useSetupPassword,
+  useUpdateProfile,
 } from "@/hooks/use-profile";
 import { createPasswordFormSchema, type PasswordFormValues } from "./schema";
+import { z } from "zod";
+
+const createAccountInfoSchema = (t: any) =>
+  z.object({
+    firstName: z.string().trim().min(1, t("account.valFirstName")),
+    lastName: z.string().trim().optional(),
+    username: z.string().trim().optional(),
+  });
+type AccountInfoValues = z.infer<ReturnType<typeof createAccountInfoSchema>>;
 
 export function SecuritySettings() {
   const t = useTranslations("Security");
@@ -52,6 +64,46 @@ export function SecuritySettings() {
 
   const changePasswordMutation = useChangePassword();
   const setupPasswordMutation = useSetupPassword();
+  const updateProfileMutation = useUpdateProfile();
+
+  const accountInfoSchema = useMemo(() => createAccountInfoSchema(t), [t]);
+
+  const accountForm = useForm<AccountInfoValues>({
+    resolver: zodResolver(accountInfoSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+    },
+  });
+
+  useEffect(() => {
+    if (profile) {
+      accountForm.reset({
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        username: profile.username || "",
+      });
+    }
+  }, [profile, accountForm]);
+
+  const onAccountSubmit = (values: AccountInfoValues) => {
+    updateProfileMutation.mutate(
+      {
+        firstName: values.firstName.trim(),
+        lastName: values.lastName?.trim() || undefined,
+        username: values.username?.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success(t("account.updateSuccess"));
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.message || t("account.updateError"));
+        },
+      }
+    );
+  };
 
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
@@ -127,6 +179,129 @@ export function SecuritySettings() {
 
   return (
     <div className="space-y-6">
+      {/* 0. Personal Account Information */}
+      <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-bold">
+            <UserIcon className="text-primary size-4" />
+            <span>{t("account.title")}</span>
+          </CardTitle>
+          <CardDescription className="text-xs">
+            {t("account.description")}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <Form {...accountForm}>
+            <form
+              onSubmit={accountForm.handleSubmit(onAccountSubmit)}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={accountForm.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-muted-foreground text-xs font-semibold">
+                        {t("account.firstName")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("account.firstNamePlaceholder")}
+                          className="h-10 rounded-xl text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={accountForm.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-muted-foreground text-xs font-semibold">
+                        {t("account.lastName")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("account.lastNamePlaceholder")}
+                          className="h-10 rounded-xl text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={accountForm.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-muted-foreground text-xs font-semibold">
+                        {t("account.username")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("account.usernamePlaceholder")}
+                          className="h-10 rounded-xl text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-muted-foreground text-xs font-semibold">
+                      {t("account.email")}
+                    </label>
+                    {profile?.verifiedAt ? (
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-500">
+                        <CheckCircle2 className="size-3" />
+                        {t("account.verified")}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-amber-500">
+                        {t("account.unverified")}
+                      </span>
+                    )}
+                  </div>
+                  <Input
+                    value={profile?.email || ""}
+                    disabled
+                    className="text-muted-foreground bg-muted/40 h-10 cursor-not-allowed rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="submit"
+                  disabled={updateProfileMutation.isPending}
+                  className="gap-2 rounded-xl text-xs font-semibold"
+                >
+                  {updateProfileMutation.isPending && (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  )}
+                  <span>{t("account.save")}</span>
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
       {/* 1. Change / Setup Password */}
       <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
         <CardHeader className="pb-3">

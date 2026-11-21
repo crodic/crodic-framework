@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import { DataSource, EntityMetadata, ColumnMetadata } from 'typeorm';
+import type { DataSource, EntityMetadata } from 'typeorm';
+import type { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 import { AbstractEntity } from './abstract.entity';
 import { Order } from '../decorators/order.decorator';
 

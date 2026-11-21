@@ -159,7 +159,7 @@ export default async function AuthLayout({
               </div>
               <div className="text-xs text-slate-400">
                 <span className="font-semibold text-white">50.000+</span>{" "}
-                cosplayers & creators đã tham gia
+                {t("creatorsJoined")}
               </div>
             </div>
           </div>

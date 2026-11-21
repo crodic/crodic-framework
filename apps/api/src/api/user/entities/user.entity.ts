@@ -13,7 +13,6 @@ import {
 import { UserAccountEntity } from './user-account.entity';
 import { UserSessionEntity } from '../../auth/entities/user-session.entity';
 import { IAuthUser } from '../../auth/interfaces/auth-entity.interface';
-import { EUserRole } from '../constants/user.constant';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 
 @Entity('users')
@@ -41,14 +40,6 @@ export class UserEntity extends AbstractEntity implements IAuthUser {
   @Column({ type: 'varchar', length: 60, nullable: true })
   @Index('UQ_user_username', { where: '"deleted_at" IS NULL', unique: true })
   username?: string | null;
-
-  @Column({
-    type: 'enum',
-    enum: EUserRole,
-    default: EUserRole.FAN,
-    enumName: 'user_role_enum',
-  })
-  role!: EUserRole;
 
   @Column({ length: 100, name: 'first_name', nullable: false })
   firstName!: string;

@@ -17,7 +17,6 @@ import {
 import { FilesystemService } from '../../../filesystem/filesystem.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
-import { EUserRole } from '../../user/constants/user.constant';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
@@ -68,7 +67,8 @@ export class CosplayerService {
     const baseQb = this.profileRepo
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
-      .where('profile.deletedAt IS NULL');
+      .where('profile.deletedAt IS NULL')
+      .andWhere('user.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -131,7 +131,8 @@ export class CosplayerService {
     const qb = this.profileRepo
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
-      .where('profile.deletedAt IS NULL');
+      .where('profile.deletedAt IS NULL')
+      .andWhere('user.deletedAt IS NULL');
 
     if (currentUserId) {
       qb.andWhere('profile.userId != :currentUserId', { currentUserId });
@@ -335,12 +336,15 @@ export class CosplayerService {
   async requestCosplayerRole(
     userId: AutoIncrementID,
   ): Promise<CosplayerDetailResDto> {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['cosplayerProfile'],
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    if (user.role !== EUserRole.COSPLAYER) {
+    if (!user.cosplayerProfile?.isVerified) {
       user.notifications = {
         ...(user.notifications || {}),
         cosplayerRoleRequested: true,
@@ -646,10 +650,8 @@ export class CosplayerService {
       followingCount: Number(p.user?.followingCount ?? 0),
       collectionsCount: Number(p.user?.collectionsCount ?? 0),
       characters: characters.map((c) => this.toCharacterDto(c)),
-      role: p.user?.role,
       cosplayerRequestPending: Boolean(
-        p.user?.notifications?.cosplayerRoleRequested &&
-        p.user?.role !== EUserRole.COSPLAYER,
+        p.user?.notifications?.cosplayerRoleRequested && !p.isVerified,
       ),
       updatedAt: p.updatedAt,
     };

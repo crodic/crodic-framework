@@ -61,7 +61,7 @@ describe('PostUserController', () => {
   });
 
   it('validates CreatePostReqDto with ValidationPipe', async () => {
-    const { ValidationPipe, ArgumentMetadata } = await import('@nestjs/common');
+    const { ValidationPipe } = await import('@nestjs/common');
     const { CreatePostReqDto } = await import('../dto/post-req.dto');
     const pipe = new ValidationPipe({
       whitelist: true,

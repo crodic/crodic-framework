@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
-import Layout from "@/components/layouts/layout";
 import { MyProfileContainer } from "@/components/cosplayer-profile/my-profile-container";
 
 interface ProfilePageProps {
@@ -33,10 +32,8 @@ export default async function MyProfilePage({ params }: ProfilePageProps) {
   setRequestLocale(locale);
 
   return (
-    <Layout showRightRail={false}>
-      <div className="space-y-6">
-        <MyProfileContainer />
-      </div>
-    </Layout>
+    <div className="space-y-6">
+      <MyProfileContainer />
+    </div>
   );
 }

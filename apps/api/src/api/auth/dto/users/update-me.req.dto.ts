@@ -14,6 +14,10 @@ export class UpdateAuthUserMeReqDto {
   @Trim()
   lastName?: string;
 
+  @StringFieldOptional({ maxLength: 60 })
+  @Trim()
+  username?: string;
+
   @ApiPropertyOptional({
     type: 'string',
     format: 'binary',

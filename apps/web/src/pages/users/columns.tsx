@@ -5,7 +5,6 @@ import {
   BadgeCheck,
   Calendar,
   CheckCircle2,
-  Clock,
   MailIcon,
   TextIcon,
   UserRoundCheckIcon,
@@ -110,59 +109,6 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
       enableSorting: false,
       enableColumnFilter: true,
       enableHiding: false,
-    },
-    {
-      id: ColumnKey.role,
-      accessorFn: (row) => row.role,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          label={i18n.t('users.table.role', 'Vai trò')}
-        />
-      ),
-      cell: ({ row }) => {
-        const role = row.original.role
-        const isPendingRequest =
-          Boolean(row.original.cosplayerRequestPending) ||
-          (Boolean(row.original.notifications?.cosplayerRoleRequested) &&
-            role !== 'cosplayer')
-
-        if (role === 'cosplayer') {
-          return (
-            <Badge className='border-purple-200 bg-purple-600/15 text-xs text-purple-700 dark:border-purple-800 dark:bg-purple-500/20 dark:text-purple-300'>
-              Cosplayer{' '}
-              {row.original.cosplayerProfile?.rankingScore
-                ? `(${row.original.cosplayerProfile.rankingScore}đ)`
-                : ''}
-            </Badge>
-          )
-        }
-        return (
-          <div className='flex flex-col items-start gap-1'>
-            <Badge variant='outline' className='text-xs'>
-              Fan
-            </Badge>
-            {isPendingRequest && (
-              <Badge
-                variant='outline'
-                className='gap-1 border-amber-500/40 bg-amber-500/10 text-xs text-amber-600 dark:text-amber-400'
-              >
-                <Clock className='size-3' />
-                {i18n.t('users.table.pendingCosplayer', 'Chờ duyệt Cosplayer')}
-              </Badge>
-            )}
-          </div>
-        )
-      },
-      meta: {
-        variant: 'select',
-        label: i18n.t('users.table.role', 'Vai trò'),
-        options: [
-          { label: 'Fan', value: 'fan' },
-          { label: 'Cosplayer', value: 'cosplayer' },
-        ],
-      },
-      enableColumnFilter: true,
     },
     {
       id: ColumnKey.verifiedAt,

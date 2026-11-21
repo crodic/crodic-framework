@@ -16,6 +16,7 @@ import { normalizeEmail } from '../../../utils/normalize.util';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -459,6 +460,23 @@ export class UserAuthService extends AuthService<
     if (dto.lastName !== undefined) {
       user.lastName = dto.lastName;
     }
+    if (dto.username !== undefined) {
+      const cleanUsername = dto.username
+        .replace(/^@+/, '')
+        .trim()
+        .toLowerCase();
+      if (cleanUsername && cleanUsername !== user.username) {
+        const existing = await this.userRepository.findOne({
+          where: { username: cleanUsername },
+        });
+        if (existing && String(existing.id) !== String(id)) {
+          throw new ConflictException(
+            `Username "${cleanUsername}" is already taken`,
+          );
+        }
+      }
+      user.username = cleanUsername || null;
+    }
     if (dto.removeAvatar) {
       user.avatar = undefined;
     } else if (avatarPath) {
@@ -466,6 +484,12 @@ export class UserAuthService extends AuthService<
     }
 
     await this.userRepository.save(user);
+
+    if (user.username && this.dataSource) {
+      await this.dataSource
+        .getRepository('cosplayer_profiles')
+        .update({ userId: id }, { slug: user.username });
+    }
 
     return { message: 'Profile updated successfully' };
   }

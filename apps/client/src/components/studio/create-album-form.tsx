@@ -111,7 +111,7 @@ export function CreateAlbumForm({
     mutationFn: async (values: CreateAlbumFormValues) => {
       if (postType === "video") {
         if (!videoFile) {
-          throw new Error("Vui lòng tải lên một tệp video (MP4, WebM, MOV)!");
+          throw new Error(t("requireVideoFile"));
         }
 
         let coverBlob: Blob;
@@ -121,9 +121,7 @@ export function CreateAlbumForm({
           try {
             coverBlob = await captureVideoPoster(videoFile);
           } catch {
-            throw new Error(
-              "Không thể tạo ảnh bìa từ video. Vui lòng chọn ảnh bìa tùy chỉnh!"
-            );
+            throw new Error(t("cannotExtractCover"));
           }
         }
 
@@ -183,9 +181,7 @@ export function CreateAlbumForm({
       }
 
       if (uploadedMediaList.length === 0) {
-        throw new Error(
-          t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!"
-        );
+        throw new Error(t("valImages"));
       }
 
       const coverMedia = uploadedMediaList.find((m) => m.isCover);
@@ -233,11 +229,11 @@ export function CreateAlbumForm({
   const onSubmit = (values: CreateAlbumFormValues) => {
     if (postType === "video") {
       if (!videoFile) {
-        toast.error("Vui lòng chọn video để đăng tải!");
+        toast.error(t("selectVideoToPublish"));
         return;
       }
     } else if (!imagesPayload || imagesPayload.length === 0) {
-      toast.error(t("valImages") || "Vui lòng chọn ít nhất 1 ảnh cho album!");
+      toast.error(t("valImages"));
       return;
     }
     createPostMutation.mutate(values);

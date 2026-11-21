@@ -25,7 +25,6 @@ const userFilterParsers = {
   [ColumnKey.createdAt]: parseAsArrayOf(parseAsInteger, ','),
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
-  [ColumnKey.role]: parseAsString,
   status: parseAsString,
 } as const
 
@@ -54,10 +53,6 @@ export function PageUserOverview() {
         .ilike('fullName', filter.fullName)
         .eq('id', filter.id)
 
-      if (filter.role) {
-        builder.eq('role', filter.role)
-      }
-
       if (filter.status) {
         builder.eq('status', filter.status)
       }
@@ -72,9 +67,6 @@ export function PageUserOverview() {
     filterParsers: userFilterParsers,
     queryHook: useDataUserOverview,
     buildQuery,
-    initialState: {
-      columnFilters: [{ id: 'status', value: 'active' }],
-    },
     getRowId: (originalRow) => originalRow.id,
     clearOnDefault: true,
   })

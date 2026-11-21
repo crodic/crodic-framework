@@ -24,13 +24,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
 import { PasswordInput } from '@/components/password-input'
 import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
@@ -52,13 +45,9 @@ export function PageUserCreate() {
   const queryClient = useQueryClient()
 
   const form = useForm<UserCreateSchema>({
-    defaultValues: {
-      role: 'fan',
-    },
+    defaultValues: {},
     resolver: zodResolver(userCreateSchema),
   })
-
-  const watchedRole = form.watch('role')
 
   const createUserMutation = useMutation({
     mutationFn: apiCreateUser,
@@ -77,12 +66,11 @@ export function PageUserCreate() {
       email: values.email,
       password: values.password,
       confirmPassword: values.confirmPassword,
-      role: values.role || 'fan',
     }
     if (values.username?.trim()) {
       payload.username = values.username.trim()
     }
-    if (values.role === 'cosplayer' && values.cosplayerProfile) {
+    if (values.cosplayerProfile) {
       const serialized = serializeCosplayerProfilePayload(
         values.cosplayerProfile
       )
@@ -186,32 +174,6 @@ export function PageUserCreate() {
                 />
                 <FormField
                   control={form.control}
-                  name='role'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel required>
-                        {t('users.table.role', 'Vai trò')}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || 'fan'}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Chọn vai trò' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='fan'>Fan</SelectItem>
-                          <SelectItem value='cosplayer'>Cosplayer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name='password'
                   render={({ field }) => (
                     <FormItem>
@@ -243,9 +205,7 @@ export function PageUserCreate() {
               </CardContent>
             </Card>
 
-            {watchedRole === 'cosplayer' && (
-              <CosplayerProfileFields control={form.control} />
-            )}
+            <CosplayerProfileFields control={form.control} />
 
             <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
               <div className='flex flex-row space-x-2'></div>

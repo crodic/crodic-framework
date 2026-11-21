@@ -53,8 +53,7 @@ export function PageUserShow() {
   const isDeleted = Boolean(data?.deletedAt)
   const isPendingRequest =
     Boolean(data?.cosplayerRequestPending) ||
-    (Boolean(data?.notifications?.cosplayerRoleRequested) &&
-      data?.role !== 'cosplayer')
+    Boolean(data?.notifications?.cosplayerRoleRequested)
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
   const [isShowHardDeleteDialog, setIsShowHardDeleteDialog] = useState(false)
   const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
@@ -373,13 +372,6 @@ export function PageUserShow() {
                     label={t('users.show.username', 'Username')}
                     value={data?.username ? `@${data.username}` : '—'}
                   />
-                  <DescriptionItem label={t('users.show.role', 'Vai trò')}>
-                    <div className='mt-1'>
-                      <Badge variant='outline' className='text-xs uppercase'>
-                        {data?.role || 'fan'}
-                      </Badge>
-                    </div>
-                  </DescriptionItem>
                   <DescriptionItem label={t('users.show.status', 'Trạng thái')}>
                     <div className='mt-2 flex flex-wrap gap-1'>
                       {isDeleted ? (
@@ -416,153 +408,149 @@ export function PageUserShow() {
               </CardContent>
             </Card>
 
-            {(data?.role === 'cosplayer' || Boolean(data?.cosplayerProfile)) &&
-              data?.cosplayerProfile && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      {t('users.show.cosplayerProfileTitle', 'Hồ sơ Cosplayer')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Descriptions>
-                      <DescriptionItem
-                        label={t(
-                          'users.show.cosplayerDisplayName',
-                          'Tên hiển thị'
-                        )}
-                        value={data.cosplayerProfile.displayName}
-                      />
-                      <DescriptionItem
-                        label={t('users.show.cosplayerBadge', 'Huy hiệu')}
-                        value={data.cosplayerProfile.roleBadge || 'Cosplayer'}
-                      />
-                      <DescriptionItem
-                        label={t(
-                          'users.show.cosplayerSlug',
-                          'Đường dẫn (Slug)'
-                        )}
-                        value={`/${data.cosplayerProfile.slug}`}
-                      />
-                      <DescriptionItem
-                        label='Tagline'
-                        value={data.cosplayerProfile.tagline || '—'}
-                      />
-                      <DescriptionItem
-                        label='Địa điểm / Khu vực'
-                        value={
-                          [
-                            data.cosplayerProfile.locationLabel,
-                            data.cosplayerProfile.workArea,
-                          ]
-                            .filter(Boolean)
-                            .join(' • ') || '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Chỉ số cơ thể'
-                        value={
-                          [
-                            data.cosplayerProfile.heightCm
-                              ? `${data.cosplayerProfile.heightCm} cm`
-                              : null,
-                            data.cosplayerProfile.experienceYearsNum
-                              ? `${data.cosplayerProfile.experienceYearsNum}+ năm kinh nghiệm`
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(' • ') || '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Kỹ năng'
-                        value={
-                          data.cosplayerProfile.skills?.length
-                            ? data.cosplayerProfile.skills.join(', ')
-                            : '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Sở trường'
-                        value={
-                          data.cosplayerProfile.specialties?.length
-                            ? data.cosplayerProfile.specialties.join(', ')
-                            : '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Giải thưởng'
-                        value={
-                          data.cosplayerProfile.awardsBadges?.length
-                            ? data.cosplayerProfile.awardsBadges.join(', ')
-                            : '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Liên hệ'
-                        value={
-                          [
-                            data.cosplayerProfile.contactEmail,
-                            data.cosplayerProfile.contactPhone,
-                          ]
-                            .filter(Boolean)
-                            .join(' • ') || '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Mạng xã hội'
-                        value={
-                          [
-                            data.cosplayerProfile.facebookUrl
-                              ? `FB: ${data.cosplayerProfile.facebookUrl}`
-                              : null,
-                            data.cosplayerProfile.instagramUrl
-                              ? `IG: ${data.cosplayerProfile.instagramUrl}`
-                              : null,
-                            data.cosplayerProfile.tiktokUrl
-                              ? `TikTok: ${data.cosplayerProfile.tiktokUrl}`
-                              : null,
-                            data.cosplayerProfile.twitterUrl
-                              ? `X: ${data.cosplayerProfile.twitterUrl}`
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(' | ') || '—'
-                        }
-                      />
-                      <DescriptionItem
-                        label='Giới thiệu ngắn'
-                        value={data.cosplayerProfile.bio || '—'}
-                      />
-                      <DescriptionItem
-                        label='Tiểu sử nghệ thuật'
-                        value={data.cosplayerProfile.artisticBio || '—'}
-                      />
-                      <DescriptionItem
-                        label={t('users.show.rankingScore', 'Điểm xếp hạng')}
-                        value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
-                      />
-                      <DescriptionItem
-                        label={t(
-                          'users.show.cosplayerVerified',
-                          'Tích xanh Cosplayer'
-                        )}
-                        value={
-                          data.cosplayerProfile.isVerified
-                            ? t(
-                                'users.show.cosplayerVerifiedTrue',
-                                'Đã duyệt tích xanh (Verified)'
-                              )
-                            : t(
-                                'users.show.cosplayerVerifiedFalse',
-                                'Chưa duyệt tích xanh'
-                              )
-                        }
-                      />
-                    </Descriptions>
-                  </CardContent>
-                </Card>
-              )}
+            {data && data.cosplayerProfile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {t('users.show.cosplayerProfileTitle', 'Hồ sơ Cosplayer')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Descriptions>
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerDisplayName',
+                        'Tên hiển thị'
+                      )}
+                      value={data.cosplayerProfile.displayName}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerBadge', 'Huy hiệu')}
+                      value={data.cosplayerProfile.roleBadge || 'Cosplayer'}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.cosplayerSlug', 'Đường dẫn (Slug)')}
+                      value={`/${data.cosplayerProfile.slug}`}
+                    />
+                    <DescriptionItem
+                      label='Tagline'
+                      value={data.cosplayerProfile.tagline || '—'}
+                    />
+                    <DescriptionItem
+                      label='Địa điểm / Khu vực'
+                      value={
+                        [
+                          data.cosplayerProfile.locationLabel,
+                          data.cosplayerProfile.workArea,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ') || '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Chỉ số cơ thể'
+                      value={
+                        [
+                          data.cosplayerProfile.heightCm
+                            ? `${data.cosplayerProfile.heightCm} cm`
+                            : null,
+                          data.cosplayerProfile.experienceYearsNum
+                            ? `${data.cosplayerProfile.experienceYearsNum}+ năm kinh nghiệm`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ') || '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Kỹ năng'
+                      value={
+                        data.cosplayerProfile.skills?.length
+                          ? data.cosplayerProfile.skills.join(', ')
+                          : '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Sở trường'
+                      value={
+                        data.cosplayerProfile.specialties?.length
+                          ? data.cosplayerProfile.specialties.join(', ')
+                          : '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Giải thưởng'
+                      value={
+                        data.cosplayerProfile.awardsBadges?.length
+                          ? data.cosplayerProfile.awardsBadges.join(', ')
+                          : '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Liên hệ'
+                      value={
+                        [
+                          data.cosplayerProfile.contactEmail,
+                          data.cosplayerProfile.contactPhone,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ') || '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Mạng xã hội'
+                      value={
+                        [
+                          data.cosplayerProfile.facebookUrl
+                            ? `FB: ${data.cosplayerProfile.facebookUrl}`
+                            : null,
+                          data.cosplayerProfile.instagramUrl
+                            ? `IG: ${data.cosplayerProfile.instagramUrl}`
+                            : null,
+                          data.cosplayerProfile.tiktokUrl
+                            ? `TikTok: ${data.cosplayerProfile.tiktokUrl}`
+                            : null,
+                          data.cosplayerProfile.twitterUrl
+                            ? `X: ${data.cosplayerProfile.twitterUrl}`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' | ') || '—'
+                      }
+                    />
+                    <DescriptionItem
+                      label='Giới thiệu ngắn'
+                      value={data.cosplayerProfile.bio || '—'}
+                    />
+                    <DescriptionItem
+                      label='Tiểu sử nghệ thuật'
+                      value={data.cosplayerProfile.artisticBio || '—'}
+                    />
+                    <DescriptionItem
+                      label={t('users.show.rankingScore', 'Điểm xếp hạng')}
+                      value={`${data.cosplayerProfile.rankingScore ?? 0} pts`}
+                    />
+                    <DescriptionItem
+                      label={t(
+                        'users.show.cosplayerVerified',
+                        'Tích xanh Cosplayer'
+                      )}
+                      value={
+                        data.cosplayerProfile.isVerified
+                          ? t(
+                              'users.show.cosplayerVerifiedTrue',
+                              'Đã duyệt tích xanh (Verified)'
+                            )
+                          : t(
+                              'users.show.cosplayerVerifiedFalse',
+                              'Chưa duyệt tích xanh'
+                            )
+                      }
+                    />
+                  </Descriptions>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </Main>

@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { TagChipsInput } from '@/components/ui/tag-chips-input'
 import { Textarea } from '@/components/ui/textarea'
 
 export function CosplayerProfileFields<T extends FieldValues = any>({
@@ -334,12 +335,19 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
             name='cosplayerProfile.skillsText'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Kỹ năng (cách nhau bằng dấu phẩy)</FormLabel>
+                <FormLabel>Kỹ năng (Skills)</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder='Make-up, Chế tác props, Tạo dáng'
-                    {...field}
-                    value={field.value ?? ''}
+                  <TagChipsInput
+                    placeholder='Thêm kỹ năng...'
+                    value={
+                      field.value
+                        ? String(field.value)
+                            .split(',')
+                            .map((s: string) => s.trim())
+                            .filter(Boolean)
+                        : []
+                    }
+                    onChange={(tags) => field.onChange(tags.join(', '))}
                   />
                 </FormControl>
                 <FormMessage />
@@ -351,12 +359,19 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
             name='cosplayerProfile.specialtiesText'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sở trường / Series (dấu phẩy)</FormLabel>
+                <FormLabel>Sở trường / Series</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder='Genshin Impact, Honkai: Star Rail'
-                    {...field}
-                    value={field.value ?? ''}
+                  <TagChipsInput
+                    placeholder='Thêm series, tác phẩm...'
+                    value={
+                      field.value
+                        ? String(field.value)
+                            .split(',')
+                            .map((s: string) => s.trim())
+                            .filter(Boolean)
+                        : []
+                    }
+                    onChange={(tags) => field.onChange(tags.join(', '))}
                   />
                 </FormControl>
                 <FormMessage />
@@ -368,12 +383,19 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
             name='cosplayerProfile.awardsBadgesText'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Giải thưởng / Danh hiệu (dấu phẩy)</FormLabel>
+                <FormLabel>Giải thưởng / Danh hiệu</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder='Top 1 FES 2024, Best Costume'
-                    {...field}
-                    value={field.value ?? ''}
+                  <TagChipsInput
+                    placeholder='Thêm giải thưởng...'
+                    value={
+                      field.value
+                        ? String(field.value)
+                            .split(',')
+                            .map((s: string) => s.trim())
+                            .filter(Boolean)
+                        : []
+                    }
+                    onChange={(tags) => field.onChange(tags.join(', '))}
                   />
                 </FormControl>
                 <FormMessage />

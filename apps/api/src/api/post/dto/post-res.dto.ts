@@ -78,9 +78,6 @@ export class PostAuthorSummaryDto {
 
   @ApiProperty({ example: true })
   isVerified!: boolean;
-
-  @ApiPropertyOptional({ example: 'cosplayer' })
-  role?: string;
 }
 
 export class PostSummaryResDto {

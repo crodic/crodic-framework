@@ -181,4 +181,47 @@ describe('CosplayerService', () => {
       expect(dataSource.transaction).toHaveBeenCalled();
     });
   });
+
+  describe('getSuggested', () => {
+    it('returns suggested cosplayers and excludes soft-deleted records', async () => {
+      const qbMock: any = {
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([
+          {
+            id: id('1'),
+            userId: id('101'),
+            slug: 'enakorin',
+            displayName: 'Enako',
+            roleBadge: 'Cosplayer',
+            isVerified: true,
+            rankingScore: 100,
+            user: { id: id('101'), deletedAt: null },
+          },
+        ]),
+      };
+      profileRepo.createQueryBuilder.mockReturnValue(qbMock);
+
+      const res = await service.getSuggested(id('100'), 4);
+
+      expect(profileRepo.createQueryBuilder).toHaveBeenCalledWith('profile');
+      expect(qbMock.innerJoinAndSelect).toHaveBeenCalledWith(
+        'profile.user',
+        'user',
+        'user.deletedAt IS NULL',
+      );
+      expect(qbMock.where).toHaveBeenCalledWith('profile.deletedAt IS NULL');
+      expect(qbMock.andWhere).toHaveBeenCalledWith('user.deletedAt IS NULL');
+      expect(qbMock.andWhere).toHaveBeenCalledWith(
+        'profile.userId != :currentUserId',
+        { currentUserId: id('100') },
+      );
+      expect(res).toHaveLength(1);
+      expect(res[0].displayName).toBe('Enako');
+    });
+  });
 });

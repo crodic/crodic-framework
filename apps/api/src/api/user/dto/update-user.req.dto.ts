@@ -2,10 +2,8 @@ import { OmitType } from '@nestjs/swagger';
 import {
   BooleanField,
   ClassFieldOptional,
-  EnumFieldOptional,
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
-import { EUserRole } from '../constants/user.constant';
 import {
   AdminCosplayerProfileInputDto,
   CreateUserReqDto,
@@ -16,9 +14,6 @@ export class UpdateUserReqDto extends OmitType(CreateUserReqDto, [
   'password',
   'confirmPassword',
 ] as const) {
-  @EnumFieldOptional(() => EUserRole)
-  role?: EUserRole;
-
   @StringFieldOptional({ maxLength: 80 })
   username?: string;
 

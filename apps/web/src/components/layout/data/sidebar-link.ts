@@ -13,6 +13,8 @@ import {
   FlaskConicalIcon,
   BookOpenText,
   BookMarked,
+  FolderTree,
+  Award,
   MapPin,
   Tags,
   CalendarDays,
@@ -62,6 +64,12 @@ export const sidebarLink: SidebarData = {
           title: 'navigation.management.tags',
           url: '/tags',
           icon: Tags,
+          permission: 'TAG',
+        },
+        {
+          title: 'navigation.management.tagCategories',
+          url: '/tag-categories',
+          icon: FolderTree,
           permission: 'TAG',
         },
         {
@@ -122,6 +130,12 @@ export const sidebarLink: SidebarData = {
     {
       title: 'navigation.kosume.title',
       items: [
+        {
+          title: 'navigation.kosume.cosplayerApplications',
+          url: '/cosplayer-applications',
+          icon: Award,
+          permission: 'USER',
+        },
         {
           title: 'navigation.kosume.reports',
           url: '/content-reports',

@@ -69,6 +69,7 @@ export class TagEntity extends AbstractEntity {
   })
   category!: string;
 
+  @Index('IDX_tags_category_id')
   @Column({ name: 'category_id', type: 'bigint', nullable: true })
   categoryId?: AutoIncrementID | null;
 

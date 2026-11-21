@@ -12,7 +12,6 @@ import {
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { EUserRole } from '../constants/user.constant';
 
 @Exclude()
 export class UserCosplayerSummaryResDto {
@@ -127,10 +126,6 @@ export class UserResDto {
   @Expose()
   username?: string | null;
 
-  @EnumField(() => EUserRole)
-  @Expose()
-  role!: EUserRole;
-
   @StringField()
   @Expose()
   firstName!: string;
@@ -163,7 +158,7 @@ export class UserResDto {
   @Transform(({ obj }) =>
     Boolean(
       obj?.notifications?.cosplayerRoleRequested &&
-      obj?.role !== EUserRole.COSPLAYER,
+      !obj?.cosplayerProfile?.isVerified,
     ),
   )
   @Expose()

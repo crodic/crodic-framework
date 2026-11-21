@@ -728,7 +728,7 @@ export default function SortableImageUpload({
             )
           ) : variant === "studio" ? (
             <h3 className="text-foreground text-base font-bold sm:text-lg">
-              Lưới tải ảnh
+              {t("gridTitle")}
             </h3>
           ) : (
             <p className="text-muted-foreground text-sm">
@@ -742,7 +742,10 @@ export default function SortableImageUpload({
             headerExtra
           ) : variant === "studio" ? (
             <span className="border-border/60 bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-xs font-semibold">
-              {uiImages.length}/{maxFiles} ảnh
+              {t("photoCount", {
+                count: String(uiImages.length),
+                max: String(maxFiles),
+              })}
             </span>
           ) : (
             uiImages.length > 0 &&
@@ -844,10 +847,10 @@ export default function SortableImageUpload({
                 <Plus className="size-6" />
               </div>
               <span className="text-foreground text-sm font-semibold">
-                + Thêm ảnh vào album
+                {t("addPhotoToAlbum")}
               </span>
               <span className="text-muted-foreground text-xs">
-                Hỗ trợ JPG, PNG, WebP (Tối đa {maxFiles} ảnh)
+                {t("supportedFormatsWithMax", { maxFiles: String(maxFiles) })}
               </span>
             </button>
           </div>

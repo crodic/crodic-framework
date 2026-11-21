@@ -206,9 +206,19 @@ const PageTagEncyclopediaOverview = lazy(() =>
     default: m.PageTagEncyclopediaOverview,
   }))
 )
+const PageTagCategoriesOverview = lazy(() =>
+  import('@/pages/tag-categories').then((m) => ({
+    default: m.PageTagCategoriesOverview,
+  }))
+)
 const PageContentReportsOverview = lazy(() =>
   import('@/pages/content-reports').then((m) => ({
     default: m.PageContentReportsOverview,
+  }))
+)
+const PageCosplayerApplicationsOverview = lazy(() =>
+  import('@/pages/cosplayer-applications').then((m) => ({
+    default: m.PageCosplayerApplicationsOverview,
   }))
 )
 const PageEventsOverview = lazy(() =>
@@ -539,6 +549,14 @@ const appRoutes: RouteObject[] = [
         ],
       },
       {
+        path: '/tag-categories',
+        element: (
+          <RouteAuthorize action='read' subject='TAG'>
+            <PageTagCategoriesOverview />
+          </RouteAuthorize>
+        ),
+      },
+      {
         path: '/tag-encyclopedias',
         element: (
           <RouteAuthorize action='read' subject='TAG_ENCYCLOPEDIA'>
@@ -635,6 +653,14 @@ const appRoutes: RouteObject[] = [
             ),
           },
         ],
+      },
+      {
+        path: '/cosplayer-applications',
+        element: (
+          <RouteAuthorize action='read' subject='USER'>
+            <PageCosplayerApplicationsOverview />
+          </RouteAuthorize>
+        ),
       },
       {
         path: '/content-reports',

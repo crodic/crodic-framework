@@ -121,9 +121,7 @@ export class NotificationService {
     const actorAvatarUrl = n.actorUserId
       ? (profile?.avatarUrl ?? n.actorUser?.avatar ?? null)
       : null;
-    const actorRole = n.actorUserId
-      ? profile?.roleBadge || n.actorUser?.role || null
-      : null;
+    const actorRole = n.actorUserId ? profile?.roleBadge || null : null;
 
     return {
       id: n.id,

@@ -10,22 +10,28 @@ import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.
 import { NotificationEntity } from '../notification/entities/notification.entity';
 import { PostCommentEntity } from '../post/entities/post-comment.entity';
 import { PostEntity } from '../post/entities/post.entity';
-import { EUserRole } from './constants/user.constant';
 import { UserAccountEntity } from './entities/user-account.entity';
 import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
 describe('UserService', () => {
   let service: UserService;
-  let userRepositoryValue: Partial<
-    Record<keyof Repository<UserEntity>, jest.Mock>
-  >;
-  let userAccountRepositoryValue: Partial<
-    Record<keyof Repository<UserAccountEntity>, jest.Mock>
-  >;
-  let userSessionRepositoryValue: Partial<
-    Record<keyof Repository<UserSessionEntity>, jest.Mock>
-  >;
+  let userRepositoryValue: {
+    findOne: jest.Mock;
+    findOneOrFail: jest.Mock;
+    findOneByOrFail: jest.Mock;
+    save: jest.Mock;
+    softRemove: jest.Mock;
+    restore: jest.Mock;
+  };
+  let userAccountRepositoryValue: {
+    findOne: jest.Mock;
+    save: jest.Mock;
+    delete: jest.Mock;
+  };
+  let userSessionRepositoryValue: {
+    delete: jest.Mock;
+  };
   let cascadeRepositoryMock: {
     softDelete: jest.Mock;
     restore: jest.Mock;
@@ -228,7 +234,6 @@ describe('UserService', () => {
       await service.update('1' as any, {
         firstName: 'New',
         lastName: 'Person',
-        confirmPassword: 'secret1',
       });
 
       expect(user.firstName).toBe('New');
@@ -306,7 +311,6 @@ describe('UserService', () => {
         firstName: 'Cos',
         lastName: 'Player',
         email: 'cos@example.com',
-        role: EUserRole.FAN,
         notifications: { cosplayerRoleRequested: true },
       });
 
@@ -315,7 +319,6 @@ describe('UserService', () => {
 
       await service.handleCosplayerRequest('1' as any, true);
 
-      expect(user.role).toBe(EUserRole.COSPLAYER);
       expect(user.notifications.cosplayerRoleRequested).toBe(false);
       expect(cascadeRepositoryMock.save).toHaveBeenCalled();
     });
