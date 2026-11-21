@@ -1,7 +1,6 @@
 import { isMultipartCapable } from '../../filesystem/drivers/storage-driver.interface';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { existsSync } from 'fs';
 import { readFile, readdir, rm, stat } from 'fs/promises';
@@ -22,10 +21,8 @@ export class FileCleanupService {
   ) {}
 
   /**
-   * Run a cron job every day at 2 AM to clean up orphaned temporary files
-   * and expired upload sessions.
+   * Run a cleanup of orphaned temporary files and expired upload sessions.
    */
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async handleTempFilesCleanup() {
     this.logger.log('Starting cleanup of temporary upload files...');
 

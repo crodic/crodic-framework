@@ -108,4 +108,58 @@ describe('CronJobService', () => {
       expect(logRepositoryMock.delete).toHaveBeenCalled();
     });
   });
+
+  describe('scheduled cron handlers', () => {
+    it('executes scheduled handlers with SCHEDULED triggerType', async () => {
+      const runJobSpy = jest.spyOn(service, 'runJob').mockResolvedValue({
+        success: true,
+        jobKey: 'purge-expired-users',
+        status: ECronJobStatus.SUCCESS,
+        message: 'ok',
+        durationMs: 10,
+      });
+
+      await service.handleScheduledPurgeUsers();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'purge-expired-users',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledPurgeAdmins();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'purge-expired-admin-users',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledTempFilesCleanup();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'cleanup-temp-files',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledAuditLogsCleanup();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'cleanup-audit-logs',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledWeeklyRanking();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'sync-ranking-weekly',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledMonthlyRanking();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'sync-ranking-monthly',
+        ECronJobTriggerType.SCHEDULED,
+      );
+
+      await service.handleScheduledTagMaintenance();
+      expect(runJobSpy).toHaveBeenCalledWith(
+        'sync-tag-stats',
+        ECronJobTriggerType.SCHEDULED,
+      );
+    });
+  });
 });

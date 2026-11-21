@@ -1,6 +1,5 @@
 import { AutoIncrementID } from '../../common/types/common.type';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import assert from 'assert';
@@ -77,7 +76,6 @@ export class AuditLogService {
     });
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
   async purgeAuditLogsOlderThan7Days() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     await this.auditLogRepository.delete({ createdAt: LessThan(sevenDaysAgo) });

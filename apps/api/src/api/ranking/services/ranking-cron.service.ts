@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { RankingService } from './ranking.service';
 
 @Injectable()
@@ -11,7 +10,6 @@ export class RankingCronService {
   /**
    * Weekly Cron: Runs every Monday at 00:00 (Midnight)
    */
-  @Cron(CronExpression.EVERY_WEEK)
   async handleWeeklyRankingSnapshot() {
     this.logger.log('Weekly Ranking Snapshot Cron triggered.');
     const settings = await this.rankingService.getSettings();
@@ -34,7 +32,6 @@ export class RankingCronService {
   /**
    * Monthly Cron: Runs on the 1st of every month at 00:00
    */
-  @Cron('0 0 1 * *')
   async handleMonthlyRankingSnapshot() {
     this.logger.log('Monthly Ranking Snapshot Cron triggered.');
     const settings = await this.rankingService.getSettings();

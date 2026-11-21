@@ -2,7 +2,6 @@ import { JobName, QueueName } from '../../../common/constants/job.constant';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { Queue } from 'bullmq';
 import { TagService } from './tag.service';
 
@@ -69,7 +68,6 @@ export class TagQueueService {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
   async scheduleHourlyMaintenance(): Promise<void> {
     try {
       await this.tagQueue.add(

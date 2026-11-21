@@ -317,6 +317,51 @@ export class CronJobService {
   }
 
   /**
+   * ==========================================
+   * Automated Centralized Cron Schedulers
+   * ==========================================
+   * Every scheduled execution runs through this.runJob() with triggerType = SCHEDULED.
+   * This automatically tracks start/finish time, duration, status, and errors in `cron_job_logs`.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async handleScheduledPurgeUsers(): Promise<void> {
+    await this.runJob('purge-expired-users', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async handleScheduledPurgeAdmins(): Promise<void> {
+    await this.runJob(
+      'purge-expired-admin-users',
+      ECronJobTriggerType.SCHEDULED,
+    );
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async handleScheduledTempFilesCleanup(): Promise<void> {
+    await this.runJob('cleanup-temp-files', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  async handleScheduledAuditLogsCleanup(): Promise<void> {
+    await this.runJob('cleanup-audit-logs', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  async handleScheduledWeeklyRanking(): Promise<void> {
+    await this.runJob('sync-ranking-weekly', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron('0 0 1 * *')
+  async handleScheduledMonthlyRanking(): Promise<void> {
+    await this.runJob('sync-ranking-monthly', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleScheduledTagMaintenance(): Promise<void> {
+    await this.runJob('sync-tag-stats', ECronJobTriggerType.SCHEDULED);
+  }
+
+  /**
    * Daily retention policy: purges execution logs older than 60 days.
    */
   @Cron(CronExpression.EVERY_DAY_AT_1AM)

@@ -20,7 +20,6 @@ import {
   Paginated,
   PaginateQuery,
 } from 'nestjs-paginate';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { DataSource, EntityManager, In, LessThan, Repository } from 'typeorm';
 import { ACCOUNT_RESTORE_GRACE_PERIOD_MS } from '../../common/constants/app.constant';
 import { UserFollowEntity } from '../social/entities/user-follow.entity';
@@ -662,7 +661,6 @@ export class UserService {
    * Daily scheduled purge of soft-deleted users older than 30 days.
    * Runs every day at 3:00 AM UTC.
    */
-  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async purgeExpiredDeletedUsers(): Promise<number> {
     const thresholdDate = new Date(
       Date.now() - ACCOUNT_RESTORE_GRACE_PERIOD_MS,

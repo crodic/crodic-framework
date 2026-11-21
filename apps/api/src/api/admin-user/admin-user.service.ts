@@ -15,7 +15,6 @@ import {
   NotFoundException,
   Optional,
 } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
@@ -369,7 +368,6 @@ export class AdminUserService {
    * are permanently hard-deleted. Sends notification emails to the deleted users
    * and dispatches a summary report to active system administrators.
    */
-  @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async hardDeleteOldAccounts() {
     const thresholdDate = new Date(
       Date.now() - ACCOUNT_RESTORE_GRACE_PERIOD_MS,
