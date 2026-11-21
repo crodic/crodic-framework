@@ -205,7 +205,7 @@ describe('UserAuthService', () => {
       userAccountRepository.save?.mockResolvedValue(
         new UserAccountEntity({ id: '1' as any }),
       );
-      userAccountRecoveryService.sendVerificationEmail.mockResolvedValue(
+      userAccountRecoveryService.sendVerificationEmail?.mockResolvedValue(
         undefined,
       );
 

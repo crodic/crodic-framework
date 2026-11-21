@@ -193,16 +193,16 @@ export default function LoginForm() {
   const isRestoring = restoreMutation.isPending;
 
   return (
-    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-md lg:px-4">
+    <div className="mx-auto flex w-full max-w-md min-w-0 flex-col justify-center py-2 sm:py-6">
       {/* Mobile Brand Logo */}
-      <div className="mb-6 flex justify-center lg:hidden">
+      <div className="mb-4 flex justify-center lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2">
           <WhiteLabelLogo className="h-8 w-auto object-contain" />
         </Link>
       </div>
 
-      <Card className="border-border/70 bg-card/90 w-full gap-6 rounded-2xl py-8 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-10">
-        <CardHeader className="space-y-2 px-6 sm:px-8">
+      <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
+        <CardHeader className="flex w-full min-w-0 flex-col space-y-2 px-4 sm:px-8">
           <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
             {t("title")}
           </CardTitle>
@@ -210,7 +210,7 @@ export default function LoginForm() {
             {t("description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 sm:px-8">
+        <CardContent className="w-full min-w-0 px-4 sm:px-8">
           {deletedAccountEmail && (
             <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200">
               <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
@@ -318,7 +318,7 @@ export default function LoginForm() {
 
               <Button
                 type="submit"
-                className="mt-2 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
+                className="mt-2 h-10 w-full cursor-pointer gap-2 rounded-xl font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -344,7 +344,7 @@ export default function LoginForm() {
 
               <Button
                 type="button"
-                className="hover:bg-accent/80 h-10.5 w-full cursor-pointer gap-2.5 font-medium transition-all sm:h-11"
+                className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => {
@@ -357,7 +357,7 @@ export default function LoginForm() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
+        <CardFooter className="flex w-full min-w-0 justify-center px-4 pt-2 sm:px-8 sm:pt-3">
           <p className="text-muted-foreground text-center text-xs sm:text-sm">
             {t("noAccount")}{" "}
             <Link

@@ -42,9 +42,9 @@ export function WhiteLabelLogo({
       : DEFAULT_BRAND_NAME;
 
   const defaultFallback = (
-    <div className="inline-flex items-center gap-2">
+    <div className="inline-flex items-center gap-2.5">
       {showEmblemOnFallback && (
-        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-xl shadow-xs">
+        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full shadow-xs">
           <svg
             className="size-4 fill-current"
             viewBox="0 0 24 24"

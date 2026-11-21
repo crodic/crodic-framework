@@ -289,7 +289,6 @@ export default function SignUpForm() {
   const isSubmitting = signUpMutation.isPending || form.formState.isSubmitting;
 
   const handleNextFromStep1 = () => {
-    // If displayName isn't filled yet, auto-suggest from first/last name or role
     setStep(2);
   };
 
@@ -307,16 +306,16 @@ export default function SignUpForm() {
   const progressPercent = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-2xl lg:px-4">
+    <div className="mx-auto flex w-full max-w-xl min-w-0 flex-col justify-center py-2 sm:py-6">
       {/* Mobile Brand Logo */}
-      <div className="mb-6 flex justify-center lg:hidden">
+      <div className="mb-4 flex justify-center lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2">
           <WhiteLabelLogo className="h-8 w-auto object-contain" />
         </Link>
       </div>
 
-      <Card className="border-border/70 bg-card/90 w-full gap-6 rounded-2xl py-8 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-10">
-        <CardHeader className="space-y-3 px-6 sm:px-8">
+      <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
+        <CardHeader className="flex w-full min-w-0 flex-col space-y-3 px-4 sm:px-8">
           {/* Progress Indicator */}
           <div className="space-y-1.5">
             <div className="text-muted-foreground flex items-center justify-between text-xs font-semibold tracking-wider uppercase">
@@ -350,27 +349,30 @@ export default function SignUpForm() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="px-6 sm:px-8">
+        <CardContent className="w-full min-w-0 px-4 sm:px-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 sm:space-y-5"
+            >
               {/* STEP 1: ROLE SELECTION */}
               {step === 1 && (
-                <div className="space-y-6">
-                  <div className="grid gap-3.5 sm:grid-cols-3">
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     {/* Option 1: Cosplayer */}
                     <div
                       onClick={() => form.setValue("role", "cosplayer")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
                         selectedRole === "cosplayer"
                           ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                            <Palette className="size-5" />
+                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
+                            <Palette className="size-4.5" />
                           </div>
                           {selectedRole === "cosplayer" && (
                             <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
@@ -399,16 +401,16 @@ export default function SignUpForm() {
                     <div
                       onClick={() => form.setValue("role", "photographer")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
                         selectedRole === "photographer"
                           ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                            <Camera className="size-5" />
+                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
+                            <Camera className="size-4.5" />
                           </div>
                           {selectedRole === "photographer" && (
                             <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
@@ -437,16 +439,16 @@ export default function SignUpForm() {
                     <div
                       onClick={() => form.setValue("role", "fan")}
                       className={cn(
-                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 select-none",
+                        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all duration-200 select-none",
                         selectedRole === "fan"
                           ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-lg ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                            <Heart className="size-5" />
+                          <div className="bg-primary/15 text-primary flex size-9 items-center justify-center rounded-xl">
+                            <Heart className="size-4.5" />
                           </div>
                           {selectedRole === "fan" && (
                             <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
@@ -475,9 +477,8 @@ export default function SignUpForm() {
                   <div className="flex justify-end pt-2">
                     <Button
                       type="button"
-                      size="lg"
                       onClick={handleNextFromStep1}
-                      className="gap-2 rounded-xl px-6 font-semibold shadow-md shadow-purple-500/20"
+                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
                     >
                       <span>{t("nextStep")}</span>
                       <ArrowRight className="size-4" />
@@ -485,7 +486,7 @@ export default function SignUpForm() {
                   </div>
 
                   {/* Or continue with Google right on Step 1 */}
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <div className="relative my-3">
                       <div className="absolute inset-0 flex items-center">
                         <span className="border-border/70 w-full border-t" />
@@ -500,7 +501,7 @@ export default function SignUpForm() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="hover:bg-accent/80 h-10.5 w-full cursor-pointer gap-2.5 font-medium transition-all"
+                      className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
                       onClick={() => {
                         window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/google`;
                       }}
@@ -514,14 +515,14 @@ export default function SignUpForm() {
 
               {/* STEP 2: PROFILE DETAILS & SPECIALTIES */}
               {step === 2 && (
-                <div className="space-y-4.5">
-                  <div className="grid gap-3.5 sm:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="displayName"
                       render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <FormLabel className="text-sm font-semibold">
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-semibold sm:text-sm">
                             {tOnboard("step2.fields.displayName")}{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
@@ -530,7 +531,7 @@ export default function SignUpForm() {
                               placeholder={tOnboard(
                                 "step2.fields.displayNamePlaceholder"
                               )}
-                              className="rounded-xl"
+                              className="h-10 rounded-xl text-sm sm:h-10.5"
                               {...field}
                             />
                           </FormControl>
@@ -543,8 +544,8 @@ export default function SignUpForm() {
                       control={form.control}
                       name="handle"
                       render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <FormLabel className="text-sm font-semibold">
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-semibold sm:text-sm">
                             {tOnboard("step2.fields.handle")}{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
@@ -564,13 +565,13 @@ export default function SignUpForm() {
                                 placeholder={tOnboard(
                                   "step2.fields.handlePlaceholder"
                                 )}
-                                className="rounded-xl pl-8"
+                                className="h-10 rounded-xl pl-8 text-sm sm:h-10.5"
                               />
                             </div>
                           </FormControl>
-                          <FormDescription className="text-xs">
+                          <FormDescription className="block max-w-full truncate text-[11px]">
                             {tOnboard("step2.fields.handlePreview")}{" "}
-                            <span className="text-primary font-mono font-medium">
+                            <span className="text-primary truncate font-mono font-medium">
                               kosume.click/cosplayer/@
                               {field.value || "username"}
                             </span>
@@ -585,8 +586,8 @@ export default function SignUpForm() {
                     control={form.control}
                     name="locationKey"
                     render={({ field }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormLabel className="text-sm font-semibold">
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-semibold sm:text-sm">
                           {tOnboard("step2.fields.location")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
@@ -595,7 +596,7 @@ export default function SignUpForm() {
                           onValueChange={field.onChange}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-full rounded-xl">
+                            <SelectTrigger className="h-10 w-full rounded-xl text-sm sm:h-10.5">
                               <SelectValue
                                 placeholder={tOnboard(
                                   "step2.fields.locationPlaceholder"
@@ -621,9 +622,9 @@ export default function SignUpForm() {
                     control={form.control}
                     name="specialties"
                     render={({ field }) => (
-                      <FormItem className="space-y-2.5">
+                      <FormItem className="space-y-2">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-sm font-semibold">
+                          <FormLabel className="text-xs font-semibold sm:text-sm">
                             {selectedRole === "cosplayer"
                               ? tOnboard("step2.fields.specialtiesCosplayer")
                               : selectedRole === "photographer"
@@ -632,7 +633,7 @@ export default function SignUpForm() {
                                   )
                                 : tOnboard("step2.fields.specialtiesFan")}
                           </FormLabel>
-                          <p className="text-muted-foreground text-xs">
+                          <p className="text-muted-foreground text-[11px] sm:text-xs">
                             {tOnboard("step2.fields.specialtiesHint")}
                           </p>
                         </div>
@@ -784,13 +785,13 @@ export default function SignUpForm() {
                     )}
                   />
 
-                  {/* Actions for Step 2 */}
-                  <div className="flex items-center justify-between pt-3">
+                  {/* Actions for Step 2 - Strictly Matching Uniform Buttons */}
+                  <div className="flex items-center justify-between gap-3 pt-3">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setStep(1)}
-                      className="gap-2 rounded-xl"
+                      className="border-border/80 bg-background/50 hover:bg-muted/50 h-10 cursor-pointer gap-2 rounded-xl px-5 text-sm font-medium transition-all sm:h-11"
                     >
                       <ArrowLeft className="size-4" />
                       <span>{t("backStep")}</span>
@@ -798,7 +799,7 @@ export default function SignUpForm() {
                     <Button
                       type="button"
                       onClick={handleNextFromStep2}
-                      className="gap-2 rounded-xl px-6 font-semibold shadow-md shadow-purple-500/20"
+                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
                     >
                       <span>{t("nextStep")}</span>
                       <ArrowRight className="size-4" />
@@ -809,14 +810,14 @@ export default function SignUpForm() {
 
               {/* STEP 3: ACCOUNT CREDENTIALS */}
               {step === 3 && (
-                <div className="space-y-4.5">
-                  <div className="grid gap-3.5 sm:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="firstName"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-medium sm:text-sm">
                             {t("firstName")}{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
@@ -825,7 +826,7 @@ export default function SignUpForm() {
                               placeholder={t("firstNamePlaceholder")}
                               autoComplete="given-name"
                               disabled={isSubmitting}
-                              className="h-10 rounded-xl sm:h-10.5"
+                              className="h-10 rounded-xl text-sm sm:h-10.5"
                               {...field}
                             />
                           </FormControl>
@@ -837,8 +838,8 @@ export default function SignUpForm() {
                       control={form.control}
                       name="lastName"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-medium sm:text-sm">
                             {t("lastName")}
                           </FormLabel>
                           <FormControl>
@@ -846,7 +847,7 @@ export default function SignUpForm() {
                               placeholder={t("lastNamePlaceholder")}
                               autoComplete="family-name"
                               disabled={isSubmitting}
-                              className="h-10 rounded-xl sm:h-10.5"
+                              className="h-10 rounded-xl text-sm sm:h-10.5"
                               {...field}
                             />
                           </FormControl>
@@ -860,8 +861,8 @@ export default function SignUpForm() {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-medium sm:text-sm">
                           {t("email")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
@@ -871,7 +872,7 @@ export default function SignUpForm() {
                             placeholder={t("emailPlaceholder")}
                             autoComplete="email"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl sm:h-10.5"
+                            className="h-10 rounded-xl text-sm sm:h-10.5"
                             {...field}
                           />
                         </FormControl>
@@ -884,8 +885,8 @@ export default function SignUpForm() {
                     control={form.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-medium sm:text-sm">
                           {t("password")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
@@ -894,7 +895,7 @@ export default function SignUpForm() {
                             placeholder="••••••••"
                             autoComplete="new-password"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl sm:h-10.5"
+                            className="h-10 rounded-xl text-sm sm:h-10.5"
                             {...field}
                           />
                         </FormControl>
@@ -907,8 +908,8 @@ export default function SignUpForm() {
                     control={form.control}
                     name="confirmPassword"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-medium sm:text-sm">
                           {t("confirmPassword")}{" "}
                           <span className="text-destructive">*</span>
                         </FormLabel>
@@ -917,7 +918,7 @@ export default function SignUpForm() {
                             placeholder="••••••••"
                             autoComplete="new-password"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl sm:h-10.5"
+                            className="h-10 rounded-xl text-sm sm:h-10.5"
                             {...field}
                           />
                         </FormControl>
@@ -926,14 +927,14 @@ export default function SignUpForm() {
                     )}
                   />
 
-                  {/* Actions for Step 3 */}
-                  <div className="flex items-center justify-between pt-2">
+                  {/* Actions for Step 3 - Strictly Matching Uniform Buttons */}
+                  <div className="flex items-center justify-between gap-3 pt-2">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setStep(2)}
                       disabled={isSubmitting}
-                      className="gap-2 rounded-xl"
+                      className="border-border/80 bg-background/50 hover:bg-muted/50 h-10 cursor-pointer gap-2 rounded-xl px-5 text-sm font-medium transition-all sm:h-11"
                     >
                       <ArrowLeft className="size-4" />
                       <span>{t("backStep")}</span>
@@ -941,7 +942,7 @@ export default function SignUpForm() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="h-10.5 cursor-pointer gap-2 rounded-xl px-8 font-semibold shadow-md shadow-purple-500/20 sm:h-11"
+                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
                     >
                       {isSubmitting ? (
                         <>
@@ -954,7 +955,7 @@ export default function SignUpForm() {
                     </Button>
                   </div>
 
-                  <div className="relative my-3 sm:my-4">
+                  <div className="relative my-3">
                     <div className="absolute inset-0 flex items-center">
                       <span className="border-border/70 w-full border-t" />
                     </div>
@@ -967,7 +968,7 @@ export default function SignUpForm() {
 
                   <Button
                     type="button"
-                    className="hover:bg-accent/80 h-10.5 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
+                    className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
                     variant="outline"
                     disabled={isSubmitting}
                     onClick={() => {
@@ -983,7 +984,7 @@ export default function SignUpForm() {
           </Form>
         </CardContent>
 
-        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
+        <CardFooter className="flex w-full min-w-0 justify-center px-4 pt-2 sm:px-8 sm:pt-3">
           <p className="text-muted-foreground text-center text-xs sm:text-sm">
             {t("alreadyHaveAccount")}{" "}
             <Link

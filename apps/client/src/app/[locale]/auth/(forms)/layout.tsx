@@ -34,8 +34,8 @@ export default async function AuthLayout({
   const t = await getTranslations({ locale, namespace: "Auth.layout" });
 
   return (
-    <section className="bg-background min-h-dvh w-full">
-      <div className="grid min-h-dvh lg:grid-cols-2">
+    <section className="bg-background min-h-dvh w-full overflow-x-hidden">
+      <div className="grid min-h-dvh w-full max-w-full overflow-x-hidden lg:grid-cols-2">
         {/* ===== Left Side: Immersive Kosume Cinematic Showcase (Visible on lg+) ===== */}
         <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white lg:flex xl:p-14 dark:bg-[#07090e]">
           {/* Backdrop Visual Artwork */}
@@ -185,10 +185,14 @@ export default async function AuthLayout({
         </div>
 
         {/* Right Side - Form */}
-        <div className="relative flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="relative flex w-full max-w-full min-w-0 items-center justify-center overflow-x-hidden p-3 sm:p-6 lg:p-8">
           {/* Subtle background glow on right form side */}
-          <div className="pointer-events-none absolute top-1/4 right-1/4 size-80 rounded-full bg-purple-600/10 blur-3xl" />
-          <div className="relative z-10 w-full">{children}</div>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 right-1/4 size-80 rounded-full bg-purple-600/10 blur-3xl" />
+          </div>
+          <div className="relative z-10 w-full max-w-full min-w-0">
+            {children}
+          </div>
         </div>
       </div>
     </section>
