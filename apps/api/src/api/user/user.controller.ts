@@ -15,6 +15,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -163,16 +164,32 @@ Response includes paginated data, metadata, and navigation links.`,
     return this.userService.handleCosplayerRequest(id, dto.approved);
   }
 
-  @Delete(':id')
+  @Delete(':id/permanent')
   @ApiAuth({
-    summary: 'Delete user',
+    summary: 'Permanently hard-delete user and all related records',
     errorResponses: [400, 401, 403, 404, 500],
   })
   @ApiParam({ name: 'id', type: 'String' })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Delete, AppSubjects.User),
   )
-  removeUser(@Param('id') id: AutoIncrementID) {
+  hardRemoveUser(@Param('id') id: AutoIncrementID) {
+    return this.userService.hardRemove(id);
+  }
+
+  @Delete(':id')
+  @ApiAuth({
+    summary: 'Delete user (soft delete by default, hard delete if hard=true)',
+    errorResponses: [400, 401, 403, 404, 500],
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Delete, AppSubjects.User),
+  )
+  removeUser(@Param('id') id: AutoIncrementID, @Query('hard') hard?: string) {
+    if (hard === 'true' || hard === '1') {
+      return this.userService.hardRemove(id);
+    }
     return this.userService.remove(id);
   }
 

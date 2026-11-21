@@ -33,7 +33,7 @@ export default async function MyProfilePage({ params }: ProfilePageProps) {
   setRequestLocale(locale);
 
   return (
-    <Layout>
+    <Layout showRightRail={false}>
       <div className="space-y-6">
         <MyProfileContainer />
       </div>

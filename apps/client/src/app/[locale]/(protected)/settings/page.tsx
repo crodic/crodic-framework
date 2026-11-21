@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
-import Layout from "@/components/layouts/layout";
 import { SettingsView } from "@/components/settings/settings-view";
 
 interface SettingsPageProps {
@@ -32,11 +31,5 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <Layout>
-      <div className="space-y-6">
-        <SettingsView />
-      </div>
-    </Layout>
-  );
+  return <SettingsView />;
 }

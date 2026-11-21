@@ -25,6 +25,7 @@ import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import {
   apiDeleteUser,
   apiHandleCosplayerRequest,
+  apiHardDeleteUser,
   apiRestoreUser,
   apiToggleCosplayerVerify,
   apiToggleVerifyUser,
@@ -44,6 +45,7 @@ export default function ComponentTableRowActions({
     ability.can('manage', 'all')
   const queryClient = useQueryClient()
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
+  const [isShowHardDeleteDialog, setIsShowHardDeleteDialog] = useState(false)
   const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
 
   const isDeleted = Boolean(row.original.deletedAt)
@@ -99,9 +101,29 @@ export default function ComponentTableRowActions({
         queryKey: ['users'],
       })
       toast.success(
-        t('users.messages.deleteSuccess', 'User deleted successfully')
+        t(
+          'users.messages.softDeleteSuccess',
+          'Đã đưa người dùng vào thùng rác thành công (có thể khôi phục trong 30 ngày)'
+        )
       )
       setIsShowDeleteDialog(false)
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const hardDeleteUserMutation = useMutation({
+    mutationFn: apiHardDeleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['users'],
+      })
+      toast.success(
+        t(
+          'users.messages.hardDeleteSuccess',
+          'Đã xóa vĩnh viễn người dùng và toàn bộ dữ liệu liên quan khỏi hệ thống'
+        )
+      )
+      setIsShowHardDeleteDialog(false)
     },
     onError: restApiErrorHandler,
   })
@@ -124,6 +146,10 @@ export default function ComponentTableRowActions({
     deleteUserMutation.mutate(id)
   }
 
+  const handleHardDelete = (id: string) => {
+    hardDeleteUserMutation.mutate(id)
+  }
+
   const handleRestore = (id: string) => {
     restoreUserMutation.mutate(id)
   }
@@ -137,6 +163,23 @@ export default function ComponentTableRowActions({
             onOpenChange={(open) => setIsShowRestoreDialog(open)}
             handleRestore={() => handleRestore(row.original.id)}
             isLoading={restoreUserMutation.isPending}
+          />
+        )}
+        {isShowHardDeleteDialog && (
+          <DeleteAlertDialog
+            open={isShowHardDeleteDialog}
+            onOpenChange={(open) => setIsShowHardDeleteDialog(open)}
+            handleDelete={() => handleHardDelete(row.original.id)}
+            isLoading={hardDeleteUserMutation.isPending}
+            title={t(
+              'users.deleteDialog.hardTitle',
+              'Xóa vĩnh viễn người dùng?'
+            )}
+            description={t(
+              'users.deleteDialog.hardDesc',
+              'CẢNH BÁO NGUY HIỂM: Hành động này KHÔNG THỂ HOÀN TÁC! Toàn bộ tài khoản, hồ sơ Cosplayer, bài viết, bình luận, bộ sưu tập và toàn bộ dữ liệu của người dùng này sẽ bị xóa sạch hoàn toàn khỏi máy chủ ngay lập tức.'
+            )}
+            confirmText={t('users.deleteDialog.hardConfirm', 'Xóa vĩnh viễn')}
           />
         )}
         <Tooltip>
@@ -182,6 +225,27 @@ export default function ComponentTableRowActions({
                 )}
           </TooltipContent>
         </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant='ghost'
+              size='icon'
+              aria-label={t('users.actions.hardDelete', 'Xóa vĩnh viễn')}
+              onClick={() => setIsShowHardDeleteDialog(true)}
+              disabled={hardDeleteUserMutation.isPending}
+            >
+              <Trash2Icon
+                size={16}
+                aria-hidden='true'
+                className='text-destructive hover:bg-destructive/10'
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side='left'>
+            {t('users.actions.hardDelete', 'Xóa vĩnh viễn')}
+          </TooltipContent>
+        </Tooltip>
       </div>
     )
   }
@@ -194,6 +258,15 @@ export default function ComponentTableRowActions({
           onOpenChange={(open) => setIsShowDeleteDialog(open)}
           handleDelete={() => handleDelete(row.original.id)}
           isLoading={deleteUserMutation.isPending}
+          title={t(
+            'users.deleteDialog.softTitle',
+            'Đưa người dùng vào thùng rác?'
+          )}
+          description={t(
+            'users.deleteDialog.softDesc',
+            'Tài khoản người dùng sẽ bị vô hiệu hóa và chuyển vào thùng rác. Toàn bộ bài viết, bộ ảnh và hồ sơ Cosplayer sẽ tạm ẩn. Hệ thống sẽ tự động xóa vĩnh viễn sau 30 ngày nếu không được khôi phục.'
+          )}
+          confirmText={t('users.deleteDialog.softConfirm', 'Đưa vào thùng rác')}
         />
       )}
 
@@ -319,14 +392,24 @@ export default function ComponentTableRowActions({
         </>
       )}
 
-      <Button
-        variant='ghost'
-        size='icon'
-        aria-label='Delete user'
-        onClick={() => setIsShowDeleteDialog(true)}
-      >
-        <Trash2Icon className='text-destructive size-4' aria-hidden='true' />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label={t('users.actions.softDelete', 'Đưa vào thùng rác')}
+            onClick={() => setIsShowDeleteDialog(true)}
+          >
+            <Trash2Icon
+              className='text-destructive size-4'
+              aria-hidden='true'
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side='left'>
+          {t('users.actions.softDelete', 'Đưa vào thùng rác')}
+        </TooltipContent>
+      </Tooltip>
     </div>
   )
 }

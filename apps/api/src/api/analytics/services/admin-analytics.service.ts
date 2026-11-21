@@ -40,24 +40,51 @@ export class AdminAnalyticsService {
       pendingReports,
       categoryCounts,
     ] = await Promise.all([
-      this.userRepo.count(),
-      this.userRepo.count({ where: { verifiedAt: Not(IsNull()) } }),
-      this.profileRepo.count(),
-      this.profileRepo.count({ where: { isVerified: true } }),
-      this.postRepo.count(),
-      this.postRepo.count({ where: { isFeaturedWork: true } }),
-      this.postRepo.count({ where: { status: EPostStatus.DRAFT } }),
-      this.eventRepo.count(),
+      this.userRepo.count({ where: { deletedAt: IsNull() } }),
+      this.userRepo.count({
+        where: { verifiedAt: Not(IsNull()), deletedAt: IsNull() },
+      }),
+      this.profileRepo
+        .createQueryBuilder('p')
+        .innerJoin('p.user', 'u', 'u.deletedAt IS NULL')
+        .where('p.deletedAt IS NULL')
+        .getCount(),
+      this.profileRepo
+        .createQueryBuilder('p')
+        .innerJoin('p.user', 'u', 'u.deletedAt IS NULL')
+        .where('p.deletedAt IS NULL AND p.isVerified = true')
+        .getCount(),
+      this.postRepo
+        .createQueryBuilder('p')
+        .innerJoin('p.author', 'a', 'a.deletedAt IS NULL')
+        .where('p.deletedAt IS NULL')
+        .getCount(),
+      this.postRepo
+        .createQueryBuilder('p')
+        .innerJoin('p.author', 'a', 'a.deletedAt IS NULL')
+        .where('p.deletedAt IS NULL AND p.isFeaturedWork = true')
+        .getCount(),
+      this.postRepo
+        .createQueryBuilder('p')
+        .innerJoin('p.author', 'a', 'a.deletedAt IS NULL')
+        .where('p.deletedAt IS NULL AND p.status = :status', {
+          status: EPostStatus.DRAFT,
+        })
+        .getCount(),
+      this.eventRepo.count({ where: { deletedAt: IsNull() } }),
       this.eventRepo.count({
         where: {
           status: In([EEventStatus.UPCOMING, EEventStatus.ONGOING]),
+          deletedAt: IsNull(),
         },
       }),
       this.reportRepo.count({ where: { status: EReportStatus.PENDING } }),
       this.postRepo
         .createQueryBuilder('p')
+        .innerJoin('p.author', 'a', 'a.deletedAt IS NULL')
         .select('p.albumCategory', 'category')
         .addSelect('COUNT(*)', 'count')
+        .where('p.deletedAt IS NULL')
         .groupBy('p.albumCategory')
         .getRawMany<{ category: string; count: string }>(),
     ]);

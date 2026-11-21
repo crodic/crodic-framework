@@ -33,6 +33,7 @@ import { NotFoundError } from '@/pages/errors/not-found-error'
 import {
   apiDeleteUser,
   apiHandleCosplayerRequest,
+  apiHardDeleteUser,
   apiRestoreUser,
   useDataGetUserDetail,
 } from '../queries'
@@ -55,6 +56,7 @@ export function PageUserShow() {
     (Boolean(data?.notifications?.cosplayerRoleRequested) &&
       data?.role !== 'cosplayer')
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false)
+  const [isShowHardDeleteDialog, setIsShowHardDeleteDialog] = useState(false)
   const [isShowRestoreDialog, setIsShowRestoreDialog] = useState(false)
 
   const userName = data?.fullName || data?.email || (id ? `#${id}` : '')
@@ -84,8 +86,31 @@ export function PageUserShow() {
       queryClient.invalidateQueries({
         queryKey: ['users'],
       })
-      toast.success('User deleted successfully')
+      toast.success(
+        t(
+          'users.messages.softDeleteSuccess',
+          'Đã đưa người dùng vào thùng rác thành công (có thể khôi phục trong 30 ngày)'
+        )
+      )
       setIsShowDeleteDialog(false)
+      navigate('/users')
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const hardDeleteUserMutation = useMutation({
+    mutationFn: apiHardDeleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['users'],
+      })
+      toast.success(
+        t(
+          'users.messages.hardDeleteSuccess',
+          'Đã xóa vĩnh viễn người dùng và toàn bộ dữ liệu liên quan khỏi hệ thống'
+        )
+      )
+      setIsShowHardDeleteDialog(false)
       navigate('/users')
     },
     onError: restApiErrorHandler,
@@ -128,6 +153,30 @@ export function PageUserShow() {
           onOpenChange={(open) => setIsShowDeleteDialog(open)}
           handleDelete={handleDelete}
           isLoading={deleteUserMutation.isPending}
+          title={t(
+            'users.deleteDialog.softTitle',
+            'Đưa người dùng vào thùng rác?'
+          )}
+          description={t(
+            'users.deleteDialog.softDesc',
+            'Tài khoản người dùng sẽ bị vô hiệu hóa và chuyển vào thùng rác. Toàn bộ bài viết, bộ ảnh và hồ sơ Cosplayer sẽ tạm ẩn. Hệ thống sẽ tự động xóa vĩnh viễn sau 30 ngày nếu không được khôi phục.'
+          )}
+          confirmText={t('users.deleteDialog.softConfirm', 'Đưa vào thùng rác')}
+        />
+      )}
+
+      {isShowHardDeleteDialog && (
+        <DeleteAlertDialog
+          open={isShowHardDeleteDialog}
+          onOpenChange={(open) => setIsShowHardDeleteDialog(open)}
+          handleDelete={() => hardDeleteUserMutation.mutate(id)}
+          isLoading={hardDeleteUserMutation.isPending}
+          title={t('users.deleteDialog.hardTitle', 'Xóa vĩnh viễn người dùng?')}
+          description={t(
+            'users.deleteDialog.hardDesc',
+            'CẢNH BÁO NGUY HIỂM: Hành động này KHÔNG THỂ HOÀN TÁC! Toàn bộ tài khoản, hồ sơ Cosplayer, bài viết, bình luận, bộ sưu tập và toàn bộ dữ liệu của người dùng này sẽ bị xóa sạch hoàn toàn khỏi máy chủ ngay lập tức.'
+          )}
+          confirmText={t('users.deleteDialog.hardConfirm', 'Xóa vĩnh viễn')}
         />
       )}
 
@@ -157,48 +206,60 @@ export function PageUserShow() {
                 {t('buttons.cancel')}
               </Button>
               {isDeleted ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {canRestore ? (
-                      <Button
-                        variant='outline-success'
-                        type='button'
-                        onClick={() => setIsShowRestoreDialog(true)}
-                        disabled={restoreUserMutation.isPending}
-                      >
-                        {restoreUserMutation.isPending ? (
-                          <Loader2
-                            className='size-4 animate-spin'
-                            aria-hidden='true'
-                          />
-                        ) : (
-                          <RotateCcw className='size-4' aria-hidden='true' />
-                        )}
-                        {t('buttons.restore', 'Restore')}
-                      </Button>
-                    ) : (
-                      <span className='inline-block cursor-not-allowed'>
+                <div className='flex items-center gap-2'>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {canRestore ? (
                         <Button
-                          variant='outline'
+                          variant='outline-success'
                           type='button'
-                          disabled
-                          className='text-muted-foreground border-emerald-500/30 opacity-50'
+                          onClick={() => setIsShowRestoreDialog(true)}
+                          disabled={restoreUserMutation.isPending}
                         >
-                          <RotateCcw className='size-4' aria-hidden='true' />
+                          {restoreUserMutation.isPending ? (
+                            <Loader2
+                              className='size-4 animate-spin'
+                              aria-hidden='true'
+                            />
+                          ) : (
+                            <RotateCcw className='size-4' aria-hidden='true' />
+                          )}
                           {t('buttons.restore', 'Restore')}
                         </Button>
-                      </span>
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {canRestore
-                      ? t('buttons.restore', 'Restore')
-                      : t(
-                          'users.errors.noPermissionRestore',
-                          'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
-                        )}
-                  </TooltipContent>
-                </Tooltip>
+                      ) : (
+                        <span className='inline-block cursor-not-allowed'>
+                          <Button
+                            variant='outline'
+                            type='button'
+                            disabled
+                            className='text-muted-foreground border-emerald-500/30 opacity-50'
+                          >
+                            <RotateCcw className='size-4' aria-hidden='true' />
+                            {t('buttons.restore', 'Restore')}
+                          </Button>
+                        </span>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {canRestore
+                        ? t('buttons.restore', 'Restore')
+                        : t(
+                            'users.errors.noPermissionRestore',
+                            'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                          )}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Button
+                    variant='destructive'
+                    type='button'
+                    onClick={() => setIsShowHardDeleteDialog(true)}
+                    disabled={hardDeleteUserMutation.isPending}
+                  >
+                    <TrashIcon className='size-4' aria-hidden='true' />
+                    {t('users.actions.hardDelete', 'Xóa vĩnh viễn')}
+                  </Button>
+                </div>
               ) : (
                 <>
                   <Button onClick={() => navigate(`/users/${data?.id}/edit`)}>

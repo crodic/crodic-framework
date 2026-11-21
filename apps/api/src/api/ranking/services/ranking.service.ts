@@ -84,15 +84,13 @@ export class RankingService {
   ): Promise<Paginated<LeaderboardItemResDto>> {
     const baseQb = this.snapshotRepo
       .createQueryBuilder('snap')
-      .leftJoinAndSelect('snap.user', 'user')
-      .leftJoin(
+      .innerJoinAndSelect('snap.user', 'user', 'user.deletedAt IS NULL')
+      .innerJoin(
         CosplayerProfileEntity,
         'cosplayer',
-        'cosplayer.userId = snap.userId',
+        'cosplayer.userId = snap.userId AND cosplayer.deletedAt IS NULL',
       )
-      .where('snap.isCurrent = true')
-      .andWhere('user.deletedAt IS NULL')
-      .andWhere('cosplayer.deletedAt IS NULL');
+      .where('snap.isCurrent = true');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -174,9 +172,8 @@ export class RankingService {
 
     const qb = this.profileRepo
       .createQueryBuilder('cosplayer')
-      .leftJoinAndSelect('cosplayer.user', 'user')
-      .where('cosplayer.deletedAt IS NULL')
-      .andWhere('user.deletedAt IS NULL');
+      .innerJoinAndSelect('cosplayer.user', 'user', 'user.deletedAt IS NULL')
+      .where('cosplayer.deletedAt IS NULL');
 
     if (category === ERankingFilterCategory.CRAFTING) {
       qb.andWhere('cosplayer.isCraftingCreator = true');
@@ -214,9 +211,10 @@ export class RankingService {
 
     const userIds = profiles.map((p) => String(p.userId));
 
-    // Get followers count per user
+    // Get followers count per user (excluding soft-deleted followers)
     const followersCountsRaw = await this.followRepo
       .createQueryBuilder('f')
+      .innerJoin('f.follower', 'follower', 'follower.deletedAt IS NULL')
       .select('f.followingId', 'userId')
       .addSelect('COUNT(f.id)', 'count')
       .where('f.followingId IN (:...userIds)', { userIds })
@@ -228,12 +226,13 @@ export class RankingService {
       followersMap.set(String(row.userId), parseInt(row.count, 10) || 0);
     });
 
-    // Get up to 3 featured post covers per user
+    // Get up to 3 featured post covers per user (excluding soft-deleted posts)
     const postsRaw = await this.postRepo
       .createQueryBuilder('p')
       .select(['p.authorId', 'p.coverImageUrl', 'p.createdAt'])
       .where('p.authorId IN (:...userIds)', { userIds })
       .andWhere('p.coverImageUrl IS NOT NULL')
+      .andWhere('p.deletedAt IS NULL')
       .orderBy('p.createdAt', 'DESC')
       .getMany();
 

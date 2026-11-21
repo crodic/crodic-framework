@@ -20,7 +20,16 @@ import {
   Paginated,
   PaginateQuery,
 } from 'nestjs-paginate';
-import { DataSource, Repository } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { DataSource, EntityManager, In, LessThan, Repository } from 'typeorm';
+import { ACCOUNT_RESTORE_GRACE_PERIOD_MS } from '../../common/constants/app.constant';
+import { UserFollowEntity } from '../social/entities/user-follow.entity';
+import { CollectionItemEntity } from '../collection/entities/collection-item.entity';
+import { PostMediaEntity } from '../post/entities/post-media.entity';
+import { PostLikeEntity } from '../post/entities/post-like.entity';
+import { PostCommentLikeEntity } from '../post/entities/post-comment-like.entity';
+import { CosplayerCharacterEntity } from '../cosplayer/entities/cosplayer-character.entity';
+import { LeaderboardSnapshotEntity } from '../ranking/entities/leaderboard-snapshot.entity';
 import { UserAccountRecoveryService } from '../auth/services/user-account-recovery.service';
 import { UserSessionEntity } from '../auth/entities/user-session.entity';
 import { CreateUserReqDto } from './dto/create-user.req.dto';
@@ -39,7 +48,6 @@ import {
   ENotificationType,
 } from '../notification/constants/notification.constant';
 import { AdminCosplayerProfileInputDto } from './dto/create-user.req.dto';
-import { EntityManager } from 'typeorm';
 
 function normalizeUserSlug(text: string): string {
   return text
@@ -523,5 +531,158 @@ export class UserService {
     });
 
     return plainToInstance(UserResDto, user);
+  }
+
+  /**
+   * Permanently delete user and all related child entities in a transaction.
+   * This action is completely irreversible.
+   */
+  async hardRemove(id: AutoIncrementID): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      // 1. Delete user accounts & sessions
+      await manager.getRepository(UserAccountEntity).delete({ userId: id });
+      await manager.getRepository(UserSessionEntity).delete({ userId: id });
+
+      // 2. Delete social follows (both directions)
+      await manager.getRepository(UserFollowEntity).delete({ followerId: id });
+      await manager.getRepository(UserFollowEntity).delete({ followingId: id });
+
+      // 3. Delete collections & items owned by user
+      const userCollections = await manager
+        .getRepository(CollectionEntity)
+        .find({
+          where: { userId: id },
+          withDeleted: true,
+          select: ['id'],
+        });
+      if (userCollections.length > 0) {
+        const colIds = userCollections.map((c) => c.id);
+        await manager
+          .getRepository(CollectionItemEntity)
+          .delete({ collectionId: In(colIds) });
+        await manager.getRepository(CollectionEntity).delete({ userId: id });
+      }
+
+      // 4. Delete user's authored posts and their dependencies
+      const userPosts = await manager.getRepository(PostEntity).find({
+        where: { authorId: id },
+        withDeleted: true,
+        select: ['id'],
+      });
+      if (userPosts.length > 0) {
+        const postIds = userPosts.map((p) => p.id);
+        await manager
+          .getRepository(CollectionItemEntity)
+          .delete({ postId: In(postIds) });
+        await manager
+          .getRepository(PostMediaEntity)
+          .delete({ postId: In(postIds) });
+        await manager
+          .getRepository(PostLikeEntity)
+          .delete({ postId: In(postIds) });
+        const postComments = await manager
+          .getRepository(PostCommentEntity)
+          .find({
+            where: { postId: In(postIds) },
+            withDeleted: true,
+            select: ['id'],
+          });
+        if (postComments.length > 0) {
+          const commentIds = postComments.map((c) => c.id);
+          await manager
+            .getRepository(PostCommentLikeEntity)
+            .delete({ commentId: In(commentIds) })
+            .catch(() => undefined);
+        }
+        await manager
+          .getRepository(PostCommentEntity)
+          .delete({ postId: In(postIds) });
+        await manager.getRepository(PostEntity).delete({ id: In(postIds) });
+      }
+
+      // 5. Delete interactions by this user on other content
+      await manager.getRepository(PostLikeEntity).delete({ userId: id });
+      await manager.getRepository(PostCommentLikeEntity).delete({ userId: id });
+      await manager.getRepository(PostCommentEntity).delete({ authorId: id });
+
+      // 6. Delete cosplayer characters and profile
+      await manager
+        .getRepository(CosplayerCharacterEntity)
+        .delete({ userId: id });
+      await manager
+        .getRepository(CosplayerProfileEntity)
+        .delete({ userId: id });
+
+      // 7. Delete leaderboard snapshots
+      await manager
+        .getRepository(LeaderboardSnapshotEntity)
+        .delete({ userId: id });
+
+      // 8. Delete user notifications
+      await manager
+        .getRepository(NotificationEntity)
+        .delete({ recipientUserId: id });
+
+      // 9. Hard delete user record
+      await manager.getRepository(UserEntity).delete(id);
+    });
+
+    this.logger.log(
+      `User #${id} and all related data have been permanently deleted.`,
+    );
+  }
+
+  /**
+   * Daily scheduled purge of soft-deleted users older than 30 days.
+   * Runs every day at 3:00 AM UTC.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async purgeExpiredDeletedUsers(): Promise<number> {
+    const thresholdDate = new Date(
+      Date.now() - ACCOUNT_RESTORE_GRACE_PERIOD_MS,
+    );
+
+    const expiredUsers = await this.userRepository.find({
+      where: {
+        deletedAt: LessThan(thresholdDate),
+      },
+      withDeleted: true,
+      select: ['id', 'email', 'deletedAt'],
+    });
+
+    if (expiredUsers.length === 0) {
+      return 0;
+    }
+
+    this.logger.log(
+      `Found ${expiredUsers.length} users soft-deleted over 30 days ago. Starting hard delete purge...`,
+    );
+
+    let purgedCount = 0;
+    for (const user of expiredUsers) {
+      try {
+        await this.hardRemove(user.id);
+        purgedCount++;
+      } catch (err: any) {
+        this.logger.error(
+          `Failed to purge expired user #${user.id} (${user.email}): ${err.message}`,
+          err.stack,
+        );
+      }
+    }
+
+    this.logger.log(
+      `Purge completed: ${purgedCount}/${expiredUsers.length} expired users permanently removed.`,
+    );
+    return purgedCount;
   }
 }

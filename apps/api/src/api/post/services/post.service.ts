@@ -89,8 +89,8 @@ export class PostService {
   ): Promise<Paginated<PostSummaryResDto>> {
     const baseQb = this.postRepo
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .where('author.deletedAt IS NULL');
+      .innerJoinAndSelect('post.author', 'author', 'author.deletedAt IS NULL')
+      .where('post.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -197,8 +197,9 @@ export class PostService {
   ): Promise<Paginated<PostSummaryResDto>> {
     const baseQb = this.postRepo
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .where('post.status = :publishedStatus', {
+      .innerJoinAndSelect('post.author', 'author', 'author.deletedAt IS NULL')
+      .where('post.deletedAt IS NULL')
+      .andWhere('post.status = :publishedStatus', {
         publishedStatus: EPostStatus.PUBLISHED,
       })
       .andWhere('author.deletedAt IS NULL')
@@ -308,7 +309,12 @@ export class PostService {
       });
     }
 
-    if (!post || post.author === null || post.author?.deletedAt) {
+    if (
+      !post ||
+      post.deletedAt ||
+      post.author === null ||
+      post.author?.deletedAt
+    ) {
       throw new NotFoundException(`Post "${slugOrId}" not found`);
     }
 
@@ -604,8 +610,8 @@ export class PostService {
   ): Promise<Paginated<PostSummaryResDto>> {
     const baseQb = this.postRepo
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .where('author.deletedAt IS NULL');
+      .innerJoinAndSelect('post.author', 'author', 'author.deletedAt IS NULL')
+      .where('post.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([

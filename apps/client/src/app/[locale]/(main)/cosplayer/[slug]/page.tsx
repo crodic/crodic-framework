@@ -172,7 +172,7 @@ export default async function CosplayerPage({ params }: CosplayerPageProps) {
     };
 
     return (
-      <Layout>
+      <Layout showRightRail={false}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

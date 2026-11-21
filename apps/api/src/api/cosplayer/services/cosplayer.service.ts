@@ -67,8 +67,8 @@ export class CosplayerService {
   ): Promise<Paginated<CosplayerSummaryResDto>> {
     const baseQb = this.profileRepo
       .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user')
-      .where('user.deletedAt IS NULL');
+      .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
+      .where('profile.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -130,8 +130,8 @@ export class CosplayerService {
   ): Promise<CosplayerSummaryResDto[]> {
     const qb = this.profileRepo
       .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.user', 'user')
-      .where('user.deletedAt IS NULL');
+      .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
+      .where('profile.deletedAt IS NULL');
 
     if (currentUserId) {
       qb.andWhere('profile.userId != :currentUserId', { currentUserId });
@@ -163,7 +163,12 @@ export class CosplayerService {
       relations: ['user'],
     });
 
-    if (!profile || profile.user === null || profile.user?.deletedAt) {
+    if (
+      !profile ||
+      profile.deletedAt ||
+      profile.user === null ||
+      profile.user?.deletedAt
+    ) {
       throw new NotFoundException(`Cosplayer "${slugOrHandle}" not found`);
     }
 
