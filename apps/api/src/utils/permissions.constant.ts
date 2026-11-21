@@ -22,6 +22,7 @@ export enum AppSubjects {
   Spotlight = 'SPOTLIGHT',
   ContentReport = 'CONTENT_REPORT',
   Ranking = 'RANKING',
+  CronJob = 'CRON_JOB',
 
   All = 'all',
 }
@@ -595,6 +596,22 @@ export const ALL_PERMISSIONS = [
     'Ranking Management',
     'Manage rankings',
     'Trigger leaderboard recalculation and adjust ranking weights.',
+  ),
+
+  // Cron Job
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.CronJob,
+    'Cron Job Management',
+    'View cron jobs',
+    'View scheduled cron jobs and execution log history.',
+  ),
+  permissionMeta(
+    AppActions.Manage,
+    AppSubjects.CronJob,
+    'Cron Job Management',
+    'Trigger cron jobs',
+    'Manually trigger immediate execution of scheduled cron tasks.',
   ),
 
   // SUPER

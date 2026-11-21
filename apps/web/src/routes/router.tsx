@@ -69,6 +69,11 @@ const PageEmailLogOverview = lazy(() =>
     default: m.PageEmailLogOverview,
   }))
 )
+const PageCronJobsOverview = lazy(() =>
+  import('@/pages/cron-jobs').then((m) => ({
+    default: m.PageCronJobsOverview,
+  }))
+)
 const PageEmailLogShow = lazy(() => import('@/pages/email-logs/show'))
 const ForbiddenError = lazy(() =>
   import('@/pages/errors/forbidden').then((m) => ({
@@ -748,6 +753,20 @@ const appRoutes: RouteObject[] = [
             element: (
               <RouteAuthorize action='read' subject='EMAIL_LOG'>
                 <PageEmailLogShow />
+              </RouteAuthorize>
+            ),
+          },
+        ],
+      },
+
+      {
+        path: 'cron-jobs',
+        children: [
+          {
+            index: true,
+            element: (
+              <RouteAuthorize action='read' subject='CRON_JOB'>
+                <PageCronJobsOverview />
               </RouteAuthorize>
             ),
           },

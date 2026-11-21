@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
   Sliders,
   Trophy,
+  Clock,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -48,6 +49,12 @@ export const sidebarLink: SidebarData = {
           url: '/email-logs',
           icon: MailSearch,
           permission: 'EMAIL_LOG',
+        },
+        {
+          title: 'navigation.general.cronJobs',
+          url: '/cron-jobs',
+          icon: Clock,
+          permission: 'CRON_JOB',
         },
         {
           title: 'navigation.general.website',

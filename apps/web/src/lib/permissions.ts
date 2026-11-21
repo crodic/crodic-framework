@@ -21,6 +21,10 @@ export const groupPermission = [
     permissions: ['read'],
   },
   {
+    group: 'CRON_JOB',
+    permissions: ['read', 'manage'],
+  },
+  {
     group: 'WHITE_LABEL',
     permissions: ['create', 'read', 'update', 'delete', 'publish'],
   },
@@ -106,6 +110,10 @@ export const permissions = [
 
   // EMAIL_LOG
   { action: 'read', subject: 'EMAIL_LOG' },
+
+  // CRON_JOB
+  { action: 'read', subject: 'CRON_JOB' },
+  { action: 'manage', subject: 'CRON_JOB' },
 
   // WHITE_LABEL
   { action: 'create', subject: 'WHITE_LABEL' },

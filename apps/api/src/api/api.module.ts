@@ -24,6 +24,7 @@ import { NotificationModule } from './notification/notification.module';
 import { ContentReportModule } from './content-report/content-report.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { CosplayerApplicationModule } from './cosplayer-application/cosplayer-application.module';
+import { CronJobModule } from './cron-job/cron-job.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CosplayerApplicationModule } from './cosplayer-application/cosplayer-ap
     ContentReportModule,
     AnalyticsModule,
     CosplayerApplicationModule,
+    CronJobModule,
   ],
   exports: [
     UserModule,
@@ -79,6 +81,7 @@ import { CosplayerApplicationModule } from './cosplayer-application/cosplayer-ap
     ContentReportModule,
     AnalyticsModule,
     CosplayerApplicationModule,
+    CronJobModule,
   ],
 })
 export class ApiModule {}
