@@ -131,6 +131,7 @@ export class UserService {
       where: {
         email,
       },
+      withDeleted: true,
     });
 
     if (user) {
@@ -148,6 +149,7 @@ export class UserService {
     if (cleanUsername) {
       const existingUsername = await this.userRepository.findOne({
         where: { username: cleanUsername },
+        withDeleted: true,
       });
       if (existingUsername) {
         throw new ConflictException(
@@ -455,7 +457,8 @@ export class UserService {
     const user = await this.userRepository.findOneByOrFail({ id });
 
     await this.dataSource.transaction(async (manager) => {
-      await manager.getRepository(UserAccountEntity).delete({ userId: id });
+      // Retain UserAccountEntity to preserve credentials and social links during soft delete grace period.
+      // Sessions are cleared so the user is immediately logged out on all devices.
       await manager.getRepository(UserSessionEntity).delete({ userId: id });
       await manager
         .getRepository(CosplayerProfileEntity)
@@ -473,6 +476,7 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { id },
       withDeleted: true,
+      relations: ['cosplayerProfile'],
     });
 
     if (!user) {
@@ -488,10 +492,36 @@ export class UserService {
       where: { email: user.email },
     });
 
-    if (activeUser) {
+    if (activeUser && String(activeUser.id) !== String(user.id)) {
       throw new ConflictException(
         'An active user already exists with this email address',
       );
+    }
+
+    // Check if another active user has taken this username
+    if (user.username) {
+      const activeUsername = await this.userRepository.findOne({
+        where: { username: user.username },
+      });
+      if (activeUsername && String(activeUsername.id) !== String(user.id)) {
+        throw new ConflictException(
+          `Username "${user.username}" is already taken by another active user`,
+        );
+      }
+    }
+
+    // Check if another active cosplayer profile has taken this slug
+    if (user.cosplayerProfile?.slug) {
+      const activeSlug = await this.dataSource
+        .getRepository(CosplayerProfileEntity)
+        .findOne({
+          where: { slug: user.cosplayerProfile.slug },
+        });
+      if (activeSlug && String(activeSlug.userId) !== String(user.id)) {
+        throw new ConflictException(
+          `Cosplayer slug "${user.cosplayerProfile.slug}" is already taken by another active cosplayer`,
+        );
+      }
     }
 
     await this.dataSource.transaction(async (manager) => {
@@ -506,10 +536,16 @@ export class UserService {
 
     user.deletedAt = null;
 
-    // Send password setup / reactivation email
-    await this.userAccountRecoveryService.sendVerificationEmail(user, {
-      skipRateLimit: true,
-    });
+    // Send account restoration notice & password reset link
+    try {
+      await this.userAccountRecoveryService.sendRestoreEmail(user, {
+        skipRateLimit: true,
+      });
+    } catch (err: any) {
+      this.logger.warn(
+        `Failed to send restoration email to user #${user.id} (${user.email}): ${err.message}`,
+      );
+    }
 
     return plainToInstance(UserResDto, user);
   }

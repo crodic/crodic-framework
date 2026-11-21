@@ -1,5 +1,9 @@
 import { UserAccountEntity } from '../../user/entities/user-account.entity';
 import { UserEntity } from '../../user/entities/user.entity';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { PostEntity } from '../../post/entities/post.entity';
+import { CollectionEntity } from '../../collection/entities/collection.entity';
+import { PostCommentEntity } from '../../post/entities/post-comment.entity';
 import { AllConfigType } from '../../../config/config.type';
 import {
   EAccountProvider,
@@ -109,28 +113,19 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
     });
   }
 
-  async requestRestore(
-    dto: ForgotPasswordReqDto,
-  ): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({
-      where: { email: normalizeEmail(dto.email) },
-      withDeleted: true,
-    });
-
-    if (!user || !user.deletedAt) {
-      return {
-        message:
-          'If your account was deleted, a restoration email has been sent.',
-      };
-    }
-
+  async sendRestoreEmail(
+    user: UserEntity,
+    options?: { skipRateLimit?: boolean },
+  ): Promise<void> {
     const config = this.getRecoveryConfig();
 
-    await this.authRecoveryService.checkEmailRateLimit({
-      target: user.id,
-      action: 'restore',
-      scope: config.scope,
-    });
+    if (!options?.skipRateLimit) {
+      await this.authRecoveryService.checkEmailRateLimit({
+        target: user.id,
+        action: 'restore',
+        scope: config.scope,
+      });
+    }
 
     const { token } =
       await this.authRecoveryService.createAndCacheVerificationToken({
@@ -157,11 +152,31 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
       },
     });
 
-    await this.authRecoveryService.recordEmailSent({
-      target: user.id,
-      action: 'restore',
-      scope: config.scope,
+    if (!options?.skipRateLimit) {
+      await this.authRecoveryService.recordEmailSent({
+        target: user.id,
+        action: 'restore',
+        scope: config.scope,
+      });
+    }
+  }
+
+  async requestRestore(
+    dto: ForgotPasswordReqDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { email: normalizeEmail(dto.email) },
+      withDeleted: true,
     });
+
+    if (!user || !user.deletedAt) {
+      return {
+        message:
+          'If your account was deleted, a restoration email has been sent.',
+      };
+    }
+
+    await this.sendRestoreEmail(user);
 
     return {
       message:
@@ -202,7 +217,7 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
       where: { email: user.email },
     });
 
-    if (activeUser) {
+    if (activeUser && String(activeUser.id) !== String(user.id)) {
       throw new ConflictException(
         'An active user already exists with this email address',
       );
@@ -210,6 +225,16 @@ export class UserAccountRecoveryService extends AccountRecoveryService<UserEntit
 
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(UserEntity).restore(user.id);
+      await manager
+        .getRepository(CosplayerProfileEntity)
+        .restore({ userId: user.id });
+      await manager.getRepository(PostEntity).restore({ authorId: user.id });
+      await manager
+        .getRepository(CollectionEntity)
+        .restore({ userId: user.id });
+      await manager
+        .getRepository(PostCommentEntity)
+        .restore({ authorId: user.id });
     });
 
     user.deletedAt = null;

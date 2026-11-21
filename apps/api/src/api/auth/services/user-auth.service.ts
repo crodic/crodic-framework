@@ -186,11 +186,21 @@ export class UserAuthService extends AuthService<
     dto: UserRegisterReqDto,
     requestInfo?: SessionRequestInfo,
   ): Promise<UserLoginResDto> {
-    const isExistUser = await this.userRepository.exists({
+    const existingUser = await this.userRepository.findOne({
       where: { email: dto.email },
+      withDeleted: true,
     });
 
-    if (isExistUser) {
+    if (existingUser) {
+      if (existingUser.deletedAt) {
+        throw new BadRequestException({
+          errorCode: 'ACCOUNT_DELETED',
+          message:
+            'Email này thuộc về một tài khoản đang tạm khóa / chờ xóa. Bạn có thể gửi yêu cầu khôi phục tài khoản thay vì đăng ký mới.',
+          canRestore: true,
+          email: existingUser.email,
+        });
+      }
       throw new ValidationException(ErrorCode.E003);
     }
 
@@ -212,12 +222,6 @@ export class UserAuthService extends AuthService<
       manager?: any,
     ) => {
       const savedUser = await userRepo.save(newUser);
-
-      // Clean up any orphaned local account from previously soft-deleted user
-      await accountRepo.delete({
-        provider: EAccountProvider.LOCAL,
-        providerAccountId: savedUser.email,
-      });
 
       // Create local credentials account
       await accountRepo.save(
@@ -796,8 +800,9 @@ export class UserAuthService extends AuthService<
   private async generateUniqueSlug(baseText: string): Promise<string> {
     const baseSlug = this.slugify(baseText) || 'user';
     let candidate = baseSlug;
-    const exists = await this.userRepository.exists({
+    const exists = await this.userRepository.findOne({
       where: { username: candidate },
+      withDeleted: true,
     });
     if (!exists) {
       return candidate;
@@ -806,8 +811,9 @@ export class UserAuthService extends AuthService<
     for (let i = 0; i < 10; i++) {
       const suffix = Math.floor(100 + Math.random() * 900);
       const testHandle = `${baseSlug.slice(0, 20)}_${suffix}`;
-      const isTaken = await this.userRepository.exists({
+      const isTaken = await this.userRepository.findOne({
         where: { username: testHandle },
+        withDeleted: true,
       });
       if (!isTaken) {
         return testHandle;

@@ -40,7 +40,10 @@ describe('UserService', () => {
     save: jest.Mock;
   };
   let dataSourceMock: { transaction: jest.Mock; getRepository: jest.Mock };
-  let userAccountRecoveryServiceMock: { sendVerificationEmail: jest.Mock };
+  let userAccountRecoveryServiceMock: {
+    sendVerificationEmail: jest.Mock;
+    sendRestoreEmail: jest.Mock;
+  };
 
   beforeAll(async () => {
     userRepositoryValue = {
@@ -94,6 +97,7 @@ describe('UserService', () => {
     };
     userAccountRecoveryServiceMock = {
       sendVerificationEmail: jest.fn(),
+      sendRestoreEmail: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -162,6 +166,7 @@ describe('UserService', () => {
 
       expect(userRepositoryValue.findOne).toHaveBeenCalledWith({
         where: { email: dto.email },
+        withDeleted: true,
       });
       expect(userRepositoryValue.save).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -281,16 +286,13 @@ describe('UserService', () => {
   });
 
   describe('remove', () => {
-    it('soft removes the selected user and cleans up accounts and sessions', async () => {
+    it('soft removes the selected user and cleans up sessions while preserving accounts', async () => {
       const user = new UserEntity({ id: '1' as any });
 
       userRepositoryValue.findOneByOrFail.mockResolvedValue(user);
 
       await service.remove('1' as any);
 
-      expect(userAccountRepositoryValue.delete).toHaveBeenCalledWith({
-        userId: '1',
-      });
       expect(userSessionRepositoryValue.delete).toHaveBeenCalledWith({
         userId: '1',
       });
@@ -325,7 +327,7 @@ describe('UserService', () => {
   });
 
   describe('restore', () => {
-    it('restores a soft-deleted user and sends verification email', async () => {
+    it('restores a soft-deleted user and sends restoration email', async () => {
       const user = new UserEntity({
         id: '1' as any,
         email: 'deleted@example.com',
@@ -340,7 +342,7 @@ describe('UserService', () => {
 
       expect(dataSourceMock.transaction).toHaveBeenCalled();
       expect(
-        userAccountRecoveryServiceMock.sendVerificationEmail,
+        userAccountRecoveryServiceMock.sendRestoreEmail,
       ).toHaveBeenCalledWith(user, { skipRateLimit: true });
       expect(result).toBeDefined();
     });

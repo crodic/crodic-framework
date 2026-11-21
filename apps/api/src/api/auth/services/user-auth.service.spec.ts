@@ -192,6 +192,7 @@ describe('UserAuthService', () => {
       });
 
       jwtService.signAsync.mockResolvedValue('jwt-token');
+      userRepository.findOne?.mockResolvedValue(null);
       userRepository.exists?.mockResolvedValue(false);
       userRepository.save?.mockResolvedValue(user);
       userAccountRepository.save?.mockResolvedValue(
@@ -217,14 +218,30 @@ describe('UserAuthService', () => {
       expect(result).toEqual(expect.objectContaining({ userId: user.id }));
     });
 
-    it('throws when the email already exists', async () => {
-      userRepository.exists?.mockResolvedValue(true);
+    it('throws when the email already exists and is active', async () => {
+      userRepository.findOne?.mockResolvedValue(
+        new UserEntity({ email: dto.email, deletedAt: null }),
+      );
 
       await expect(service.signUp(dto)).rejects.toMatchObject({
         response: { errorCode: ErrorCode.E003 },
       });
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(emailQueue.add).not.toHaveBeenCalled();
+    });
+
+    it('throws when the email belongs to a soft-deleted user in grace period', async () => {
+      userRepository.findOne?.mockResolvedValue(
+        new UserEntity({ email: dto.email, deletedAt: new Date() }),
+      );
+
+      await expect(service.signUp(dto)).rejects.toMatchObject({
+        response: expect.objectContaining({
+          errorCode: 'ACCOUNT_DELETED',
+          canRestore: true,
+        }),
+      });
+      expect(userRepository.save).not.toHaveBeenCalled();
     });
   });
 

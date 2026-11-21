@@ -130,6 +130,7 @@ export class AdminUserService {
       where: {
         email,
       },
+      withDeleted: true,
     });
 
     if (user) {
@@ -291,9 +292,8 @@ export class AdminUserService {
     const admin = await this.adminUserRepository.findOneByOrFail({ id });
 
     await this.dataSource.transaction(async (manager) => {
-      await manager
-        .getRepository(AdminAccountEntity)
-        .delete({ adminUserId: id });
+      // Retain AdminAccountEntity to preserve credentials during soft delete grace period.
+      // Sessions are cleared so the admin is immediately logged out on all devices.
       await manager
         .getRepository(AdminSessionEntity)
         .delete({ adminUserId: id });

@@ -177,6 +177,7 @@ describe('AdminUserService', () => {
 
       expect(adminRepoMock.findOne).toHaveBeenCalledWith({
         where: { email: dto.email },
+        withDeleted: true,
       });
       expect(adminRepoMock.save).toHaveBeenCalledWith(
         expect.objectContaining({ email: dto.email, roles: [role] }),
@@ -251,15 +252,12 @@ describe('AdminUserService', () => {
   });
 
   describe('remove', () => {
-    it('soft removes the selected admin user and cleans up accounts and sessions', async () => {
+    it('soft removes the selected admin user and cleans up sessions while preserving accounts', async () => {
       const admin = new AdminUserEntity({ id: '1' as any });
       adminRepoMock.findOneByOrFail.mockResolvedValue(admin);
 
       await service.remove('1' as any);
 
-      expect(adminAccountRepoMock.delete).toHaveBeenCalledWith({
-        adminUserId: '1',
-      });
       expect(adminSessionRepoMock.delete).toHaveBeenCalledWith({
         adminUserId: '1',
       });
