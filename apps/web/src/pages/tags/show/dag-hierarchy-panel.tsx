@@ -486,7 +486,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
       {/* Semantic DAG Hierarchy Flow Canvas */}
       <div className='space-y-6'>
         {/* Header Action Bar */}
-        <div className='border-border/80 bg-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 shadow-2xs'>
+        <div className='border-border/80 bg-card flex flex-col gap-3.5 rounded-2xl border p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-5'>
           <div className='flex items-center gap-3'>
             <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
               <GitBranchIcon className='size-5' aria-hidden='true' />
@@ -504,11 +504,11 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
             </div>
           </div>
 
-          <div className='flex flex-wrap items-center gap-2'>
+          <div className='flex w-full items-center gap-2 sm:w-auto'>
             <Button
               type='button'
               onClick={() => openDialog('child')}
-              className='h-9 cursor-pointer gap-2 text-xs font-semibold shadow-2xs'
+              className='h-9 w-full cursor-pointer gap-2 text-xs font-semibold shadow-2xs sm:w-auto'
             >
               <PlusIcon className='size-4' aria-hidden='true' />
               <span>
@@ -520,7 +520,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
         {/* Tier 1: Parents (Thẻ Cha) */}
         <Card className='border-border/80 shadow-xs'>
-          <CardHeader className='flex flex-row items-center justify-between pb-3'>
+          <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
@@ -545,7 +545,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               variant='outline'
               size='sm'
               onClick={() => openDialog('parent')}
-              className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
+              className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
               <span>{t('tags.hierarchy.addParentBtn', 'Add Parent Tag')}</span>
@@ -587,25 +587,24 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
         {/* Visual Connector: Parents -> Current Node */}
         <div
-          className='flex items-center justify-center gap-3'
+          className='flex items-center justify-center gap-2 px-1'
           aria-hidden='true'
         >
-          <div className='bg-border h-px max-w-xs flex-1' />
-          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-medium'>
-            <ArrowDownIcon className='text-primary size-3.5' />
+          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
+          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-center font-mono text-[10px] font-medium sm:text-[11px]'>
+            <ArrowDownIcon className='text-primary size-3.5 shrink-0' />
             {t(
               'tags.hierarchy.inheritanceConnector',
               'Taxonomy Inheritance (Is-A / Parent)'
             )}
           </span>
-          <div className='bg-border h-px max-w-xs flex-1' />
+          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
         </div>
 
         {/* Tier 2: Current Node & Siblings */}
         <div className='grid gap-6 md:grid-cols-2'>
           {/* Current Node Highlight Card */}
-          <Card className='border-primary/50 bg-primary/5 ring-primary/20 relative overflow-hidden shadow-xs ring-2'>
-            <div className='bg-primary/10 pointer-events-none absolute top-0 right-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-full blur-2xl' />
+          <Card className='border-primary/50 bg-primary/5 ring-primary/20 relative shadow-xs ring-1'>
             <CardHeader className='pb-3'>
               <div className='flex items-center justify-between'>
                 <span className='text-primary inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase'>
@@ -702,23 +701,23 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
         {/* Visual Connector: Current Node -> Children */}
         <div
-          className='flex items-center justify-center gap-3'
+          className='flex items-center justify-center gap-2 px-1'
           aria-hidden='true'
         >
-          <div className='bg-border h-px max-w-xs flex-1' />
-          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-medium'>
-            <ArrowDownIcon className='size-3.5 text-emerald-500' />
+          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
+          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-center font-mono text-[10px] font-medium sm:text-[11px]'>
+            <ArrowDownIcon className='size-3.5 shrink-0 text-emerald-500' />
             {t(
               'tags.hierarchy.specializationConnector',
               'Sub-concept Specialization (Sub-types / Children)'
             )}
           </span>
-          <div className='bg-border h-px max-w-xs flex-1' />
+          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
         </div>
 
         {/* Tier 3: Children (Thẻ Con) */}
         <Card className='border-border/80 shadow-xs'>
-          <CardHeader className='flex flex-row items-center justify-between pb-3'>
+          <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
             <div className='space-y-0.5'>
               <div className='flex items-center gap-2'>
                 <CardTitle className='text-sm font-semibold'>
@@ -743,7 +742,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
               variant='outline'
               size='sm'
               onClick={() => openDialog('child')}
-              className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
+              className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
             >
               <PlusIcon className='size-3.5' aria-hidden='true' />
               <span>{t('tags.hierarchy.addChildBtn', 'Add Child Tag')}</span>
@@ -787,7 +786,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         <div className='grid gap-6 md:grid-cols-2'>
           {/* Related Tags */}
           <Card className='border-border/80 shadow-xs'>
-            <CardHeader className='flex flex-row items-center justify-between pb-3'>
+            <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='space-y-0.5'>
                 <div className='flex items-center gap-2'>
                   <Link2Icon
@@ -816,7 +815,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 variant='outline'
                 size='sm'
                 onClick={() => openDialog('related')}
-                className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
+                className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>
@@ -859,7 +858,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
           {/* Disambiguation Tags */}
           <Card className='border-border/80 shadow-xs'>
-            <CardHeader className='flex flex-row items-center justify-between pb-3'>
+            <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='space-y-0.5'>
                 <div className='flex items-center gap-2'>
                   <SplitIcon
@@ -888,7 +887,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 variant='outline'
                 size='sm'
                 onClick={() => openDialog('disambiguation')}
-                className='text-primary hover:text-primary hover:bg-primary/10 h-8 cursor-pointer gap-1.5 text-xs shadow-2xs'
+                className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
               >
                 <PlusIcon className='size-3.5' aria-hidden='true' />
                 <span>

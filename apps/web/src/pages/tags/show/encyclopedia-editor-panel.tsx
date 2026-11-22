@@ -400,7 +400,7 @@ export function EncyclopediaEditorPanel({
 
       {/* 100% Full-Width Wiki Studio Editor */}
       <Card className='border-border/80 shadow-xs'>
-        <CardHeader className='flex flex-row flex-wrap items-center justify-between gap-4 border-b pb-4'>
+        <CardHeader className='flex flex-col gap-3.5 border-b pb-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='space-y-1'>
             <CardTitle className='flex flex-wrap items-center gap-2 text-base font-semibold'>
               <BookMarkedIcon
@@ -440,7 +440,7 @@ export function EncyclopediaEditorPanel({
             </CardDescription>
           </div>
 
-          <div className='flex flex-wrap items-center gap-2.5'>
+          <div className='flex w-full flex-wrap items-center justify-between gap-2.5 sm:w-auto sm:justify-end'>
             {/* Edition Selector */}
             <div className='flex items-center gap-1.5'>
               <GlobeIcon
@@ -712,13 +712,13 @@ export function EncyclopediaEditorPanel({
                     )}
                   />
 
-                  <div className='flex items-center gap-2 self-end sm:self-auto'>
+                  <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center'>
                     <Button
                       type='button'
                       variant='outline'
                       size='sm'
                       onClick={() => setIsHistoryOpen(true)}
-                      className='h-9 cursor-pointer gap-1.5 text-xs shadow-2xs'
+                      className='h-9 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
                     >
                       <HistoryIcon
                         className='text-primary size-3.5'
@@ -738,7 +738,7 @@ export function EncyclopediaEditorPanel({
                     <Button
                       type='submit'
                       disabled={upsertMutation.isPending}
-                      className='h-9 shrink-0 cursor-pointer gap-2 text-xs font-semibold shadow-xs'
+                      className='h-9 w-full shrink-0 cursor-pointer gap-2 text-xs font-semibold shadow-xs sm:w-auto'
                     >
                       <SaveIcon className='size-4' aria-hidden='true' />
                       {upsertMutation.isPending

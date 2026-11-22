@@ -243,16 +243,16 @@ export function TagForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className='flex flex-1 flex-col gap-6'
       >
-        {/* Sticky Glassmorphic Header Action Bar */}
+        {/* Sticky Header Action Bar */}
         <div className='bg-card/95 border-border/80 sticky top-0 z-30 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5'>
-          <div className='flex flex-wrap items-center justify-between gap-4'>
-            <div className='flex items-center gap-3'>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex items-start gap-3 sm:items-center'>
               <Button
                 type='button'
                 variant='outline'
                 size='icon'
                 onClick={() => navigate(-1)}
-                className='size-9 shrink-0 cursor-pointer shadow-2xs'
+                className='mt-0.5 size-9 shrink-0 cursor-pointer shadow-2xs sm:mt-0'
                 aria-label={t('buttons.back', 'Back')}
               >
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
@@ -282,20 +282,20 @@ export function TagForm({
               </div>
             </div>
 
-            <div className='flex items-center gap-2'>
+            <div className='flex w-full items-center justify-end gap-2 sm:w-auto'>
               <Button
                 type='button'
                 variant='ghost'
                 onClick={() => navigate(-1)}
                 disabled={isSubmitting}
-                className='cursor-pointer text-xs'
+                className='w-full cursor-pointer text-xs sm:w-auto'
               >
                 {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button
                 type='submit'
                 disabled={isSubmitting}
-                className='cursor-pointer gap-2 shadow-xs'
+                className='w-full cursor-pointer gap-2 shadow-xs sm:w-auto'
               >
                 {isSubmitting ? (
                   <>
@@ -322,9 +322,9 @@ export function TagForm({
 
         {/* Live Taxonomy Preview Strip */}
         <Card className='border-border/70 bg-muted/20 relative overflow-hidden shadow-2xs'>
-          <CardContent className='flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5'>
+          <CardContent className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5'>
             <div className='flex items-center gap-3'>
-              <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
+              <div className='bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg'>
                 <EyeIcon className='size-4' aria-hidden='true' />
               </div>
               <div>
@@ -757,7 +757,7 @@ export function TagForm({
 
               <CardContent className='space-y-5 p-5 sm:p-6'>
                 {/* Language Selection Tabs Bar */}
-                <div className='border-border/70 bg-muted/30 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-2'>
+                <div className='border-border/70 bg-muted/30 flex flex-col gap-2.5 rounded-xl border p-2 sm:flex-row sm:items-center sm:justify-between'>
                   <div className='flex items-center gap-2 pl-1'>
                     <GlobeIcon
                       className='text-primary size-4 shrink-0'
@@ -768,7 +768,7 @@ export function TagForm({
                     </span>
                   </div>
 
-                  <div className='flex items-center gap-1.5 overflow-x-auto py-0.5'>
+                  <div className='flex w-full [scrollbar-width:none] items-center gap-1.5 overflow-x-auto py-0.5 sm:w-auto'>
                     {TAG_LOCALES.map((localeItem, idx) => {
                       const currentName =
                         watchedTranslations?.[idx]?.translatedName?.trim() ?? ''

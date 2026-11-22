@@ -213,11 +213,11 @@ export function PageTagOverview() {
             </Badge>
           }
           actions={
-            <div className='flex flex-wrap items-center gap-2.5'>
+            <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2.5'>
               <Button
                 variant='outline'
                 onClick={() => navigate('/tag-encyclopedias')}
-                className='hover:border-primary/50 cursor-pointer gap-2 shadow-2xs'
+                className='hover:border-primary/50 w-full cursor-pointer gap-2 shadow-2xs sm:w-auto'
               >
                 <BookMarkedIcon
                   className='text-primary size-4'
@@ -232,7 +232,7 @@ export function PageTagOverview() {
               </Button>
               <Button
                 onClick={() => navigate('/tags/create')}
-                className='cursor-pointer gap-2 shadow-xs'
+                className='w-full cursor-pointer gap-2 shadow-xs sm:w-auto'
               >
                 <PlusIcon className='size-4' aria-hidden='true' />
                 <span>{t('buttons.create', 'Create Tag')}</span>
@@ -241,11 +241,10 @@ export function PageTagOverview() {
           }
         />
 
-        {/* Executive KPI Summary Grid with Subtle Glassmorphic Styling */}
+        {/* Executive KPI Summary Grid with Clean Solid Admin Styling */}
         <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4'>
           {/* Card 1: Total Tags */}
           <Card className='group border-border/70 bg-card hover:border-primary/40 relative overflow-hidden shadow-xs transition-all hover:shadow-sm'>
-            <div className='bg-primary/10 pointer-events-none absolute -top-8 -right-8 size-24 rounded-full blur-xl transition-transform group-hover:scale-125' />
             <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
               <div className='bg-primary/10 text-primary border-primary/20 shrink-0 rounded-xl border p-2.5 shadow-2xs'>
                 <TagsIcon className='size-5' aria-hidden='true' />
@@ -272,7 +271,6 @@ export function PageTagOverview() {
 
           {/* Card 2: Official Verified */}
           <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-emerald-500/40 hover:shadow-sm'>
-            <div className='pointer-events-none absolute -top-8 -right-8 size-24 rounded-full bg-emerald-500/10 blur-xl transition-transform group-hover:scale-125' />
             <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
               <div className='shrink-0 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-emerald-600 shadow-2xs dark:text-emerald-400'>
                 <BadgeCheckIcon className='size-5' aria-hidden='true' />
@@ -305,7 +303,6 @@ export function PageTagOverview() {
 
           {/* Card 3: System Protected */}
           <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-amber-500/40 hover:shadow-sm'>
-            <div className='pointer-events-none absolute -top-8 -right-8 size-24 rounded-full bg-amber-500/10 blur-xl transition-transform group-hover:scale-125' />
             <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
               <div className='shrink-0 rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-amber-600 shadow-2xs dark:text-amber-400'>
                 <LockIcon className='size-5' aria-hidden='true' />
@@ -332,7 +329,6 @@ export function PageTagOverview() {
 
           {/* Card 4: Taxonomy Usage */}
           <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-orange-500/40 hover:shadow-sm'>
-            <div className='pointer-events-none absolute -top-8 -right-8 size-24 rounded-full bg-orange-500/10 blur-xl transition-transform group-hover:scale-125' />
             <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
               <div className='shrink-0 rounded-xl border border-orange-500/20 bg-orange-500/10 p-2.5 text-orange-600 shadow-2xs dark:text-orange-400'>
                 <FlameIcon className='size-5' aria-hidden='true' />

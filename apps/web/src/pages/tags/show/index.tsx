@@ -21,7 +21,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
-import { cn } from '@/lib/utils'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,7 +50,6 @@ import { Main } from '@/components/layout/main'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { MergeTagDialog } from '../components/merge-tag-dialog'
 import {
-  TAG_CATEGORY_GRADIENTS,
   TagCategoryBadge,
   TagSafetyBadge,
   TagStatusBadge,
@@ -143,33 +141,24 @@ export function PageTagShow() {
 
       <Main className='flex flex-1 flex-col gap-6'>
         {/* Executive Studio Hero Banner Card */}
-        <div
-          className={cn(
-            'border-border/80 bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs backdrop-blur-md transition-all sm:p-6',
-            'bg-gradient-to-r',
-            TAG_CATEGORY_GRADIENTS[tag.category]
-          )}
-        >
-          {/* Subtle Ambient Glow */}
-          <div className='bg-primary/10 pointer-events-none absolute -top-12 -right-12 size-48 rounded-full blur-3xl' />
-
+        <div className='border-border/80 bg-card relative rounded-2xl border p-4 shadow-xs transition-all sm:p-6'>
           {/* Top Row: Title, Category Badges & Action Toolbar */}
-          <div className='border-border/60 flex flex-wrap items-center justify-between gap-4 border-b pb-5'>
-            <div className='flex items-center gap-3.5'>
+          <div className='border-border/60 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex items-start gap-3 sm:items-center'>
               <Button
                 variant='outline'
                 size='icon'
                 onClick={() => navigate('/tags')}
-                className='size-9 shrink-0 cursor-pointer shadow-2xs'
+                className='mt-0.5 size-9 shrink-0 cursor-pointer shadow-2xs sm:mt-0'
                 aria-label={t('buttons.back', 'Back')}
               >
                 <ArrowLeftIcon className='size-4' aria-hidden='true' />
               </Button>
 
-              <div className='space-y-1'>
-                <div className='flex flex-wrap items-center gap-2.5'>
+              <div className='min-w-0 flex-1 space-y-1.5'>
+                <div className='flex flex-wrap items-center gap-2 sm:gap-2.5'>
                   <div className='group/header-name flex items-center gap-1.5'>
-                    <h1 className='text-foreground text-2xl font-bold tracking-tight sm:text-3xl'>
+                    <h1 className='text-foreground text-xl font-bold tracking-tight break-all sm:text-2xl md:text-3xl'>
                       <span className='text-primary mr-0.5 opacity-80'>#</span>
                       {tag.name}
                     </h1>
@@ -202,32 +191,34 @@ export function PageTagShow() {
                     </Tooltip>
                   </div>
 
-                  <TagStatusBadge status={tag.status} />
-                  <TagCategoryBadge category={tag.category} />
-                  <TagSafetyBadge safetyRating={tag.safetyRating} />
+                  <div className='flex flex-wrap items-center gap-1.5'>
+                    <TagStatusBadge status={tag.status} />
+                    <TagCategoryBadge category={tag.category} />
+                    <TagSafetyBadge safetyRating={tag.safetyRating} />
 
-                  {tag.isOfficial && (
-                    <Badge
-                      variant='secondary'
-                      className='border-primary/20 bg-primary/10 text-primary gap-1 text-[11px] font-semibold shadow-2xs'
-                    >
-                      <BadgeCheckIcon
-                        className='text-primary size-3.5'
-                        aria-hidden='true'
-                      />
-                      {t('tags.flags.official', 'Official Curated')}
-                    </Badge>
-                  )}
+                    {tag.isOfficial && (
+                      <Badge
+                        variant='secondary'
+                        className='border-primary/20 bg-primary/10 text-primary gap-1 text-[11px] font-semibold shadow-2xs'
+                      >
+                        <BadgeCheckIcon
+                          className='text-primary size-3.5'
+                          aria-hidden='true'
+                        />
+                        {t('tags.flags.official', 'Official Curated')}
+                      </Badge>
+                    )}
 
-                  {tag.isSystem && (
-                    <Badge
-                      variant='outline-warning'
-                      className='gap-1 text-[11px] font-semibold'
-                    >
-                      <LockIcon className='size-3' aria-hidden='true' />
-                      {t('tags.flags.system', 'System Protected')}
-                    </Badge>
-                  )}
+                    {tag.isSystem && (
+                      <Badge
+                        variant='outline-warning'
+                        className='gap-1 text-[11px] font-semibold'
+                      >
+                        <LockIcon className='size-3' aria-hidden='true' />
+                        {t('tags.flags.system', 'System Protected')}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
                 {/* Subtitle with Slug & Direct Link */}
@@ -264,12 +255,12 @@ export function PageTagShow() {
             </div>
 
             {/* Right Action Cluster */}
-            <div className='flex flex-wrap items-center gap-2'>
+            <div className='grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end'>
               <Button
                 variant='outline'
                 size='sm'
                 asChild
-                className='h-9 cursor-pointer shadow-2xs'
+                className='h-9 w-full cursor-pointer shadow-2xs sm:w-auto'
               >
                 <a
                   href={`${clientUrl}/en/tags/${tag.slug}`}
@@ -287,7 +278,7 @@ export function PageTagShow() {
                   variant='outline'
                   size='sm'
                   onClick={() => setIsMergeOpen(true)}
-                  className='h-9 cursor-pointer gap-1.5 shadow-2xs'
+                  className='h-9 w-full cursor-pointer gap-1.5 shadow-2xs sm:w-auto'
                 >
                   <GitMergeIcon
                     className='size-3.5 text-violet-500'
@@ -300,7 +291,7 @@ export function PageTagShow() {
               <Button
                 size='sm'
                 onClick={() => navigate(`/tags/${tag.id}/edit`)}
-                className='h-9 cursor-pointer gap-1.5 shadow-xs'
+                className='h-9 w-full cursor-pointer gap-1.5 shadow-xs sm:w-auto'
               >
                 <EditIcon className='size-3.5' aria-hidden='true' />
                 <span>{t('buttons.edit', 'Edit')}</span>
@@ -311,7 +302,7 @@ export function PageTagShow() {
                   variant='destructive'
                   size='sm'
                   onClick={() => setIsDeleteOpen(true)}
-                  className='h-9 cursor-pointer gap-1.5 shadow-xs'
+                  className='h-9 w-full cursor-pointer gap-1.5 shadow-xs sm:w-auto'
                 >
                   <TrashIcon className='size-3.5' aria-hidden='true' />
                   <span>{t('buttons.delete', 'Delete')}</span>
@@ -322,7 +313,7 @@ export function PageTagShow() {
 
           {/* Bottom Row: Executive Metrics Strip */}
           <div className='grid grid-cols-2 gap-3 pt-5 sm:grid-cols-4'>
-            <div className='bg-background/60 border-border/60 rounded-xl border p-3 shadow-2xs backdrop-blur-xs'>
+            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <TagIcon className='text-primary size-3.5' aria-hidden='true' />
                 <span>{t('tags.table.usageCount', 'Usage Count')}</span>
@@ -332,7 +323,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-background/60 border-border/60 rounded-xl border p-3 shadow-2xs backdrop-blur-xs'>
+            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <FlameIcon
                   className='size-3.5 text-amber-500'
@@ -345,7 +336,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-background/60 border-border/60 rounded-xl border p-3 shadow-2xs backdrop-blur-xs'>
+            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <GitBranchIcon
                   className='size-3.5 text-sky-500'
@@ -358,7 +349,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-background/60 border-border/60 rounded-xl border p-3 shadow-2xs backdrop-blur-xs'>
+            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <BookMarkedIcon
                   className='size-3.5 text-violet-500'
@@ -383,46 +374,54 @@ export function PageTagShow() {
           }}
           className='flex flex-1 flex-col gap-5'
         >
-          <TabsList>
-            <TabsTrigger value='hierarchy' className='gap-2 text-xs sm:text-sm'>
-              <GitBranchIcon className='size-4' aria-hidden='true' />
-              <span>
-                {t('tags.studio.tabHierarchy', 'Semantic DAG Hierarchy')}
-              </span>
-              <Badge
-                variant='secondary'
-                className='ml-0.5 h-4 px-1.5 font-mono text-[10px] tabular-nums'
+          <div className='-mx-1 w-full [scrollbar-width:none] overflow-x-auto px-1'>
+            <TabsList className='h-auto min-w-full justify-start gap-1 p-1 sm:h-9 sm:w-fit sm:justify-center'>
+              <TabsTrigger
+                value='hierarchy'
+                className='shrink-0 gap-1.5 px-3 py-1.5 text-xs sm:text-sm'
               >
-                {totalDagRelations}
-              </Badge>
-            </TabsTrigger>
+                <GitBranchIcon className='size-4' aria-hidden='true' />
+                <span>
+                  {t('tags.studio.tabHierarchy', 'Semantic DAG Hierarchy')}
+                </span>
+                <Badge
+                  variant='secondary'
+                  className='ml-0.5 h-4 px-1.5 font-mono text-[10px] tabular-nums'
+                >
+                  {totalDagRelations}
+                </Badge>
+              </TabsTrigger>
 
-            <TabsTrigger
-              value='encyclopedia'
-              className='gap-2 text-xs sm:text-sm'
-            >
-              <BookMarkedIcon className='size-4' aria-hidden='true' />
-              <span>
-                {t(
-                  'tags.studio.tabEncyclopedia',
-                  'Community Encyclopedia (dic)'
-                )}
-              </span>
-            </TabsTrigger>
-
-            <TabsTrigger value='metadata' className='gap-2 text-xs sm:text-sm'>
-              <LanguagesIcon className='size-4' aria-hidden='true' />
-              <span>
-                {t('tags.studio.tabMetadata', 'Translations & Aliases')}
-              </span>
-              <Badge
-                variant='outline'
-                className='ml-0.5 h-4 px-1.5 font-mono text-[10px] tabular-nums'
+              <TabsTrigger
+                value='encyclopedia'
+                className='shrink-0 gap-1.5 px-3 py-1.5 text-xs sm:text-sm'
               >
-                {translationsCount + aliasesCount}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
+                <BookMarkedIcon className='size-4' aria-hidden='true' />
+                <span>
+                  {t(
+                    'tags.studio.tabEncyclopedia',
+                    'Community Encyclopedia (dic)'
+                  )}
+                </span>
+              </TabsTrigger>
+
+              <TabsTrigger
+                value='metadata'
+                className='shrink-0 gap-1.5 px-3 py-1.5 text-xs sm:text-sm'
+              >
+                <LanguagesIcon className='size-4' aria-hidden='true' />
+                <span>
+                  {t('tags.studio.tabMetadata', 'Translations & Aliases')}
+                </span>
+                <Badge
+                  variant='outline'
+                  className='ml-0.5 h-4 px-1.5 font-mono text-[10px] tabular-nums'
+                >
+                  {translationsCount + aliasesCount}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent
             value='hierarchy'
