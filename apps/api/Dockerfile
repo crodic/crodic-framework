@@ -10,37 +10,47 @@ ENV HUSKY=0
 RUN apk add --no-cache libc6-compat dumb-init \
   && npm install -g pnpm@11.25.0
 
+# ------------------------------------------------------------------------------
+# Stage 1: Prune monorepo for API
+# ------------------------------------------------------------------------------
+FROM base AS pruner
+RUN apk add --no-cache libc6-compat \
+  && npm install -g turbo@2.11.7
+
+COPY . .
+RUN turbo prune api --docker
+
+# ------------------------------------------------------------------------------
+# Stage 2: Install dependencies
+# ------------------------------------------------------------------------------
 FROM base AS deps
 RUN apk add --no-cache python3 make g++
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./
-COPY packages/commitlint-config/package.json ./packages/commitlint-config/package.json
-COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
-COPY packages/prettier-config/package.json ./packages/prettier-config/package.json
-COPY packages/query-builder/package.json ./packages/query-builder/package.json
-COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
-COPY apps/api/package.json ./apps/api/package.json
-COPY apps/client/package.json ./apps/client/package.json
-COPY apps/web/package.json ./apps/web/package.json
+# Copy pruned lockfile and isolated package.jsons
+COPY --from=pruner /app/out/json/ .
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
   pnpm install --frozen-lockfile
 
+# ------------------------------------------------------------------------------
+# Stage 3: Development
+# ------------------------------------------------------------------------------
 FROM deps AS development
 ENV NODE_ENV=development
 
-COPY packages ./packages
-COPY apps/api ./apps/api
+COPY --from=pruner /app/out/full/ .
 
 USER node
 
 CMD ["pnpm", "--filter", "api", "start:dev"]
 
+# ------------------------------------------------------------------------------
+# Stage 4: Builder
+# ------------------------------------------------------------------------------
 FROM deps AS builder
 ENV NODE_ENV=production
 
-COPY packages ./packages
-COPY apps/api ./apps/api
+COPY --from=pruner /app/out/full/ .
 
 RUN pnpm --filter api build \
   && pnpm --filter api deploy --prod --legacy /prod/api \
@@ -48,6 +58,9 @@ RUN pnpm --filter api build \
   && cp -r apps/api/dist /prod/api/dist \
   && cp -r apps/api/src/database/data /prod/api/dist/database/data
 
+# ------------------------------------------------------------------------------
+# Stage 5: Production
+# ------------------------------------------------------------------------------
 FROM base AS production
 ENV NODE_ENV=production
 ENV CI=true
