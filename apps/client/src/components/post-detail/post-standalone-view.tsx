@@ -60,6 +60,7 @@ import {
   createCollection,
   addCollectionItem,
   removeCollectionItem,
+  getCollectionItems,
 } from "@/services/collections";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
@@ -105,6 +106,7 @@ export function PostStandaloneView({
     queryFn: () => getPostBySlug(postSlugOrId),
     initialData: initialPost,
     staleTime: 60 * 1000,
+    refetchOnMount: true,
   });
 
   const photos = useMemo(() => {
@@ -212,38 +214,91 @@ export function PostStandaloneView({
     Math.max(0, Number(post.savesCount || 0))
   );
 
+  useEffect(() => {
+    if (typeof post.isSavedByCurrentUser === "boolean") {
+      setIsSaved(post.isSavedByCurrentUser);
+    }
+    setSavesCount(Math.max(0, Number(post.savesCount || 0)));
+  }, [post.id, post.isSavedByCurrentUser, post.savesCount]);
+
   const toggleSaveMutation = useMutation({
-    mutationFn: async () => {
-      const userCollections = await getMyCollections({ limit: 1 });
-      let targetCollectionId = userCollections.data?.[0]?.id;
-      if (!targetCollectionId) {
-        const created = await createCollection({
-          title: "Yêu thích",
-          isPublic: false,
-        });
-        targetCollectionId = created.id;
+    mutationFn: async ({
+      nextState,
+      nextCount,
+    }: {
+      nextState: boolean;
+      previousSaved: boolean;
+      previousCount: number;
+      nextCount: number;
+    }) => {
+      const myCols = await getMyCollections({ limit: 50 });
+      const collections = myCols?.data ?? [];
+      const defaultCol = collections.find((c) => c.isDefault) || collections[0];
+
+      if (nextState) {
+        let targetColId = defaultCol?.id;
+        if (!targetColId) {
+          const created = await createCollection({
+            title: tPost("defaultCollectionTitle"),
+            isPublic: false,
+          });
+          targetColId = created.id;
+        }
+        try {
+          await addCollectionItem(targetColId, { postId: String(post.id) });
+        } catch (err: any) {
+          const status = err?.status ?? err?.response?.status;
+          if (status !== 409) {
+            throw err;
+          }
+        }
+      } else if (collections.length > 0) {
+        const orderedCollections = defaultCol
+          ? [defaultCol, ...collections.filter((c) => c.id !== defaultCol.id)]
+          : collections;
+
+        for (const col of orderedCollections) {
+          try {
+            const itemsRes = await getCollectionItems(col.id, { limit: 100 });
+            const matchingItem = itemsRes?.data?.find(
+              (item) => String(item.postId) === String(post.id)
+            );
+            if (matchingItem) {
+              await removeCollectionItem(col.id, matchingItem.id);
+              break;
+            }
+          } catch {
+            // Continue checking next collection
+          }
+        }
       }
-      if (isSaved) {
-        await removeCollectionItem(targetCollectionId, post.id);
-        return false;
-      } else {
-        await addCollectionItem(targetCollectionId, { postId: post.id });
-        return true;
-      }
+
+      return { nextState, nextCount };
     },
-    onMutate: () => {
-      const nextSaved = !isSaved;
-      setIsSaved(nextSaved);
-      setSavesCount((prev) => (nextSaved ? prev + 1 : Math.max(0, prev - 1)));
-    },
-    onSuccess: (saved) => {
-      setIsSaved(saved);
-      toast.success(saved ? tPost("saveSuccess") : tPost("unsavedSuccess"));
+    onSuccess: ({ nextState, nextCount }) => {
+      setIsSaved(nextState);
+      setSavesCount(nextCount);
+      queryClient.setQueryData<PostDetailResDto | undefined>(
+        ["post-detail", postSlugOrId],
+        (prev) =>
+          prev
+            ? {
+                ...prev,
+                isSavedByCurrentUser: nextState,
+                savesCount: nextCount,
+              }
+            : prev
+      );
       queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["following-feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+      toast.success(nextState ? tPost("saveSuccess") : tPost("unsavedSuccess"));
     },
-    onError: () => {
-      setIsSaved(!isSaved);
-      setSavesCount((prev) => (isSaved ? prev + 1 : Math.max(0, prev - 1)));
+    onError: (_err, variables) => {
+      setIsSaved(variables.previousSaved);
+      setSavesCount(variables.previousCount);
       toast.error(tPost("saveError"));
     },
   });
@@ -256,7 +311,23 @@ export function PostStandaloneView({
       );
       return;
     }
-    toggleSaveMutation.mutate();
+    if (toggleSaveMutation.isPending) return;
+
+    const previousSaved = isSaved;
+    const previousCount = savesCount;
+    const nextState = !previousSaved;
+    const nextCount = nextState
+      ? previousCount + 1
+      : Math.max(0, previousCount - 1);
+
+    setIsSaved(nextState);
+    setSavesCount(nextCount);
+    toggleSaveMutation.mutate({
+      nextState,
+      previousSaved,
+      previousCount,
+      nextCount,
+    });
   };
 
   const handleShare = async () => {
@@ -623,6 +694,7 @@ export function PostStandaloneView({
                 size="sm"
                 variant={isSaved ? "default" : "outline"}
                 onClick={handleToggleSave}
+                disabled={toggleSaveMutation.isPending}
                 className={cn(
                   "h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all",
                   isSaved
