@@ -102,8 +102,10 @@ export function AppHeader() {
           className="flex cursor-pointer items-center gap-1.5 text-base font-black tracking-tight select-none md:hidden"
         >
           <WhiteLabelLogo
-            className="h-7 w-auto object-contain"
-            textClassName="text-base"
+            width={160}
+            height={40}
+            className="h-9 w-auto object-contain"
+            textClassName="text-lg"
           />
         </Link>
 

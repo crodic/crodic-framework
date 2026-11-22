@@ -102,12 +102,14 @@ export function AppSidebar() {
               size="lg"
               asChild
               tooltip={brandName}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-colors"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 h-12 px-2 py-1 transition-colors"
             >
               <Link href="/" onClick={handleLinkClick}>
                 <WhiteLabelLogo
-                  className="h-8 w-auto object-contain"
-                  textClassName="text-base"
+                  width={180}
+                  height={44}
+                  className="h-10 w-auto max-w-full object-contain object-left group-data-[collapsible=icon]:size-8"
+                  textClassName="text-lg"
                 />
               </Link>
             </SidebarMenuButton>

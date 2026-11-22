@@ -297,7 +297,7 @@ export default function SignUpForm() {
       {/* Mobile Brand Logo */}
       <div className="mb-4 flex justify-center lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2">
-          <WhiteLabelLogo className="h-8 w-auto object-contain" />
+          <WhiteLabelLogo className="h-10 w-auto object-contain" />
         </Link>
       </div>
 

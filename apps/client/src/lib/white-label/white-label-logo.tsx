@@ -21,8 +21,8 @@ const emptySubscribe = () => () => {};
 
 export function WhiteLabelLogo({
   className,
-  width = 140,
-  height = 36,
+  width = 180,
+  height = 44,
   alt,
   fallback,
   textClassName,
@@ -44,9 +44,9 @@ export function WhiteLabelLogo({
   const defaultFallback = (
     <div className="inline-flex items-center gap-2.5">
       {showEmblemOnFallback && (
-        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full shadow-xs">
+        <div className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full shadow-xs">
           <svg
-            className="size-4 fill-current"
+            className="size-4.5 fill-current"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
@@ -82,7 +82,7 @@ export function WhiteLabelLogo({
       alt={alt || brandName}
       width={width}
       height={height}
-      className={className || "h-8 w-auto object-contain"}
+      className={className || "h-10 w-auto object-contain"}
       priority
       unoptimized={logoSrc.startsWith("http")}
     />

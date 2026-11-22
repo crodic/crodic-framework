@@ -62,7 +62,9 @@ export default async function AuthLayout({
               className="group flex items-center gap-3 transition-opacity hover:opacity-90"
             >
               <WhiteLabelLogo
-                className="h-10 w-auto object-contain brightness-0 invert"
+                width={200}
+                height={48}
+                className="h-11 w-auto object-contain brightness-0 invert"
                 textClassName="text-white text-xl"
               />
             </Link>

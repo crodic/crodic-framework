@@ -51,7 +51,9 @@ export function LandingNavbar() {
           aria-label={t("homeAria")}
         >
           <WhiteLabelLogo
-            className="h-8 w-auto object-contain"
+            width={180}
+            height={44}
+            className="h-10 w-auto object-contain"
             textClassName="text-2xl"
           />
         </Link>
@@ -124,7 +126,9 @@ export function LandingNavbar() {
               <SheetHeader className="border-border/40 border-b pb-4 text-left">
                 <SheetTitle className="flex items-center gap-1.5 text-xl font-bold">
                   <WhiteLabelLogo
-                    className="h-7 w-auto object-contain"
+                    width={160}
+                    height={40}
+                    className="h-9 w-auto object-contain"
                     textClassName="text-xl"
                   />
                 </SheetTitle>
