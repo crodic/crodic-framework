@@ -17,7 +17,6 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  QrCode,
   Share2,
   Sparkles,
   Trash2,
@@ -169,9 +168,7 @@ export function PostStandaloneView({
         queryKey: ["is-following", post.author.id],
       });
       queryClient.invalidateQueries({ queryKey: ["suggested-cosplayers"] });
-      toast.success(
-        res.following ? tPost("followingAuthor") : tPost("followAuthor")
-      );
+      toast.success(res.following ? tPost("following") : tPost("follow"));
     } catch {
       setFollowOverride(previous);
       toast.error(tCommon("error"));
@@ -738,12 +735,12 @@ export function PostStandaloneView({
                 {isFollowing ? (
                   <>
                     <Check className="size-3.5" />
-                    <span>{tPost("followingAuthor")}</span>
+                    <span>{tPost("following")}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="size-3.5" />
-                    <span>{tPost("followAuthor")}</span>
+                    <span>{tPost("follow")}</span>
                   </>
                 )}
               </Button>
@@ -892,23 +889,6 @@ export function PostStandaloneView({
               </div>
             </div>
           )}
-
-          {/* Box 4: App Download & QR Code Mini Widget */}
-          <div className="border-border/60 bg-card/70 space-y-2 rounded-2xl border p-4 text-center shadow-sm backdrop-blur-md">
-            <div className="flex items-center justify-center gap-3">
-              <div className="rounded-lg bg-white p-1.5 text-black shadow-xs">
-                <QrCode className="size-10" />
-              </div>
-              <div className="text-left">
-                <p className="text-foreground text-xs font-bold">
-                  {tPost("appDownloadTitle")}
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  {tPost("appDownloadDesc")}
-                </p>
-              </div>
-            </div>
-          </div>
         </aside>
       </div>
 
