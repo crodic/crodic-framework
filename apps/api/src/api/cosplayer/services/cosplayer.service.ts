@@ -30,6 +30,7 @@ import {
   CosplayerDetailResDto,
   CosplayerSummaryResDto,
 } from '../dto/cosplayer-res.dto';
+import { applyKosumeWatermark } from '../utils/watermark.util';
 
 function slugify(text: string): string {
   return text
@@ -434,6 +435,7 @@ export class CosplayerService {
     userId: AutoIncrementID,
     file: Express.Multer.File,
     folder = 'posts',
+    watermark = false,
   ): Promise<{
     url: string;
     originalName: string;
@@ -442,6 +444,33 @@ export class CosplayerService {
   }> {
     if (!this.filesystemService) {
       throw new BadRequestException('Filesystem service not available');
+    }
+
+    let fileBuffer = file.buffer;
+    let fileSize = file.size;
+
+    if (watermark && file.mimetype?.startsWith('image/')) {
+      let authorName: string | undefined;
+      try {
+        const profile = await this.profileRepo.findOne({
+          where: { userId },
+          relations: ['user'],
+        });
+        authorName =
+          profile?.displayName ||
+          profile?.user?.username ||
+          profile?.user?.firstName ||
+          undefined;
+      } catch {
+        // Fallback gracefully
+      }
+
+      try {
+        fileBuffer = await applyKosumeWatermark(fileBuffer, { authorName });
+        fileSize = fileBuffer.length;
+      } catch {
+        // Fallback to original buffer
+      }
     }
 
     const cleanFolder = (folder || 'posts').replace(/[^a-z0-9_-]/gi, '');
@@ -459,14 +488,14 @@ export class CosplayerService {
 
     await this.filesystemService
       .disk()
-      .put(filename, file.buffer, { mimeType: file.mimetype });
+      .put(filename, fileBuffer, { mimeType: file.mimetype });
 
     const url = this.filesystemService.disk().url(filename);
 
     return {
       url,
       originalName: file.originalname,
-      size: file.size,
+      size: fileSize,
       mimeType: file.mimetype,
     };
   }

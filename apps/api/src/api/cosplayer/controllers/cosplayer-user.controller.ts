@@ -153,6 +153,7 @@ export class CosplayerUserController {
     @UploadedFiles()
     files: { file?: Express.Multer.File[]; media?: Express.Multer.File[] },
     @Body('folder') folder?: string,
+    @Body('watermark') watermark?: string | boolean,
   ) {
     const file = files?.file?.[0] || files?.media?.[0];
     if (!file) {
@@ -172,7 +173,9 @@ export class CosplayerUserController {
         isVideo ? 'Video too large (max 100MB)' : 'File too large (max 15MB)',
       );
     }
-    return this.cosplayerService.uploadMedia(userId, file, folder);
+    const isWatermark =
+      watermark === true || watermark === 'true' || watermark === '1';
+    return this.cosplayerService.uploadMedia(userId, file, folder, isWatermark);
   }
 
   // =================== CHARACTERS ===================

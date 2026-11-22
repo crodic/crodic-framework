@@ -168,7 +168,8 @@ export const uploadMyAvatar = async (
 
 export const uploadMyMedia = async (
   file: File,
-  folder = "posts"
+  folder = "posts",
+  watermark = false
 ): Promise<{
   url: string;
   originalName: string;
@@ -178,6 +179,9 @@ export const uploadMyMedia = async (
   const formData = new FormData();
   formData.append("file", file);
   formData.append("folder", folder);
+  if (watermark) {
+    formData.append("watermark", "true");
+  }
   const { data } = await http.post<{
     url: string;
     originalName: string;

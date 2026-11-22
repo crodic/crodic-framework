@@ -22,6 +22,7 @@ describe('CosplayerUserController', () => {
       addCharacter: jest.fn().mockResolvedValue({ id: id('20') }),
       updateCharacter: jest.fn().mockResolvedValue({ id: id('20') }),
       deleteCharacter: jest.fn().mockResolvedValue(undefined),
+      uploadMedia: jest.fn().mockResolvedValue({ url: 'http://media.jpg' }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -65,5 +66,27 @@ describe('CosplayerUserController', () => {
 
     await controller.deleteCharacter(id('100'), id('20'));
     expect(service.deleteCharacter).toHaveBeenCalledWith(id('100'), id('20'));
+  });
+
+  it('uploadMedia delegates to service with parsed watermark flag', async () => {
+    const mockFile = {
+      buffer: Buffer.from('test'),
+      mimetype: 'image/jpeg',
+      size: 100,
+      originalname: 'photo.jpg',
+    } as Express.Multer.File;
+
+    await controller.uploadMedia(
+      id('100'),
+      { file: [mockFile] },
+      'posts',
+      'true',
+    );
+    expect(service.uploadMedia).toHaveBeenCalledWith(
+      id('100'),
+      mockFile,
+      'posts',
+      true,
+    );
   });
 });

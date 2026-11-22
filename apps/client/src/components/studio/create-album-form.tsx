@@ -132,7 +132,7 @@ export function CreateAlbumForm({
 
         const [videoRes, coverRes] = await Promise.all([
           uploadMyMedia(videoFile, "videos"),
-          uploadMyMedia(coverFileToUpload, "covers"),
+          uploadMyMedia(coverFileToUpload, "covers", values.enableWatermark),
         ]);
 
         const created = await createPost({
@@ -172,7 +172,11 @@ export function CreateAlbumForm({
       for (let i = 0; i < newPayloads.length; i++) {
         const item = newPayloads[i];
         if (!item?.file) continue;
-        const res = await uploadMyMedia(item.file, "posts");
+        const res = await uploadMyMedia(
+          item.file,
+          "posts",
+          values.enableWatermark
+        );
         uploadedMediaList.push({
           mediaUrl: res.url,
           sortOrder: item.order ?? i,

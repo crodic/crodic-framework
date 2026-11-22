@@ -6,6 +6,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerCharacterEntity } from '../entities/cosplayer-character.entity';
 import { CosplayerProfileEntity } from '../entities/cosplayer-profile.entity';
 import { CosplayerService } from './cosplayer.service';
+import { FilesystemService } from '../../../filesystem/filesystem.service';
 
 const id = (val: string) => val as unknown as AutoIncrementID;
 
@@ -15,8 +16,17 @@ describe('CosplayerService', () => {
   let characterRepo: any;
   let userRepo: any;
   let dataSource: any;
+  let filesystemService: any;
+  let diskMock: any;
 
   beforeEach(async () => {
+    diskMock = {
+      put: jest.fn().mockResolvedValue(undefined),
+      url: jest.fn().mockReturnValue('http://cdn.kosume.test/photo.jpg'),
+    };
+    filesystemService = {
+      disk: jest.fn().mockReturnValue(diskMock),
+    };
     profileRepo = {
       createQueryBuilder: jest.fn(),
       findOne: jest.fn(),
@@ -82,6 +92,7 @@ describe('CosplayerService', () => {
           useValue: characterRepo,
         },
         { provide: getRepositoryToken(UserEntity), useValue: userRepo },
+        { provide: FilesystemService, useValue: filesystemService },
       ],
     }).compile();
 
@@ -222,6 +233,56 @@ describe('CosplayerService', () => {
       );
       expect(res).toHaveLength(1);
       expect(res[0].displayName).toBe('Enako');
+    });
+  });
+
+  describe('uploadMedia', () => {
+    it('uploads unwatermarked image directly when watermark is false', async () => {
+      const mockFile = {
+        buffer: Buffer.from('raw-image-data'),
+        mimetype: 'image/jpeg',
+        size: 14,
+        originalname: 'photo.jpg',
+      } as Express.Multer.File;
+
+      const res = await service.uploadMedia(
+        id('100'),
+        mockFile,
+        'posts',
+        false,
+      );
+
+      expect(diskMock.put).toHaveBeenCalledWith(
+        expect.stringContaining('posts/user-100-'),
+        mockFile.buffer,
+        { mimeType: 'image/jpeg' },
+      );
+      expect(res.url).toBe('http://cdn.kosume.test/photo.jpg');
+      expect(res.size).toBe(14);
+    });
+
+    it('processes watermark when watermark is true and image is provided', async () => {
+      profileRepo.findOne.mockResolvedValue({
+        id: id('1'),
+        userId: id('100'),
+        displayName: 'Yurisa',
+      });
+
+      const mockFile = {
+        buffer: Buffer.from('image-data'),
+        mimetype: 'image/jpeg',
+        size: 10,
+        originalname: 'photo.jpg',
+      } as Express.Multer.File;
+
+      const res = await service.uploadMedia(id('100'), mockFile, 'posts', true);
+
+      expect(profileRepo.findOne).toHaveBeenCalledWith({
+        where: { userId: id('100') },
+        relations: ['user'],
+      });
+      expect(diskMock.put).toHaveBeenCalled();
+      expect(res.url).toBe('http://cdn.kosume.test/photo.jpg');
     });
   });
 });
