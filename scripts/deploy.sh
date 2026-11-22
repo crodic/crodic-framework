@@ -5,8 +5,6 @@
 # Usage:
 #   ./scripts/deploy.sh              # Standard deploy (pull + build + up + migrate)
 #   ./scripts/deploy.sh --skip-pull  # Deploy without pulling latest git commit
-#   ./scripts/deploy.sh api          # Deploy only api service
-#   ./scripts/deploy.sh client web   # Deploy specific services
 # ==============================================================================
 
 set -Eeuo pipefail
@@ -14,30 +12,24 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-# Limit concurrent Docker Compose builds to avoid CPU/memory/IO thrashing on VPS
-export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-1}"
-export DOCKER_BUILDKIT=1
-export COMPOSE_DOCKER_CLI_BUILD=1
-
 # Flags
 SKIP_PULL=false
 SKIP_MIGRATION=false
 RUN_SEED=false
-SERVICES=()
 
 for arg in "$@"; do
   case $arg in
     --skip-pull)
       SKIP_PULL=true
+      shift
       ;;
     --skip-migration)
       SKIP_MIGRATION=true
+      shift
       ;;
     --seed)
       RUN_SEED=true
-      ;;
-    api|web|client|postgres|redis)
-      SERVICES+=("$arg")
+      shift
       ;;
     *)
       ;;
@@ -97,19 +89,11 @@ else
 fi
 
 # 3. Build & Orchestrate with Docker Compose
-if [ ${#SERVICES[@]} -gt 0 ]; then
-  log "Building Docker production images for: ${SERVICES[*]} (concurrency: ${COMPOSE_PARALLEL_LIMIT})..."
-  docker compose -f docker-compose.prod.yml build "${SERVICES[@]}"
+log "Building Docker production images..."
+docker compose -f docker-compose.prod.yml build
 
-  log "Starting / Updating production containers for: ${SERVICES[*]}..."
-  docker compose -f docker-compose.prod.yml up -d --remove-orphans "${SERVICES[@]}"
-else
-  log "Building Docker production images (concurrency: ${COMPOSE_PARALLEL_LIMIT})..."
-  docker compose -f docker-compose.prod.yml build
-
-  log "Starting / Updating production containers..."
-  docker compose -f docker-compose.prod.yml up -d --remove-orphans
-fi
+log "Starting / Updating production containers..."
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
 # 4. Database Migrations & Permission Sync
 if [[ "$SKIP_MIGRATION" == "false" ]]; then

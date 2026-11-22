@@ -11,40 +11,29 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN apk add --no-cache libc6-compat dumb-init \
   && npm install -g pnpm@11.25.0
 
-# ------------------------------------------------------------------------------
-# Stage 1: Prune monorepo for Client (Next.js)
-# ------------------------------------------------------------------------------
-FROM base AS pruner
-RUN apk add --no-cache libc6-compat \
-  && npm install -g turbo@2.11.7
-
-COPY . .
-RUN turbo prune client --docker
-
-# ------------------------------------------------------------------------------
-# Stage 2: Install dependencies
-# ------------------------------------------------------------------------------
 FROM base AS deps
 
-# Copy pruned lockfile and isolated package.jsons
-COPY --from=pruner /app/out/json/ .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./
+COPY packages/commitlint-config/package.json ./packages/commitlint-config/package.json
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/prettier-config/package.json ./packages/prettier-config/package.json
+COPY packages/query-builder/package.json ./packages/query-builder/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/client/package.json ./apps/client/package.json
+COPY apps/web/package.json ./apps/web/package.json
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
   pnpm install --frozen-lockfile
 
-# ------------------------------------------------------------------------------
-# Stage 3: Builder
-# ------------------------------------------------------------------------------
 FROM deps AS builder
 ENV NODE_ENV=production
 
-COPY --from=pruner /app/out/full/ .
+COPY packages ./packages
+COPY apps/client ./apps/client
 
 RUN pnpm --filter client build
 
-# ------------------------------------------------------------------------------
-# Stage 4: Production (Standalone runner)
-# ------------------------------------------------------------------------------
 FROM node:26-alpine AS production
 WORKDIR /app
 
