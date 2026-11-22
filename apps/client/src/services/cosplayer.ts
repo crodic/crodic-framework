@@ -212,6 +212,21 @@ export const addMyCharacter = async (dto: {
   return data;
 };
 
+export const updateMyCharacter = async (
+  id: string,
+  dto: {
+    characterName?: string;
+    seriesName?: string;
+    coverImageUrl?: string;
+  }
+): Promise<CosplayerCharacterResDto> => {
+  const { data } = await http.patch<CosplayerCharacterResDto>(
+    `/api/v1/cosplayer/me/characters/${id}`,
+    dto
+  );
+  return data;
+};
+
 export const deleteMyCharacter = async (id: string): Promise<void> => {
   await http.delete(`/api/v1/cosplayer/me/characters/${id}`);
 };

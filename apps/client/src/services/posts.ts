@@ -210,6 +210,20 @@ export const getPostComments = async (
   return data.data;
 };
 
+export const getPostCommentsPaginated = async (
+  postId: string,
+  page = 1,
+  limit = 10,
+  sort: "newest" | "popular" = "newest"
+): Promise<PaginatedResponse<PostCommentResDto>> => {
+  const sortParam =
+    sort === "popular" ? "&sort[likesCount]=desc" : "&sort[createdAt]=desc";
+  const { data } = await http.get<PaginatedResponse<PostCommentResDto>>(
+    `/api/v1/public/posts/${postId}/comments?page=${page}&limit=${limit}${sortParam}`
+  );
+  return data;
+};
+
 export interface UpdatePostPayload {
   title?: string;
   caption?: string;

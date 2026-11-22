@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/use-auth-store";
 import { getUserFollowing } from "@/services/social";
 import { getMyCollections } from "@/services/collections";
 import { getMyLikedPosts, type PostSummaryResDto } from "@/services/posts";
+import { getMyCharacters } from "@/services/cosplayer";
 import { ProfileHero } from "./profile-hero";
 import { ProfileAlbums } from "./profile-albums";
 import { ProfileCharacters } from "./profile-characters";
@@ -94,15 +95,19 @@ export function CosplayerProfileView({
       isCurrentUserOwner && !isHydrating && !!accessToken && !!profile.userId,
   });
 
+  const { data: myCharactersRes, refetch: refetchCharacters } = useQuery({
+    queryKey: ["my-cosplayer-characters"],
+    queryFn: () => getMyCharacters(),
+    enabled: isCurrentUserOwner && !isHydrating && !!accessToken,
+  });
+
   const effectiveFollowed = myFollowingRes?.data || initialFollowed;
   const effectiveCollections = myCollectionsRes?.data || initialCollections;
   const effectiveLikedWorks = myLikedPostsRes?.data || initialLikedWorks;
   const effectiveOwnerMode = isCurrentUserOwner && viewMode === "owner";
 
   useEffect(() => {
-    if (effectiveOwnerMode && activeTab === "characters") {
-      setActiveTab("albums");
-    } else if (
+    if (
       effectiveOwnerMode &&
       activeTab === "albums" &&
       initialAlbums.length === 0
@@ -129,7 +134,11 @@ export function CosplayerProfileView({
   };
 
   const activeCharacters =
-    initialCharacters.length > 0 ? initialCharacters : profile.characters || [];
+    isCurrentUserOwner && myCharactersRes
+      ? myCharactersRes
+      : initialCharacters.length > 0
+        ? initialCharacters
+        : profile.characters || [];
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -175,6 +184,12 @@ export function CosplayerProfileView({
                     {t("myWorksTab")}
                   </TabsTrigger>
                 )}
+                <TabsTrigger
+                  value="characters"
+                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                >
+                  {t("charactersTab")}
+                </TabsTrigger>
                 <TabsTrigger
                   value="about"
                   className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
@@ -245,6 +260,19 @@ export function CosplayerProfileView({
             </TabsContent>
 
             <TabsContent
+              value="characters"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <ProfileCharacters
+                characters={activeCharacters}
+                isOwner={isCurrentUserOwner}
+                onCharactersChange={() => {
+                  refetchCharacters();
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent
               value="about"
               className="mt-0 focus-visible:outline-none"
             >
@@ -268,7 +296,13 @@ export function CosplayerProfileView({
               value="characters"
               className="mt-0 focus-visible:outline-none"
             >
-              <ProfileCharacters characters={activeCharacters} />
+              <ProfileCharacters
+                characters={activeCharacters}
+                isOwner={isCurrentUserOwner}
+                onCharactersChange={() => {
+                  refetchCharacters();
+                }}
+              />
             </TabsContent>
 
             <TabsContent

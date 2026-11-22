@@ -32,6 +32,8 @@ import {
   type UpdatePostPayload,
 } from "@/services/posts";
 import { TagPicker } from "./tag-picker";
+import { CharacterAutocomplete } from "./character-autocomplete";
+import { SeriesAutocomplete } from "./series-autocomplete";
 
 export interface EditPostModalProps {
   post: PostDetailResDto | PostSummaryResDto;
@@ -168,11 +170,16 @@ export function EditPostModal({
               <Label className="text-xs font-semibold">
                 {t("characterLabel")}
               </Label>
-              <Input
+              <CharacterAutocomplete
                 value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
+                onChange={setCharacterName}
+                onSelectCharacter={({ characterName: cName, seriesName }) => {
+                  setCharacterName(cName);
+                  if (seriesName && !fandomName) {
+                    setFandomName(seriesName);
+                  }
+                }}
                 placeholder={t("characterPlaceholder")}
-                className="border-border/70 bg-background/50 h-9.5 rounded-xl text-xs sm:text-sm"
               />
             </div>
 
@@ -180,11 +187,10 @@ export function EditPostModal({
               <Label className="text-xs font-semibold">
                 {t("seriesLabel")}
               </Label>
-              <Input
+              <SeriesAutocomplete
                 value={fandomName}
-                onChange={(e) => setFandomName(e.target.value)}
+                onChange={setFandomName}
                 placeholder={t("seriesPlaceholder")}
-                className="border-border/70 bg-background/50 h-9.5 rounded-xl text-xs sm:text-sm"
               />
             </div>
           </div>

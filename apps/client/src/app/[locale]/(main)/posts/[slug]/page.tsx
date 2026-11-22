@@ -12,6 +12,7 @@ import type {
   PostCommentResDto,
   PostSummaryResDto,
 } from "@/services/posts";
+import type { CosplayerSummaryResDto } from "@/services/cosplayer";
 
 interface PostPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -115,13 +116,13 @@ export default async function PostPage({ params }: PostPageProps) {
       notFound();
     }
 
-    const [authorPostsRes, morePostsRes] = await Promise.all([
+    const [authorPostsRes, suggestedCosplayersRes] = await Promise.all([
       serverFetch<PaginatedResponse<PostSummaryResDto>>(
         `/api/v1/public/posts?filter[authorId]=${rawPost.author.id}&limit=8`
       ).catch(() => null),
-      serverFetch<PaginatedResponse<PostSummaryResDto>>(
-        `/api/v1/public/posts?limit=8`
-      ).catch(() => null),
+      serverFetch<CosplayerSummaryResDto[]>(
+        `/api/v1/public/cosplayers/suggested?limit=4`
+      ).catch(() => []),
     ]);
 
     const commentsData = commentsRes?.data ?? [];
@@ -129,13 +130,7 @@ export default async function PostPage({ params }: PostPageProps) {
     const authorPosts = (authorPostsRes?.data || []).filter(
       (item) => String(item.id) !== String(rawPost.id)
     );
-
-    const authorPostIds = new Set(authorPosts.map((p) => String(p.id)));
-    const discoverPosts = (morePostsRes?.data || []).filter(
-      (item) =>
-        String(item.id) !== String(rawPost.id) &&
-        !authorPostIds.has(String(item.id))
-    );
+    const suggestedCosplayers = suggestedCosplayersRes || [];
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const canonicalSlug = rawPost.slug || slug;
@@ -186,7 +181,7 @@ export default async function PostPage({ params }: PostPageProps) {
           post={rawPost}
           comments={commentsData}
           authorPosts={authorPosts}
-          discoverPosts={discoverPosts}
+          suggestedCosplayers={suggestedCosplayers}
         />
       </Layout>
     );

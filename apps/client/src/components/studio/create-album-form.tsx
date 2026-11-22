@@ -25,6 +25,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
 import type { ImagePayload } from "@/components/form/types";
 import { TagPicker } from "./tag-picker";
+import { CharacterAutocomplete } from "./character-autocomplete";
+import { SeriesAutocomplete } from "./series-autocomplete";
 import { getAlbumSchema, type CreateAlbumFormValues } from "./schema";
 
 export function captureVideoPoster(file: File): Promise<Blob> {
@@ -283,10 +285,19 @@ export function CreateAlbumForm({
                     {t("characterLabel")}
                   </FormLabel>
                   <FormControl>
-                    <Input
+                    <CharacterAutocomplete
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onSelectCharacter={({ characterName, seriesName }) => {
+                        field.onChange(characterName);
+                        if (seriesName && !form.getValues("fandom")) {
+                          form.setValue("fandom", seriesName, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }
+                      }}
                       placeholder={t("characterPlaceholder")}
-                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage className="text-xs" />
@@ -304,10 +315,10 @@ export function CreateAlbumForm({
                     {t("seriesLabel")}
                   </FormLabel>
                   <FormControl>
-                    <Input
+                    <SeriesAutocomplete
+                      value={field.value || ""}
+                      onChange={field.onChange}
                       placeholder={t("seriesPlaceholder")}
-                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage className="text-xs" />

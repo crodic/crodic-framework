@@ -1,145 +1,486 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
-  ArrowLeft,
+  BadgeCheck,
+  Bookmark,
+  Check,
+  ChevronLeft,
   ChevronRight,
-  Compass,
-  Film,
-  Images,
+  Eye,
+  Folder,
+  Heart,
   Maximize2,
-  Rows3,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  QrCode,
+  Share2,
   Sparkles,
-  User,
+  Trash2,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { useLocale, useTranslations } from "next-intl";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ExploreCard } from "@/components/explore/explore-card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PhotoLightbox } from "@/components/feed/photo-lightbox";
+import { EditPostModal } from "@/components/studio/edit-post-modal";
 import { cn } from "@/lib/utils";
 import type {
   PostDetailResDto,
   PostCommentResDto,
   PostSummaryResDto,
 } from "@/services/posts";
-import { PostCarousel } from "./post-carousel";
-import { PostInfo } from "./post-info";
+import type { CosplayerSummaryResDto } from "@/services/cosplayer";
+import { getPostBySlug, deletePost } from "@/services/posts";
+import { getCosplayerBySlug } from "@/services/cosplayer";
+import { checkIsFollowing, toggleFollow } from "@/services/social";
+import {
+  getMyCollections,
+  createCollection,
+  addCollectionItem,
+  removeCollectionItem,
+} from "@/services/collections";
+import { useAuthStore } from "@/store/use-auth-store";
+import { useProfile } from "@/hooks/use-profile";
+import { usePostLike } from "@/hooks/use-post-like";
+import { PostCommentsThread } from "./post-comments-thread";
 
 interface PostStandaloneViewProps {
   post: PostDetailResDto;
   comments?: PostCommentResDto[];
   authorPosts?: PostSummaryResDto[];
-  discoverPosts?: PostSummaryResDto[];
+  suggestedCosplayers?: CosplayerSummaryResDto[];
 }
 
 export function PostStandaloneView({
-  post,
-  comments = [],
+  post: initialPost,
+  comments: initialComments = [],
   authorPosts = [],
-  discoverPosts = [],
+  suggestedCosplayers = [],
 }: PostStandaloneViewProps) {
   const router = useRouter();
-  const t = useTranslations("Feed");
-  const tNav = useTranslations("Navigation");
+  const locale = useLocale();
+  const queryClient = useQueryClient();
   const tPost = useTranslations("PostDetail");
+  const tCommon = useTranslations("Common");
 
-  const [viewMode, setViewMode] = useState<"scroll" | "carousel">("scroll");
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const { data: profile, isLoading: isProfileLoading } = useProfile();
+
+  // Photo viewer state (NO SCROLL VIEW: single active photo + thumbnail strip)
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/explore");
+  // Edit / Delete modals
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Synchronized Post detail
+  const postSlugOrId = initialPost.slug || initialPost.id;
+  const { data: post = initialPost } = useQuery({
+    queryKey: ["post-detail", postSlugOrId],
+    queryFn: () => getPostBySlug(postSlugOrId),
+    initialData: initialPost,
+    staleTime: 60 * 1000,
+  });
+
+  const photos = useMemo(() => {
+    if (post.media && post.media.length > 0) {
+      return post.media.map((m) => m.mediaUrl);
+    }
+    return post.coverImageUrl ? [post.coverImageUrl] : [];
+  }, [post.media, post.coverImageUrl]);
+
+  const authorHandle = post.author?.handle?.replace("@", "") || post.author?.id;
+  const isOwnPost =
+    Boolean(profile?.id) && String(profile?.id) === String(post.author.id);
+
+  // Author details (for followersCount, etc.)
+  const { data: authorProfile } = useQuery({
+    queryKey: ["author-profile", authorHandle],
+    queryFn: () => getCosplayerBySlug(authorHandle),
+    enabled: Boolean(authorHandle),
+    staleTime: 60 * 1000,
+  });
+
+  // Like reaction hook
+  const { isLiked, likesCount, toggleLike } = usePostLike({
+    postId: post.id,
+    initialLiked: post.isLikedByCurrentUser,
+    initialLikesCount: post.likesCount,
+    postSlugOrId,
+  });
+
+  // Follow author state
+  const { data: remoteIsFollowing = false } = useQuery({
+    queryKey: ["is-following", post.author.id],
+    queryFn: () => checkIsFollowing(post.author.id),
+    enabled: Boolean(
+      !isHydrating &&
+      isAuthenticated &&
+      !isProfileLoading &&
+      !isOwnPost &&
+      post.author.id
+    ),
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const [followOverride, setFollowOverride] = useState<boolean | null>(null);
+  const isFollowing = followOverride ?? remoteIsFollowing;
+
+  const handleToggleFollow = async () => {
+    if (!isAuthenticated) {
+      toast.info(tPost("loginToFollow"));
+      router.push(
+        `/auth/login?from=${encodeURIComponent(window.location.pathname)}`
+      );
+      return;
+    }
+    const previous = isFollowing;
+    setFollowOverride(!previous);
+    try {
+      const res = await toggleFollow(post.author.id);
+      setFollowOverride(res.following);
+      queryClient.invalidateQueries({
+        queryKey: ["is-following", post.author.id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["suggested-cosplayers"] });
+      toast.success(
+        res.following ? tPost("followingAuthor") : tPost("followAuthor")
+      );
+    } catch {
+      setFollowOverride(previous);
+      toast.error(tCommon("error"));
     }
   };
 
-  const photos =
-    post.media && post.media.length > 0
-      ? post.media.map((m) => m.mediaUrl)
-      : post.coverImageUrl
-        ? [post.coverImageUrl]
-        : [];
+  // Keyboard navigation for active photo (< > arrows)
+  const handlePrevPhoto = useCallback(() => {
+    setActivePhotoIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
+  }, [photos.length]);
 
-  const authorHandle = post.author.handle.replace("@", "") || post.author.id;
-  const visibleAuthorPosts = authorPosts.slice(0, 4);
-  const visibleDiscoverPosts = discoverPosts.slice(0, 4);
+  const handleNextPhoto = useCallback(() => {
+    setActivePhotoIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
+  }, [photos.length]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handlePrevPhoto();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleNextPhoto();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handlePrevPhoto, handleNextPhoto]);
+
+  // Bookmark / Save collection logic
+  const [isSaved, setIsSaved] = useState(
+    Boolean(post.isSavedByCurrentUser ?? false)
+  );
+  const [savesCount, setSavesCount] = useState(
+    Math.max(0, Number(post.savesCount || 0))
+  );
+
+  const toggleSaveMutation = useMutation({
+    mutationFn: async () => {
+      const userCollections = await getMyCollections({ limit: 1 });
+      let targetCollectionId = userCollections.data?.[0]?.id;
+      if (!targetCollectionId) {
+        const created = await createCollection({
+          title: "Yêu thích",
+          isPublic: false,
+        });
+        targetCollectionId = created.id;
+      }
+      if (isSaved) {
+        await removeCollectionItem(targetCollectionId, post.id);
+        return false;
+      } else {
+        await addCollectionItem(targetCollectionId, { postId: post.id });
+        return true;
+      }
+    },
+    onMutate: () => {
+      const nextSaved = !isSaved;
+      setIsSaved(nextSaved);
+      setSavesCount((prev) => (nextSaved ? prev + 1 : Math.max(0, prev - 1)));
+    },
+    onSuccess: (saved) => {
+      setIsSaved(saved);
+      toast.success(saved ? tPost("saveSuccess") : tPost("unsavedSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+    },
+    onError: () => {
+      setIsSaved(!isSaved);
+      setSavesCount((prev) => (isSaved ? prev + 1 : Math.max(0, prev - 1)));
+      toast.error(tPost("saveError"));
+    },
+  });
+
+  const handleToggleSave = () => {
+    if (!isAuthenticated) {
+      toast.info(tPost("loginToSave"));
+      router.push(
+        `/auth/login?from=${encodeURIComponent(window.location.pathname)}`
+      );
+      return;
+    }
+    toggleSaveMutation.mutate();
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success(tPost("linkCopied"));
+    } catch {
+      toast.error(tPost("shareError"));
+    }
+  };
+
+  const handleDeletePost = async () => {
+    try {
+      setIsDeleting(true);
+      await deletePost(post.id);
+      toast.success(tPost("deleteSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+      router.push(`/cosplayer/${authorHandle}`);
+    } catch {
+      toast.error(tPost("deleteError"));
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Intl.DateTimeFormat(locale, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(dateString));
+  };
+
+  const activePhotoUrl = photos[activePhotoIndex] || post.coverImageUrl;
+  const isVideo = post.postType === "video" || Boolean(post.videoUrl);
 
   return (
-    <div className="space-y-8">
-      {/* 1. Top Navigation Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <Button
-            type="button"
-            onClick={handleBack}
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer gap-1.5 rounded-xl font-medium"
-          >
-            <ArrowLeft className="size-4" />
-            <span>{t("back")}</span>
-          </Button>
-        </div>
+    <div className="mx-auto w-full max-w-7xl">
+      {/* 2-Column Responsive Grid: Center Stream + Right Sidebar */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px] xl:gap-8">
+        {/* ========================================================= */}
+        {/* CENTER COLUMN: MAIN ARTWORK POST & COMMENTS STREAM       */}
+        {/* ========================================================= */}
+        <div className="min-w-0 space-y-6">
+          {/* 1. Header Card: Top Options, Title, Author Info */}
+          <div className="border-border/60 bg-card/70 space-y-4 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+            {/* Top Bar: Collection Badge & 3-Dots Menu */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="bg-primary/10 text-primary border-primary/20 gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold"
+                >
+                  <Folder className="size-3.5" />
+                  <span>
+                    {post.characterName
+                      ? tPost("cosplayCharacter", {
+                          character: post.characterName,
+                        })
+                      : post.fandomName
+                        ? tPost("seriesFandom", { fandom: post.fandomName })
+                        : tPost("originalOrCosplay")}
+                  </span>
+                </Badge>
+              </div>
 
-        <div className="flex items-center gap-2">
-          {/* View Mode Switcher for multi-photo sets */}
-          {photos.length > 1 && post.postType !== "video" && !post.videoUrl && (
-            <div className="border-border/60 bg-card/70 flex items-center gap-1 rounded-2xl border p-1 shadow-xs backdrop-blur-md">
-              <button
-                type="button"
-                onClick={() => setViewMode("scroll")}
-                className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 sm:py-1.5",
-                  viewMode === "scroll"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                title={t("scrollGallery")}
-              >
-                <Rows3 className="size-3.5" />
-                <span className="hidden sm:inline">{t("scrollGallery")}</span>
-              </button>
+              {/* Options Menu (3-dots) */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground size-8 cursor-pointer rounded-lg"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 text-xs">
+                  {isOwnPost ? (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="cursor-pointer gap-2.5"
+                      >
+                        <Pencil className="size-3.5" />
+                        <span>{tPost("editPost")}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                        className="text-destructive focus:text-destructive cursor-pointer gap-2.5"
+                      >
+                        <Trash2 className="size-3.5" />
+                        <span>{tPost("deletePost")}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  ) : null}
+                  <DropdownMenuItem
+                    onClick={handleShare}
+                    className="cursor-pointer gap-2.5"
+                  >
+                    <Share2 className="size-3.5" />
+                    <span>{tPost("share")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-              <button
-                type="button"
-                onClick={() => setViewMode("carousel")}
-                className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 sm:py-1.5",
-                  viewMode === "carousel"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                title={t("slideView")}
-              >
-                <Film className="size-3.5" />
-                <span className="hidden sm:inline">{t("slideView")}</span>
-              </button>
+            {/* Post Title */}
+            <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-2xl">
+              {post.title}
+            </h1>
+
+            {/* Author Profile Bar */}
+            <div className="border-border/40 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/cosplayer/${authorHandle}`}
+                  className="border-border/60 relative size-10 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105 sm:size-11"
+                >
+                  {post.author?.avatarUrl ? (
+                    <Image
+                      src={post.author.avatarUrl}
+                      alt={post.author.displayName}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-sm font-bold">
+                      {post.author?.displayName?.slice(0, 1) || "C"}
+                    </div>
+                  )}
+                </Link>
+
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Link
+                      href={`/cosplayer/${authorHandle}`}
+                      className="text-foreground hover:text-primary text-xs font-bold transition-colors hover:underline sm:text-sm"
+                    >
+                      {post.author?.displayName}
+                    </Link>
+                    {post.author?.isVerified && (
+                      <BadgeCheck className="size-3.5 fill-sky-400/20 text-sky-400" />
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-[11px]">
+                    {formatDate(post.publishedAt)}
+                  </p>
+                </div>
+              </div>
+
+              {!isOwnPost && (
+                <Button
+                  size="sm"
+                  onClick={handleToggleFollow}
+                  variant={isFollowing ? "outline" : "default"}
+                  className={cn(
+                    "h-8 cursor-pointer gap-1.5 rounded-xl px-3.5 text-xs font-semibold transition-all",
+                    isFollowing
+                      ? "border-primary/40 text-primary hover:bg-primary/10"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  {isFollowing ? (
+                    <>
+                      <Check className="size-3.5" />
+                      <span>{tPost("following")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-3.5" />
+                      <span>{tPost("follow")}</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Horizontal Thumbnail Strip (Multi-Photo Selector) */}
+          {photos.length > 1 && !isVideo && (
+            <div className="border-border/60 bg-card/60 rounded-2xl border p-2.5 shadow-sm backdrop-blur-md">
+              <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+                {photos.map((photo, index) => {
+                  const isActive = index === activePhotoIndex;
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setActivePhotoIndex(index)}
+                      className={cn(
+                        "relative aspect-[3/4] h-18 w-13.5 shrink-0 cursor-pointer overflow-hidden rounded-xl border-2 transition-all sm:h-22 sm:w-16.5",
+                        isActive
+                          ? "border-primary ring-primary/40 scale-[1.03] opacity-100 shadow-md ring-2"
+                          : "border-border/50 hover:border-primary/50 opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo}
+                        alt={`${post.title} thumb ${index + 1}`}
+                        className="size-full object-cover"
+                      />
+                      <span className="py-0.2 absolute right-1 bottom-1 rounded-md bg-black/70 px-1 text-[9px] font-semibold text-white backdrop-blur-xs">
+                        {index + 1}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="border-border/70 bg-card/60 hover:bg-muted/80 shrink-0 rounded-xl text-xs font-medium"
-          >
-            <Link href={`/cosplayer/${authorHandle}`}>
-              <User className="mr-1.5 size-3.5" />
-              <span>{t("viewProfile")}</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. Editorial Artwork Showcase: Multi-photo Gallery on Left, Sticky Sidebar on Right */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start lg:gap-8">
-        {/* Left Column: Artwork Showcase Stage */}
-        <div className="min-w-0 lg:col-span-7 xl:col-span-8">
-          {post.postType === "video" || Boolean(post.videoUrl) ? (
-            <div className="border-border/60 relative overflow-hidden rounded-2xl border bg-black shadow-2xl sm:rounded-3xl">
+          {/* 3. Main Artwork Stage (Single Active Photo, NO SCROLL VIEW) */}
+          <div className="border-border/60 relative flex max-h-[82vh] min-h-[380px] w-full items-center justify-center overflow-hidden rounded-2xl border bg-zinc-950/90 shadow-2xl sm:rounded-3xl">
+            {isVideo ? (
               <video
                 src={
                   post.videoUrl || (post.media && post.media[0]?.mediaUrl) || ""
@@ -148,144 +489,479 @@ export function PostStandaloneView({
                 controls
                 autoPlay
                 playsInline
-                preload="auto"
-                className="aspect-video max-h-[85vh] w-full object-contain"
+                className="aspect-video max-h-[82vh] w-full object-contain"
               />
-            </div>
-          ) : viewMode === "scroll" ? (
-            /* Vertical Scroll Gallery Mode (ArtStation / Behance Style) */
-            <div className="space-y-4 sm:space-y-6">
-              {photos.map((photo, index) => (
-                <div
-                  key={index}
-                  onClick={() => setLightboxIndex(index)}
-                  className="group border-border/50 bg-card/60 hover:border-primary/40 relative cursor-pointer overflow-hidden rounded-2xl border shadow-xl transition-all hover:shadow-2xl sm:rounded-3xl"
-                >
-                  {/* Photo Container */}
-                  <div className="relative flex w-full items-center justify-center bg-zinc-950 p-2 sm:p-4">
-                    <img
-                      src={photo}
-                      alt={`${post.title} - ${index + 1}`}
-                      className="max-h-[88vh] w-full rounded-xl object-contain transition-transform duration-300 select-none group-hover:scale-[1.008] sm:rounded-2xl"
-                      loading={index === 0 ? "eager" : "lazy"}
-                    />
-                  </div>
+            ) : (
+              <div
+                onClick={() => setLightboxIndex(activePhotoIndex)}
+                className="group relative flex size-full cursor-zoom-in items-center justify-center p-2 sm:p-4"
+              >
+                {/* Active Photo */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activePhotoUrl}
+                  alt={`${post.title} - ${activePhotoIndex + 1}`}
+                  className="max-h-[80vh] w-auto max-w-full rounded-xl object-contain shadow-md transition-transform duration-300 select-none group-hover:scale-[1.008]"
+                  loading="eager"
+                />
 
-                  {/* Hover Overlay with counter & zoom trigger */}
-                  <div className="pointer-events-none absolute inset-0 flex items-end justify-between bg-gradient-to-t from-black/75 via-transparent to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:p-5">
-                    <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-semibold text-white/90 tabular-nums shadow-sm backdrop-blur-md">
-                      {index + 1} / {photos.length}
-                    </span>
-                    <span className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold shadow-md">
-                      <Maximize2 className="size-3.5" />
-                      <span>{t("fullscreen")}</span>
-                    </span>
-                  </div>
+                {/* Hover overlay hint */}
+                <div className="pointer-events-none absolute right-4 bottom-4 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-semibold text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100">
+                  <Maximize2 className="size-3.5" />
+                  <span>{tPost("fullscreen")}</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            /* Cinema Carousel Slide Mode */
-            <div className="border-border/60 relative h-[480px] overflow-hidden rounded-2xl border bg-zinc-950 shadow-2xl sm:h-[620px] sm:rounded-3xl lg:h-[780px]">
-              <PostCarousel photos={photos} title={post.title} />
+              </div>
+            )}
+          </div>
+
+          {/* 4. Photo Navigation Bar beneath Image (< > buttons & collection counter) */}
+          {photos.length > 1 && !isVideo && (
+            <div className="border-border/60 bg-card/70 flex items-center justify-between rounded-2xl border px-3 py-2 shadow-sm backdrop-blur-md sm:px-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handlePrevPhoto}
+                className="hover:bg-muted/80 h-8 cursor-pointer gap-1 rounded-xl px-2.5 text-xs font-medium"
+              >
+                <ChevronLeft className="size-4" />
+                <span className="hidden sm:inline">
+                  {tPost("previousPhoto")}
+                </span>
+              </Button>
+
+              <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
+                <Folder className="text-primary size-3.5" />
+                <span className="max-w-[200px] truncate sm:max-w-[320px]">
+                  {post.characterName || post.fandomName || post.title}
+                </span>
+                <span>•</span>
+                <span className="text-foreground font-bold">
+                  {activePhotoIndex + 1} / {photos.length}
+                </span>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleNextPhoto}
+                className="hover:bg-muted/80 h-8 cursor-pointer gap-1 rounded-xl px-2.5 text-xs font-medium"
+              >
+                <span className="hidden sm:inline">{tPost("nextPhoto")}</span>
+                <ChevronRight className="size-4" />
+              </Button>
             </div>
           )}
+
+          {/* 5. Caption & Metadata Card */}
+          <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+            {/* Caption */}
+            {post.caption && (
+              <p className="text-foreground/90 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm">
+                {post.caption}
+              </p>
+            )}
+
+            {/* Tag Pills */}
+            {post.tagNamesCache && post.tagNamesCache.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {post.tagNamesCache.map((tag, idx) => (
+                  <Link
+                    key={idx}
+                    href={`/explore?tag=${encodeURIComponent(tag)}`}
+                    className="hover:border-primary/50 hover:bg-primary/10 hover:text-primary border-border/60 bg-muted/30 text-muted-foreground inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 6. Reactions & Engagement Toolbar */}
+          <div className="border-border/60 bg-card/70 flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-3 shadow-sm backdrop-blur-md sm:p-4">
+            {/* Counts metrics */}
+            <div className="text-muted-foreground flex items-center gap-3.5 text-xs">
+              <span className="flex items-center gap-1.5">
+                <Eye className="text-muted-foreground/80 size-3.5" />
+                <span>{post.viewsCount || 0}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Heart className="size-3.5 text-rose-500/80" />
+                <span>{likesCount}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Bookmark className="size-3.5 text-amber-500/80" />
+                <span>{savesCount}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MessageCircle className="size-3.5 text-sky-500/80" />
+                <span>{post.commentsCount || initialComments.length}</span>
+              </span>
+            </div>
+
+            {/* Interaction Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Like Button */}
+              <Button
+                type="button"
+                size="sm"
+                variant={isLiked ? "default" : "outline"}
+                onClick={toggleLike}
+                className={cn(
+                  "h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all",
+                  isLiked
+                    ? "bg-rose-500 text-white hover:bg-rose-600"
+                    : "hover:border-rose-500/40 hover:text-rose-500"
+                )}
+              >
+                <Heart className={cn("size-3.5", isLiked && "fill-current")} />
+                <span>{isLiked ? tPost("liked") : tPost("like")}</span>
+              </Button>
+
+              {/* Bookmark Button */}
+              <Button
+                type="button"
+                size="sm"
+                variant={isSaved ? "default" : "outline"}
+                onClick={handleToggleSave}
+                className={cn(
+                  "h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all",
+                  isSaved
+                    ? "bg-amber-500 text-white hover:bg-amber-600"
+                    : "hover:border-amber-500/40 hover:text-amber-500"
+                )}
+              >
+                <Bookmark
+                  className={cn("size-3.5", isSaved && "fill-current")}
+                />
+                <span>{isSaved ? tPost("saved") : tPost("save")}</span>
+              </Button>
+
+              {/* Share Button */}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleShare}
+                className="h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold"
+              >
+                <Share2 className="size-3.5" />
+                <span className="hidden sm:inline">{tPost("share")}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* 7. Comments Section (Auto Load More when Scroll) */}
+          <PostCommentsThread
+            postId={post.id}
+            initialComments={initialComments}
+            inlineStream={true}
+          />
         </div>
 
-        {/* Right Column: Sticky Post Details, Author Card & Threaded Comments */}
-        <div className="lg:sticky lg:top-20 lg:col-span-5 lg:max-h-[calc(100vh-6rem)] xl:col-span-4">
-          <div className="border-border/70 bg-card/85 flex max-h-[720px] flex-col overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl sm:rounded-3xl lg:max-h-[calc(100vh-6rem)]">
-            <PostInfo post={post} comments={comments} />
+        {/* ========================================================= */}
+        {/* RIGHT COLUMN: AUTHOR INFO & RECOMMENDATIONS SIDEBAR       */}
+        {/* ========================================================= */}
+        <aside className="space-y-6 xl:sticky xl:top-4 xl:self-start">
+          {/* Box 1: Thông Tin Tác Giả */}
+          <div className="border-border/60 bg-card/70 space-y-4 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+            <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
+              {tPost("authorInfo")}
+            </h3>
+
+            <div className="flex items-center gap-3.5">
+              <Link
+                href={`/cosplayer/${authorHandle}`}
+                className="border-border/60 relative size-14 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105"
+              >
+                {post.author?.avatarUrl ? (
+                  <Image
+                    src={post.author.avatarUrl}
+                    alt={post.author.displayName}
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-lg font-bold">
+                    {post.author?.displayName?.slice(0, 1) || "C"}
+                  </div>
+                )}
+              </Link>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href={`/cosplayer/${authorHandle}`}
+                    className="text-foreground hover:text-primary truncate text-sm font-bold hover:underline sm:text-base"
+                  >
+                    {post.author?.displayName}
+                  </Link>
+                  {post.author?.isVerified && (
+                    <BadgeCheck className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400" />
+                  )}
+                </div>
+                <p className="text-muted-foreground truncate text-xs">
+                  {post.author?.handle}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-border/40 grid grid-cols-2 gap-2 border-y py-2.5 text-center">
+              <div>
+                <p className="text-foreground text-sm font-bold">
+                  {authorPosts.length + 1}
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  {tPost("artworksCount")}
+                </p>
+              </div>
+              <div>
+                <p className="text-foreground text-sm font-bold">
+                  {authorProfile?.followersCount ?? 0}
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  {tPost("followersCount")}
+                </p>
+              </div>
+            </div>
+
+            {!isOwnPost && (
+              <Button
+                onClick={handleToggleFollow}
+                variant={isFollowing ? "outline" : "default"}
+                size="sm"
+                className="w-full gap-1.5 rounded-xl text-xs font-semibold"
+              >
+                {isFollowing ? (
+                  <>
+                    <Check className="size-3.5" />
+                    <span>{tPost("followingAuthor")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="size-3.5" />
+                    <span>{tPost("followAuthor")}</span>
+                  </>
+                )}
+              </Button>
+            )}
+
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground w-full rounded-xl text-xs"
+            >
+              <Link href={`/cosplayer/${authorHandle}`}>
+                {tPost("viewProfile")}
+              </Link>
+            </Button>
           </div>
-        </div>
+
+          {/* Box 2: Thêm nhiều tác phẩm cùng tác giả */}
+          {authorPosts.length > 0 && (
+            <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  {tPost("moreFromAuthor")}
+                </h3>
+                <Link
+                  href={`/cosplayer/${authorHandle}`}
+                  className="text-primary text-xs font-medium hover:underline"
+                >
+                  {tPost("viewMore")}
+                </Link>
+              </div>
+
+              <div className="space-y-2.5">
+                {authorPosts.slice(0, 6).map((item) => {
+                  const itemThumb =
+                    item.coverImageUrl ||
+                    (item.collagePreviewUrls && item.collagePreviewUrls[0]) ||
+                    "/landing/hero-banner.png";
+
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/posts/${item.slug || item.id}`}
+                      className="group/item hover:bg-muted/50 flex items-center justify-between gap-3 rounded-xl p-1.5 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <p className="text-foreground group-hover/item:text-primary line-clamp-2 text-xs font-semibold transition-colors">
+                          {item.title}
+                        </p>
+                        <p className="text-muted-foreground text-[11px]">
+                          {tPost("viewsCount", { count: item.viewsCount || 0 })}
+                        </p>
+                      </div>
+
+                      <div className="border-border/50 relative size-14 shrink-0 overflow-hidden rounded-xl border">
+                        {itemThumb ? (
+                          <Image
+                            src={itemThumb}
+                            alt={item.title}
+                            fill
+                            sizes="56px"
+                            className="object-cover transition-transform duration-300 group-hover/item:scale-105"
+                          />
+                        ) : (
+                          <div className="bg-muted text-muted-foreground flex size-full items-center justify-center">
+                            <Sparkles className="size-4 opacity-40" />
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Box 3: Người Dùng Đề Cử */}
+          {suggestedCosplayers.length > 0 && (
+            <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  {tPost("suggestedCosplayers")}
+                </h3>
+                <Link
+                  href="/explore"
+                  className="text-primary text-xs font-medium hover:underline"
+                >
+                  {tPost("viewMore")}
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                {suggestedCosplayers.slice(0, 4).map((cos) => {
+                  const cosHandle = cos.handle?.replace("@", "") || cos.id;
+
+                  return (
+                    <div
+                      key={cos.id}
+                      className="flex items-center justify-between gap-2.5"
+                    >
+                      <Link
+                        href={`/cosplayer/${cosHandle}`}
+                        className="flex min-w-0 items-center gap-2.5"
+                      >
+                        <div className="border-border/60 relative size-9 shrink-0 overflow-hidden rounded-full border">
+                          {cos.avatarUrl ? (
+                            <Image
+                              src={cos.avatarUrl}
+                              alt={cos.displayName}
+                              fill
+                              sizes="36px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-xs font-bold">
+                              {cos.displayName?.slice(0, 1) || "C"}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-xs font-bold hover:underline">
+                            {cos.displayName}
+                          </p>
+                          <p className="text-muted-foreground truncate text-[11px]">
+                            {tPost("cosplayerFollowers", {
+                              count: cos.followersCount || 0,
+                            })}
+                          </p>
+                        </div>
+                      </Link>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-semibold"
+                      >
+                        <Link href={`/cosplayer/${cosHandle}`}>
+                          {tPost("view")}
+                        </Link>
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Box 4: App Download & QR Code Mini Widget */}
+          <div className="border-border/60 bg-card/70 space-y-2 rounded-2xl border p-4 text-center shadow-sm backdrop-blur-md">
+            <div className="flex items-center justify-center gap-3">
+              <div className="rounded-lg bg-white p-1.5 text-black shadow-xs">
+                <QrCode className="size-10" />
+              </div>
+              <div className="text-left">
+                <p className="text-foreground text-xs font-bold">
+                  {tPost("appDownloadTitle")}
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  {tPost("appDownloadDesc")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* 3. More Works from Same Author */}
-      {visibleAuthorPosts.length > 0 && (
-        <section className="space-y-4 pt-4 sm:pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/15 text-primary flex size-8 items-center justify-center rounded-xl">
-                <Sparkles className="size-4" />
-              </div>
-              <div>
-                <h2 className="text-foreground text-base font-bold sm:text-lg">
-                  {t("moreFromAuthor", { name: post.author.displayName })}
-                </h2>
-                <p className="text-muted-foreground text-xs">
-                  {t("moreFromAuthorSubtitle", {
-                    name: post.author.displayName,
-                  })}
-                </p>
-              </div>
-            </div>
+      {/* Lightbox for full screen photo zoom */}
+      <PhotoLightbox
+        images={photos}
+        currentIndex={lightboxIndex ?? 0}
+        isOpen={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+        onChangeIndex={setLightboxIndex}
+        author={{
+          name: post.author.displayName,
+          handle: post.author.handle,
+          avatarUrl: post.author.avatarUrl,
+        }}
+        caption={post.caption || undefined}
+      />
 
-            <Link
-              href={`/cosplayer/${authorHandle}`}
-              className="text-primary text-xs font-semibold hover:underline sm:text-sm"
-            >
-              {t("viewAll")}
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {visibleAuthorPosts.map((item) => (
-              <ExploreCard key={item.id} item={item} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 4. Discover More Community Works */}
-      {visibleDiscoverPosts.length > 0 && (
-        <section className="border-border/50 space-y-4 border-t pt-8">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-muted text-foreground flex size-8 items-center justify-center rounded-xl">
-                <Compass className="size-4" />
-              </div>
-              <div>
-                <h2 className="text-foreground text-base font-bold sm:text-lg">
-                  {t("discoverMoreWorks")}
-                </h2>
-                <p className="text-muted-foreground text-xs">
-                  {t("discoverMoreSubtitle")}
-                </p>
-              </div>
-            </div>
-
-            <Link
-              href="/explore"
-              className="text-primary text-xs font-semibold hover:underline sm:text-sm"
-            >
-              {t("viewAll")}
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {visibleDiscoverPosts.map((item) => (
-              <ExploreCard key={item.id} item={item} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Fullscreen Photo Lightbox Modal for Scroll Gallery */}
-      {lightboxIndex !== null && (
-        <PhotoLightbox
-          images={photos}
-          currentIndex={lightboxIndex}
-          isOpen={lightboxIndex !== null}
-          onClose={() => setLightboxIndex(null)}
-          onChangeIndex={(idx) => setLightboxIndex(idx)}
-          author={{
-            name: post.author.displayName,
-            handle: post.author.handle,
-            avatarUrl: post.author.avatarUrl,
-          }}
-          caption={post.title}
+      {/* Edit Post Modal (if owner) */}
+      {isOwnPost && (
+        <EditPostModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          post={post}
         />
       )}
+
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tPost("deleteConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tPost("deleteConfirmDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {tCommon("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {tCommon("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

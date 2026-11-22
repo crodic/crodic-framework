@@ -256,6 +256,22 @@ describe('PostService', () => {
       expect(postRepo.count).toHaveBeenCalledTimes(2);
       expect(res.slug).toMatch(/^frieren-[a-z0-9]{6}$/);
     });
+
+    it('automatically creates or updates cosplayer character when characterName is provided', async () => {
+      const res = await service.create(id('100'), {
+        title: 'Acheron photoshoot',
+        characterName: 'Acheron',
+        fandomName: 'Honkai: Star Rail',
+        coverImageUrl: 'http://cdn.test/cover.jpg',
+        media: [
+          { mediaUrl: 'http://cdn.test/1.jpg', mediaType: EMediaType.IMAGE },
+          { mediaUrl: 'http://cdn.test/2.jpg', mediaType: EMediaType.IMAGE },
+        ],
+      });
+
+      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(res.characterName).toBe('Acheron');
+    });
   });
 
   describe('delete', () => {

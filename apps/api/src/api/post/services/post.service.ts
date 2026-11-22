@@ -12,9 +12,10 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Brackets, DataSource, In, Repository } from 'typeorm';
+import { Brackets, DataSource, ILike, In, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import { CosplayerCharacterEntity } from '../../cosplayer/entities/cosplayer-character.entity';
 import {
   EAlbumCategory,
   EMediaType,
@@ -548,6 +549,61 @@ export class PostService {
         1,
       );
 
+      // Auto-upsert into CosplayerCharacterEntity if characterName is provided
+      if (dto.characterName && dto.characterName.trim()) {
+        const cleanCharName = dto.characterName.trim();
+        const cleanSeriesName = (dto.fandomName || 'Original').trim();
+        const addedPhotosCount = savedMedia.length || dto.media?.length || 1;
+
+        let character = await em.findOne(CosplayerCharacterEntity, {
+          where: {
+            userId: authorId,
+            characterName: ILike(cleanCharName),
+            seriesName: ILike(cleanSeriesName),
+          },
+        });
+
+        if (character) {
+          character.albumsCount = (character.albumsCount || 0) + 1;
+          character.photosCount =
+            (character.photosCount || 0) + addedPhotosCount;
+          if (!character.coverImageUrl && dto.coverImageUrl) {
+            character.coverImageUrl = dto.coverImageUrl;
+          }
+          if (!character.characterTagId && dto.characterTagId) {
+            character.characterTagId = dto.characterTagId;
+          }
+          if (!character.copyrightTagId && dto.copyrightTagId) {
+            character.copyrightTagId = dto.copyrightTagId;
+          }
+          await em.save(CosplayerCharacterEntity, character);
+        } else {
+          character = em.create(CosplayerCharacterEntity, {
+            userId: authorId,
+            characterName: cleanCharName,
+            seriesName: cleanSeriesName,
+            coverImageUrl: dto.coverImageUrl || savedMedia[0]?.url || '',
+            albumsCount: 1,
+            photosCount: addedPhotosCount,
+            characterTagId: dto.characterTagId ?? null,
+            copyrightTagId: dto.copyrightTagId ?? null,
+            sortOrder: 0,
+          });
+          character = await em.save(CosplayerCharacterEntity, character);
+
+          // Increment author's charactersCount atomically on CosplayerProfileEntity
+          await em.increment(
+            CosplayerProfileEntity,
+            { userId: authorId },
+            'charactersCount',
+            1,
+          );
+        }
+
+        savedPost.cosplayerCharacterId = character.id;
+        await em.save(PostEntity, savedPost);
+      }
+
       // Sync tags with Tag Management system
       if (dto.tags && dto.tags.length > 0 && this.entityTaggingService) {
         try {
@@ -692,6 +748,20 @@ export class PostService {
 
     await this.dataSource.transaction(async (em) => {
       await em.softDelete(PostEntity, { id: postId });
+
+      if (post.cosplayerCharacterId) {
+        const char = await em.findOne(CosplayerCharacterEntity, {
+          where: { id: post.cosplayerCharacterId },
+        });
+        if (char) {
+          char.albumsCount = Math.max(0, (char.albumsCount || 1) - 1);
+          char.photosCount = Math.max(
+            0,
+            (char.photosCount || 0) - (post.photosCount || 1),
+          );
+          await em.save(CosplayerCharacterEntity, char);
+        }
+      }
 
       const profile = await em.findOne(CosplayerProfileEntity, {
         where: { userId: authorId },
