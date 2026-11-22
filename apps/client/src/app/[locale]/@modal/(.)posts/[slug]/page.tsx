@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from "@repo/query-builder";
 import { serverFetch } from "@/lib/server-fetch";
 import { PostDetailModal } from "@/components/post-detail/post-detail-modal";
 import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
@@ -13,24 +14,22 @@ export default async function InterceptedPostPage({
 
   try {
     const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
-    const [rawPost, rawComments] = await Promise.all([
+    const [rawPost, commentsRes] = await Promise.all([
       serverFetch<PostDetailResDto>(`/api/v1/public/posts/${cleanSlug}`).catch(
         () => null
       ),
-      serverFetch<PostCommentResDto[]>(
+      serverFetch<PaginatedResponse<PostCommentResDto>>(
         `/api/v1/public/posts/${cleanSlug}/comments`
-      ).catch(() => []),
+      ).catch(() => null),
     ]);
 
     if (!rawPost) {
       return null;
     }
 
-    const commentsData = Array.isArray(rawComments)
-      ? rawComments
-      : (rawComments as any)?.data || [];
-
-    return <PostDetailModal post={rawPost} comments={commentsData} />;
+    return (
+      <PostDetailModal post={rawPost} comments={commentsRes?.data ?? []} />
+    );
   } catch {
     return null;
   }

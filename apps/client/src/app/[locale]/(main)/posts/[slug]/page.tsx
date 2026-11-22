@@ -102,13 +102,13 @@ export default async function PostPage({ params }: PostPageProps) {
 
   try {
     const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
-    const [rawPost, rawComments] = await Promise.all([
+    const [rawPost, commentsRes] = await Promise.all([
       serverFetch<PostDetailResDto>(`/api/v1/public/posts/${cleanSlug}`).catch(
         () => null
       ),
-      serverFetch<PostCommentResDto[]>(
+      serverFetch<PaginatedResponse<PostCommentResDto>>(
         `/api/v1/public/posts/${cleanSlug}/comments`
-      ).catch(() => []),
+      ).catch(() => null),
     ]);
 
     if (!rawPost) {
@@ -124,9 +124,7 @@ export default async function PostPage({ params }: PostPageProps) {
       ).catch(() => null),
     ]);
 
-    const commentsData = Array.isArray(rawComments)
-      ? rawComments
-      : (rawComments as any)?.data || [];
+    const commentsData = commentsRes?.data ?? [];
 
     const authorPosts = (authorPostsRes?.data || []).filter(
       (item) => String(item.id) !== String(rawPost.id)

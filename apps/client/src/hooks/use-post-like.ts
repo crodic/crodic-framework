@@ -59,6 +59,46 @@ export function usePostLike({
             }
           : old;
 
+      const patchItem = (item: Record<string, unknown>) =>
+        String(item.id) === String(postId)
+          ? {
+              ...item,
+              isLikedByCurrentUser: res.liked,
+              likesCount: res.likesCount,
+            }
+          : item;
+
+      const patchPostListCache = (old: unknown) => {
+        if (!old || typeof old !== "object") return old;
+        const record = old as Record<string, unknown>;
+        if (Array.isArray(record.pages)) {
+          return {
+            ...record,
+            pages: record.pages.map((page) => {
+              if (!page || typeof page !== "object") return page;
+              const pageObj = page as Record<string, unknown>;
+              return Array.isArray(pageObj.data)
+                ? {
+                    ...pageObj,
+                    data: pageObj.data.map((item) =>
+                      patchItem(item as Record<string, unknown>)
+                    ),
+                  }
+                : page;
+            }),
+          };
+        }
+        if (Array.isArray(record.data)) {
+          return {
+            ...record,
+            data: record.data.map((item) =>
+              patchItem(item as Record<string, unknown>)
+            ),
+          };
+        }
+        return old;
+      };
+
       if (postSlugOrId) {
         queryClient.setQueryData(
           ["post-detail", postSlugOrId],
@@ -71,10 +111,21 @@ export function usePostLike({
       if (postId) {
         queryClient.setQueryData(["post-detail", postId], updateDetailCache);
       }
+
+      const listQueryKeys = [
+        ["following-feed-posts"],
+        ["public-featured-works"],
+        ["explore-posts"],
+        ["public-posts"],
+        ["posts"],
+      ];
+      listQueryKeys.forEach((queryKey) => {
+        queryClient.setQueriesData({ queryKey }, patchPostListCache);
+        queryClient.invalidateQueries({ queryKey });
+      });
+
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      queryClient.invalidateQueries({ queryKey: ["public-posts"] });
       queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
       queryClient.invalidateQueries({ queryKey: ["my-liked-posts"] });
 
       onSuccess?.(res);
@@ -89,11 +140,12 @@ export function usePostLike({
   });
 
   useEffect(() => {
-    if (!likeMutation.isPending) {
-      setIsLiked(Boolean(initialLiked));
-      setLikesCount(Math.max(0, Number(initialLikesCount || 0)));
-    }
-  }, [initialLiked, initialLikesCount, likeMutation.isPending]);
+    setIsLiked(Boolean(initialLiked));
+  }, [postId, initialLiked]);
+
+  useEffect(() => {
+    setLikesCount(Math.max(0, Number(initialLikesCount || 0)));
+  }, [postId, initialLikesCount]);
 
   const toggleLike = (e?: React.MouseEvent) => {
     if (e) {

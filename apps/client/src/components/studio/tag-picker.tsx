@@ -38,14 +38,10 @@ export function TagPicker({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Fetch trending system tags for quick suggestions (prioritizing fandoms/characters)
+  // 1. Fetch trending tags for quick suggestions
   const { data: trendingTags = [] } = useQuery<TagSummaryResDto[]>({
     queryKey: ["studio-trending-tags", locale],
-    queryFn: async () => {
-      const fandoms = await getTrendingTags(10, locale, "copyright");
-      if (fandoms && fandoms.length >= 4) return fandoms;
-      return getTrendingTags(10, locale);
-    },
+    queryFn: () => getTrendingTags(10, locale),
     staleTime: 60 * 1000,
   });
 
@@ -75,7 +71,7 @@ export function TagPicker({
   const handleAddTag = (rawTag: string) => {
     const clean = rawTag.trim().replace(/^#/, "");
     if (!clean) return;
-    if (value.includes(clean)) {
+    if (value.some((v) => v.trim().toLowerCase() === clean.toLowerCase())) {
       setInputVal("");
       setIsOpen(false);
       return;
@@ -100,21 +96,27 @@ export function TagPicker({
     }
   };
 
-  // Combine contextual hints (character and fandom) into smart suggestions
+  // Combine contextual hints (character and fandom) into smart suggestions without duplicates
   const contextualHints = React.useMemo(() => {
+    const seen = new Set(value.map((v) => v.trim().toLowerCase()));
     const hints: string[] = [];
-    if (fandomHint?.trim()) hints.push(fandomHint.trim());
-    if (characterHint?.trim()) hints.push(characterHint.trim());
-    return hints.filter((h) => !value.includes(h));
+    for (const raw of [fandomHint, characterHint]) {
+      const trimmed = raw?.trim();
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        hints.push(trimmed);
+      }
+    }
+    return hints;
   }, [characterHint, fandomHint, value]);
 
   return (
     <div ref={containerRef} className={cn("space-y-3", className)}>
       {/* A. Selected Tags Container */}
       <div className="flex min-h-[36px] flex-wrap items-center gap-1.5">
-        {value.map((tag) => (
+        {value.map((tag, idx) => (
           <span
-            key={tag}
+            key={`${tag}-${idx}`}
             className="group bg-primary/10 text-primary border-primary/20 hover:border-primary/40 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all select-none"
           >
             <span className="text-primary/70">#</span>
@@ -281,9 +283,9 @@ export function TagPicker({
 
           <div className="flex flex-wrap items-center gap-1.5">
             {/* Contextual hints from character/fandom */}
-            {contextualHints.map((hint) => (
+            {contextualHints.map((hint, idx) => (
               <button
-                key={`hint-${hint}`}
+                key={`hint-${idx}-${hint.toLowerCase()}`}
                 type="button"
                 onClick={() => handleToggleSuggestion(hint)}
                 className="border-primary/30 bg-primary/5 hover:bg-primary/15 text-primary inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors select-none"
@@ -294,29 +296,37 @@ export function TagPicker({
             ))}
 
             {/* Trending system tags */}
-            {trendingTags.slice(0, 8).map((tag) => {
-              const isSelected = value.includes(tag.name);
-              return (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleToggleSuggestion(tag.name)}
-                  className={cn(
-                    "inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-0.5 text-xs transition-colors select-none",
-                    isSelected
-                      ? "border-primary/60 bg-primary/20 text-primary font-semibold"
-                      : "border-border/60 bg-card/60 hover:bg-muted text-muted-foreground hover:text-foreground font-normal"
-                  )}
-                >
-                  {isSelected ? (
-                    <Check className="size-3" />
-                  ) : (
-                    <Plus className="size-3 opacity-60" />
-                  )}
-                  <span>#{tag.name}</span>
-                </button>
-              );
-            })}
+            {trendingTags
+              .filter(
+                (tag) =>
+                  !contextualHints.some(
+                    (hint) => hint.toLowerCase() === tag.name.toLowerCase()
+                  )
+              )
+              .slice(0, 8)
+              .map((tag) => {
+                const isSelected = value.includes(tag.name);
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleToggleSuggestion(tag.name)}
+                    className={cn(
+                      "inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-0.5 text-xs transition-colors select-none",
+                      isSelected
+                        ? "border-primary/60 bg-primary/20 text-primary font-semibold"
+                        : "border-border/60 bg-card/60 hover:bg-muted text-muted-foreground hover:text-foreground font-normal"
+                    )}
+                  >
+                    {isSelected ? (
+                      <Check className="size-3" />
+                    ) : (
+                      <Plus className="size-3 opacity-60" />
+                    )}
+                    <span>#{tag.name}</span>
+                  </button>
+                );
+              })}
           </div>
         </div>
       )}

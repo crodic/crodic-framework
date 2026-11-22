@@ -24,9 +24,14 @@ export function RankingView() {
 
   const { podiumItems, tableItems } = useMemo(() => {
     const rawItems: LeaderboardItemResDto[] = rankingResponse?.data || [];
-    const sorted = [...rawItems].sort((a, b) => a.rank - b.rank);
-    const podium = sorted.filter((item) => item.rank <= 3);
-    const table = sorted.filter((item) => item.rank > 3);
+    const sorted = [...rawItems]
+      .sort((a, b) => a.rank - b.rank || b.score - a.score)
+      .map((item, idx) => ({
+        ...item,
+        rank: idx + 1,
+      }));
+    const podium = sorted.slice(0, 3);
+    const table = sorted.slice(3);
 
     return { podiumItems: podium, tableItems: table };
   }, [rankingResponse]);

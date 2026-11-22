@@ -125,13 +125,8 @@ export interface CreatePostPayload {
   }[];
 }
 
-export interface RequestOptions {
-  token?: string;
-}
-
 export const getPosts = async (
-  query?: Record<string, any>,
-  options?: RequestOptions
+  query?: Record<string, any>
 ): Promise<PaginatedResponse<PostSummaryResDto>> => {
   const searchParams = new URLSearchParams();
   if (query) {
@@ -159,19 +154,12 @@ export const getPosts = async (
   }
   const qs = searchParams.toString();
   const url = `/api/v1/public/posts${qs ? `?${qs}` : ""}`;
-  const headers: Record<string, string> = {};
-  if (options?.token) {
-    headers.Authorization = `Bearer ${options.token}`;
-  }
-  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url, {
-    headers,
-  });
+  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url);
   return data;
 };
 
 export const getFollowingFeed = async (
-  query?: Record<string, any>,
-  options?: RequestOptions
+  query?: Record<string, any>
 ): Promise<PaginatedResponse<PostSummaryResDto>> => {
   const searchParams = new URLSearchParams();
   if (query) {
@@ -183,44 +171,43 @@ export const getFollowingFeed = async (
   }
   const qs = searchParams.toString();
   const url = `/api/v1/posts/feed${qs ? `?${qs}` : ""}`;
-  const headers: Record<string, string> = {};
-  if (options?.token) {
-    headers.Authorization = `Bearer ${options.token}`;
+  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url);
+  return data;
+};
+
+export const getMyLikedPosts = async (
+  query?: Record<string, any>
+): Promise<PaginatedResponse<PostSummaryResDto>> => {
+  const searchParams = new URLSearchParams();
+  if (query) {
+    for (const [key, val] of Object.entries(query)) {
+      if (val !== undefined && val !== null) {
+        searchParams.append(key, String(val));
+      }
+    }
   }
-  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url, {
-    headers,
-  });
+  const qs = searchParams.toString();
+  const url = `/api/v1/posts/liked${qs ? `?${qs}` : ""}`;
+  const { data } = await http.get<PaginatedResponse<PostSummaryResDto>>(url);
   return data;
 };
 
 export const getPostBySlug = async (
-  slug: string,
-  options?: RequestOptions
+  slug: string
 ): Promise<PostDetailResDto> => {
-  const headers: Record<string, string> = {};
-  if (options?.token) {
-    headers.Authorization = `Bearer ${options.token}`;
-  }
   const { data } = await http.get<PostDetailResDto>(
-    `/api/v1/public/posts/${slug}`,
-    { headers }
+    `/api/v1/public/posts/${slug}`
   );
   return data;
 };
 
 export const getPostComments = async (
-  postId: string,
-  options?: RequestOptions
+  postId: string
 ): Promise<PostCommentResDto[]> => {
-  const headers: Record<string, string> = {};
-  if (options?.token) {
-    headers.Authorization = `Bearer ${options.token}`;
-  }
-  const { data } = await http.get<PostCommentResDto[]>(
-    `/api/v1/public/posts/${postId}/comments`,
-    { headers }
+  const { data } = await http.get<PaginatedResponse<PostCommentResDto>>(
+    `/api/v1/public/posts/${postId}/comments`
   );
-  return data || [];
+  return data.data;
 };
 
 export interface UpdatePostPayload {

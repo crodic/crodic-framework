@@ -1,4 +1,4 @@
-import { http } from "@/lib/http";
+import { serverFetch } from "@/lib/server-fetch";
 
 export type CmsPageTranslation = {
   locale: string;
@@ -37,8 +37,12 @@ export const getCmsPageBySlug = async (
   locale: string
 ): Promise<CmsPage | null> => {
   try {
-    const { data } = await http.get<CmsPageApiResponse>(
-      `/api/v1/public/cms-pages/by-slug/${slug}?locale=${locale}`
+    const data = await serverFetch<CmsPageApiResponse>(
+      `/api/v1/public/cms-pages/by-slug/${encodeURIComponent(slug)}`,
+      {
+        params: { locale },
+        anonymous: true,
+      }
     );
 
     if (!data || !data.translations || data.translations.length === 0) {
@@ -71,25 +75,14 @@ export const fetchPublishedCmsPages = async (): Promise<
   CmsPageApiResponse[]
 > => {
   try {
-    const apiUrl =
-      process.env.SERVER_API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:8000";
-
-    const response = await fetch(`${apiUrl}/api/v1/public/cms-pages`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      next: { revalidate: 300 },
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    const data = await serverFetch<CmsPageApiResponse[]>(
+      "/api/v1/public/cms-pages",
+      {
+        anonymous: true,
+        next: { revalidate: 300 },
+      }
+    );
+    return data ?? [];
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
       console.error("Failed to fetch published CMS pages:", error);

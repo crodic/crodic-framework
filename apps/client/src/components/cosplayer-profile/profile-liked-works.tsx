@@ -33,6 +33,14 @@ export function ProfileLikedWorks({
     try {
       await toggleLikePost(id);
       setLikedList((prev) => prev.filter((item) => item.id !== id));
+      await queryClient.invalidateQueries({ queryKey: ["my-liked-posts"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["public-featured-works"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["following-feed-posts"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["posts"] });
       await queryClient.invalidateQueries({ queryKey: ["public-posts"] });
       await queryClient.invalidateQueries({ queryKey: ["public-feed-posts"] });
       await queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
@@ -51,55 +59,60 @@ export function ProfileLikedWorks({
       </div>
 
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-        {likedList.map((work) => (
-          <Link
-            key={work.id}
-            href={`/posts/${work.id}`}
-            className="group relative flex cursor-pointer flex-col space-y-2 overflow-hidden rounded-2xl"
-          >
-            {/* Image Thumbnail */}
-            <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
-              {work.coverImageUrl ? (
-                <Image
-                  src={work.coverImageUrl}
-                  alt={work.title}
-                  fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="bg-muted flex size-full items-center justify-center">
-                  <Heart className="text-muted-foreground/40 size-8" />
-                </div>
-              )}
-
-              {/* Heart Badge (Click to unlike) */}
-              <button
-                type="button"
-                onClick={(e) => handleUnlike(work.id, e)}
-                className="absolute top-2.5 right-2.5 z-10 flex size-7 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-black/90"
-                aria-label={t("unlike")}
-              >
-                <Heart className="size-3.5 fill-rose-500 text-rose-500" />
-              </button>
-
-              {/* Bottom Gradient Overlay */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              {/* Author & Title over bottom */}
-              <div className="absolute inset-x-2.5 bottom-2.5 space-y-0.5 text-white">
-                {work.author?.displayName && (
-                  <span className="block truncate text-[10px] text-white/80">
-                    {t("byAuthor", { name: work.author.displayName })}
-                  </span>
+        {likedList.map((work) => {
+          const postSlugOrId = encodeURIComponent(
+            String(work.slug || work.id).trim()
+          );
+          return (
+            <Link
+              key={work.id}
+              href={`/posts/${postSlugOrId}`}
+              className="group relative flex cursor-pointer flex-col space-y-2 overflow-hidden rounded-2xl"
+            >
+              {/* Image Thumbnail */}
+              <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
+                {work.coverImageUrl ? (
+                  <Image
+                    src={work.coverImageUrl}
+                    alt={work.title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="bg-muted flex size-full items-center justify-center">
+                    <Heart className="text-muted-foreground/40 size-8" />
+                  </div>
                 )}
-                <h4 className="truncate text-xs font-bold text-white drop-shadow-sm sm:text-sm">
-                  {work.title}
-                </h4>
+
+                {/* Heart Badge (Click to unlike) */}
+                <button
+                  type="button"
+                  onClick={(e) => handleUnlike(work.id, e)}
+                  className="absolute top-2.5 right-2.5 z-10 flex size-7 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-black/90"
+                  aria-label={t("unlike")}
+                >
+                  <Heart className="size-3.5 fill-rose-500 text-rose-500" />
+                </button>
+
+                {/* Bottom Gradient Overlay */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                {/* Author & Title over bottom */}
+                <div className="absolute inset-x-2.5 bottom-2.5 space-y-0.5 text-white">
+                  {work.author?.displayName && (
+                    <span className="block truncate text-[10px] text-white/80">
+                      {t("byAuthor", { name: work.author.displayName })}
+                    </span>
+                  )}
+                  <h4 className="truncate text-xs font-bold text-white drop-shadow-sm sm:text-sm">
+                    {work.title}
+                  </h4>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {likedList.length === 0 && (

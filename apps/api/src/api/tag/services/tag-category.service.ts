@@ -388,7 +388,7 @@ export class TagCategoryService implements OnModuleInit {
     const generalCat = await this.categoryRepository.findOne({
       where: { slug: 'general' },
     });
-    if (generalCat) {
+    if (generalCat && String(generalCat.id) !== String(id)) {
       await this.tagRepository.update(
         { categoryId: id },
         { categoryId: generalCat.id, category: generalCat.slug },

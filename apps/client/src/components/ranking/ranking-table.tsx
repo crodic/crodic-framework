@@ -32,6 +32,14 @@ export interface RankingTableProps {
   items: LeaderboardItemResDto[];
 }
 
+function isImageUrl(value: string): boolean {
+  return (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/")
+  );
+}
+
 export function RankingTable({ items }: RankingTableProps) {
   const tTable = useTranslations("Ranking.table");
   const tRanking = useTranslations("Ranking");
@@ -143,13 +151,19 @@ export function RankingTable({ items }: RankingTableProps) {
                         href={item.portfolioHref}
                         className="group relative size-10 shrink-0 overflow-hidden rounded-full"
                       >
-                        <Image
-                          src={item.avatarUrl}
-                          alt={item.displayName}
-                          fill
-                          sizes="40px"
-                          className="object-cover transition-transform group-hover:scale-105"
-                        />
+                        {item.avatarUrl ? (
+                          <Image
+                            src={item.avatarUrl}
+                            alt={item.displayName}
+                            fill
+                            sizes="40px"
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="bg-primary/15 text-primary flex size-full items-center justify-center text-xs font-bold">
+                            {item.displayName.slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
                       </Link>
 
                       <div className="min-w-0">
@@ -176,19 +190,35 @@ export function RankingTable({ items }: RankingTableProps) {
                     </div>
                   </TableCell>
 
-                  {/* Featured Projects Pills */}
+                  {/* Featured Projects Thumbnails / Pills */}
                   <TableCell>
                     <div className="flex flex-wrap items-center gap-1.5">
                       {item.featuredProjects &&
                       item.featuredProjects.length > 0 ? (
-                        item.featuredProjects.map((p, idx) => (
-                          <span
-                            key={idx}
-                            className="border-border/70 bg-muted/50 text-foreground/80 rounded-md border px-2 py-0.5 text-[11px] font-medium"
-                          >
-                            {p}
-                          </span>
-                        ))
+                        item.featuredProjects.slice(0, 3).map((p, idx) =>
+                          isImageUrl(p) ? (
+                            <Link
+                              key={idx}
+                              href={item.portfolioHref}
+                              className="border-border/70 relative size-8 overflow-hidden rounded-lg border transition-transform hover:scale-105"
+                            >
+                              <Image
+                                src={p}
+                                alt={`${item.displayName} work ${idx + 1}`}
+                                fill
+                                sizes="32px"
+                                className="object-cover"
+                              />
+                            </Link>
+                          ) : (
+                            <span
+                              key={idx}
+                              className="border-border/70 bg-muted/50 text-foreground/80 rounded-md border px-2 py-0.5 text-[11px] font-medium"
+                            >
+                              {p}
+                            </span>
+                          )
+                        )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
@@ -281,13 +311,19 @@ export function RankingTable({ items }: RankingTableProps) {
                   href={item.portfolioHref}
                   className="relative size-10 shrink-0 overflow-hidden rounded-full"
                 >
-                  <Image
-                    src={item.avatarUrl}
-                    alt={item.displayName}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
+                  {item.avatarUrl ? (
+                    <Image
+                      src={item.avatarUrl}
+                      alt={item.displayName}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="bg-primary/15 text-primary flex size-full items-center justify-center text-xs font-bold">
+                      {item.displayName.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
                 </Link>
 
                 <div className="min-w-0">

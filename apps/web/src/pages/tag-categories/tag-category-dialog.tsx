@@ -183,7 +183,7 @@ export function TagCategoryDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <div className='grid gap-4 sm:grid-cols-2'>
+            <div className='grid items-start gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
                 name='name'
@@ -266,50 +266,7 @@ export function TagCategoryDialog({
               )}
             />
 
-            <div className='grid gap-4 sm:grid-cols-2'>
-              <FormField
-                control={form.control}
-                name='color'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t(
-                        'tagCategories.dialog.colorLabel',
-                        'Màu đại diện (Hex)'
-                      )}
-                    </FormLabel>
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2'>
-                        <div
-                          className='size-8 shrink-0 rounded-lg border shadow-xs'
-                          style={{ backgroundColor: field.value || '#3b82f6' }}
-                        />
-                        <FormControl>
-                          <Input
-                            placeholder='#3b82f6'
-                            className='font-mono text-xs'
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <div className='flex flex-wrap gap-1.5'>
-                        {COLOR_PRESETS.map((color) => (
-                          <button
-                            key={color}
-                            type='button'
-                            onClick={() => field.onChange(color)}
-                            className='size-5 rounded-md border transition-transform hover:scale-110'
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+            <div className='grid items-start gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
                 name='icon'
@@ -320,7 +277,7 @@ export function TagCategoryDialog({
                     </FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Chọn icon' />
                         </SelectTrigger>
                       </FormControl>
@@ -342,9 +299,7 @@ export function TagCategoryDialog({
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className='grid gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
                 name='sortOrder'
@@ -379,36 +334,81 @@ export function TagCategoryDialog({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name='isActive'
-                render={({ field }) => (
-                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3 shadow-xs'>
-                    <div className='space-y-0.5'>
-                      <FormLabel className='text-sm'>
-                        {t(
-                          'tagCategories.dialog.activeLabel',
-                          'Trạng thái hoạt động'
-                        )}
-                      </FormLabel>
-                      <FormDescription className='text-xs'>
-                        {t(
-                          'tagCategories.dialog.activeHelp',
-                          'Hiển thị danh mục này cho người dùng lựa chọn'
-                        )}
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </div>
+
+            <FormField
+              control={form.control}
+              name='color'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('tagCategories.dialog.colorLabel', 'Màu đại diện (Hex)')}
+                  </FormLabel>
+                  <div className='space-y-2.5'>
+                    <div className='flex items-center gap-2.5'>
+                      <div
+                        className='size-9 shrink-0 rounded-lg border shadow-xs'
+                        style={{ backgroundColor: field.value || '#3b82f6' }}
+                      />
+                      <FormControl>
+                        <Input
+                          placeholder='#3b82f6'
+                          className='font-mono text-xs'
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      {COLOR_PRESETS.map((color) => (
+                        <button
+                          key={color}
+                          type='button'
+                          onClick={() => field.onChange(color)}
+                          className={`size-6 cursor-pointer rounded-md border transition-transform hover:scale-110 ${
+                            field.value?.toLowerCase() === color.toLowerCase()
+                              ? 'ring-primary ring-2 ring-offset-1'
+                              : ''
+                          }`}
+                          style={{ backgroundColor: color }}
+                          title={color}
+                          aria-label={`Chọn màu ${color}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='isActive'
+              render={({ field }) => (
+                <FormItem className='bg-muted/20 flex flex-row items-center justify-between gap-4 rounded-lg border p-3.5 shadow-xs'>
+                  <div className='space-y-0.5'>
+                    <FormLabel className='text-sm'>
+                      {t(
+                        'tagCategories.dialog.activeLabel',
+                        'Trạng thái hoạt động'
+                      )}
+                    </FormLabel>
+                    <FormDescription className='text-xs'>
+                      {t(
+                        'tagCategories.dialog.activeHelp',
+                        'Hiển thị danh mục này cho người dùng lựa chọn'
+                      )}
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <DialogFooter className='gap-2 pt-2'>
               <Button

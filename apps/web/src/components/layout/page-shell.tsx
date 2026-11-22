@@ -47,6 +47,7 @@ export function PageHeader({
   backLabel = 'Back',
   badges,
   actions,
+  children,
   className,
   ...props
 }: PageHeaderProps) {
@@ -93,9 +94,9 @@ export function PageHeader({
         </div>
       </div>
 
-      {actions && (
+      {(actions || children) && (
         <div className='flex flex-wrap items-center gap-2 self-start sm:shrink-0 sm:self-auto'>
-          {actions}
+          {actions || children}
         </div>
       )}
     </div>

@@ -28,6 +28,7 @@ describe('NotificationService', () => {
       findOne: jest.fn(),
       count: jest.fn().mockResolvedValue(5),
       save: jest.fn().mockImplementation(async (item) => item),
+      softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     profileRepo = {
@@ -82,6 +83,23 @@ describe('NotificationService', () => {
     it('executes update query', async () => {
       await service.markAllAsRead(id('100'));
       expect(notiRepo.createQueryBuilder).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteNotification', () => {
+    it('soft deletes notification belonging to user', async () => {
+      await service.deleteNotification(id('100'), id('1'));
+      expect(notiRepo.softDelete).toHaveBeenCalledWith({
+        id: id('1'),
+        recipientUserId: id('100'),
+      });
+    });
+
+    it('throws NotFoundException when notification not found', async () => {
+      notiRepo.softDelete.mockResolvedValue({ affected: 0 });
+      await expect(
+        service.deleteNotification(id('100'), id('999')),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

@@ -10,6 +10,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
 import { usePostLike } from "@/hooks/use-post-like";
+import { useAuthStore } from "@/store/use-auth-store";
 import { cn } from "@/lib/utils";
 
 function WorkCard({ post }: { post: PostSummaryResDto }) {
@@ -94,13 +95,18 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
           )}
           aria-label={`Like ${post.title}`}
         >
-          <Heart className="size-3 fill-rose-500 text-rose-500" />
+          <Heart
+            className={cn(
+              "size-3 text-rose-500 transition-transform",
+              isLiked && "scale-110 fill-rose-500"
+            )}
+          />
           <span>{likesDisplay}</span>
         </button>
       </Link>
 
-      {/* Info & Actions */}
-      <CardContent className="flex flex-1 flex-col justify-between space-y-2.5 p-3 sm:p-3.5">
+      {/* Info */}
+      <CardContent className="flex flex-1 flex-col justify-between space-y-2 p-3 sm:p-3.5">
         <div className="space-y-1.5">
           <Link href={`/posts/${postSlugOrId}`} className="block">
             <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
@@ -139,18 +145,6 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
             )}
           </Link>
         </div>
-
-        {/* Card CTA */}
-        <div className="border-border/30 border-t pt-1">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="hover:bg-primary/10 hover:text-primary h-7.5 w-full cursor-pointer rounded-lg text-xs font-semibold"
-          >
-            <Link href={`/posts/${postSlugOrId}`}>{t("viewProject")}</Link>
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
@@ -158,9 +152,11 @@ function WorkCard({ post }: { post: PostSummaryResDto }) {
 
 export function FeaturedWorks() {
   const t = useTranslations("Home.featuredWorks");
+  const isHydrating = useAuthStore((state) => state.isHydrating);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["public-featured-works"],
+      queryKey: ["public-featured-works", isAuthenticated],
       queryFn: ({ pageParam = 1 }) =>
         getPosts({ page: pageParam, limit: 9, sort: "-likesCount" }),
       initialPageParam: 1,
@@ -169,6 +165,7 @@ export function FeaturedWorks() {
         const totalPages = lastPage.meta?.totalPages ?? 1;
         return currentPage < totalPages ? currentPage + 1 : undefined;
       },
+      enabled: !isHydrating,
       staleTime: 60 * 1000,
     });
 
@@ -189,7 +186,7 @@ export function FeaturedWorks() {
         </Link>
       </div>
 
-      {isLoading ? (
+      {isLoading || isHydrating ? (
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <div

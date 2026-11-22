@@ -16,6 +16,9 @@ export class CollectionPostSummaryResDto {
       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500',
   })
   coverUrl?: string | null;
+
+  @ApiPropertyOptional({ example: 'photoset' })
+  postType?: string;
 }
 
 export class CollectionResDto {
@@ -73,6 +76,12 @@ export class CollectionItemResDto {
 
   @ApiPropertyOptional({ type: String, example: '10' })
   postMediaId?: AutoIncrementID | null;
+
+  @ApiPropertyOptional({
+    example:
+      'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500',
+  })
+  mediaUrl?: string | null;
 
   @ApiProperty({ example: 0 })
   sortOrder!: number;

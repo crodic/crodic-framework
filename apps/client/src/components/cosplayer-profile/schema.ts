@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-export const createMessageFormSchema = (t: (key: any) => string) =>
-  z.object({
-    message: z.string().min(1, t("sendMessagePlaceholder")),
-  });
-
-export type MessageFormValues = z.infer<
-  ReturnType<typeof createMessageFormSchema>
->;
-
 export const createProfileEditSchema = (t: (key: any) => string) =>
   z.object({
     displayName: z.string().min(1, t("valDisplayName")),

@@ -138,6 +138,7 @@ export class CosplayerService {
       qb.andWhere('profile.userId != :currentUserId', { currentUserId });
       qb.andWhere(
         'NOT EXISTS (SELECT 1 FROM user_follows follow WHERE follow.follower_id = :currentUserId AND follow.following_id = profile.userId)',
+        { currentUserId },
       );
     }
 

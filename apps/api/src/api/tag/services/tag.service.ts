@@ -649,71 +649,82 @@ export class TagService {
     category?: string,
   ): Promise<TagSummaryResDto[]> {
     const safeLimit = Math.min(Math.max(limit, 1), 50);
-    const redisIds = await this.cacheService.getTopTrendingTagIds(
-      safeLimit * 2,
+    const params: unknown[] = [ETagStatus.ACTIVE, ETagSafetyRating.SAFE];
+    let categoryClause = '';
+    if (category) {
+      params.push(category);
+      categoryClause = ` AND t.category = $${params.length}`;
+    }
+    params.push(safeLimit);
+    const limitParam = `$${params.length}`;
+
+    const rows = await this.dataSource.query<
+      Array<{ id: string; activePostCount: number }>
+    >(
+      `
+        SELECT t.id, stats.active_post_count::int AS "activePostCount"
+        FROM tags t
+        CROSS JOIN LATERAL (
+          SELECT COUNT(DISTINCT p.id) AS active_post_count
+          FROM posts p
+          INNER JOIN users u ON u.id = p.author_id AND u.deleted_at IS NULL
+          WHERE p.deleted_at IS NULL
+            AND p.is_public = true
+            AND p.status = 'published'
+            AND (
+              p.copyright_tag_id = t.id
+              OR p.character_tag_id = t.id
+              OR LOWER(p.fandom_name) = LOWER(t.name)
+              OR LOWER(p.character_name) = LOWER(t.name)
+              OR EXISTS (
+                SELECT 1
+                FROM entity_tags et
+                WHERE et.entity_id = p.id
+                  AND et.entity_type = 'post'
+                  AND et.tag_id = t.id
+              )
+            )
+        ) stats
+        WHERE t.deleted_at IS NULL
+          AND t.status = $1
+          AND t.safety_rating = $2
+          AND t.is_system = false
+          AND t.category != 'system'
+          ${categoryClause}
+          AND stats.active_post_count > 0
+        ORDER BY stats.active_post_count DESC, t.trending_score DESC, t.id ASC
+        LIMIT ${limitParam}
+      `,
+      params,
     );
 
-    let tags: TagEntity[] = [];
-    if (redisIds.length > 0) {
-      const whereCondition: any = {
-        id: In(redisIds),
-        status: ETagStatus.ACTIVE,
-        safetyRating: ETagSafetyRating.SAFE,
-        isSystem: false,
-      };
-      if (category) {
-        whereCondition.category = category;
-      }
-      const found = await this.tagRepository.find({
-        where: whereCondition,
-        relations: [
-          'categoryRel',
-          'translations',
-          'encyclopedias',
-          'encyclopedias.featuredFile',
-        ],
-      });
-      const mapById = new Map(found.map((t) => [String(t.id), t]));
-      tags = redisIds
-        .map((id) => mapById.get(String(id)))
-        .filter((t): t is TagEntity => Boolean(t))
-        .filter((t) => !t.isSystem && t.category !== 'system')
-        .slice(0, safeLimit);
+    if (!rows || rows.length === 0) {
+      return [];
     }
 
-    if (tags.length < safeLimit) {
-      const existingIds = tags.map((t) => t.id);
-      const fallbackQb = this.tagRepository
-        .createQueryBuilder('tag')
-        .leftJoinAndSelect('tag.categoryRel', 'categoryRel')
-        .leftJoinAndSelect('tag.translations', 'translations')
-        .leftJoinAndSelect('tag.encyclopedias', 'encyclopedias')
-        .leftJoinAndSelect('encyclopedias.featuredFile', 'featuredFile')
-        .where('tag.status = :status', { status: ETagStatus.ACTIVE })
-        .andWhere('tag.safetyRating = :safe', {
-          safe: ETagSafetyRating.SAFE,
-        })
-        .andWhere('tag.isSystem = :isSystem', { isSystem: false })
-        .andWhere('tag.category != :sysCategory', { sysCategory: 'system' });
+    const ids = rows.map((r) => r.id);
+    const countMap = new Map(
+      rows.map((r) => [String(r.id), Number(r.activePostCount || 0)]),
+    );
 
-      if (category) {
-        fallbackQb.andWhere('tag.category = :category', { category });
-      }
+    const found = await this.tagRepository.find({
+      where: { id: In(ids as unknown as AutoIncrementID[]) },
+      relations: [
+        'categoryRel',
+        'translations',
+        'encyclopedias',
+        'encyclopedias.featuredFile',
+      ],
+    });
 
-      fallbackQb
-        .orderBy('tag.trendingScore', 'DESC')
-        .addOrderBy('tag.usageCount', 'DESC')
-        .take(safeLimit - tags.length);
-
-      if (existingIds.length > 0) {
-        fallbackQb.andWhere('tag.id NOT IN (:...existingIds)', { existingIds });
-      }
-
-      const fallback = await fallbackQb.getMany();
-      tags = [...tags, ...fallback];
-    }
-
-    return tags.map((t) => this.toSummaryDto(t, locale));
+    const mapById = new Map(found.map((t) => [String(t.id), t]));
+    return ids
+      .map((id) => mapById.get(String(id)))
+      .filter((t): t is TagEntity => Boolean(t))
+      .map((t) => ({
+        ...this.toSummaryDto(t, locale),
+        usageCount: countMap.get(String(t.id)) ?? Number(t.usageCount || 0),
+      }));
   }
 
   /**

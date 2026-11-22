@@ -12,16 +12,11 @@ export function TrendingTagsWidget() {
   const locale = useLocale();
   const router = useRouter();
 
-  // Prioritize copyright/fandoms and character tags over generic tags
   const { data: tags = [], isLoading } = useQuery<TagSummaryResDto[]>({
     queryKey: ["right-rail-trending-tags", locale],
     queryFn: async () => {
-      const fandoms = await getTrendingTags(8, locale, "copyright");
-      if (fandoms && fandoms.length >= 3) {
-        return fandoms;
-      }
-      const allTrending = await getTrendingTags(8, locale);
-      return allTrending;
+      const trending = await getTrendingTags(8, locale);
+      return trending.filter((tag) => tag.usageCount > 0);
     },
     staleTime: 60 * 1000,
   });

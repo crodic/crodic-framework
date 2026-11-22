@@ -48,6 +48,19 @@ export class PostUserController {
     return this.postService.getFeed(currentUserId, query);
   }
 
+  @Get('liked')
+  @ApiAuth({
+    type: PostSummaryResDto,
+    summary: 'Get posts liked by current user',
+    isQueryBuilder: true,
+  })
+  getLikedPosts(
+    @CurrentUser('id') currentUserId: AutoIncrementID,
+    @Query() query: QueryParams,
+  ) {
+    return this.postService.getLikedPosts(currentUserId, query);
+  }
+
   @Post()
   @ApiAuth({
     type: PostDetailResDto,

@@ -246,8 +246,8 @@ export function CreateAlbumForm({
         className={`flex flex-col justify-between gap-5 ${className || ""}`}
       >
         <div className="space-y-4">
-          {/* Metadata Row: Title, Character, Series */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Metadata Row: Title, Character, Series (1 input per row) */}
+          <div className="grid grid-cols-1 gap-4">
             {/* Tên Album */}
             <FormField
               control={form.control}

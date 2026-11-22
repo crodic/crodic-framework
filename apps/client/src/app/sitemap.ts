@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
+import type { PaginatedResponse } from "@repo/query-builder";
 import { routing } from "@/i18n/routing";
+import { serverFetch } from "@/lib/server-fetch";
 import { fetchPublishedCmsPages } from "@/services/cms-pages";
-import { getEvents } from "@/services/events";
-import { getPosts } from "@/services/posts";
-import { getCosplayers } from "@/services/cosplayer";
+import type { EventSummaryResDto } from "@/services/events";
+import type { PostSummaryResDto } from "@/services/posts";
+import type { CosplayerSummaryResDto } from "@/services/cosplayer";
 
 export const dynamic = "force-dynamic";
 
@@ -115,7 +117,9 @@ async function sitemapSection(props: {
     );
 
     try {
-      const eventsRes = await getEvents({ limit: 100 });
+      const eventsRes = await serverFetch<
+        PaginatedResponse<EventSummaryResDto>
+      >("/api/v1/public/events", { params: { limit: 100 }, anonymous: true });
       for (const event of eventsRes?.data || []) {
         const slugOrId = event.slug || event.id;
         if (!slugOrId) continue;
@@ -140,7 +144,10 @@ async function sitemapSection(props: {
   if (id === "posts") {
     const entries: MetadataRoute.Sitemap = [];
     try {
-      const postsRes = await getPosts({ limit: 100 });
+      const postsRes = await serverFetch<PaginatedResponse<PostSummaryResDto>>(
+        "/api/v1/public/posts",
+        { params: { limit: 100 }, anonymous: true }
+      );
       for (const post of postsRes?.data || []) {
         const slugOrId = post.slug || post.id;
         if (
@@ -177,7 +184,12 @@ async function sitemapSection(props: {
     );
 
     try {
-      const cosplayersRes = await getCosplayers({ limit: 100 });
+      const cosplayersRes = await serverFetch<
+        PaginatedResponse<CosplayerSummaryResDto>
+      >("/api/v1/public/cosplayers", {
+        params: { limit: 100 },
+        anonymous: true,
+      });
       for (const cosplayer of cosplayersRes?.data || []) {
         if (
           !cosplayer.slug ||

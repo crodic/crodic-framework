@@ -53,3 +53,7 @@ export const markNotificationAsRead = async (id: string): Promise<void> => {
 export const markAllNotificationsAsRead = async (): Promise<void> => {
   await http.patch("/api/v1/notifications/read-all");
 };
+
+export const deleteNotification = async (id: string): Promise<void> => {
+  await http.delete(`/api/v1/notifications/${id}`);
+};

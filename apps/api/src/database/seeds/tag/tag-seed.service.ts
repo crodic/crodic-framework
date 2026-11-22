@@ -935,7 +935,7 @@ export class TagSeedService {
         await this.tagRepository.update(
           { id: tag.id },
           {
-            usageCount: Math.max(tag.usageCount, 1),
+            usageCount: tag.usageCount,
             trendingScore: Number(baseScore.toFixed(1)),
           },
         );

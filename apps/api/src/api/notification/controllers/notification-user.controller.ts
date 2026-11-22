@@ -5,6 +5,7 @@ import { ApiAuth } from '../../../decorators/http.decorators';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -77,5 +78,18 @@ export class NotificationUserController {
   })
   async markAllAsRead(@CurrentUser('id') userId: AutoIncrementID) {
     await this.notificationService.markAllAsRead(userId);
+  }
+
+  @Delete(':id')
+  @ApiAuth({
+    summary: 'Delete a notification',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @ApiParam({ name: 'id', type: String })
+  async deleteNotification(
+    @CurrentUser('id') userId: AutoIncrementID,
+    @Param('id') notificationId: AutoIncrementID,
+  ) {
+    await this.notificationService.deleteNotification(userId, notificationId);
   }
 }

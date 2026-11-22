@@ -98,12 +98,13 @@ export function PageTagCategoriesOverview() {
     <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
       <PageHeader
         title={t('navigation.management.tagCategories', 'Danh mục Thẻ')}
-      >
-        <Button onClick={handleCreate} className='gap-2 shadow-xs'>
-          <Plus className='size-4' />
-          <span>{t('tagCategories.actions.add', 'Thêm danh mục')}</span>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button onClick={handleCreate} className='gap-2 shadow-xs'>
+            <Plus className='size-4' />
+            <span>{t('tagCategories.actions.add', 'Thêm danh mục')}</span>
+          </Button>
+        }
+      />
 
       <DataTable
         table={table}

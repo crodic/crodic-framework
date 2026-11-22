@@ -19,12 +19,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/store/use-auth-store";
 import { NotificationCategory } from "./notifications-types";
 import { NotificationItemCard } from "./notification-item-card";
 import {
+  deleteNotification,
   getNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
@@ -33,6 +34,7 @@ import {
 
 export function NotificationsView() {
   const t = useTranslations("Notifications");
+  const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
   const isHydrating = useAuthStore((state) => state.isHydrating);
   const [activeCategory, setActiveCategory] =
@@ -81,6 +83,9 @@ export function NotificationsView() {
     try {
       await markNotificationAsRead(id);
       refetch();
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread-count"],
+      });
     } catch {
       toast.error(t("errorOccurred"));
     }
@@ -90,14 +95,26 @@ export function NotificationsView() {
     try {
       await markAllNotificationsAsRead();
       refetch();
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread-count"],
+      });
       toast.success(t("markAllSuccess"));
     } catch {
       toast.error(t("errorOccurred"));
     }
   };
 
-  const handleDelete = (_id: string) => {
-    toast.success(t("deleteSuccess"));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteNotification(id);
+      refetch();
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread-count"],
+      });
+      toast.success(t("deleteSuccess"));
+    } catch {
+      toast.error(t("errorOccurred"));
+    }
   };
 
   return (

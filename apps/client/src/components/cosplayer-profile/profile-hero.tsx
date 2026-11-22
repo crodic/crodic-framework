@@ -8,14 +8,12 @@ import {
   BadgeCheck,
   Camera,
   Check,
-  Clock,
   Copy,
   ExternalLink,
   Eye,
   Flag,
   Heart,
   Loader2,
-  MessageCircle,
   MoreVertical,
   Pencil,
   Plus,
@@ -33,25 +31,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createMessageFormSchema, type MessageFormValues } from "./schema";
 import {
   uploadMyCover,
   uploadMyAvatar,
@@ -110,20 +89,12 @@ export function ProfileHero({
     profile.followersCount || 0
   );
   const [likesCount, setLikesCount] = useState(profile.totalLikesCount || 0);
-  const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
 
   const coverFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
-
-  const messageForm = useForm<MessageFormValues>({
-    resolver: zodResolver(createMessageFormSchema(t)),
-    defaultValues: {
-      message: "",
-    },
-  });
 
   useEffect(() => {
     setFollowersCount(profile.followersCount || 0);
@@ -216,20 +187,6 @@ export function ProfileHero({
     }
     if (!profile.userId || followMutation.isPending) return;
     followMutation.mutate(profile.userId);
-  };
-
-  const onSendMessageSubmit = (values: MessageFormValues) => {
-    if (profile.contactEmail) {
-      window.location.href = `mailto:${profile.contactEmail}?subject=${encodeURIComponent(
-        tCos("contactEmailSubject")
-      )}&body=${encodeURIComponent(values.message)}`;
-      toast.success(t("sentSuccess"));
-      messageForm.reset();
-      setIsMessageOpen(false);
-    } else {
-      toast.info(t("sendMessageDesc"));
-      setIsMessageOpen(false);
-    }
   };
 
   const handleCopyProfileUrl = () => {
@@ -555,18 +512,6 @@ export function ProfileHero({
                     </span>
                   </Button>
                 )}
-
-                {!isSelf && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsMessageOpen(true)}
-                    className="border-border/80 hover:bg-accent h-10 flex-1 cursor-pointer rounded-xl px-4 font-medium transition-colors sm:flex-initial"
-                  >
-                    <MessageCircle className="text-primary mr-1.5 size-4" />
-                    {t("sendMessage")}
-                  </Button>
-                )}
               </>
             )}
 
@@ -648,61 +593,6 @@ export function ProfileHero({
           }
         }}
       />
-
-      {/* Send Message Modal (Visitor) */}
-      <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
-        <DialogContent className="rounded-2xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageCircle className="text-primary size-5" />
-              {t("sendMessage")}
-            </DialogTitle>
-            <DialogDescription>{t("sendMessageDesc")}</DialogDescription>
-          </DialogHeader>
-
-          <Form {...messageForm}>
-            <form
-              onSubmit={messageForm.handleSubmit(onSendMessageSubmit)}
-              className="space-y-4 pt-2"
-            >
-              <FormField
-                control={messageForm.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t("sendMessagePlaceholder")}
-                        rows={4}
-                        className="resize-none rounded-xl"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsMessageOpen(false)}
-                  className="rounded-xl"
-                >
-                  {t("cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary text-primary-foreground cursor-pointer rounded-xl font-semibold"
-                >
-                  {t("send")}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
 
       {/* Cosplayer Application Dialog */}
       <CosplayerApplicationDialog

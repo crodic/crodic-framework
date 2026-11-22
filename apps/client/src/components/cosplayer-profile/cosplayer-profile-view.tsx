@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
 import { getUserFollowing } from "@/services/social";
 import { getMyCollections } from "@/services/collections";
+import { getMyLikedPosts, type PostSummaryResDto } from "@/services/posts";
 import { ProfileHero } from "./profile-hero";
 import { ProfileAlbums } from "./profile-albums";
 import { ProfileCharacters } from "./profile-characters";
@@ -22,7 +23,6 @@ import type {
   LikedWork,
   SavedCollection,
 } from "./profile-types";
-import type { PostSummaryResDto } from "@/services/posts";
 
 interface CosplayerProfileViewProps {
   initialProfile: CosplayerDetailResDto;
@@ -87,8 +87,16 @@ export function CosplayerProfileView({
       isCurrentUserOwner && !isHydrating && !!accessToken && !!profile.userId,
   });
 
+  const { data: myLikedPostsRes } = useQuery({
+    queryKey: ["my-liked-posts", profile.userId],
+    queryFn: () => getMyLikedPosts({ limit: 50 }),
+    enabled:
+      isCurrentUserOwner && !isHydrating && !!accessToken && !!profile.userId,
+  });
+
   const effectiveFollowed = myFollowingRes?.data || initialFollowed;
   const effectiveCollections = myCollectionsRes?.data || initialCollections;
+  const effectiveLikedWorks = myLikedPostsRes?.data || initialLikedWorks;
   const effectiveOwnerMode = isCurrentUserOwner && viewMode === "owner";
 
   useEffect(() => {
@@ -214,7 +222,7 @@ export function CosplayerProfileView({
               value="liked"
               className="mt-0 focus-visible:outline-none"
             >
-              <ProfileLikedWorks initialLikedWorks={initialLikedWorks} />
+              <ProfileLikedWorks initialLikedWorks={effectiveLikedWorks} />
             </TabsContent>
 
             <TabsContent

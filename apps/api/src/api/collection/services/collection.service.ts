@@ -305,6 +305,7 @@ export class CollectionService {
     const baseQb = this.itemRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.post', 'post')
+      .leftJoinAndSelect('item.postMedia', 'postMedia')
       .where('item.collectionId = :collectionId', { collectionId });
 
     const paginated = await QueryBuilder.for(baseQb, query)
@@ -343,6 +344,7 @@ export class CollectionService {
     item: CollectionItemEntity,
     post?: PostEntity,
   ): CollectionItemResDto {
+    const resolvedMediaUrl = item.postMedia?.url ?? post?.coverImageUrl ?? null;
     return {
       id: item.id,
       collectionId: item.collectionId,
@@ -352,10 +354,12 @@ export class CollectionService {
             id: post.id,
             title: post.title,
             slug: post.slug,
-            coverUrl: post.coverImageUrl ?? null,
+            coverUrl: resolvedMediaUrl,
+            postType: post.postType,
           }
         : undefined,
       postMediaId: item.postMediaId ?? null,
+      mediaUrl: resolvedMediaUrl,
       sortOrder: item.sortOrder,
       createdAt: item.createdAt,
     };

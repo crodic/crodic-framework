@@ -34,9 +34,8 @@ export function ExploreFeed() {
   const { data: trendingFandoms = [] } = useQuery<TagSummaryResDto[]>({
     queryKey: ["explore-trending-fandoms", locale],
     queryFn: async () => {
-      const fandoms = await getTrendingTags(8, locale, "copyright");
-      if (fandoms.length > 0) return fandoms;
-      return getTrendingTags(8, locale);
+      const trending = await getTrendingTags(8, locale);
+      return trending.filter((item) => item.usageCount > 0);
     },
     staleTime: 60 * 1000,
   });
@@ -72,12 +71,13 @@ export function ExploreFeed() {
   };
 
   const isHydrating = useAuthStore((state) => state.isHydrating);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const effectiveSearch =
     searchQuery || (selectedTagObj ? selectedTagObj.name : undefined);
 
   const { data: postsResponse, isLoading: isLoadingPosts } = useQuery({
-    queryKey: ["explore-posts", effectiveSearch],
+    queryKey: ["explore-posts", effectiveSearch, isAuthenticated],
     queryFn: () =>
       getPosts({ search: effectiveSearch || undefined, limit: 50 }),
     enabled: !isHydrating,

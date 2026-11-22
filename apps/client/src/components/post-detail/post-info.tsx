@@ -29,6 +29,8 @@ import {
   getMyCollections,
   createCollection,
   addCollectionItem,
+  getCollectionItems,
+  removeCollectionItem,
 } from "@/services/collections";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile } from "@/hooks/use-profile";
@@ -109,14 +111,20 @@ export function PostInfo({
   const [followOverride, setFollowOverride] = useState<boolean | null>(null);
   const isFollowing = followOverride ?? remoteIsFollowing;
 
-  const [isSaved, setIsSaved] = useState(post.isSavedByCurrentUser ?? false);
+  const [isSaved, setIsSaved] = useState(
+    Boolean(post.isSavedByCurrentUser ?? false)
+  );
+  const [savesCount, setSavesCount] = useState(
+    Math.max(0, Number(post.savesCount || 0))
+  );
   const [copiedShare, setCopiedShare] = useState(false);
 
   React.useEffect(() => {
     if (typeof post.isSavedByCurrentUser === "boolean") {
       setIsSaved(post.isSavedByCurrentUser);
     }
-  }, [post.isSavedByCurrentUser]);
+    setSavesCount(Math.max(0, Number(post.savesCount || 0)));
+  }, [post.id, post.isSavedByCurrentUser, post.savesCount]);
 
   const authorHandle = post.author.handle.replace("@", "") || post.author.id;
   const publishedDateLabel = post.publishedAt
@@ -143,32 +151,75 @@ export function PostInfo({
   });
 
   const saveMutation = useMutation({
-    mutationFn: async (nextState: boolean) => {
-      const myCols = await getMyCollections({ limit: 1 });
-      let targetColId = myCols?.data?.[0]?.id;
-      if (!targetColId) {
-        const created = await createCollection({
-          title: tPost("defaultCollectionTitle"),
-          isPublic: false,
-        });
-        targetColId = created.id;
-      }
+    mutationFn: async ({
+      nextState,
+      nextCount,
+    }: {
+      nextState: boolean;
+      previousSaved: boolean;
+      previousCount: number;
+      nextCount: number;
+    }) => {
+      const myCols = await getMyCollections({ limit: 50 });
+      const collections = myCols?.data ?? [];
+      const defaultCol = collections.find((c) => c.isDefault) || collections[0];
 
       if (nextState) {
-        await addCollectionItem(targetColId, { postId: post.id });
+        let targetColId = defaultCol?.id;
+        if (!targetColId) {
+          const created = await createCollection({
+            title: tPost("defaultCollectionTitle"),
+            isPublic: false,
+          });
+          targetColId = created.id;
+        }
+        await addCollectionItem(targetColId, { postId: String(post.id) });
+      } else if (collections.length > 0) {
+        const orderedCollections = defaultCol
+          ? [defaultCol, ...collections.filter((c) => c.id !== defaultCol.id)]
+          : collections;
+
+        for (const col of orderedCollections) {
+          const itemsRes = await getCollectionItems(col.id, { limit: 100 });
+          const matchingItem = itemsRes?.data?.find(
+            (item) => String(item.postId) === String(post.id)
+          );
+          if (matchingItem) {
+            await removeCollectionItem(col.id, matchingItem.id);
+            break;
+          }
+        }
       }
-      return { nextState };
+
+      return { nextState, nextCount };
     },
-    onSuccess: ({ nextState }) => {
+    onSuccess: ({ nextState, nextCount }) => {
+      queryClient.setQueryData<PostDetailResDto | undefined>(
+        ["post-detail", postSlugOrId],
+        (prev) =>
+          prev
+            ? {
+                ...prev,
+                isSavedByCurrentUser: nextState,
+                savesCount: nextCount,
+              }
+            : prev
+      );
       queryClient.invalidateQueries({ queryKey: ["my-collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["following-feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["explore-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["public-posts"] });
       if (nextState) {
         toast.success(t("savedToCollection"));
       } else {
         toast.info(t("removedFromSaved"));
       }
     },
-    onError: () => {
-      setIsSaved((prev) => !prev);
+    onError: (_err, variables) => {
+      setIsSaved(variables.previousSaved);
+      setSavesCount(variables.previousCount);
+      toast.error(t("saveError"));
     },
   });
 
@@ -187,9 +238,16 @@ export function PostInfo({
       toast.info(t("loginToSave"));
       return;
     }
-    const nextState = !isSaved;
+    if (saveMutation.isPending) return;
+    const previousSaved = isSaved;
+    const previousCount = savesCount;
+    const nextState = !previousSaved;
+    const nextCount = nextState
+      ? previousCount + 1
+      : Math.max(0, previousCount - 1);
     setIsSaved(nextState);
-    saveMutation.mutate(nextState);
+    setSavesCount(nextCount);
+    saveMutation.mutate({ nextState, previousSaved, previousCount, nextCount });
   };
 
   const handleShare = () => {
@@ -507,9 +565,7 @@ export function PostInfo({
                           isSaved && "fill-primary text-primary"
                         )}
                       />
-                      <span className="tabular-nums">
-                        {post.savesCount || 0}
-                      </span>
+                      <span className="tabular-nums">{savesCount}</span>
                     </Button>
                   </div>
 

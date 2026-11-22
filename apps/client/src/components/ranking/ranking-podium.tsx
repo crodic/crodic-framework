@@ -116,13 +116,19 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                     styles.avatarRing
                   )}
                 >
-                  <Image
-                    src={item.avatarUrl}
-                    alt={item.displayName}
-                    fill
-                    sizes="(max-width: 640px) 48px, (max-width: 768px) 64px, 80px"
-                    className="object-cover"
-                  />
+                  {item.avatarUrl ? (
+                    <Image
+                      src={item.avatarUrl}
+                      alt={item.displayName}
+                      fill
+                      sizes="(max-width: 640px) 48px, (max-width: 768px) 64px, 80px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-base font-extrabold sm:text-xl">
+                      {item.displayName.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 {item.isVerified && (
                   <span

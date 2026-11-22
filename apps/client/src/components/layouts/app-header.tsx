@@ -6,7 +6,6 @@ import {
   Bell,
   ChevronDown,
   LogOut,
-  MessageSquare,
   Plus,
   Search,
   Settings,
@@ -32,6 +31,8 @@ import { WhiteLabelLogo } from "@/lib/white-label";
 import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile, useSignOut } from "@/hooks/use-profile";
+import { useQuery } from "@tanstack/react-query";
+import { getUnreadNotificationCount } from "@/services/notifications";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -46,6 +47,13 @@ export function AppHeader() {
   const isHydrating = useAuthStore((state) => state.isHydrating);
   const { data: profile } = useProfile();
   const signOutMutation = useSignOut();
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["notifications-unread-count"],
+    queryFn: getUnreadNotificationCount,
+    enabled: !isHydrating && isAuthenticated,
+    staleTime: 30 * 1000,
+  });
 
   const displayName =
     profile?.fullName ||
@@ -175,18 +183,10 @@ export function AppHeader() {
             >
               <Link href="/notifications">
                 <Bell className="size-4" />
-                <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
+                {unreadCount > 0 && (
+                  <span className="bg-primary absolute top-2 right-2 size-2 rounded-full" />
+                )}
               </Link>
-            </Button>
-
-            {/* Chat / Messages - Desktop only */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hidden size-9 cursor-pointer rounded-lg md:inline-flex"
-              aria-label={t("messages")}
-            >
-              <MessageSquare className="size-4" />
             </Button>
 
             {/* User Account Profile Pill */}

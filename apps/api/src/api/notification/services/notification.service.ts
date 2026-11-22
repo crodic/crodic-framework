@@ -111,6 +111,22 @@ export class NotificationService {
       .execute();
   }
 
+  /**
+   * Soft-delete a notification belonging to the user.
+   */
+  async deleteNotification(
+    userId: AutoIncrementID,
+    notificationId: AutoIncrementID,
+  ): Promise<void> {
+    const res = await this.notificationRepo.softDelete({
+      id: notificationId,
+      recipientUserId: userId,
+    });
+    if (!res.affected) {
+      throw new NotFoundException(`Notification #${notificationId} not found`);
+    }
+  }
+
   private toNotificationDto(
     n: NotificationEntity,
     profile?: CosplayerProfileEntity,

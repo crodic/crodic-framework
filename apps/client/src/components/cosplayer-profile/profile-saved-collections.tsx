@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import {
   FolderHeart,
   Plus,
@@ -10,6 +11,7 @@ import {
   Clock,
   Images,
   Loader2,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -347,41 +349,82 @@ export function ProfileSavedCollections({
                   </div>
                 ) : collectionItems.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-                    {collectionItems.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() =>
-                          item.mediaUrl && setActivePhoto(item.mediaUrl)
-                        }
-                        className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
-                      >
-                        {item.mediaUrl ? (
-                          <Image
-                            src={item.mediaUrl}
-                            alt="Collection item"
-                            fill
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="bg-muted flex size-full items-center justify-center">
-                            <Images className="text-muted-foreground/40 size-8" />
+                    {collectionItems.map((item) => {
+                      const mediaUrl =
+                        item.mediaUrl || item.post?.coverUrl || "";
+                      const isVideo = item.post?.postType === "video";
+                      const postSlug = item.post?.slug || item.postId;
+
+                      const cardInner = (
+                        <>
+                          {mediaUrl ? (
+                            <Image
+                              src={mediaUrl}
+                              alt={item.post?.title || "Collection item"}
+                              fill
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="bg-muted flex size-full items-center justify-center">
+                              <Images className="text-muted-foreground/40 size-8" />
+                            </div>
+                          )}
+                          {isVideo && (
+                            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md">
+                              <Video className="size-3 text-pink-400" />
+                              <span>Video</span>
+                            </div>
+                          )}
+                          {item.post?.title && (
+                            <>
+                              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                              <div className="pointer-events-none absolute inset-x-2.5 bottom-2.5">
+                                <p className="truncate text-xs font-semibold text-white drop-shadow-xs">
+                                  {item.post.title}
+                                </p>
+                              </div>
+                            </>
+                          )}
+                          <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                removeItemMutation.mutate(item.id);
+                              }}
+                              className="hover:bg-destructive flex size-7 items-center justify-center rounded-lg bg-black/70 text-white backdrop-blur-xs transition-colors"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
                           </div>
-                        )}
-                        <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeItemMutation.mutate(item.id);
-                            }}
-                            className="hover:bg-destructive flex size-7 items-center justify-center rounded-lg bg-black/70 text-white backdrop-blur-xs transition-colors"
+                        </>
+                      );
+
+                      if (isVideo && postSlug) {
+                        return (
+                          <Link
+                            key={item.id}
+                            href={`/posts/${encodeURIComponent(String(postSlug).trim())}`}
+                            onClick={() => setSelectedCollection(null)}
+                            className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
                           >
-                            <Trash2 className="size-3.5" />
-                          </button>
+                            {cardInner}
+                          </Link>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => mediaUrl && setActivePhoto(mediaUrl)}
+                          className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
+                        >
+                          {cardInner}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-muted-foreground py-16 text-center">

@@ -863,7 +863,7 @@
     "eventMetaDesc": "{desc} Taking place {date} at {venue}, {location}."
   },
   "Ranking": {
-    "title": "Vietnam Cosplayer Leaderboard",
+    "title": "Cosplayer Leaderboard",
     "desc": "Honoring top cosplayers with outstanding artistic contributions and community acclaim.",
     "loginRequired": "Please log in to follow cosplayers!",
     "filter": {
@@ -1044,7 +1044,7 @@
     "noRecentSearches": "No recent searches",
     "exploreTitle": "Explore The Cosplay Universe",
     "exploreDesc": "Discover cosplayers, featured photosets, and your favorite characters.",
-    "trendingFandoms": "Trending Fandoms",
+    "trendingFandoms": "Trending Tags",
     "searchResultsFor": "Results for: \"{query}\" ({count, number} works)",
     "clearFilter": "Clear filter",
     "verifiedBadge": "Verified",

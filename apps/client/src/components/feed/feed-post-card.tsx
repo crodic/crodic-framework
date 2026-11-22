@@ -36,7 +36,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditPostModal } from "@/components/studio/edit-post-modal";
-import { deletePost, type PostSummaryResDto } from "@/services/posts";
+import {
+  addPostComment,
+  deletePost,
+  type PostSummaryResDto,
+} from "@/services/posts";
 import {
   Form,
   FormControl,
@@ -51,7 +55,6 @@ import { PhotoLightbox } from "./photo-lightbox";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePostLike } from "@/hooks/use-post-like";
-import { addPostComment } from "@/services/posts";
 import {
   getMyCollections,
   createCollection,
@@ -523,7 +526,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
               className="hover:bg-muted/60 hover:text-foreground flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors"
             >
               <Share2 className="size-4" />
-              <span>{post.sharesCount || 0}</span>
+              <span>{t("share")}</span>
             </button>
           </div>
 

@@ -863,7 +863,7 @@
     "eventMetaDesc": "{desc} Diễn ra {date} tại {venue}, {location}."
   },
   "Ranking": {
-    "title": "Bảng Xếp Hạng Cosplayer Việt Nam",
+    "title": "Bảng Xếp Hạng Cosplayer",
     "desc": "Bảng vinh danh những cosplayer nổi bật, có cống hiến xuất sắc và được cộng đồng yêu thích nhất.",
     "loginRequired": "Vui lòng đăng nhập để theo dõi cosplayer!",
     "filter": {
@@ -1044,7 +1044,7 @@
     "noRecentSearches": "Chưa có tìm kiếm gần đây",
     "exploreTitle": "Khám Phá Vũ Trụ Cosplay",
     "exploreDesc": "Tìm kiếm cosplayer, tác phẩm nổi bật và nhân vật yêu thích của bạn.",
-    "trendingFandoms": "Fandom thịnh hành",
+    "trendingFandoms": "Thẻ thịnh hành",
     "searchResultsFor": "Kết quả cho: \"{query}\" ({count, number} tác phẩm)",
     "clearFilter": "Xóa bộ lọc",
     "verifiedBadge": "Đã xác minh",

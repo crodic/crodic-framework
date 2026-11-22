@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Check, Plus } from "lucide-react";
@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { getSuggestedCosplayers } from "@/services/cosplayer";
 import { toggleFollow } from "@/services/social";
+import { useProfile } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
 
 export function SuggestedCosplayersWidget() {
@@ -18,14 +19,40 @@ export function SuggestedCosplayersWidget() {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
+  const { data: currentUser, isLoading: isProfileLoading } = useProfile();
   const router = useRouter();
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
 
   const { data: cosplayers = [], isLoading } = useQuery({
-    queryKey: ["suggested-cosplayers", isAuthenticated],
+    queryKey: [
+      "suggested-cosplayers",
+      isAuthenticated,
+      currentUser?.id ?? null,
+    ],
     queryFn: () => getSuggestedCosplayers({ limit: 4 }),
-    enabled: !isHydrating,
+    enabled: !isHydrating && (!isAuthenticated || !isProfileLoading),
   });
+
+  const visibleCosplayers = useMemo(() => {
+    const currentId = currentUser?.id ? String(currentUser.id) : null;
+    const currentUsername = currentUser?.username?.trim().toLowerCase() || null;
+
+    return cosplayers.filter((item) => {
+      if (currentId && String(item.userId) === currentId) {
+        return false;
+      }
+      if (currentUsername) {
+        const handleNorm = item.handle?.replace(/^@/, "").trim().toLowerCase();
+        if (
+          handleNorm === currentUsername ||
+          item.slug?.toLowerCase() === currentUsername
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [cosplayers, currentUser?.id, currentUser?.username]);
 
   const handleToggleFollow = async (userId: string, name: string) => {
     if (!isAuthenticated) {
@@ -78,7 +105,7 @@ export function SuggestedCosplayersWidget() {
     );
   }
 
-  if (!cosplayers || cosplayers.length === 0) {
+  if (!visibleCosplayers || visibleCosplayers.length === 0) {
     return (
       <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
         <div className="mb-3.5 flex items-center justify-between">
@@ -123,7 +150,7 @@ export function SuggestedCosplayersWidget() {
       </div>
 
       <div className="space-y-3">
-        {cosplayers.map((item) => {
+        {visibleCosplayers.map((item) => {
           const isFollowing = followingMap[item.userId] ?? false;
 
           return (

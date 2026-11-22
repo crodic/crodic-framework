@@ -1,7 +1,6 @@
-import { useState, KeyboardEvent, ClipboardEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -14,120 +13,114 @@ interface TagChipsInputProps {
   disabled?: boolean
 }
 
+const normalizeItems = (items: string[]) =>
+  items.map((item) => item.trim()).filter(Boolean)
+
 export function TagChipsInput({
   value = [],
   onChange,
-  placeholder = 'Nhập và nhấn Enter...',
+  placeholder = 'Nhập nội dung...',
   maxItems = 30,
   className,
   disabled = false,
 }: TagChipsInputProps) {
-  const [inputValue, setInputValue] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
+  const normalizedValue = Array.isArray(value) ? normalizeItems(value) : []
+  const valueKey = JSON.stringify(normalizedValue)
 
-  const items = Array.isArray(value) ? value : []
+  const [rows, setRows] = useState<string[]>(normalizedValue)
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([])
+  const pendingFocusIndexRef = useRef<number | null>(null)
 
-  const addTag = (text: string) => {
-    const trimmed = text.trim()
-    if (!trimmed) return
-    if (items.includes(trimmed)) {
-      setInputValue('')
-      return
+  useEffect(() => {
+    const incoming = JSON.parse(valueKey) as string[]
+    setRows((prev) => {
+      if (JSON.stringify(normalizeItems(prev)) === valueKey) {
+        return prev
+      }
+      return incoming
+    })
+  }, [valueKey])
+
+  useEffect(() => {
+    if (pendingFocusIndexRef.current !== null) {
+      const targetInput = inputRefs.current[pendingFocusIndexRef.current]
+      pendingFocusIndexRef.current = null
+      targetInput?.focus()
     }
-    if (items.length >= maxItems) return
+  }, [rows.length])
 
-    const next = [...items, trimmed]
-    onChange?.(next)
-    setInputValue('')
+  const commitRows = (nextRows: string[]) => {
+    setRows(nextRows)
+    onChange?.(normalizeItems(nextRows))
   }
 
-  const removeTag = (indexToRemove: number) => {
-    const next = items.filter((_, idx) => idx !== indexToRemove)
-    onChange?.(next)
+  const handleUpdateRow = (index: number, nextValue: string) => {
+    const nextRows = [...rows]
+    nextRows[index] = nextValue
+    commitRows(nextRows)
   }
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addTag(inputValue)
-    } else if (e.key === 'Backspace' && !inputValue && items.length > 0) {
-      removeTag(items.length - 1)
-    }
+  const handleRemoveRow = (index: number) => {
+    const nextRows = rows.filter((_, idx) => idx !== index)
+    commitRows(nextRows)
   }
 
-  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    const text = e.clipboardData.getData('text')
-    if (text.includes(',')) {
-      e.preventDefault()
-      const splits = text
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-      const uniqueNext = Array.from(new Set([...items, ...splits])).slice(
-        0,
-        maxItems
-      )
-      onChange?.(uniqueNext)
-      setInputValue('')
-    }
+  const handleAddRow = () => {
+    if (disabled || rows.length >= maxItems) return
+    const nextIndex = rows.length
+    pendingFocusIndexRef.current = nextIndex
+    setRows((prev) => [...prev, ''])
   }
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <div className='border-input bg-background focus-within:ring-ring flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border p-2 focus-within:ring-2 focus-within:ring-offset-2'>
-        {items.map((item, index) => (
-          <Badge
-            key={`${item}-${index}`}
-            variant='secondary'
-            className='flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-normal'
-          >
-            <span>{item}</span>
-            {!disabled && (
-              <button
-                type='button'
-                onClick={() => removeTag(index)}
-                className='hover:bg-muted-foreground/20 rounded p-0.5 transition-colors'
-              >
-                <X className='text-muted-foreground hover:text-foreground size-3' />
-              </button>
-            )}
-          </Badge>
-        ))}
-
-        {!disabled && isAdding ? (
-          <div className='flex items-center gap-1'>
-            <Input
-              type='text'
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              onBlur={() => {
-                if (inputValue.trim()) {
-                  addTag(inputValue)
+      {rows.map((row, index) => (
+        <div key={index} className='flex items-center gap-2'>
+          <Input
+            ref={(el) => {
+              inputRefs.current[index] = el
+            }}
+            type='text'
+            value={row}
+            onChange={(e) => handleUpdateRow(index, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (row.trim() && rows.length < maxItems) {
+                  handleAddRow()
                 }
-                setIsAdding(false)
-              }}
-              autoFocus
-              placeholder={placeholder}
-              className='h-7 w-36 px-2 py-1 text-xs'
-            />
-          </div>
-        ) : null}
+              }
+            }}
+            placeholder={placeholder}
+            disabled={disabled}
+            className='h-9 flex-1 text-sm'
+          />
+          {!disabled && (
+            <Button
+              type='button'
+              variant='outline'
+              size='icon'
+              onClick={() => handleRemoveRow(index)}
+              className='text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 size-9 shrink-0 cursor-pointer'
+              aria-label={`Xóa mục ${index + 1}`}
+            >
+              <X className='size-4' />
+            </Button>
+          )}
+        </div>
+      ))}
 
-        {!disabled && !isAdding && (
-          <Button
-            type='button'
-            variant='ghost'
-            size='sm'
-            onClick={() => setIsAdding(true)}
-            className='text-muted-foreground hover:text-foreground h-7 gap-1 px-2.5 text-xs'
-          >
-            <Plus className='size-3.5' />
-            <span>Add</span>
-          </Button>
-        )}
-      </div>
+      {!disabled && rows.length < maxItems && (
+        <Button
+          type='button'
+          variant='outline'
+          onClick={handleAddRow}
+          className='text-muted-foreground hover:text-foreground h-9 w-full cursor-pointer justify-center gap-1.5 border-dashed text-xs font-medium'
+        >
+          <Plus className='size-4' />
+          <span>Add</span>
+        </Button>
+      )}
     </div>
   )
 }

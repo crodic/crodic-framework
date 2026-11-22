@@ -19,6 +19,13 @@ export interface CollectionItemResDto {
   id: string;
   collectionId: string;
   postId?: string | null;
+  post?: {
+    id: string;
+    title: string;
+    slug: string;
+    coverUrl?: string | null;
+    postType?: string;
+  } | null;
   eventId?: string | null;
   mediaUrl?: string | null;
   sortOrder: number;

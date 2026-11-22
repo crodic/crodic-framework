@@ -40,6 +40,11 @@ import { CollectionItemEntity } from '../../collection/entities/collection-item.
 import { ETaggableEntityType } from '../../tag/constants/tag.constant';
 import { EntityTagEntity } from '../../tag/entities/entity-tag.entity';
 import { EntityTaggingService } from '../../tag/services/entity-tagging.service';
+import {
+  ENotificationCategory,
+  ENotificationType,
+} from '../../notification/constants/notification.constant';
+import { NotificationEntity } from '../../notification/entities/notification.entity';
 
 function slugify(text: string): string {
   return text
@@ -129,7 +134,20 @@ export class PostService {
                     INNER JOIN tags t ON t.id = et.tag_id
                     WHERE et.entity_id = post.id
                       AND et.entity_type = 'post'
-                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                      AND (
+                        LOWER(t.name) LIKE :sTerm
+                        OR LOWER(t.slug) LIKE :sTerm
+                        OR EXISTS (
+                          SELECT 1 FROM tag_aliases ta
+                          WHERE ta.tag_id = t.id
+                            AND LOWER(ta.alias_name) LIKE :sTerm
+                        )
+                        OR EXISTS (
+                          SELECT 1 FROM tag_translations tt
+                          WHERE tt.tag_id = t.id
+                            AND LOWER(tt.translated_name) LIKE :sTerm
+                        )
+                      )
                   )`,
                   { sTerm: `%${normalized}%` },
                 )
@@ -137,7 +155,20 @@ export class PostService {
                   `EXISTS (
                     SELECT 1 FROM tags t
                     WHERE (t.id = post.copyright_tag_id OR t.id = post.character_tag_id)
-                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                      AND (
+                        LOWER(t.name) LIKE :sTerm
+                        OR LOWER(t.slug) LIKE :sTerm
+                        OR EXISTS (
+                          SELECT 1 FROM tag_aliases ta
+                          WHERE ta.tag_id = t.id
+                            AND LOWER(ta.alias_name) LIKE :sTerm
+                        )
+                        OR EXISTS (
+                          SELECT 1 FROM tag_translations tt
+                          WHERE tt.tag_id = t.id
+                            AND LOWER(tt.translated_name) LIKE :sTerm
+                        )
+                      )
                   )`,
                   { sTerm: `%${normalized}%` },
                 );
@@ -305,6 +336,40 @@ export class PostService {
       );
     });
 
+    return new Paginated(mapped, paginated.meta, paginated.links);
+  }
+
+  /**
+   * Get posts liked by the current user.
+   */
+  async getLikedPosts(
+    currentUserId: AutoIncrementID,
+    query: QueryParams,
+  ): Promise<Paginated<PostSummaryResDto>> {
+    const baseQb = this.postRepo
+      .createQueryBuilder('post')
+      .innerJoinAndSelect('post.author', 'author', 'author.deletedAt IS NULL')
+      .innerJoin(
+        PostLikeEntity,
+        'pl',
+        'pl.postId = post.id AND pl.userId = :currentUserId',
+        { currentUserId },
+      )
+      .where('post.deletedAt IS NULL')
+      .andWhere('post.status = :publishedStatus', {
+        publishedStatus: EPostStatus.PUBLISHED,
+      });
+
+    const paginated = await QueryBuilder.for(baseQb, query)
+      .allowedSorts(['publishedAt', 'likesCount', 'createdAt'])
+      .defaultSort('-publishedAt')
+      .paginate();
+
+    const mapped = await this.mapPostsToSummaries(
+      paginated.data,
+      currentUserId,
+      true,
+    );
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
 
@@ -690,7 +755,20 @@ export class PostService {
                     INNER JOIN tags t ON t.id = et.tag_id
                     WHERE et.entity_id = post.id
                       AND et.entity_type = 'post'
-                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                      AND (
+                        LOWER(t.name) LIKE :sTerm
+                        OR LOWER(t.slug) LIKE :sTerm
+                        OR EXISTS (
+                          SELECT 1 FROM tag_aliases ta
+                          WHERE ta.tag_id = t.id
+                            AND LOWER(ta.alias_name) LIKE :sTerm
+                        )
+                        OR EXISTS (
+                          SELECT 1 FROM tag_translations tt
+                          WHERE tt.tag_id = t.id
+                            AND LOWER(tt.translated_name) LIKE :sTerm
+                        )
+                      )
                   )`,
                   { sTerm: `%${normalized}%` },
                 )
@@ -698,7 +776,20 @@ export class PostService {
                   `EXISTS (
                     SELECT 1 FROM tags t
                     WHERE (t.id = post.copyright_tag_id OR t.id = post.character_tag_id)
-                      AND (LOWER(t.name) LIKE :sTerm OR LOWER(t.slug) LIKE :sTerm)
+                      AND (
+                        LOWER(t.name) LIKE :sTerm
+                        OR LOWER(t.slug) LIKE :sTerm
+                        OR EXISTS (
+                          SELECT 1 FROM tag_aliases ta
+                          WHERE ta.tag_id = t.id
+                            AND LOWER(ta.alias_name) LIKE :sTerm
+                        )
+                        OR EXISTS (
+                          SELECT 1 FROM tag_translations tt
+                          WHERE tt.tag_id = t.id
+                            AND LOWER(tt.translated_name) LIKE :sTerm
+                        )
+                      )
                   )`,
                   { sTerm: `%${normalized}%` },
                 );
@@ -876,6 +967,21 @@ export class PostService {
           'totalLikesCount',
           1,
         );
+        if (post.authorId && String(userId) !== String(post.authorId)) {
+          const notification = em.create(NotificationEntity, {
+            recipientUserId: post.authorId,
+            actorUserId: userId,
+            category: ENotificationCategory.SOCIAL,
+            type: ENotificationType.LIKE,
+            title: 'đã thích bài viết của bạn',
+            description: post.title,
+            actionUrl: `/posts/${post.slug || post.id}`,
+            previewImageUrl: post.coverImageUrl ?? null,
+            subjectType: 'post',
+            subjectId: post.id,
+          });
+          await em.save(NotificationEntity, notification);
+        }
         const updated = await em.findOneOrFail(PostEntity, {
           where: { id: postId },
         });
@@ -999,6 +1105,21 @@ export class PostService {
     const saved = await this.dataSource.transaction(async (em) => {
       const savedComment = await em.save(PostCommentEntity, comment);
       await em.increment(PostEntity, { id: postId }, 'commentsCount', 1);
+      if (post.authorId && String(userId) !== String(post.authorId)) {
+        const notification = em.create(NotificationEntity, {
+          recipientUserId: post.authorId,
+          actorUserId: userId,
+          category: ENotificationCategory.SOCIAL,
+          type: ENotificationType.COMMENT,
+          title: 'đã bình luận bài viết của bạn',
+          description: `"${dto.content.slice(0, 100)}" — ${post.title}`,
+          actionUrl: `/posts/${post.slug || post.id}`,
+          previewImageUrl: post.coverImageUrl ?? null,
+          subjectType: 'post',
+          subjectId: post.id,
+        });
+        await em.save(NotificationEntity, notification);
+      }
       return savedComment;
     });
 
@@ -1115,6 +1236,60 @@ export class PostService {
   }
 
   // =================== MAPPERS ===================
+
+  private async mapPostsToSummaries(
+    posts: PostEntity[],
+    currentUserId?: AutoIncrementID,
+    forceLiked = false,
+  ): Promise<PostSummaryResDto[]> {
+    const postIds = posts.map((p) => p.id);
+    if (postIds.length === 0) return [];
+
+    let likedPostIds = new Set<string>();
+    let savedPostIds = new Set<string>();
+
+    if (currentUserId) {
+      const [likes, savedItems] = await Promise.all([
+        forceLiked
+          ? Promise.resolve([])
+          : this.likeRepo.find({
+              where: { userId: currentUserId, postId: In(postIds) },
+            }),
+        this.dataSource
+          .getRepository(CollectionItemEntity)
+          .createQueryBuilder('item')
+          .innerJoin('item.collection', 'col')
+          .where('col.userId = :userId', { userId: currentUserId })
+          .andWhere('item.postId IN (:...postIds)', { postIds })
+          .select(['item.postId AS "postId"'])
+          .getRawMany(),
+      ]);
+      likedPostIds = new Set(likes.map((l) => String(l.postId)));
+      savedPostIds = new Set(savedItems.map((s) => String(s.postId)));
+    }
+
+    const authorIds = Array.from(new Set(posts.map((p) => p.authorId)));
+    const [profileMap, mediaByPostId, tagsByPostId] = await Promise.all([
+      this.loadProfileMap(authorIds),
+      this.loadMediaPreviewsByPostIds(postIds),
+      this.loadTagsByPostIds(postIds),
+    ]);
+
+    return posts.map((post) => {
+      const profile = profileMap.get(String(post.authorId));
+      const mediaSummary = mediaByPostId.get(String(post.id));
+      const tags = tagsByPostId.get(String(post.id));
+      return this.toSummaryDto(
+        post,
+        profile,
+        forceLiked || likedPostIds.has(String(post.id)),
+        mediaSummary?.previews,
+        savedPostIds.has(String(post.id)),
+        tags,
+        mediaSummary?.videoUrl,
+      );
+    });
+  }
 
   private async loadProfileMap(
     userIds: AutoIncrementID[],

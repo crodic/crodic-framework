@@ -16,6 +16,9 @@ describe('PostUserController', () => {
       getFeed: jest
         .fn()
         .mockResolvedValue({ data: [{ id: id('1') }], meta: {} }),
+      getLikedPosts: jest
+        .fn()
+        .mockResolvedValue({ data: [{ id: id('1') }], meta: {} }),
       update: jest.fn().mockResolvedValue({ id: id('1'), title: 'Updated' }),
       delete: jest.fn().mockResolvedValue(undefined),
       toggleLike: jest.fn().mockResolvedValue({ liked: true, likesCount: 5 }),
@@ -44,6 +47,13 @@ describe('PostUserController', () => {
     const res = await controller.getFeed(id('100'), query);
     expect(res.data).toHaveLength(1);
     expect(service.getFeed).toHaveBeenCalledWith(id('100'), query);
+  });
+
+  it('getLikedPosts delegates to service', async () => {
+    const query = { page: 1, limit: 10 };
+    const res = await controller.getLikedPosts(id('100'), query);
+    expect(res.data).toHaveLength(1);
+    expect(service.getLikedPosts).toHaveBeenCalledWith(id('100'), query);
   });
 
   it('create delegates to service', async () => {

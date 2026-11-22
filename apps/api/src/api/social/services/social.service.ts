@@ -5,6 +5,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
+import {
+  ENotificationCategory,
+  ENotificationType,
+} from '../../notification/constants/notification.constant';
+import { NotificationEntity } from '../../notification/entities/notification.entity';
 import { FollowToggleResDto, FollowUserResDto } from '../dto/social-res.dto';
 import { UserFollowEntity } from '../entities/user-follow.entity';
 
@@ -60,6 +66,22 @@ export class SocialService {
         );
         await em.increment(UserEntity, { id: followerId }, 'followingCount', 1);
         isFollowingNow = true;
+
+        const followerProfile = await em.findOne(CosplayerProfileEntity, {
+          where: { userId: followerId },
+        });
+        const notification = em.create(NotificationEntity, {
+          recipientUserId: followingId,
+          actorUserId: followerId,
+          category: ENotificationCategory.SOCIAL,
+          type: ENotificationType.FOLLOW,
+          title: 'đã bắt đầu theo dõi bạn',
+          description: 'Hãy ghé thăm hồ sơ của họ!',
+          actionUrl: `/cosplayer/${followerProfile?.slug || followerId}`,
+          subjectType: 'user',
+          subjectId: followerId,
+        });
+        await em.save(NotificationEntity, notification);
       }
 
       const targetUser = await em.findOne(UserEntity, {

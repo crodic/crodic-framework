@@ -119,8 +119,19 @@ export class RankingService {
       .defaultSort('rank')
       .paginate();
 
-    // If snapshot has data, map and return
-    if (paginated.data.length > 0) {
+    const settings = await this.getSettings();
+    const isFirstPage = Number(paginated.meta?.currentPage || 1) === 1;
+    const hasRankGap =
+      isFirstPage &&
+      paginated.data.length > 0 &&
+      Number(paginated.data[0].rank) > 1;
+
+    // If snapshot has data and real-time fallback is disabled without rank gaps
+    if (
+      paginated.data.length > 0 &&
+      !hasRankGap &&
+      !settings.enableFallbackRealtime
+    ) {
       const userIds = Array.from(
         new Set(paginated.data.map((item) => item.userId)),
       );
@@ -128,16 +139,22 @@ export class RankingService {
         this.profileRepo,
         userIds,
       );
+      const itemsPerPage = Number(paginated.meta?.itemsPerPage || 20);
+      const currentPage = Number(paginated.meta?.currentPage || 1);
 
-      const mapped = paginated.data.map((item) =>
-        this.toLeaderboardDto(item, profileMap.get(String(item.userId))),
-      );
+      const mapped = paginated.data.map((item, idx) => {
+        const dto = this.toLeaderboardDto(
+          item,
+          profileMap.get(String(item.userId)),
+        );
+        dto.rank = (currentPage - 1) * itemsPerPage + idx + 1;
+        return dto;
+      });
       return new Paginated(mapped, paginated.meta, paginated.links);
     }
 
-    // Real-time fallback if no snapshot exists
-    const settings = await this.getSettings();
-    if (settings.enableFallbackRealtime) {
+    // Real-time leaderboard when enabled or when snapshot has rank gaps (e.g. deleted users)
+    if (settings.enableFallbackRealtime || hasRankGap) {
       const categoryParam = query?.filter?.filterCategory;
       const category = (
         Array.isArray(categoryParam) ? categoryParam[0] : categoryParam
@@ -147,11 +164,26 @@ export class RankingService {
         ? searchParam[0]
         : searchParam;
 
-      return this.computeRealtimeLeaderboard(
+      const realtime = await this.computeRealtimeLeaderboard(
         category || ERankingFilterCategory.WEEK,
         searchTerm,
         settings,
       );
+
+      if (paginated.data.length > 0) {
+        const snapshotByUserId = new Map(
+          paginated.data.map((s) => [String(s.userId), s]),
+        );
+        realtime.data.forEach((item) => {
+          const snap = snapshotByUserId.get(String(item.userId));
+          if (snap) {
+            item.previousRank = snap.previousRank ?? snap.rank;
+            item.trend = snap.trend ?? ERankingTrend.SAME;
+          }
+        });
+      }
+
+      return realtime;
     }
 
     return new Paginated([], paginated.meta, paginated.links);
@@ -324,6 +356,7 @@ export class RankingService {
       ERankingFilterCategory.WEEK,
       ERankingFilterCategory.MONTH,
       ERankingFilterCategory.ALL,
+      ERankingFilterCategory.PROJECTS,
       ERankingFilterCategory.CRAFTING,
     ];
 

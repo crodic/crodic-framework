@@ -16,6 +16,7 @@ describe('NotificationUserController', () => {
       getUnreadCount: jest.fn().mockResolvedValue({ unreadCount: 3 }),
       markAsRead: jest.fn().mockResolvedValue(undefined),
       markAllAsRead: jest.fn().mockResolvedValue(undefined),
+      deleteNotification: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -51,5 +52,10 @@ describe('NotificationUserController', () => {
   it('markAllAsRead delegates to service', async () => {
     await controller.markAllAsRead(id('100'));
     expect(service.markAllAsRead).toHaveBeenCalledWith(id('100'));
+  });
+
+  it('deleteNotification delegates to service', async () => {
+    await controller.deleteNotification(id('100'), id('1'));
+    expect(service.deleteNotification).toHaveBeenCalledWith(id('100'), id('1'));
   });
 });

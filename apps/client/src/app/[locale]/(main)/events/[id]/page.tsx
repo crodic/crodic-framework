@@ -5,7 +5,8 @@ import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import Layout from "@/components/layouts/layout";
 import { EventStandaloneView } from "@/components/events/event-standalone-view";
-import { getEventBySlug } from "@/services/events";
+import { serverFetch } from "@/lib/server-fetch";
+import type { EventDetailResDto } from "@/services/events";
 
 interface EventPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -21,7 +22,10 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "Events" });
 
   try {
-    const event = await getEventBySlug(id);
+    const cleanId = encodeURIComponent(decodeURIComponent(id));
+    const event = await serverFetch<EventDetailResDto>(
+      `/api/v1/public/events/${cleanId}`
+    );
     const title = `${event.title} - ${t("eventMetaSuffix")} | ${siteName}`;
     const description = t("eventMetaDesc", {
       desc: event.description || event.title,
@@ -82,7 +86,10 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   setRequestLocale(locale);
 
   try {
-    const event = await getEventBySlug(id);
+    const cleanId = encodeURIComponent(decodeURIComponent(id));
+    const event = await serverFetch<EventDetailResDto>(
+      `/api/v1/public/events/${cleanId}`
+    );
     return (
       <Layout>
         <EventStandaloneView event={event} />
