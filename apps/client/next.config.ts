@@ -34,6 +34,14 @@ const nextConfig: NextConfig = {
         hostname: "cdn.crodic.click",
       },
       {
+        protocol: "https",
+        hostname: "*.crodic.click",
+      },
+      {
+        protocol: "http",
+        hostname: "*.localhost",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
       },

@@ -28,6 +28,7 @@ export async function proxy(request: NextRequest) {
     request.headers.get("x-forwarded-host") ||
     request.headers.get("host") ||
     "";
+  const protoHeader = request.headers.get("x-forwarded-proto");
   const subdomain = extractSubdomain(host);
   const isRootDomain = subdomain === null;
 
@@ -72,6 +73,7 @@ export async function proxy(request: NextRequest) {
         subdomain: targetSubdomain,
         path: request.nextUrl.pathname,
         requestUrl: request.nextUrl,
+        protoHeader,
       });
       return NextResponse.redirect(appUrl, { status: 307 });
     }
@@ -85,6 +87,7 @@ export async function proxy(request: NextRequest) {
     const rootUrl = buildRootUrl({
       path: locale === routing.defaultLocale ? "/" : `/${locale}`,
       requestUrl: request.nextUrl,
+      protoHeader,
     });
     return NextResponse.redirect(rootUrl, { status: 307 });
   }
