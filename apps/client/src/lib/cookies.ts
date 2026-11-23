@@ -1,3 +1,5 @@
+import { getRootDomain } from "./subdomain";
+
 export const COOKIE_ACCESS_TOKEN = "accessToken";
 export const COOKIE_REFRESH_TOKEN = "refreshToken";
 
@@ -10,7 +12,13 @@ export function getCookieDomain(): string | undefined {
   if (process.env.NEXT_PUBLIC_COOKIE_DOMAIN) {
     return process.env.NEXT_PUBLIC_COOKIE_DOMAIN.trim() || undefined;
   }
-  return process.env.NODE_ENV === "production" ? ".crodic.click" : undefined;
+  if (process.env.NODE_ENV === "production") {
+    const root = getRootDomain().trim().toLowerCase().split(":")[0];
+    if (root && root !== "localhost" && !root.includes("127.0.0.1")) {
+      return root.startsWith(".") ? root : `.${root}`;
+    }
+  }
+  return undefined;
 }
 
 /**
