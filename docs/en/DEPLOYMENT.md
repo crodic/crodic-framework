@@ -292,7 +292,7 @@ PORT=5173
 VITE_API_URL=https://api.crodic.click/api/v1
 VITE_APP_NAME="Crodic Framework"
 VITE_AUTH_KEY="${VITE_APP_NAME}_AUTH_KEY"
-VITE_CLIENT_URL=https://crodic.click
+VITE_CLIENT_URL=https://kosume.crodic.click
 VITE_SENTRY_ENVIRONMENT=production
 ```
 
