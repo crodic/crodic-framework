@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import 'react-image-crop/dist/ReactCrop.css'
 import { RichTextProvider } from 'reactjs-tiptap-editor'
@@ -65,9 +65,18 @@ function serializeEditorOutput(
 function TiptapEditor({ className, ...props }: Props) {
   const { colorKey, resolvedTheme } = useTheme()
 
-  const onValueChange = debounce((value: string) => {
-    props.onChangeContent(value)
-  }, 300)
+  const onChangeRef = useRef(props.onChangeContent)
+  useEffect(() => {
+    onChangeRef.current = props.onChangeContent
+  }, [props.onChangeContent])
+
+  const onValueChange = useMemo(
+    () =>
+      debounce((value: string) => {
+        onChangeRef.current(value)
+      }, 300),
+    []
+  )
 
   const editor = useEditor({
     content: props.content || '',
@@ -82,7 +91,7 @@ function TiptapEditor({ className, ...props }: Props) {
   })
 
   useEffect(() => {
-    editor?.setEditable(!props.disabled)
+    editor?.setEditable(!props.disabled, false)
   }, [editor, props.disabled])
 
   useEffect(() => {
@@ -91,7 +100,7 @@ function TiptapEditor({ className, ...props }: Props) {
   }, [colorKey, resolvedTheme])
 
   useEffect(() => {
-    if (!editor) {
+    if (!editor || editor.isDestroyed) {
       return
     }
 

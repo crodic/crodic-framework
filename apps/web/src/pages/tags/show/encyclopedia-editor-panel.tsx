@@ -141,16 +141,6 @@ export function EncyclopediaEditorPanel({
     const nextLocale = resolveValidTagLocale(locRaw)
     if (nextLocale === selectedLocale) return
 
-    form.reset({
-      locale: nextLocale,
-      summary: '',
-      body: '',
-      featuredImageUrl: '',
-      featuredFileId: null,
-      changeNote: '',
-      isEditLocked: false,
-    })
-
     setSelectedLocale(nextLocale)
 
     const next = new URLSearchParams(searchParams)
@@ -159,7 +149,7 @@ export function EncyclopediaEditorPanel({
   }
 
   useEffect(() => {
-    if (isFetching || !wiki || wiki.locale !== selectedLocale) {
+    if (!wiki || wiki.locale !== selectedLocale) {
       return
     }
 
@@ -184,30 +174,55 @@ export function EncyclopediaEditorPanel({
         isEditLocked: false,
       })
     }
-  }, [form, isFetching, selectedLocale, wiki])
+  }, [form, selectedLocale, wiki])
 
   const upsertMutation = useMutation({
     mutationFn: apiUpsertTagEncyclopedia,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(
         t('tags.messages.wikiSaved', 'Encyclopedia article saved successfully')
       )
+      queryClient.setQueryData(
+        ['tag-encyclopedia', tag.id, selectedLocale],
+        data
+      )
+      form.reset({
+        locale: selectedLocale,
+        summary: data.summary ?? '',
+        body: data.body ?? '',
+        featuredImageUrl: data.featuredImageUrl ?? '',
+        featuredFileId: data.featuredFileId ?? null,
+        changeNote: '',
+        isEditLocked: data.isEditLocked ?? false,
+      })
       queryClient.invalidateQueries({
         queryKey: ['tag-encyclopedia', tag.id, selectedLocale],
       })
       queryClient.invalidateQueries({ queryKey: ['tag-encyclopedias'] })
-      queryClient.invalidateQueries({ queryKey: ['tag', tag.id] })
     },
     onError: restApiErrorHandler,
   })
 
   const rollbackMutation = useMutation({
     mutationFn: apiRollbackEncyclopediaRevision,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(
         t('tags.messages.wikiRolledBack', 'Revision restored successfully')
       )
       setRollbackTarget(null)
+      queryClient.setQueryData(
+        ['tag-encyclopedia', tag.id, selectedLocale],
+        data
+      )
+      form.reset({
+        locale: selectedLocale,
+        summary: data.summary ?? '',
+        body: data.body ?? '',
+        featuredImageUrl: data.featuredImageUrl ?? '',
+        featuredFileId: data.featuredFileId ?? null,
+        changeNote: '',
+        isEditLocked: data.isEditLocked ?? false,
+      })
       queryClient.invalidateQueries({
         queryKey: ['tag-encyclopedia', tag.id, selectedLocale],
       })
@@ -531,7 +546,7 @@ export function EncyclopediaEditorPanel({
         </CardHeader>
 
         <CardContent className='pt-6'>
-          {isFetching ? (
+          {!wiki && isFetching ? (
             <div className='space-y-5'>
               <Skeleton className='h-20 w-full' />
               <Skeleton className='h-96 w-full' />
@@ -596,7 +611,7 @@ export function EncyclopediaEditorPanel({
                           }
                         >
                           <TiptapEditor
-                            key={`${tag.id}-${selectedLocale}-${wiki?.currentRevision ?? 0}`}
+                            key={`${tag.id}-${selectedLocale}`}
                             output='html'
                             content={field.value}
                             onChangeContent={field.onChange}

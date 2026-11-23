@@ -107,7 +107,7 @@ export function PageTagShow() {
 
   const clientUrl = import.meta.env.VITE_CLIENT_URL || 'https://crodic.net'
 
-  if (isFetching) return <DataLoader />
+  if (!tag && isFetching) return <DataLoader />
   if (!id || !tag) return <NotFoundError />
 
   const totalDagRelations =
