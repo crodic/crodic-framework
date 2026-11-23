@@ -183,7 +183,7 @@ export async function refreshClientToken(): Promise<string | null> {
   refreshTokenPromise = (async () => {
     try {
       const res = await xior.post<{ accessToken?: string }>(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/refresh`,
+        "/api/auth/refresh",
         {},
         { credentials: "same-origin" },
       );

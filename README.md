@@ -74,6 +74,8 @@ Detailed documentation is available in the [`docs/`](docs/README.md) directory:
 | 🔭 [**NestJS Observe (APM)**](docs/en/OBSERVE.md)                   | Real-time APM telemetry, latency profiling, error rate, and OpenTelemetry instrumentation.                         | [English](docs/en/OBSERVE.md) · [Tiếng Việt](docs/vi/OBSERVE.md)                               |
 | 🧪 [**Testing Strategy**](docs/en/TESTING.md)                       | Unit tests, mock providers, and E2E test execution guidelines.                                                     | [English](docs/en/TESTING.md) · [Tiếng Việt](docs/vi/TESTING.md)                               |
 | 📦 [**Release & Versioning**](docs/en/RELEASE.md)                   | Automated semantic versioning and changelog generation workflow.                                                   | [English](docs/en/RELEASE.md) · [Tiếng Việt](docs/vi/RELEASE.md)                               |
+| 🌐 [**Subdomain Routing**](docs/en/SUBDOMAIN_ROUTING.md)            | Opt-in multi-tenant subdomain routing for Next.js 16 with wildcard cookie sharing and rewrite proxy.               | [English](docs/en/SUBDOMAIN_ROUTING.md) · [Tiếng Việt](docs/vi/SUBDOMAIN_ROUTING.md)           |
+| 📡 [**Data Fetching Architecture**](docs/en/DATA_FETCHING.md)       | 3-tier HTTP strategy: `serverFetch` (SSR/RSC), `http` (Client/TanStack), and `xior` (BFF/Raw).                     | [English](docs/en/DATA_FETCHING.md) · [Tiếng Việt](docs/vi/DATA_FETCHING.md)                   |
 
 ---
 

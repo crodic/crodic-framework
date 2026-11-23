@@ -25,6 +25,8 @@ Welcome to the documentation hub for this enterprise monorepo. Documentation is 
 | **NestJS Observe (APM)**                  | [English Guide](en/OBSERVE.md)                | [Hướng dẫn Tiếng Việt](vi/OBSERVE.md)                |
 | **Testing Strategy**                      | [English Guide](en/TESTING.md)                | [Hướng dẫn Tiếng Việt](vi/TESTING.md)                |
 | **Release & Versioning**                  | [English Guide](en/RELEASE.md)                | [Hướng dẫn Tiếng Việt](vi/RELEASE.md)                |
+| **Subdomain Routing**                     | [English Guide](en/SUBDOMAIN_ROUTING.md)      | [Hướng dẫn Tiếng Việt](vi/SUBDOMAIN_ROUTING.md)      |
+| **Data Fetching Architecture**            | [English Guide](en/DATA_FETCHING.md)          | [Hướng dẫn Tiếng Việt](vi/DATA_FETCHING.md)          |
 
 ---
 
