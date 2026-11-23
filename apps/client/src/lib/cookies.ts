@@ -7,8 +7,10 @@ export const COOKIE_REFRESH_TOKEN = "refreshToken";
  * - In development: undefined (browser binds cookie to current host like "kosume.localhost")
  */
 export function getCookieDomain(): string | undefined {
-  const domain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN?.trim();
-  return domain || undefined;
+  if (process.env.NEXT_PUBLIC_COOKIE_DOMAIN) {
+    return process.env.NEXT_PUBLIC_COOKIE_DOMAIN.trim() || undefined;
+  }
+  return process.env.NODE_ENV === "production" ? ".crodic.click" : undefined;
 }
 
 /**
