@@ -228,7 +228,7 @@ export function useSignOut() {
     mutationFn: async () => {
       await xior
         .post<{ message: string }>(
-          `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/logout`,
+          "/api/auth/logout",
           {},
           {
             credentials: "same-origin",

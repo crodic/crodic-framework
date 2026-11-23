@@ -76,7 +76,7 @@ export default function LoginForm() {
       );
       const { accessToken, refreshToken } = data;
 
-      await xior.post(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/tokens`, {
+      await xior.post("/api/auth/tokens", {
         accessToken,
         refreshToken,
       });
