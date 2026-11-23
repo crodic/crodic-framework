@@ -14,6 +14,7 @@
     "AUTH_*",
     "USER_AUTH_*",
     "GOOGLE_*",
+    "GEMINI_*",
     "BULL_*",
     "ADMIN_*",
     "OBSERVE_*",

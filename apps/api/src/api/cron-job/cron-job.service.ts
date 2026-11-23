@@ -143,6 +143,21 @@ export class CronJobService {
         return 'Daily tag maintenance enqueued successfully.';
       },
     },
+    {
+      key: 'ai-crawl-cosplay-events',
+      name: 'AI Cosplay Event Crawler & News Publisher',
+      schedule: '0 6 * * *',
+      description:
+        'Uses Google Gemini Flash with Search Grounding to aggregate upcoming cosplay festivals, adds them to Kosume events directory, and publishes daily news bulletin.',
+      category: 'Content & Events',
+      handler: async (ref) => {
+        const { AiEventCrawlerService } =
+          await import('../event/services/ai-event-crawler.service');
+        const service = ref.get(AiEventCrawlerService, { strict: false });
+        const result = await service.crawlAndSyncEvents();
+        return result.message;
+      },
+    },
   ];
 
   constructor(
@@ -359,6 +374,11 @@ export class CronJobService {
   @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async handleScheduledTagMaintenance(): Promise<void> {
     await this.runJob('sync-tag-stats', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_6AM)
+  async handleScheduledAiCosplayCrawl(): Promise<void> {
+    await this.runJob('ai-crawl-cosplay-events', ECronJobTriggerType.SCHEDULED);
   }
 
   /**

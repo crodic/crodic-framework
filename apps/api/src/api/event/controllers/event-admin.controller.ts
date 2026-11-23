@@ -28,12 +28,16 @@ import {
 } from '../dto/event-req.dto';
 import { EventDetailResDto, EventSummaryResDto } from '../dto/event-res.dto';
 import { EventService } from '../services/event.service';
+import { AiEventCrawlerService } from '../services/ai-event-crawler.service';
 
 @ApiTags('Admin Events & Conventions Management')
 @Controller({ path: 'admin/events', version: '1' })
 @UseGuards(AdminAuthGuard, PoliciesGuard)
 export class EventAdminController {
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    private readonly aiCrawlerService: AiEventCrawlerService,
+  ) {}
 
   @Get()
   @ApiAuth({
@@ -125,5 +129,17 @@ export class EventAdminController {
   )
   remove(@Param('id') id: AutoIncrementID) {
     return this.eventService.deleteEvent(id);
+  }
+
+  @Post('ai-crawl')
+  @ApiAuth({
+    summary: 'Trigger AI Cosplay Event crawl manually from Admin',
+    statusCode: HttpStatus.OK,
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Create, AppSubjects.Event),
+  )
+  async triggerAiCrawl() {
+    return this.aiCrawlerService.crawlAndSyncEvents();
   }
 }
