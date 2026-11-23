@@ -68,7 +68,7 @@ export class TagQueueService {
     }
   }
 
-  async scheduleHourlyMaintenance(): Promise<void> {
+  async scheduleDailyMaintenance(): Promise<void> {
     try {
       // Reconcile usage counters first
       await this.tagQueue.add(
@@ -94,5 +94,12 @@ export class TagQueueService {
     } catch {
       // Non-blocking cron enqueue
     }
+  }
+
+  /**
+   * Backwards-compatible alias for scheduleDailyMaintenance.
+   */
+  async scheduleHourlyMaintenance(): Promise<void> {
+    return this.scheduleDailyMaintenance();
   }
 }

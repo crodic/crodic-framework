@@ -43,6 +43,7 @@ describe('CronJobService', () => {
         handleWeeklyRankingSnapshot: jest.fn().mockResolvedValue(undefined),
         handleMonthlyRankingSnapshot: jest.fn().mockResolvedValue(undefined),
         scheduleHourlyMaintenance: jest.fn().mockResolvedValue(undefined),
+        scheduleDailyMaintenance: jest.fn().mockResolvedValue(undefined),
       })),
     };
 

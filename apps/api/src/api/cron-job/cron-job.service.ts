@@ -130,17 +130,17 @@ export class CronJobService {
     },
     {
       key: 'sync-tag-stats',
-      name: 'Hourly Tag Maintenance & Statistics',
-      schedule: '0 * * * *',
+      name: 'Daily Tag Maintenance & Statistics',
+      schedule: '0 5 * * *',
       description:
-        'Enqueues tag trending metrics refresh and post counter reconciliation jobs.',
+        'Enqueues tag trending metrics refresh and post counter reconciliation jobs daily.',
       category: 'Tags & Taxonomy',
       handler: async (ref) => {
         const { TagQueueService } =
           await import('../tag/services/tag-queue.service');
         const service = ref.get(TagQueueService, { strict: false });
-        await service.scheduleHourlyMaintenance();
-        return 'Hourly tag maintenance enqueued successfully.';
+        await service.scheduleDailyMaintenance();
+        return 'Daily tag maintenance enqueued successfully.';
       },
     },
   ];
@@ -356,7 +356,7 @@ export class CronJobService {
     await this.runJob('sync-ranking-monthly', ECronJobTriggerType.SCHEDULED);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async handleScheduledTagMaintenance(): Promise<void> {
     await this.runJob('sync-tag-stats', ECronJobTriggerType.SCHEDULED);
   }
