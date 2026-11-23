@@ -32,7 +32,6 @@ import storageConfig from './filesystem/config/storage.config';
 import sentryConfig from './config/sentry.config';
 import observeConfig from './config/observe.config';
 import authConfig from './api/auth/config/auth.config';
-import aiConfig from './config/ai.config';
 import { FilesystemModule } from './filesystem/filesystem.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -71,7 +70,6 @@ import { ObserveModule } from './observe';
         sentryConfig,
         observeConfig,
         authConfig,
-        aiConfig,
       ],
       envFilePath:
         process.env.NODE_ENV === Environment.TEST

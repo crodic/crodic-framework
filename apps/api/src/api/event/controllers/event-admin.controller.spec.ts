@@ -5,14 +5,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EEventStatus } from '../constants/event.constant';
 import { EventAdminController } from './event-admin.controller';
 import { EventService } from '../services/event.service';
-import { AiEventCrawlerService } from '../services/ai-event-crawler.service';
 
 const id = (val: string) => val as unknown as AutoIncrementID;
 
 describe('EventAdminController', () => {
   let controller: EventAdminController;
   let service: Partial<Record<keyof EventService, jest.Mock>>;
-  let crawlerService: Partial<Record<keyof AiEventCrawlerService, jest.Mock>>;
 
   beforeEach(async () => {
     service = {
@@ -32,24 +30,9 @@ describe('EventAdminController', () => {
       deleteEvent: jest.fn().mockResolvedValue(undefined),
     };
 
-    crawlerService = {
-      crawlAndSyncEvents: jest.fn().mockResolvedValue({
-        success: true,
-        totalDiscovered: 2,
-        newEventsCreated: 1,
-        duplicateEventsSkipped: 1,
-        postCreated: true,
-        createdEventTitles: ['Cosplay Festival'],
-        message: 'Success',
-      }),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EventAdminController],
-      providers: [
-        { provide: EventService, useValue: service },
-        { provide: AiEventCrawlerService, useValue: crawlerService },
-      ],
+      providers: [{ provide: EventService, useValue: service }],
     })
       .overrideGuard(AdminAuthGuard)
       .useValue({ canActivate: () => true })
@@ -92,11 +75,5 @@ describe('EventAdminController', () => {
   it('remove delegates to service', async () => {
     await controller.remove(id('1'));
     expect(service.deleteEvent).toHaveBeenCalledWith(id('1'));
-  });
-
-  it('triggerAiCrawl delegates to aiCrawlerService', async () => {
-    const result = await controller.triggerAiCrawl();
-    expect(crawlerService.crawlAndSyncEvents).toHaveBeenCalled();
-    expect(result.success).toBe(true);
   });
 });

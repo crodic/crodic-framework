@@ -13,7 +13,6 @@ import { EventInterestEntity } from './entities/event-interest.entity';
 import { EventParticipantEntity } from './entities/event-participant.entity';
 import { EventEntity } from './entities/event.entity';
 import { EventService } from './services/event.service';
-import { AiEventCrawlerService } from './services/ai-event-crawler.service';
 
 @Module({
   imports: [
@@ -34,7 +33,7 @@ import { AiEventCrawlerService } from './services/ai-event-crawler.service';
     EventPublicController,
     EventUserController,
   ],
-  providers: [EventService, AiEventCrawlerService],
-  exports: [TypeOrmModule, EventService, AiEventCrawlerService],
+  providers: [EventService],
+  exports: [TypeOrmModule, EventService],
 })
 export class EventModule {}
