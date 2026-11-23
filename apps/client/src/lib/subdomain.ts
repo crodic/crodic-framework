@@ -7,6 +7,10 @@
  * - NEXT_PUBLIC_APP_SUBDOMAIN: e.g. "kosume"
  */
 
+export function isSubdomainRoutingEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING !== "false";
+}
+
 export function getRootDomain(): string {
   if (process.env.NEXT_PUBLIC_ROOT_DOMAIN) {
     return process.env.NEXT_PUBLIC_ROOT_DOMAIN;
@@ -39,6 +43,9 @@ export function extractSubdomain(
   host: string | null | undefined,
   customRootDomain?: string
 ): string | null {
+  if (!isSubdomainRoutingEnabled()) {
+    return null;
+  }
   if (!host) return null;
 
   // Normalize host: strip port and convert to lowercase
@@ -94,10 +101,14 @@ export function buildSubdomainUrl({
   path = "",
   requestUrl,
 }: {
-  subdomain: string;
+  subdomain?: string;
   path?: string;
   requestUrl: URL;
 }): URL {
+  if (!isSubdomainRoutingEnabled()) {
+    return buildRootUrl({ path, requestUrl });
+  }
+
   const rootDomain = getRootDomain().trim().toLowerCase();
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const isLocal =
@@ -160,6 +171,10 @@ export function buildRootUrl({
  * Safe to use in both SSR and browser client components.
  */
 export function getAppExternalUrl(path = ""): string {
+  if (!isSubdomainRoutingEnabled()) {
+    return getRootExternalUrl(path);
+  }
+
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const defaultSubdomain = getDefaultSubdomain();
 

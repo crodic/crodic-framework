@@ -48,6 +48,12 @@ describe("Subdomain Utilities", () => {
       expect(extractSubdomain("www.example.com")).toBeNull();
       expect(extractSubdomain("kosume.example.com")).toBe("kosume");
     });
+
+    it("respects NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING=false flag", () => {
+      process.env.NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING = "false";
+      expect(extractSubdomain("kosume.localhost:3000")).toBeNull();
+      expect(extractSubdomain("kosume.crodic.click")).toBeNull();
+    });
   });
 
   describe("buildSubdomainUrl", () => {
@@ -75,6 +81,19 @@ describe("Subdomain Utilities", () => {
       });
 
       expect(result.toString()).toBe("https://kosume.crodic.click/explore");
+    });
+
+    it("falls back to root URL when subdomain routing is disabled", () => {
+      process.env.NEXT_PUBLIC_ENABLE_SUBDOMAIN_ROUTING = "false";
+      process.env.NEXT_PUBLIC_ROOT_DOMAIN = "crodic.click";
+      const requestUrl = new URL("https://crodic.click/explore");
+      const result = buildSubdomainUrl({
+        subdomain: "kosume",
+        path: "/explore",
+        requestUrl,
+      });
+
+      expect(result.toString()).toBe("https://crodic.click/explore");
     });
   });
 

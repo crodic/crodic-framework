@@ -18,6 +18,7 @@ import {
   getDefaultSubdomain,
   buildSubdomainUrl,
   buildRootUrl,
+  isSubdomainRoutingEnabled,
 } from "./lib/subdomain";
 
 const handleI18nRouting = createMiddleware(routing);
@@ -64,14 +65,16 @@ export async function proxy(request: NextRequest) {
       return finalizeResponse(request, intlResponse, pathname, null);
     }
 
-    // Any app route accessed on root domain -> redirect to app subdomain
-    const targetSubdomain = getDefaultSubdomain();
-    const appUrl = buildSubdomainUrl({
-      subdomain: targetSubdomain,
-      path: request.nextUrl.pathname,
-      requestUrl: request.nextUrl,
-    });
-    return NextResponse.redirect(appUrl, { status: 307 });
+    // Any app route accessed on root domain -> redirect to app subdomain (if enabled)
+    if (isSubdomainRoutingEnabled()) {
+      const targetSubdomain = getDefaultSubdomain();
+      const appUrl = buildSubdomainUrl({
+        subdomain: targetSubdomain,
+        path: request.nextUrl.pathname,
+        requestUrl: request.nextUrl,
+      });
+      return NextResponse.redirect(appUrl, { status: 307 });
+    }
   }
 
   // ---------------------------------------------------------------------------
