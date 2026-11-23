@@ -129,12 +129,13 @@ export function TagHoverCard({
               )}
 
               {/* Stats Row */}
-              <div className="text-muted-foreground flex items-center gap-2 text-xs">
+              <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                 <ImageIcon className="text-primary size-3.5" />
                 <span className="text-foreground font-semibold tabular-nums">
-                  {tooltip.usageCount.toLocaleString()}
+                  {t("postsCount", {
+                    count: tooltip.usageCount.toLocaleString(),
+                  })}
                 </span>
-                <span>{t("postsCount", { count: "" }).trim()}</span>
               </div>
             </div>
 

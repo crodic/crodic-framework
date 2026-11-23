@@ -126,9 +126,8 @@ export function TagEncyclopediaView({
           <div className="flex items-center gap-1.5">
             <Eye className="size-3.5 text-violet-500" />
             <span className="text-foreground font-semibold tabular-nums">
-              {wiki.viewCount.toLocaleString()}
+              {t("viewsCount", { count: wiki.viewCount.toLocaleString() })}
             </span>
-            <span>{t("viewsCount", { count: "" }).trim()}</span>
           </div>
 
           {formattedDate && (

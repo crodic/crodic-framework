@@ -561,6 +561,8 @@
     }
   },
   "Tags": {
+    "title": "Tags & Encyclopedia",
+    "subtitle": "Discover characters, anime & game franchises, cosplayers, and community folksonomy lore.",
     "metaTitle": "Tags & Community Encyclopedia Discovery",
     "metaDescription": "Explore canonical tags, search by tags, semantic taxonomy hierarchies, and collaborative wiki encyclopedia articles.",
     "hubBadge": "Taxonomy & Community Encyclopedia",
@@ -569,10 +571,33 @@
     "trendingTitle": "Trending Tags",
     "directoryTitle": "Canonical Tag Directory",
     "searchResultsTitle": "Tagged Content Results",
-    "noTagsFound": "No canonical tags match your current filter.",
+    "searchPlaceholder": "Search tags, characters, franchises, or aliases...",
+    "noTagsFound": "No tags found",
+    "noTagsFoundDesc": "Try searching for a different character or franchise name.",
     "noContentFound": "No published content matches the selected tags.",
     "allCategories": "All Categories",
+    "postsCount": "{count} posts",
+    "viewsCount": "{count} views",
     "worksCount": "{count} items",
+    "revisionsCount": "v{version}",
+    "tabWiki": "Encyclopedia (dic)",
+    "tabArtworks": "Artworks & Photos",
+    "tabHierarchy": "Related & Hierarchy",
+    "filterLatest": "Latest",
+    "filterPopular": "Popular",
+    "noArtworks": "No artworks found for #{tag}",
+    "noArtworksDesc": "Be the first creator to share a cosplay or photoshoot with this tag!",
+    "postArtwork": "Post with this tag",
+    "noWiki": "No encyclopedia article for this tag yet in this language.",
+    "noWikiDesc": "Community contributors can start the first revision definition for this tag.",
+    "contributeWiki": "Contribute Definition",
+    "editWiki": "Edit Wiki",
+    "lockedWiki": "Protected Article",
+    "lockedWikiDesc": "This article is curated by administrators and locked from community edits.",
+    "lastUpdated": "Last updated {date}",
+    "parentSeries": "Franchise / Origin",
+    "childVariants": "Variants / Sub-concepts",
+    "relatedTags": "Related Tags",
     "readEncyclopedia": "Read Encyclopedia (dic)",
     "viewTaggedWorks": "Browse Tagged Content",
     "muteTag": "Mute Tag (NG)",
@@ -583,11 +608,9 @@
     "siblings": "Sibling Tags",
     "related": "Related Tags",
     "disambiguations": "See Also / Disambiguation",
-    "aliases": "Orthographic Aliases",
+    "aliases": "Also known as",
     "mutedSettingsTitle": "Muted Tags (NG Filter)",
     "mutedSettingsDesc": "Content tagged with any muted tag (or its child sub-tags when enabled) is automatically excluded from tag discovery and search results.",
-    "contributeWiki": "Edit Encyclopedia",
-    "lockedWiki": "Admin Locked",
     "revisionHistory": "Revisions",
     "queryLabel": "Filtering by:",
     "dagExpansion": "Include Related Sub-Tags",
@@ -636,7 +659,6 @@
     "operatorNot": "Exclude (-)",
     "clearExpression": "Clear filters",
     "addAnotherToken": "Add another tag...",
-    "searchPlaceholder": "Search tags or -exclude (e.g. Cyberpunk, -Horror)...",
     "searchBtn": "Search",
     "showingWithSubTags": "Showing Tag + Sub-Tags (Click for Exact)",
     "showingExactOnly": "Showing Exact Tag Only (Click to Expand)",
@@ -660,7 +682,6 @@
     "sandboxDesc": "Test collaborative community tagging, creator tag (*) protection, multilingual autocomplete, and audit history on a live artwork slot.",
     "canonicalPrefix": "Canonical:",
     "officialBadge": "Official",
-    "viewsCount": "{count} views",
     "wikiContributeDialogTitle": "Contribute to Encyclopedia — #{tagName}",
     "wikiContributeDialogDesc": "Every edit is recorded as an immutable revision snapshot in {locale}.",
     "wikiCancel": "Cancel",
@@ -671,7 +692,32 @@
     "wikiSnapshotDesc": "Immutable snapshots for #{tagName} ({locale}).",
     "wikiCommunityEditorDefault": "Community Editor",
     "wikiEmptyTitle": "No Encyclopedia Article Written in {locale} Yet",
-    "wikiEmptyDesc": "Community members can author the first revision for #{name} to explain lore, origins, and tagging guidelines."
+    "wikiEmptyDesc": "Community members can author the first revision for #{name} to explain lore, origins, and tagging guidelines.",
+    "hoverTooltip": {
+      "readWiki": "Read Encyclopedia",
+      "exploreWorks": "View {count} Artworks",
+      "official": "Verified Official"
+    },
+    "mute": {
+      "muteTag": "Mute tag",
+      "unmuteTag": "Unmute tag",
+      "mutedSuccess": "Tag #{tag} muted. Content with this tag will be hidden from your feeds.",
+      "unmutedSuccess": "Tag #{tag} unmuted."
+    },
+    "category": {
+      "general": "General",
+      "character": "Character",
+      "copyright": "Anime / Game",
+      "artist": "Artist / Cosplayer",
+      "meta": "Meta",
+      "system": "System"
+    },
+    "safety": {
+      "safe": "All Audiences",
+      "sensitive": "Sensitive",
+      "r18": "R-18",
+      "r18g": "R-18G"
+    }
   },
   "Theme": {
     "toggleTheme": "Toggle theme",
@@ -1664,61 +1710,5 @@
     "clearFormatting": "Clear formatting",
     "undo": "Undo",
     "redo": "Redo"
-  },
-  "Tags": {
-    "title": "Tags & Encyclopedia",
-    "subtitle": "Discover characters, anime & game franchises, cosplayers, and community folksonomy lore.",
-    "searchPlaceholder": "Search tags, characters, franchises, or aliases...",
-    "trendingTitle": "Trending Tags",
-    "allCategories": "All Categories",
-    "postsCount": "{count} posts",
-    "viewsCount": "{count} views",
-    "revisionsCount": "v{version}",
-    "noTagsFound": "No tags found",
-    "noTagsFoundDesc": "Try searching for a different character or franchise name.",
-    "tabWiki": "Encyclopedia (dic)",
-    "tabArtworks": "Artworks & Photos",
-    "tabHierarchy": "Related & Hierarchy",
-    "filterLatest": "Latest",
-    "filterPopular": "Popular",
-    "noArtworks": "No artworks found for #{tag}",
-    "noArtworksDesc": "Be the first creator to share a cosplay or photoshoot with this tag!",
-    "postArtwork": "Post with this tag",
-    "noWiki": "No encyclopedia article for this tag yet in this language.",
-    "noWikiDesc": "Community contributors can start the first revision definition for this tag.",
-    "contributeWiki": "Contribute Definition",
-    "editWiki": "Edit Wiki",
-    "lockedWiki": "Protected Article",
-    "lockedWikiDesc": "This article is curated by administrators and locked from community edits.",
-    "lastUpdated": "Last updated {date}",
-    "parentSeries": "Franchise / Origin",
-    "childVariants": "Variants / Sub-concepts",
-    "relatedTags": "Related Tags",
-    "aliases": "Also known as",
-    "hoverTooltip": {
-      "readWiki": "Read Encyclopedia",
-      "exploreWorks": "View {count} Artworks",
-      "official": "Verified Official"
-    },
-    "mute": {
-      "muteTag": "Mute tag",
-      "unmuteTag": "Unmute tag",
-      "mutedSuccess": "Tag #{tag} muted. Content with this tag will be hidden from your feeds.",
-      "unmutedSuccess": "Tag #{tag} unmuted."
-    },
-    "category": {
-      "general": "General",
-      "character": "Character",
-      "copyright": "Anime / Game",
-      "artist": "Artist / Cosplayer",
-      "meta": "Meta",
-      "system": "System"
-    },
-    "safety": {
-      "safe": "All Audiences",
-      "sensitive": "Sensitive",
-      "r18": "R-18",
-      "r18g": "R-18G"
-    }
   }
 }

@@ -187,9 +187,8 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
               <div className="flex items-center gap-1.5">
                 <ImageIcon className="text-primary size-4" />
                 <span className="text-foreground font-bold tabular-nums">
-                  {tag.usageCount.toLocaleString()}
+                  {t("postsCount", { count: tag.usageCount.toLocaleString() })}
                 </span>
-                <span>{t("postsCount", { count: "" }).trim()}</span>
               </div>
 
               {wiki && (
@@ -198,9 +197,10 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
                   <div className="flex items-center gap-1.5">
                     <Eye className="size-4 text-violet-500" />
                     <span className="text-foreground font-bold tabular-nums">
-                      {wiki.viewCount.toLocaleString()}
+                      {t("viewsCount", {
+                        count: wiki.viewCount.toLocaleString(),
+                      })}
                     </span>
-                    <span>{t("viewsCount", { count: "" }).trim()}</span>
                   </div>
                 </>
               )}

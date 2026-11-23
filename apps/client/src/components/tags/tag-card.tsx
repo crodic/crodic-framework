@@ -93,11 +93,8 @@ export function TagCard({ tag }: TagCardProps) {
           <div className="border-border/50 text-muted-foreground mt-4 flex items-center justify-between border-t pt-3 text-xs">
             <div className="flex items-center gap-1.5">
               <ImageIcon className="text-primary/70 size-3.5" />
-              <span className="text-foreground font-semibold tabular-nums">
-                {tag.usageCount.toLocaleString()}
-              </span>
-              <span className="text-[11px]">
-                {t("postsCount", { count: "" }).trim()}
+              <span className="text-foreground text-[11px] font-semibold tabular-nums">
+                {t("postsCount", { count: tag.usageCount.toLocaleString() })}
               </span>
             </div>
 
