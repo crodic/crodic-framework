@@ -1039,6 +1039,7 @@
     "editPostDesc": "Cập nhật tiêu đề, nhân vật, tác phẩm và thẻ cho bài viết.",
     "updatePostSuccess": "Đã cập nhật bài viết thành công!",
     "deletePost": "Xóa bài viết",
+    "reportPost": "Báo cáo bài viết",
     "deletePostConfirmTitle": "Xác nhận xóa bài viết?",
     "deletePostConfirmDesc": "Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.",
     "deletePostSuccess": "Đã xóa bài viết thành công",
@@ -1652,6 +1653,7 @@
     "seriesFandom": "Series: {fandom}",
     "editPost": "Chỉnh sửa bài đăng",
     "deletePost": "Xóa bài đăng",
+    "reportPost": "Báo cáo bài viết",
     "share": "Chia sẻ",
     "follow": "Theo dõi",
     "following": "Đang theo dõi",
@@ -1746,5 +1748,30 @@
     "clearFormatting": "Xóa định dạng",
     "undo": "Hoàn tác",
     "redo": "Làm lại"
+  },
+  "Report": {
+    "reportPostTitle": "Báo cáo bài viết",
+    "reportUserTitle": "Báo cáo trang cá nhân",
+    "reportPostDesc": "Vui lòng cho chúng tôi biết vấn đề với bài viết này. Báo cáo của bạn sẽ được giữ kín và chuyển tới đội ngũ kiểm duyệt.",
+    "reportUserDesc": "Vui lòng cho chúng tôi biết vấn đề với tài khoản này. Báo cáo của bạn sẽ được giữ kín và chuyển tới đội ngũ kiểm duyệt.",
+    "selectReason": "Chọn lý do vi phạm",
+    "descriptionLabel": "Mô tả chi tiết (không bắt buộc)",
+    "descriptionPlaceholder": "Cung cấp thêm thông tin hoặc bối cảnh vi phạm...",
+    "submit": "Gửi báo cáo",
+    "submitting": "Đang gửi...",
+    "cancel": "Hủy",
+    "loginRequired": "Vui lòng đăng nhập để gửi báo cáo vi phạm",
+    "successMessage": "Cảm ơn bạn. Báo cáo đã được gửi và sẽ được kiểm duyệt sớm nhất.",
+    "errorMessage": "Không thể gửi báo cáo, vui lòng thử lại sau.",
+    "alreadyReported": "Bạn đã gửi báo cáo cho nội dung này rồi.",
+    "reasons": {
+      "spam": "Spam, quảng cáo rác hoặc lừa đảo",
+      "inappropriate": "Nội dung nhạy cảm, đồi trụy hoặc bạo lực",
+      "harassment": "Quấy rối, bắt nạt hoặc thù ghét",
+      "copyright": "Vi phạm bản quyền hoặc mạo danh",
+      "misinformation": "Thông tin sai lệch hoặc gây hiểu lầm",
+      "impersonation": "Mạo danh người khác",
+      "other": "Lý do khác"
+    }
   }
 }

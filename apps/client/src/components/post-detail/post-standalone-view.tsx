@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Flag,
   Folder,
   Heart,
   Maximize2,
@@ -21,6 +22,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
+import { ReportDialog } from "@/components/common/report-dialog";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -99,6 +101,7 @@ export function PostStandaloneView({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   // Synchronized Post detail
   const postSlugOrId = initialPost.slug || initialPost.id;
@@ -436,6 +439,18 @@ export function PostStandaloneView({
                     <Share2 className="size-3.5" />
                     <span>{tPost("share")}</span>
                   </DropdownMenuItem>
+                  {!isOwnPost && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setIsReportDialogOpen(true)}
+                        className="text-destructive focus:text-destructive cursor-pointer gap-2.5"
+                      >
+                        <Flag className="size-3.5" />
+                        <span>{tPost("reportPost")}</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -1016,6 +1031,15 @@ export function PostStandaloneView({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Report Post Dialog */}
+      <ReportDialog
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+        targetType="post"
+        targetId={post.id}
+        targetTitle={post.title}
+      />
     </div>
   );
 }

@@ -25,7 +25,7 @@ const userFilterParsers = {
   [ColumnKey.createdAt]: parseAsArrayOf(parseAsInteger, ','),
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
-  status: parseAsString,
+  [ColumnKey.status]: parseAsString,
 } as const
 
 export function PageUserOverview() {
@@ -67,6 +67,9 @@ export function PageUserOverview() {
     filterParsers: userFilterParsers,
     queryHook: useDataUserOverview,
     buildQuery,
+    initialState: {
+      columnFilters: [{ id: ColumnKey.status, value: 'active' }],
+    },
     getRowId: (originalRow) => originalRow.id,
     clearOnDefault: true,
   })

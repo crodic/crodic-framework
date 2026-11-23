@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import {
   Bookmark,
   Check,
+  Flag,
   Heart,
   Images,
   MessageCircle,
@@ -16,6 +17,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { ReportDialog } from "@/components/common/report-dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -110,6 +112,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const handleDeletePost = async () => {
     try {
@@ -325,7 +328,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 <Bookmark className="mr-2 size-4" />
                 <span>{isBookmarked ? t("unsavePost") : t("savePost")}</span>
               </DropdownMenuItem>
-              {isOwnPost && (
+              {isOwnPost ? (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -341,6 +344,17 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   >
                     <Trash2 className="mr-2 size-4" />
                     <span>{t("deletePost")}</span>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setIsReportDialogOpen(true)}
+                    className="text-destructive focus:text-destructive cursor-pointer text-xs"
+                  >
+                    <Flag className="mr-2 size-4" />
+                    <span>{t("reportPost")}</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -708,6 +722,15 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
           </AlertDialog>
         </>
       )}
+
+      {/* Report Post Dialog */}
+      <ReportDialog
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+        targetType="post"
+        targetId={post.id}
+        targetTitle={post.title}
+      />
     </>
   );
 }

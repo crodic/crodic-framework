@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CosplayerApplicationDialog } from "@/components/cosplayer-application/cosplayer-application-dialog";
+import { ReportDialog } from "@/components/common/report-dialog";
 import {
   BadgeCheck,
   Camera,
@@ -92,6 +93,7 @@ export function ProfileHero({
   const [copiedLink, setCopiedLink] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const coverFileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
@@ -570,7 +572,10 @@ export function ProfileHero({
                 {!isOwner && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
+                    <DropdownMenuItem
+                      onClick={() => setIsReportDialogOpen(true)}
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                    >
                       <Flag className="mr-2 size-4" />
                       {t("reportCosplayer")}
                     </DropdownMenuItem>
@@ -600,6 +605,15 @@ export function ProfileHero({
         onOpenChange={setIsApplicationDialogOpen}
         initialStageName={profile.displayName}
         userEmail={profile.contactEmail || undefined}
+      />
+
+      {/* Report Profile Dialog */}
+      <ReportDialog
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+        targetType="user"
+        targetId={String(profile.userId || profile.id)}
+        targetTitle={profile.displayName}
       />
     </div>
   );

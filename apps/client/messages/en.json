@@ -1039,6 +1039,7 @@
     "editPostDesc": "Update post details, character, fandom, and tags.",
     "updatePostSuccess": "Post updated successfully!",
     "deletePost": "Delete post",
+    "reportPost": "Report post",
     "deletePostConfirmTitle": "Delete post?",
     "deletePostConfirmDesc": "Are you sure you want to delete this post? This action cannot be undone.",
     "deletePostSuccess": "Post deleted successfully",
@@ -1652,6 +1653,7 @@
     "seriesFandom": "Series: {fandom}",
     "editPost": "Edit post",
     "deletePost": "Delete post",
+    "reportPost": "Report post",
     "share": "Share",
     "follow": "Follow",
     "following": "Following",
@@ -1746,5 +1748,30 @@
     "clearFormatting": "Clear formatting",
     "undo": "Undo",
     "redo": "Redo"
+  },
+  "Report": {
+    "reportPostTitle": "Report post",
+    "reportUserTitle": "Report profile",
+    "reportPostDesc": "Please tell us what's wrong with this post. Your report is confidential and will be reviewed by our moderation team.",
+    "reportUserDesc": "Please tell us what's wrong with this profile. Your report is confidential and will be reviewed by our moderation team.",
+    "selectReason": "Select violation reason",
+    "descriptionLabel": "Detailed description (optional)",
+    "descriptionPlaceholder": "Provide additional context or information about this violation...",
+    "submit": "Submit report",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "loginRequired": "Please log in to submit a report",
+    "successMessage": "Thank you. Your report has been submitted and will be reviewed shortly.",
+    "errorMessage": "Failed to submit report. Please try again later.",
+    "alreadyReported": "You have already submitted a report for this content.",
+    "reasons": {
+      "spam": "Spam, advertisement, or scam",
+      "inappropriate": "Explicit, NSFW, or violent content",
+      "harassment": "Harassment, hate speech, or bullying",
+      "copyright": "Copyright infringement or impersonation",
+      "misinformation": "False or misleading information",
+      "impersonation": "Impersonating someone else",
+      "other": "Other reason"
+    }
   }
 }
