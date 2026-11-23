@@ -35,7 +35,7 @@ export function TrendingTagsWidget() {
           </h3>
         </div>
         <Link
-          href="/explore"
+          href="/tags"
           className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-semibold transition-colors"
         >
           <span>{t("viewAll")}</span>
@@ -51,26 +51,26 @@ export function TrendingTagsWidget() {
         </div>
       ) : (
         <div className="flex flex-wrap gap-1.5">
-          {tags.slice(0, 6).map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() =>
-                router.push(`/explore?q=${encodeURIComponent(tag.name)}`)
-              }
-              className="border-border/70 bg-background/60 hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-muted-foreground group inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-medium transition-colors select-none"
-            >
-              <span className="text-primary/70 group-hover:text-primary font-semibold">
-                #
-              </span>
-              <span>{tag.name}</span>
-              {tag.usageCount > 0 && (
-                <span className="text-muted-foreground/60 text-[10px] tabular-nums">
-                  {tag.usageCount}
+          {tags.slice(0, 6).map((tag) => {
+            const targetSlug = tag.slug || encodeURIComponent(tag.name);
+            return (
+              <Link
+                key={tag.id}
+                href={`/tags/${targetSlug}`}
+                className="border-border/70 bg-background/60 hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-muted-foreground group inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-medium transition-colors select-none"
+              >
+                <span className="text-primary/70 group-hover:text-primary font-semibold">
+                  #
                 </span>
-              )}
-            </button>
-          ))}
+                <span>{tag.name}</span>
+                {tag.usageCount > 0 && (
+                  <span className="text-muted-foreground/60 text-[10px] tabular-nums">
+                    {tag.usageCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

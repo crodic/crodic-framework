@@ -25,6 +25,7 @@ import type { PostDetailResDto, PostCommentResDto } from "@/services/posts";
 import { cn } from "@/lib/utils";
 import { getPostBySlug, deletePost } from "@/services/posts";
 import { checkIsFollowing, toggleFollow } from "@/services/social";
+import { TagHoverCard } from "@/components/tags/tag-hover-card";
 import {
   getMyCollections,
   createCollection,
@@ -476,13 +477,14 @@ export function PostInfo({
                   {post.tagNamesCache && post.tagNamesCache.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-0.5">
                       {post.tagNamesCache.map((tag, idx) => (
-                        <Link
-                          key={idx}
-                          href={`/explore?q=${encodeURIComponent(tag)}`}
-                          className="bg-muted/50 hover:bg-primary/15 text-muted-foreground hover:text-primary border-border/50 hover:border-primary/30 inline-flex items-center rounded-lg border px-2.5 py-0.5 text-[11px] font-medium transition-colors"
-                        >
-                          #{tag}
-                        </Link>
+                        <TagHoverCard key={idx} slugOrName={tag}>
+                          <Link
+                            href={`/tags/${encodeURIComponent(tag)}`}
+                            className="bg-muted/50 hover:bg-primary/15 text-muted-foreground hover:text-primary border-border/50 hover:border-primary/30 inline-flex items-center rounded-lg border px-2.5 py-0.5 text-[11px] font-medium transition-colors select-none"
+                          >
+                            #{tag}
+                          </Link>
+                        </TagHoverCard>
                       ))}
                     </div>
                   )}

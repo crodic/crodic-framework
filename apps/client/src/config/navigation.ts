@@ -48,6 +48,12 @@ export const APP_SIDEBAR_NAV: NavGroup[] = [
         href: "/events",
         icon: "calendar",
       },
+      {
+        labelKey: "tags",
+        defaultLabel: "Từ điển & Tags",
+        href: "/tags",
+        icon: "book-open",
+      },
     ],
   },
   {

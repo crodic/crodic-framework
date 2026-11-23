@@ -55,6 +55,7 @@ import type { CosplayerSummaryResDto } from "@/services/cosplayer";
 import { getPostBySlug, deletePost } from "@/services/posts";
 import { getCosplayerBySlug } from "@/services/cosplayer";
 import { checkIsFollowing, toggleFollow } from "@/services/social";
+import { TagHoverCard } from "@/components/tags/tag-hover-card";
 import {
   getMyCollections,
   createCollection,
@@ -635,13 +636,14 @@ export function PostStandaloneView({
             {post.tagNamesCache && post.tagNamesCache.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 {post.tagNamesCache.map((tag, idx) => (
-                  <Link
-                    key={idx}
-                    href={`/explore?tag=${encodeURIComponent(tag)}`}
-                    className="hover:border-primary/50 hover:bg-primary/10 hover:text-primary border-border/60 bg-muted/30 text-muted-foreground inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
-                  >
-                    #{tag}
-                  </Link>
+                  <TagHoverCard key={idx} slugOrName={tag}>
+                    <Link
+                      href={`/tags/${encodeURIComponent(tag)}`}
+                      className="hover:border-primary/50 hover:bg-primary/10 hover:text-primary border-border/60 bg-muted/30 text-muted-foreground inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors select-none"
+                    >
+                      #{tag}
+                    </Link>
+                  </TagHoverCard>
                 ))}
               </div>
             )}

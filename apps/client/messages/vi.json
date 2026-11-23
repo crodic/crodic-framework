@@ -1664,5 +1664,61 @@
     "clearFormatting": "Xóa định dạng",
     "undo": "Hoàn tác",
     "redo": "Làm lại"
+  },
+  "Tags": {
+    "title": "Từ điển & Danh mục Tags",
+    "subtitle": "Khám phá nhân vật, tác phẩm anime & game, cosplayer và bách khoa toàn thư cộng đồng.",
+    "searchPlaceholder": "Tìm kiếm tag, nhân vật, tác phẩm hoặc tên viết tắt...",
+    "trendingTitle": "Tag đang thịnh hành",
+    "allCategories": "Tất cả thể loại",
+    "postsCount": "{count} bài viết",
+    "viewsCount": "{count} lượt xem",
+    "revisionsCount": "v{version}",
+    "noTagsFound": "Không tìm thấy tag phù hợp",
+    "noTagsFoundDesc": "Hãy thử tìm kiếm với tên nhân vật hoặc tác phẩm khác.",
+    "tabWiki": "Bách khoa toàn thư",
+    "tabArtworks": "Tác phẩm & Ảnh cosplay",
+    "tabHierarchy": "Phả hệ & Tag liên quan",
+    "filterLatest": "Mới nhất",
+    "filterPopular": "Phổ biến",
+    "noArtworks": "Chưa có bài viết nào gắn tag #{tag}",
+    "noArtworksDesc": "Hãy là người đầu tiên đăng tải bộ ảnh cosplay với tag này!",
+    "postArtwork": "Đăng bài với tag này",
+    "noWiki": "Chưa có bài viết bách khoa toàn thư cho tag này bằng ngôn ngữ này.",
+    "noWikiDesc": "Thành viên cộng đồng có thể bắt đầu đóng góp bản tóm tắt đầu tiên cho tag này.",
+    "contributeWiki": "Đóng góp bài viết",
+    "editWiki": "Chỉnh sửa bài viết",
+    "lockedWiki": "Bài viết được bảo vệ",
+    "lockedWikiDesc": "Bài viết này do Quản trị viên biên tập và khóa chỉnh sửa cộng đồng.",
+    "lastUpdated": "Cập nhật lúc {date}",
+    "parentSeries": "Thuộc tác phẩm / Nguồn gốc",
+    "childVariants": "Biến thể / Khái niệm phụ",
+    "relatedTags": "Tag liên quan",
+    "aliases": "Tên gọi khác",
+    "hoverTooltip": {
+      "readWiki": "Đọc bách khoa toàn thư",
+      "exploreWorks": "Xem {count} tác phẩm",
+      "official": "Chính thức"
+    },
+    "mute": {
+      "muteTag": "Ẩn tag này",
+      "unmuteTag": "Bỏ ẩn tag",
+      "mutedSuccess": "Đã ẩn tag #{tag}. Nội dung mang tag này sẽ không xuất hiện trên bảng tin của bạn.",
+      "unmutedSuccess": "Đã bỏ ẩn tag #{tag}."
+    },
+    "category": {
+      "general": "Chung",
+      "character": "Nhân vật",
+      "copyright": "Anime / Game",
+      "artist": "Cosplayer / Tác giả",
+      "meta": "Thông tin phụ",
+      "system": "Hệ thống"
+    },
+    "safety": {
+      "safe": "Mọi đối tượng",
+      "sensitive": "Nhạy cảm",
+      "r18": "R-18",
+      "r18g": "R-18G"
+    }
   }
 }

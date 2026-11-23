@@ -1664,5 +1664,61 @@
     "clearFormatting": "Clear formatting",
     "undo": "Undo",
     "redo": "Redo"
+  },
+  "Tags": {
+    "title": "Tags & Encyclopedia",
+    "subtitle": "Discover characters, anime & game franchises, cosplayers, and community folksonomy lore.",
+    "searchPlaceholder": "Search tags, characters, franchises, or aliases...",
+    "trendingTitle": "Trending Tags",
+    "allCategories": "All Categories",
+    "postsCount": "{count} posts",
+    "viewsCount": "{count} views",
+    "revisionsCount": "v{version}",
+    "noTagsFound": "No tags found",
+    "noTagsFoundDesc": "Try searching for a different character or franchise name.",
+    "tabWiki": "Encyclopedia (dic)",
+    "tabArtworks": "Artworks & Photos",
+    "tabHierarchy": "Related & Hierarchy",
+    "filterLatest": "Latest",
+    "filterPopular": "Popular",
+    "noArtworks": "No artworks found for #{tag}",
+    "noArtworksDesc": "Be the first creator to share a cosplay or photoshoot with this tag!",
+    "postArtwork": "Post with this tag",
+    "noWiki": "No encyclopedia article for this tag yet in this language.",
+    "noWikiDesc": "Community contributors can start the first revision definition for this tag.",
+    "contributeWiki": "Contribute Definition",
+    "editWiki": "Edit Wiki",
+    "lockedWiki": "Protected Article",
+    "lockedWikiDesc": "This article is curated by administrators and locked from community edits.",
+    "lastUpdated": "Last updated {date}",
+    "parentSeries": "Franchise / Origin",
+    "childVariants": "Variants / Sub-concepts",
+    "relatedTags": "Related Tags",
+    "aliases": "Also known as",
+    "hoverTooltip": {
+      "readWiki": "Read Encyclopedia",
+      "exploreWorks": "View {count} Artworks",
+      "official": "Verified Official"
+    },
+    "mute": {
+      "muteTag": "Mute tag",
+      "unmuteTag": "Unmute tag",
+      "mutedSuccess": "Tag #{tag} muted. Content with this tag will be hidden from your feeds.",
+      "unmutedSuccess": "Tag #{tag} unmuted."
+    },
+    "category": {
+      "general": "General",
+      "character": "Character",
+      "copyright": "Anime / Game",
+      "artist": "Artist / Cosplayer",
+      "meta": "Meta",
+      "system": "System"
+    },
+    "safety": {
+      "safe": "All Audiences",
+      "sensitive": "Sensitive",
+      "r18": "R-18",
+      "r18g": "R-18G"
+    }
   }
 }
