@@ -29,5 +29,6 @@ export function useBreadcrumb(items: BreadcrumbItem[]) {
     return () => {
       clearItems()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, serialized, setItems, clearItems])
 }

@@ -83,11 +83,12 @@ export function PageSpotlightBannersOverview() {
     setIsDialogOpen(true)
   }, [])
 
+  const { mutate: toggleBanner } = toggleMutation
   const handleToggle = useCallback(
     (banner: SpotlightBanner) => {
-      toggleMutation.mutate(banner.id)
+      toggleBanner(banner.id)
     },
-    [toggleMutation]
+    [toggleBanner]
   )
 
   const handleDelete = useCallback((banner: SpotlightBanner) => {

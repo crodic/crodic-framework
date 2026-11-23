@@ -79,11 +79,12 @@ export function PagePostsOverview() {
     setIsStatusOpen(true)
   }, [])
 
+  const { mutate: toggleFeature } = toggleFeatureMutation
   const handleToggleFeature = useCallback(
     (post: Post, isFeatured: boolean) => {
-      toggleFeatureMutation.mutate({ id: post.id, isFeatured })
+      toggleFeature({ id: post.id, isFeatured })
     },
-    [toggleFeatureMutation]
+    [toggleFeature]
   )
 
   const handleOpenDelete = useCallback((post: Post) => {

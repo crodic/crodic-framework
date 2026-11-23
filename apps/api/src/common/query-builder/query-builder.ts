@@ -96,7 +96,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
     const result: Record<string, any> = { ...raw };
 
     for (const [key, val] of Object.entries(raw)) {
-      const match = key.match(/^([^\[]+)\[([^\]]+)\]$/);
+      const match = key.match(/^([^[]+)\[([^\]]+)\]$/);
       if (match) {
         const [, rootKey, nestedKey] = match;
         if (

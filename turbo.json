@@ -16,6 +16,7 @@
     "GOOGLE_*",
     "BULL_*",
     "ADMIN_*",
+    "OBSERVE_*",
     "SENTRY_*",
     "VITE_*",
     "PORT",
