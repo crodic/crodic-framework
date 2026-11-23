@@ -85,7 +85,7 @@ describe('AiEventCrawlerService', () => {
     it('should handle duplicates correctly and persist new events', async () => {
       configService.get.mockImplementation((key: string) => {
         if (key === 'ai.geminiApiKey') return 'test-key';
-        if (key === 'ai.geminiModel') return 'gemini-2.5-flash';
+        if (key === 'ai.geminiModel') return 'gemini-3.8-flash';
         return null;
       });
 

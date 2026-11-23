@@ -90,7 +90,7 @@ export class AiEventCrawlerService {
 
     const preferredModel =
       this.configService.get('ai.geminiModel', { infer: true }) ||
-      'gemini-2.5-flash';
+      'gemini-3.8-flash';
 
     this.logger.log(
       `[AI Event Crawler] Starting cosplay event search using model ${preferredModel}...`,
@@ -181,8 +181,9 @@ export class AiEventCrawlerService {
     });
     const candidateModels = [
       preferredModel,
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite',
+      'gemini-3.8-flash',
+      'gemini-3.8-flash-lite',
+      'gemini-3.5-flash',
       'gemini-3.5-flash-lite',
     ].filter((val, idx, arr) => arr.indexOf(val) === idx);
 
