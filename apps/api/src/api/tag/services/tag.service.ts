@@ -967,27 +967,49 @@ export class TagService {
    * Reconciles denormalized usage_count across tags.
    */
   async reconcileUsageCounts(tagIds?: AutoIncrementID[]): Promise<void> {
-    if (tagIds && tagIds.length > 0) {
-      await this.dataSource.query(
-        `UPDATE tags t
-         SET usage_count = COALESCE((
-           SELECT COUNT(*)::bigint FROM entity_tags et WHERE et.tag_id = t.id
-         ), 0)
-         WHERE t.id = ANY($1::bigint[])`,
-        [tagIds],
-      );
-    } else {
-      await this.dataSource.query(
-        `UPDATE tags t
-         SET usage_count = COALESCE(sub.cnt, 0)
-         FROM (
-           SELECT tag_id, COUNT(*)::bigint AS cnt
-           FROM entity_tags
-           GROUP BY tag_id
-         ) sub
-         WHERE t.id = sub.tag_id`,
-      );
-    }
+    await this.dataSource.transaction(async (em) => {
+      // Advisory transaction lock prevents concurrent bulk tag updates from deadlocking
+      await em.query('SELECT pg_advisory_xact_lock(746019284)');
+
+      if (tagIds && tagIds.length > 0) {
+        await em.query(
+          `WITH tag_counts AS (
+             SELECT et.tag_id, COUNT(*)::bigint AS cnt
+             FROM entity_tags et
+             WHERE et.tag_id = ANY($1::bigint[])
+             GROUP BY et.tag_id
+           )
+           UPDATE tags t
+           SET usage_count = COALESCE(tc.cnt, 0)
+           FROM (
+             SELECT id FROM tags
+             WHERE id = ANY($1::bigint[])
+             ORDER BY id
+           ) ordered
+           LEFT JOIN tag_counts tc ON tc.tag_id = ordered.id
+           WHERE t.id = ordered.id`,
+          [tagIds],
+        );
+      } else {
+        await em.query(
+          `WITH tag_counts AS (
+             SELECT et.tag_id, COUNT(*)::bigint AS cnt
+             FROM entity_tags et
+             GROUP BY et.tag_id
+           )
+           UPDATE tags t
+           SET usage_count = COALESCE(tc.cnt, 0)
+           FROM (
+             SELECT id FROM tags
+             WHERE deleted_at IS NULL
+             ORDER BY id
+           ) ordered
+           LEFT JOIN tag_counts tc ON tc.tag_id = ordered.id
+           WHERE t.id = ordered.id`,
+        );
+      }
+    });
+
     await this.cacheService.bumpVersion();
   }
 
@@ -996,18 +1018,31 @@ export class TagService {
    * and updates time-decayed trending scores.
    */
   async refreshTrendingScores(): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE tags t
-       SET trending_score = (
-         COALESCE((
-           SELECT COUNT(*)::double precision * 10.0
+    await this.dataSource.transaction(async (em) => {
+      // Advisory transaction lock prevents concurrent bulk tag updates from deadlocking
+      await em.query('SELECT pg_advisory_xact_lock(746019284)');
+
+      await em.query(
+        `WITH recent_counts AS (
+           SELECT et.tag_id, COUNT(*)::double precision AS recent_cnt
            FROM entity_tags et
-           WHERE et.tag_id = t.id
-             AND et.created_at >= NOW() - INTERVAL '7 days'
-         ), 0) + LN(GREATEST(t.usage_count, 0) + 1) * 2.0
-       )
-       WHERE t.deleted_at IS NULL AND t.status = 'active'`,
-    );
+           WHERE et.created_at >= NOW() - INTERVAL '7 days'
+           GROUP BY et.tag_id
+         )
+         UPDATE tags t
+         SET trending_score = (
+           COALESCE(rc.recent_cnt, 0) * 10.0 + LN(GREATEST(t.usage_count, 0) + 1) * 2.0
+         )
+         FROM (
+           SELECT id FROM tags
+           WHERE deleted_at IS NULL AND status = 'active'
+           ORDER BY id
+         ) ordered
+         LEFT JOIN recent_counts rc ON rc.tag_id = ordered.id
+         WHERE t.id = ordered.id`,
+      );
+    });
+
     await this.cacheService.bumpVersion();
   }
 

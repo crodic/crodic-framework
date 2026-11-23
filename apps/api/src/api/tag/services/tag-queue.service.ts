@@ -70,15 +70,26 @@ export class TagQueueService {
 
   async scheduleHourlyMaintenance(): Promise<void> {
     try {
-      await this.tagQueue.add(
-        JobName.TAG_TRENDING_REFRESH,
-        {},
-        { removeOnComplete: true },
-      );
+      // Reconcile usage counters first
       await this.tagQueue.add(
         JobName.TAG_COUNTER_RECONCILE,
         {},
-        { removeOnComplete: true },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+          removeOnComplete: true,
+        },
+      );
+      // Refresh trending scores after counters have been reconciled
+      await this.tagQueue.add(
+        JobName.TAG_TRENDING_REFRESH,
+        {},
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+          removeOnComplete: true,
+          delay: 3000,
+        },
       );
     } catch {
       // Non-blocking cron enqueue
