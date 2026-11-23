@@ -56,6 +56,7 @@ import {
 } from '../components/tag-badges'
 import { apiDeleteTag, useDataTagById } from '../queries'
 import type { TagAlias, TagTranslation } from '../schema'
+import { resolveValidTagLocale } from '../schema'
 import { DagHierarchyPanel } from './dag-hierarchy-panel'
 import { EncyclopediaEditorPanel } from './encyclopedia-editor-panel'
 
@@ -67,7 +68,9 @@ export function PageTagShow() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const activeTab = searchParams.get('tab') || 'hierarchy'
-  const initialWikiLocale = searchParams.get('locale') || i18n.language || 'en'
+  const initialWikiLocale = resolveValidTagLocale(
+    searchParams.get('locale') || i18n.resolvedLanguage || i18n.language
+  )
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isMergeOpen, setIsMergeOpen] = useState(false)

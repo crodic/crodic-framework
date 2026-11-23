@@ -79,6 +79,7 @@ import {
 } from '../queries'
 import {
   TAG_LOCALES,
+  resolveValidTagLocale,
   tagEncyclopediaFormSchema,
   type TagDetail,
   type TagEncyclopediaFormValues,
@@ -97,7 +98,16 @@ export function EncyclopediaEditorPanel({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
-  const [selectedLocale, setSelectedLocale] = useState(initialLocale)
+  const [selectedLocale, setSelectedLocale] = useState(() =>
+    resolveValidTagLocale(initialLocale)
+  )
+
+  useEffect(() => {
+    if (initialLocale) {
+      setSelectedLocale(resolveValidTagLocale(initialLocale))
+    }
+  }, [initialLocale])
+
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [rollbackTarget, setRollbackTarget] =
     useState<TagEncyclopediaRevision | null>(null)
@@ -452,10 +462,14 @@ export function EncyclopediaEditorPanel({
               </span>
               <Select
                 value={selectedLocale}
-                onValueChange={(loc) => setSelectedLocale(loc)}
+                onValueChange={(loc) =>
+                  setSelectedLocale(resolveValidTagLocale(loc))
+                }
               >
                 <SelectTrigger className='h-8 w-36 text-xs font-medium'>
-                  <SelectValue />
+                  <SelectValue
+                    placeholder={t('tags.encyclopedia.colEdition', 'Edition')}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {TAG_LOCALES.map((loc) => (

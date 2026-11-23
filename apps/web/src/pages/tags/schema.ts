@@ -51,6 +51,18 @@ export const TAG_LOCALES = [
   { value: 'jp', label: '日本語' },
 ] as const
 
+export type TagLocale = (typeof TAG_LOCALES)[number]['value']
+
+export function resolveValidTagLocale(rawLocale?: string | null): TagLocale {
+  if (!rawLocale) return 'en'
+  const clean = rawLocale.toLowerCase().trim()
+  if (clean.startsWith('vi')) return 'vi'
+  if (clean.startsWith('ja') || clean.startsWith('jp')) return 'jp'
+  if (clean.startsWith('en')) return 'en'
+  const matched = TAG_LOCALES.find((l) => l.value === clean)
+  return matched ? matched.value : 'en'
+}
+
 export const tagTranslationSchema = z.object({
   id: z.string(),
   locale: z.string(),

@@ -22,6 +22,19 @@ interface TagEncyclopediaViewProps {
   wiki: TagEncyclopediaResDto | null;
 }
 
+function isHtmlEmpty(html?: string | null): boolean {
+  if (!html) return true;
+  if (/<(img|iframe|video|audio|picture|svg|hr|table)[^>]*>/i.test(html)) {
+    return false;
+  }
+  return (
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim().length === 0
+  );
+}
+
 export function TagEncyclopediaView({
   tagId,
   tagName,
@@ -98,7 +111,7 @@ export function TagEncyclopediaView({
       )}
 
       {/* 3. Rich Wiki Article Body */}
-      {wiki.body ? (
+      {!isHtmlEmpty(wiki.body) ? (
         <Card className="border-border/80 shadow-2xs">
           <CardContent className="p-5 sm:p-7">
             <div
