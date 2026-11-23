@@ -175,7 +175,10 @@ export class AiEventCrawlerService {
     apiKey: string,
     preferredModel: string,
   ): Promise<ICrawledEventItem[]> {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({
+      apiKey,
+      apiVersion: 'v1beta',
+    });
     const candidateModels = [
       preferredModel,
       'gemini-2.5-flash',
