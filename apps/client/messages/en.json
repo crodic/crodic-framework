@@ -45,7 +45,8 @@
     "metaDescription": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
     "nav": {
       "explore": "Explore",
-      "community": "Community",
+      "tags": "Tags & Encyclopedia",
+      "community": "Cosplayers",
       "events": "Events",
       "ranking": "Leaderboard",
       "signIn": "Sign In",
@@ -60,6 +61,7 @@
       "subtitle": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
       "exploreNow": "Explore Now",
       "signUp": "Register",
+      "viewTags": "Browse Encyclopedia",
       "stats": {
         "cosplayers": "Cosplayers",
         "artworks": "Artworks",
@@ -67,49 +69,80 @@
       }
     },
     "features": {
-      "title": "Key Features",
+      "badge": "Creator Ecosystem",
+      "title": "Groundbreaking Features for Cosplayers & Fandom",
+      "subtitle": "Everything you need to celebrate cosplay art, connect with community, and safeguard creative works.",
       "items": {
         "portfolio": {
+          "badge": "Creator Studio",
           "title": "Professional Portfolio",
-          "description": "Upload high-resolution albums, customize cover photos freely, up to 20 photos."
+          "description": "Publish high-resolution cosplay photo albums with customizable covers and up to 20 HD photos per collection."
         },
-        "smart-search": {
-          "title": "Smart Search (Pixiv-style)",
-          "description": "Powerful tag filtering by fandom, waifu, and artistic style."
+        "encyclopedia": {
+          "badge": "Encyclopedia",
+          "title": "Character Wiki & Lineage",
+          "description": "Explore character origins, anime & game franchises, character relation trees, and a community-curated encyclopedia."
+        },
+        "events": {
+          "badge": "Cosplay Fes",
+          "title": "Festivals & Fes Events",
+          "description": "Stay updated with cosplay conventions and anime festivals, register attendance, and meet fellow fans."
+        },
+        "ranking": {
+          "badge": "Leaderboard",
+          "title": "Rankings & Spotlight",
+          "description": "Spotlight top-tier cosplayers and trending creative masterpieces across weekly and monthly leaderboards."
         },
         "community": {
-          "title": "Community Connection",
-          "description": "Like, bookmark, interact with your idols, and participate in community events."
+          "badge": "Social Feed",
+          "title": "Fan & Creator Network",
+          "description": "Follow favorite idols, like, bookmark, discuss in comments, and share your passion in a welcoming atmosphere."
+        },
+        "protection": {
+          "badge": "Trust & Safety",
+          "title": "Copyright & Content Safety",
+          "description": "Verified creator tag protection (*), robust content copyright safeguarding, and strict safety rating systems."
         }
       }
     },
     "cosplayers": {
+      "badge": "Top Creators",
       "title": "Featured Cosplayers This Week",
+      "subtitle": "Discover and follow the most captivating cosplayers in the community.",
+      "viewAll": "View All Cosplayers",
       "follow": "Follow",
       "following": "Following"
     },
     "albums": {
-      "title": "Explore Albums",
+      "badge": "Trending Creations",
+      "title": "Explore Latest Albums",
+      "subtitle": "Immerse yourself in meticulously crafted and artistic cosplay photo albums.",
+      "viewAll": "Explore More Artworks",
       "like": "Like",
       "likeAlbumAria": "Like album {name}"
     },
     "cta": {
       "title": "Ready to enter the world of Kosume?",
-      "subtitle": "A visual spectacle where every frame is a masterpiece.",
+      "subtitle": "A visual spectacle where every frame is a masterpiece. Join thousands of creators today.",
       "joinNow": "Join Now (Sign Up)",
       "viewWorks": "View Artworks"
     },
     "footer": {
       "description": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
+      "tagline": "Connecting the passion for cosplay and creative expression.",
+      "exploreTitle": "Explore",
+      "companyTitle": "Platform & Support",
       "links": {
         "about": "About Us",
         "features": "Features",
-        "events": "Events",
+        "tags": "Encyclopedia Tags",
+        "events": "Festivals & Events",
+        "ranking": "Leaderboard",
+        "explore": "Explore Artworks",
         "privacy": "Privacy & Terms",
-        "contact": "Contact",
-        "ranking": "Leaderboard"
+        "contact": "Contact & Support"
       },
-      "copyright": "© {year} Kosume, All rights reserved."
+      "copyright": "© {year} {brand}. All rights reserved."
     }
   },
   "Profile": {

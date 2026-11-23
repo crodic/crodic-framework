@@ -45,7 +45,8 @@
     "metaDescription": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
     "nav": {
       "explore": "Khám phá",
-      "community": "Cộng đồng",
+      "tags": "Bách khoa Tags",
+      "community": "Cosplayers",
       "events": "Sự kiện",
       "ranking": "Bảng xếp hạng",
       "signIn": "Đăng nhập",
@@ -60,6 +61,7 @@
       "subtitle": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
       "exploreNow": "Khám phá ngay",
       "signUp": "Đăng ký thành viên",
+      "viewTags": "Khám phá Bách khoa",
       "stats": {
         "cosplayers": "Cosplayers",
         "artworks": "Tác phẩm",
@@ -67,49 +69,80 @@
       }
     },
     "features": {
-      "title": "Tính năng nổi bật",
+      "badge": "Hệ sinh thái sáng tạo",
+      "title": "Tính năng đột phá dành cho Cosplayer & Fandom",
+      "subtitle": "Mọi công cụ bạn cần để tôn vinh nghệ thuật hóa thân, kết nối cộng đồng và bảo vệ bản quyền tác phẩm.",
       "items": {
         "portfolio": {
+          "badge": "Creator Studio",
           "title": "Portfolio Chuyên Nghiệp",
-          "description": "Đăng album chất lượng cao, chọn ảnh bìa tự do, tối đa 20 ảnh."
+          "description": "Đăng tải bộ sưu tập ảnh cosplay chất lượng cao, tự do chọn ảnh bìa, lưu trữ tối đa 20 ảnh độ nét cao mỗi album."
         },
-        "smart-search": {
-          "title": "Tìm Kiếm Thông Minh (Pixiv-style)",
-          "description": "Bộ lọc tags cực mạnh theo fandom, waifu, phong cách."
+        "encyclopedia": {
+          "badge": "Encyclopedia",
+          "title": "Từ Điển & Phả Hệ Nhân Vật",
+          "description": "Tra cứu nguồn gốc nhân vật, series anime & game, cây quan hệ phả hệ và bách khoa toàn thư thẻ do cộng đồng biên soạn."
+        },
+        "events": {
+          "badge": "Cosplay Fes",
+          "title": "Lễ Hội & Sự Kiện Fes",
+          "description": "Cập nhật lịch các lễ hội cosplay, anime fes, đăng ký tham gia và hẹn gặp gỡ giao lưu cùng bạn bè cùng fandom."
+        },
+        "ranking": {
+          "badge": "Leaderboard",
+          "title": "Bảng Xếp Hạng & Vinh Danh",
+          "description": "Vinh danh những cosplayer tài năng và tác phẩm nghệ thuật thịnh hành nhất trong tuần và tháng."
         },
         "community": {
-          "title": "Kết Nối Cộng Đồng",
-          "description": "Thả tim, bookmark, tương tác cùng IDOL và tham gia các sự kiện."
+          "badge": "Social Feed",
+          "title": "Kết Nối Fan & Idol",
+          "description": "Theo dõi idol yêu thích, thả tim, bookmark, tương tác bình luận và chia sẻ đam mê trong không gian thân thiện."
+        },
+        "protection": {
+          "badge": "Trust & Safety",
+          "title": "Bảo Vệ Bản Quyền Tác Giả",
+          "description": "Bảo vệ thẻ tác giả (*), khóa bản quyền tác phẩm và hệ thống phân loại mức độ an toàn (Safety Ratings) nghiêm ngặt."
         }
       }
     },
     "cosplayers": {
+      "badge": "Cộng đồng tài năng",
       "title": "Cosplayer Nổi Bật Tuần Này",
+      "subtitle": "Gặp gỡ và theo dõi những gương mặt hóa thân ấn tượng nhất tuần này.",
+      "viewAll": "Xem tất cả Cosplayer",
       "follow": "Theo dõi",
       "following": "Đã theo dõi"
     },
     "albums": {
-      "title": "Khám Phá Album",
+      "badge": "Tác phẩm thịnh hành",
+      "title": "Khám Phá Album Mới Nhất",
+      "subtitle": "Đắm chìm trong những bộ ảnh cosplay được dàn dựng công phu và nghệ thuật nhất.",
+      "viewAll": "Khám phá thêm tác phẩm",
       "like": "Thích",
       "likeAlbumAria": "Thích album {name}"
     },
     "cta": {
-      "title": "Bạn đã sẵn sàng tham gia thế giới Kosume?",
+      "title": "Bạn đã sẵn sàng tham gia cộng đồng Kosume?",
       "subtitle": "Vũ kịch mở ngàn kích thích thị giác. Nơi từng khung hình là một tuyệt tác nghệ thuật.",
       "joinNow": "Tham gia ngay (Đăng ký)",
       "viewWorks": "Xem các tác phẩm"
     },
     "footer": {
       "description": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+      "tagline": "Nơi kết nối tình yêu cosplay và nghệ thuật hóa thân.",
+      "exploreTitle": "Khám phá",
+      "companyTitle": "Nền tảng & Hỗ trợ",
       "links": {
         "about": "Về chúng tôi",
-        "features": "Tính năng",
-        "events": "Sự kiện",
+        "features": "Tính năng nổi bật",
+        "tags": "Bách khoa toàn thư Tags",
+        "events": "Lễ hội & Sự kiện",
+        "ranking": "Bảng xếp hạng",
+        "explore": "Khám phá tác phẩm",
         "privacy": "Quy định & Bảo mật",
-        "contact": "Liên hệ",
-        "ranking": "Bảng xếp hạng"
+        "contact": "Liên hệ & Hỗ trợ"
       },
-      "copyright": "© {year} Kosume. Bản quyền được bảo lưu."
+      "copyright": "© {year} {brand}. Bản quyền được bảo lưu."
     }
   },
   "Profile": {

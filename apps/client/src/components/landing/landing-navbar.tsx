@@ -26,12 +26,67 @@ export function LandingNavbar() {
 
   const navKeys: Record<
     string,
-    "explore" | "community" | "events" | "ranking"
+    "explore" | "tags" | "community" | "events" | "ranking"
   > = {
     explore: "explore",
+    tags: "tags",
     community: "community",
     events: "events",
     ranking: "ranking",
+  };
+
+  const renderDesktopNavLink = (link: (typeof LANDING_NAV_LINKS)[number]) => {
+    const isAnchor = link.href.startsWith("#");
+    const label = t(navKeys[link.key] || "explore");
+    const className =
+      "text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors";
+
+    if (isAnchor) {
+      return (
+        <a key={link.key} href={link.href} className={className}>
+          {label}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={link.key} href={link.href} className={className}>
+        {label}
+      </Link>
+    );
+  };
+
+  const renderMobileNavLink = (link: (typeof LANDING_NAV_LINKS)[number]) => {
+    const isAnchor = link.href.startsWith("#");
+    const label = t(navKeys[link.key] || "explore");
+    const className =
+      "text-foreground hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium transition-colors";
+
+    if (isAnchor) {
+      return (
+        <a
+          key={link.key}
+          href={link.href}
+          onClick={() => setMobileOpen(false)}
+          className={className}
+        >
+          <span>{label}</span>
+          <ChevronRight className="text-muted-foreground/60 size-4" />
+        </a>
+      );
+    }
+
+    return (
+      <Link
+        key={link.key}
+        href={link.href}
+        onClick={() => setMobileOpen(false)}
+        className={className}
+      >
+        <span>{label}</span>
+        <ChevronRight className="text-muted-foreground/60 size-4" />
+      </Link>
+    );
   };
 
   return (
@@ -63,15 +118,7 @@ export function LandingNavbar() {
           className="hidden items-center gap-1 md:flex lg:gap-2"
           aria-label={t("mainNavAria")}
         >
-          {LANDING_NAV_LINKS.map((link) => (
-            <a
-              key={link.key}
-              href={link.href}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
-            >
-              {t(navKeys[link.key] || "explore")}
-            </a>
-          ))}
+          {LANDING_NAV_LINKS.map((link) => renderDesktopNavLink(link))}
         </nav>
 
         {/* Action Buttons */}
@@ -85,7 +132,7 @@ export function LandingNavbar() {
             size="sm"
             className="border-border/70 bg-card/40 hover:bg-muted/60 text-foreground h-9 cursor-pointer rounded-full border px-4 font-medium transition-colors"
           >
-            <Link href="/auth/sign-in">{t("signIn")}</Link>
+            <Link href="/auth/login">{t("signIn")}</Link>
           </Button>
 
           <Button
@@ -135,17 +182,7 @@ export function LandingNavbar() {
               </SheetHeader>
 
               <div className="flex flex-col gap-2 py-6">
-                {LANDING_NAV_LINKS.map((link) => (
-                  <a
-                    key={link.key}
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="text-foreground hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium transition-colors"
-                  >
-                    <span>{t(navKeys[link.key] || "explore")}</span>
-                    <ChevronRight className="text-muted-foreground/60 size-4" />
-                  </a>
-                ))}
+                {LANDING_NAV_LINKS.map((link) => renderMobileNavLink(link))}
               </div>
 
               <div className="border-border/40 flex flex-col gap-3 border-t pt-4">
@@ -154,10 +191,7 @@ export function LandingNavbar() {
                   variant="outline"
                   className="border-border bg-background w-full rounded-full"
                 >
-                  <Link
-                    href="/auth/sign-in"
-                    onClick={() => setMobileOpen(false)}
-                  >
+                  <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
                     {t("signIn")}
                   </Link>
                 </Button>

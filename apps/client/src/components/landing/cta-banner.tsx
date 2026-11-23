@@ -4,51 +4,54 @@ import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { ScrollReveal } from "./scroll-reveal";
 
 export function CtaBanner() {
   const t = useTranslations("Landing.cta");
 
   return (
-    <section className="py-12 sm:py-20">
+    <section className="py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Glow callout card container */}
-        <div className="border-primary/50 from-primary/15 via-card/70 to-card/95 relative overflow-hidden rounded-3xl border bg-gradient-to-b p-8 text-center shadow-[0_0_60px_-15px_var(--color-primary)] backdrop-blur-md sm:p-14 lg:p-16">
-          {/* Ambient lighting ball */}
-          <div
-            className="bg-primary/25 pointer-events-none absolute -top-24 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full blur-[90px]"
-            aria-hidden="true"
-          />
+        <ScrollReveal>
+          {/* Glow callout card container */}
+          <div className="border-primary/50 from-primary/15 via-card/70 to-card/95 relative overflow-hidden rounded-3xl border bg-gradient-to-b p-8 text-center shadow-[0_0_60px_-15px_var(--color-primary)] backdrop-blur-md sm:p-14 lg:p-16">
+            {/* Ambient lighting ball */}
+            <div
+              className="bg-primary/25 pointer-events-none absolute -top-24 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full blur-[90px]"
+              aria-hidden="true"
+            />
 
-          <div className="relative z-10 mx-auto max-w-2xl">
-            <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight sm:text-3xl lg:text-4xl">
-              {t("title")}
-            </h2>
+            <div className="relative z-10 mx-auto max-w-2xl">
+              <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight sm:text-3xl lg:text-4xl">
+                {t("title")}
+              </h2>
 
-            <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed sm:mt-4 sm:text-base">
-              {t("subtitle")}
-            </p>
+              <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed sm:mt-4 sm:text-base">
+                {t("subtitle")}
+              </p>
 
-            {/* Action Buttons */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-12 cursor-pointer rounded-lg px-8 text-sm font-semibold shadow-xl transition-all hover:scale-[1.02] sm:text-base"
-              >
-                <Link href="/auth/sign-up">{t("joinNow")}</Link>
-              </Button>
+              {/* Action Buttons */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-12 cursor-pointer rounded-lg px-8 text-sm font-semibold shadow-xl transition-all hover:scale-[1.02] sm:text-base"
+                >
+                  <Link href="/auth/sign-up">{t("joinNow")}</Link>
+                </Button>
 
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-border/80 bg-background/50 hover:bg-muted text-foreground h-12 cursor-pointer rounded-lg px-8 text-sm font-medium transition-all hover:scale-[1.02] sm:text-base"
-              >
-                <a href="#albums">{t("viewWorks")}</a>
-              </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-border/80 bg-background/50 hover:bg-muted text-foreground h-12 cursor-pointer rounded-lg px-8 text-sm font-medium transition-all hover:scale-[1.02] sm:text-base"
+                >
+                  <a href="#albums">{t("viewWorks")}</a>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

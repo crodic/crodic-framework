@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { HERO_STATS } from "@/config/landing";
+import { ScrollReveal } from "./scroll-reveal";
 
 export function HeroBanner() {
   const t = useTranslations("Landing.hero");
@@ -43,7 +44,7 @@ export function HeroBanner() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Main Hero Content Area */}
         <div className="flex min-h-[420px] flex-col justify-center sm:min-h-[460px] lg:min-h-[500px]">
-          <div className="max-w-xl py-6 text-left sm:py-10 lg:max-w-2xl">
+          <ScrollReveal className="max-w-xl py-6 text-left sm:py-10 lg:max-w-2xl">
             <h1 className="text-foreground text-4xl leading-[1.14] font-black tracking-tight sm:text-5xl lg:text-6xl">
               {t("titleLead")} <br />
               <span className="text-primary drop-shadow-[0_0_35px_var(--color-primary)]">
@@ -74,12 +75,24 @@ export function HeroBanner() {
               >
                 <Link href="/auth/sign-up">{t("signUp")}</Link>
               </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="ghost"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-11 cursor-pointer rounded-lg px-4 text-sm font-medium transition-all sm:h-12"
+              >
+                <Link href="/tags">{t("viewTags")}</Link>
+              </Button>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* Stats Row */}
-        <div className="border-border/20 mt-8 border-t pt-6 sm:mt-12 sm:pt-8">
+        <ScrollReveal
+          delay={0.2}
+          className="border-border/20 mt-8 border-t pt-6 sm:mt-12 sm:pt-8"
+        >
           <div className="mx-auto grid max-w-2xl grid-cols-3 gap-4 text-center sm:max-w-3xl sm:gap-8">
             {HERO_STATS.map((stat) => (
               <div key={stat.key} className="flex flex-col items-center">
@@ -92,7 +105,7 @@ export function HeroBanner() {
               </div>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

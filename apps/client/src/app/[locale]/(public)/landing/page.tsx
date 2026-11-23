@@ -1,6 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { routing } from "@/i18n/routing";
+import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { HeroBanner } from "@/components/landing/hero-banner";
 import { FeaturesHighlight } from "@/components/landing/features-highlight";
@@ -8,6 +10,7 @@ import { CosplayerShowcase } from "@/components/landing/cosplayer-showcase";
 import { AlbumShowcase } from "@/components/landing/album-showcase";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import type { WithContext, WebSite, Organization } from "schema-dts";
 
 interface LandingPageProps {
   params: Promise<{ locale: string }>;
@@ -17,24 +20,48 @@ export async function generateMetadata({
   params,
 }: LandingPageProps): Promise<Metadata> {
   const { locale } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const whiteLabel = await fetchActiveClientWhiteLabel();
   const t = await getTranslations({ locale, namespace: "Landing" });
 
-  const title = t("metaTitle");
-  const description = t("metaDescription");
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
+
+  const title =
+    whiteLabel?.metaTitle || whiteLabel?.siteTitle || t("metaTitle");
+
+  const description =
+    whiteLabel?.metaDescription ||
+    whiteLabel?.siteTagline ||
+    t("metaDescription");
+
+  const canonicalUrl = `${baseUrl}/${locale}/landing`;
+
+  const languages = Object.fromEntries(
+    routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/landing`])
+  );
 
   return {
-    title,
+    title: {
+      absolute: title,
+    },
     description,
+    alternates: {
+      canonical: canonicalUrl,
+      languages,
+    },
     openGraph: {
       title,
       description,
+      url: canonicalUrl,
+      siteName,
       type: "website",
+      locale,
       images: [
         {
           url: "/landing/hero-banner.png",
           width: 1200,
           height: 630,
-          alt: "Kosume Cosplay Showcase",
+          alt: title,
         },
       ],
     },
@@ -44,6 +71,17 @@ export async function generateMetadata({
       description,
       images: ["/landing/hero-banner.png"],
     },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 }
 
@@ -51,8 +89,54 @@ export default async function LandingPage({ params }: LandingPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const whiteLabel = await fetchActiveClientWhiteLabel();
+  const t = await getTranslations({ locale, namespace: "Landing" });
+
+  const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
+  const description =
+    whiteLabel?.metaDescription ||
+    whiteLabel?.siteTagline ||
+    t("metaDescription");
+
+  const websiteSchema: WithContext<WebSite> = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName,
+    url: `${baseUrl}/${locale}/landing`,
+    inLanguage: routing.locales,
+    description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${baseUrl}/${locale}/tags?q={search_term_string}`,
+      query: "required name=search_term_string",
+    },
+  };
+
+  const organizationSchema: WithContext<Organization> = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteName,
+    url: baseUrl,
+    logo: whiteLabel?.siteLogo || `${baseUrl}/favicon.ico`,
+    description,
+  };
+
   return (
     <div className="bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground flex min-h-screen flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
+        }}
+      />
+
       <LandingNavbar />
       <main className="flex-1">
         <HeroBanner />
