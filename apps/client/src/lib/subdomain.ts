@@ -219,7 +219,7 @@ export function getAppExternalUrl(path = ""): string {
     return getRootExternalUrl(path);
   }
 
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
   const defaultSubdomain = getDefaultSubdomain();
 
   if (typeof window !== "undefined") {
@@ -250,7 +250,7 @@ export function getAppExternalUrl(path = ""): string {
  * Safe to use in both SSR and browser client components.
  */
 export function getRootExternalUrl(path = ""): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
 
   if (typeof window !== "undefined") {
     const isLocal = isLocalHost(window.location.hostname);

@@ -61,6 +61,16 @@ export function createRouteMatcher(patterns: RoutePattern[]) {
 export const isPublicRoute = createRouteMatcher([/^\/pages(\/.*)?$/]);
 
 /**
+ * Route matcher for routes belonging exclusively to the Root Domain
+ * (Domain A: Landing page, legal CMS pages, and future marketing / blog / docs routes).
+ */
+export const isRootDomainRoute = createRouteMatcher([
+  /^\/?$/,
+  /^\/landing(\/.*)?$/,
+  /^\/pages(\/.*)?$/,
+]);
+
+/**
  * Internal route matcher for base protected endpoints.
  * All subpaths under these roots strictly require user authentication.
  */

@@ -6,6 +6,7 @@ import { fetchPublishedCmsPages } from "@/services/cms-pages";
 import type { EventSummaryResDto } from "@/services/events";
 import type { PostSummaryResDto } from "@/services/posts";
 import type { CosplayerSummaryResDto } from "@/services/cosplayer";
+import { getAppExternalUrl, getRootExternalUrl } from "@/lib/subdomain";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,17 @@ function buildLocalizedEntries(
   changeFrequency: SitemapFrequency,
   priority: number
 ): MetadataRoute.Sitemap {
+  const cleanBase = baseUrl.replace(/\/+$/, "");
+  const normalizedPath = rawPath
+    ? rawPath.startsWith("/")
+      ? rawPath
+      : `/${rawPath}`
+    : "";
   const languages = Object.fromEntries(
-    routing.locales.map((loc) => [loc, `${baseUrl}/${loc}${rawPath}`])
+    routing.locales.map((loc) => [loc, `${cleanBase}/${loc}${normalizedPath}`])
   );
   return routing.locales.map((locale) => ({
-    url: `${baseUrl}/${locale}${rawPath}`,
+    url: `${cleanBase}/${locale}${normalizedPath}`,
     lastModified,
     changeFrequency,
     priority,
@@ -45,7 +52,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 async function sitemapSection(props: {
   id: Promise<string> | string;
 }): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appBaseUrl = getAppExternalUrl().replace(/\/+$/, "");
+  const rootBaseUrl = getRootExternalUrl().replace(/\/+$/, "");
   const now = new Date();
 
   const id =
@@ -53,9 +61,31 @@ async function sitemapSection(props: {
       ? await props.id
       : (props?.id as string);
 
-  // 1. Pages Sitemap (Static Pages + Dynamic CMS Pages)
+  // 1. Pages Sitemap (Root Domain Landing Page + App Static Pages + Dynamic CMS Pages)
   if (id === "pages") {
-    const staticPages: {
+    // 1a. Root Domain Landing Page (Canonical marketing entry on crodic.click)
+    const rootLandingEntries: MetadataRoute.Sitemap = routing.locales.map(
+      (locale) => {
+        const path = locale === routing.defaultLocale ? "" : `/${locale}`;
+        return {
+          url: `${rootBaseUrl}${path || "/"}`,
+          lastModified: now,
+          changeFrequency: "weekly" as SitemapFrequency,
+          priority: 1.0,
+          alternates: {
+            languages: Object.fromEntries(
+              routing.locales.map((loc) => [
+                loc,
+                `${rootBaseUrl}${loc === routing.defaultLocale ? "" : `/${loc}` || "/"}`,
+              ])
+            ),
+          },
+        };
+      }
+    );
+
+    // 1b. App Static Pages on Subdomain (feed, explore, ranking, tags, events, cosplayer)
+    const appStaticPages: {
       path: string;
       changeFrequency: SitemapFrequency;
       priority: number;
@@ -64,21 +94,23 @@ async function sitemapSection(props: {
       { path: "/explore", changeFrequency: "daily", priority: 0.9 },
       { path: "/feed", changeFrequency: "daily", priority: 0.9 },
       { path: "/ranking", changeFrequency: "daily", priority: 0.8 },
-      { path: "/landing", changeFrequency: "weekly", priority: 0.7 },
-      { path: "/auth/login", changeFrequency: "monthly", priority: 0.5 },
-      { path: "/auth/sign-up", changeFrequency: "monthly", priority: 0.5 },
+      { path: "/tags", changeFrequency: "daily", priority: 0.8 },
+      { path: "/events", changeFrequency: "daily", priority: 0.8 },
+      { path: "/cosplayer", changeFrequency: "weekly", priority: 0.8 },
     ];
 
-    const staticEntries: MetadataRoute.Sitemap = staticPages.flatMap((page) =>
-      buildLocalizedEntries(
-        baseUrl,
-        page.path,
-        now,
-        page.changeFrequency,
-        page.priority
-      )
+    const appStaticEntries: MetadataRoute.Sitemap = appStaticPages.flatMap(
+      (page) =>
+        buildLocalizedEntries(
+          appBaseUrl,
+          page.path,
+          now,
+          page.changeFrequency,
+          page.priority
+        )
     );
 
+    // 1c. CMS Legal & Policy Pages (on root domain)
     const cmsEntries: MetadataRoute.Sitemap = [];
     try {
       const cmsPages = await fetchPublishedCmsPages();
@@ -92,7 +124,7 @@ async function sitemapSection(props: {
           }
 
           cmsEntries.push({
-            url: `${baseUrl}/${t.locale}/pages/${t.slug}`,
+            url: `${rootBaseUrl}/${t.locale}/pages/${t.slug}`,
             lastModified: page.updatedAt ? new Date(page.updatedAt) : now,
             changeFrequency: "monthly",
             priority: 0.7,
@@ -103,13 +135,13 @@ async function sitemapSection(props: {
       console.warn("Failed to fetch CMS pages for sitemap:", err);
     }
 
-    return [...staticEntries, ...cmsEntries];
+    return [...rootLandingEntries, ...appStaticEntries, ...cmsEntries];
   }
 
   // 2. Events Sitemap
   if (id === "events") {
     const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
-      baseUrl,
+      appBaseUrl,
       "/events",
       now,
       "daily",
@@ -125,7 +157,7 @@ async function sitemapSection(props: {
         if (!slugOrId) continue;
         entries.push(
           ...buildLocalizedEntries(
-            baseUrl,
+            appBaseUrl,
             `/events/${slugOrId}`,
             event.createdAt ? new Date(event.createdAt) : now,
             "daily",
@@ -158,7 +190,7 @@ async function sitemapSection(props: {
           continue;
         entries.push(
           ...buildLocalizedEntries(
-            baseUrl,
+            appBaseUrl,
             `/posts/${slugOrId}`,
             post.publishedAt ? new Date(post.publishedAt) : now,
             "weekly",
@@ -176,7 +208,7 @@ async function sitemapSection(props: {
   // 4. Cosplayers Sitemap
   if (id === "cosplayers") {
     const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
-      baseUrl,
+      appBaseUrl,
       "/cosplayer",
       now,
       "weekly",
@@ -200,7 +232,7 @@ async function sitemapSection(props: {
         }
         entries.push(
           ...buildLocalizedEntries(
-            baseUrl,
+            appBaseUrl,
             `/cosplayer/${cosplayer.slug}`,
             cosplayer.createdAt ? new Date(cosplayer.createdAt) : now,
             "weekly",

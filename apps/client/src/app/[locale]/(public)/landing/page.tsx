@@ -16,6 +16,7 @@ import { AlbumShowcase } from "@/components/landing/album-showcase";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import type { WithContext, WebSite, Organization } from "schema-dts";
+import { getAppExternalUrl, getRootExternalUrl } from "@/lib/subdomain";
 
 // Incremental Static Regeneration (ISR): revalidate page every 5 minutes
 export const revalidate = 300;
@@ -33,7 +34,7 @@ export async function generateMetadata({
   params,
 }: LandingPageProps): Promise<Metadata> {
   const { locale } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const rootBaseUrl = getRootExternalUrl().replace(/\/+$/, "");
   const whiteLabel = await fetchActiveClientWhiteLabel();
   const t = await getTranslations({ locale, namespace: "Landing" });
 
@@ -47,10 +48,14 @@ export async function generateMetadata({
     whiteLabel?.siteTagline ||
     t("metaDescription");
 
-  const canonicalUrl = `${baseUrl}/${locale}/landing`;
+  const canonicalPath = locale === routing.defaultLocale ? "" : `/${locale}`;
+  const canonicalUrl = `${rootBaseUrl}${canonicalPath || "/"}`;
 
   const languages = Object.fromEntries(
-    routing.locales.map((loc) => [loc, `${baseUrl}/${loc}/landing`])
+    routing.locales.map((loc) => [
+      loc,
+      `${rootBaseUrl}${loc === routing.defaultLocale ? "" : `/${loc}` || "/"}`,
+    ])
   );
 
   return {
@@ -102,7 +107,11 @@ export default async function LandingPage({ params }: LandingPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const rootBaseUrl = getRootExternalUrl().replace(/\/+$/, "");
+  const appBaseUrl = getAppExternalUrl().replace(/\/+$/, "");
+  const canonicalPath = locale === routing.defaultLocale ? "" : `/${locale}`;
+  const canonicalUrl = `${rootBaseUrl}${canonicalPath || "/"}`;
+
   const [whiteLabel, cmsPages, albums, cosplayers] = await Promise.all([
     fetchActiveClientWhiteLabel(),
     fetchPublishedCmsPages(),
@@ -121,12 +130,12 @@ export default async function LandingPage({ params }: LandingPageProps) {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: siteName,
-    url: `${baseUrl}/${locale}/landing`,
+    url: canonicalUrl,
     inLanguage: routing.locales,
     description,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${baseUrl}/${locale}/tags?q={search_term_string}`,
+      target: `${appBaseUrl}/${locale}/tags?q={search_term_string}`,
       query: "required name=search_term_string",
     },
   };
@@ -135,8 +144,8 @@ export default async function LandingPage({ params }: LandingPageProps) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: siteName,
-    url: baseUrl,
-    logo: whiteLabel?.siteLogo || `${baseUrl}/favicon.ico`,
+    url: rootBaseUrl,
+    logo: whiteLabel?.siteLogo || `${rootBaseUrl}/favicon.ico`,
     description,
   };
 

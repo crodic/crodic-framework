@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { getAppExternalUrl } from "@/lib/subdomain";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appBaseUrl = getAppExternalUrl().replace(/\/+$/, "");
 
   return {
     rules: [
@@ -11,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/auth/", "/*/profile", "/profile"],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${appBaseUrl}/sitemap.xml`,
   };
 }

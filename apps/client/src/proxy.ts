@@ -12,7 +12,12 @@ import {
   getAuthCookieOptions,
   getDeleteCookieOptions,
 } from "./lib/cookies";
-import { isAuthRoute, isProtectedRoute, isPublicRoute } from "./config/routes";
+import {
+  isAuthRoute,
+  isProtectedRoute,
+  isPublicRoute,
+  isRootDomainRoute,
+} from "./config/routes";
 import {
   extractSubdomain,
   getDefaultSubdomain,
@@ -40,15 +45,10 @@ export async function proxy(request: NextRequest) {
   const { locale, pathname } = extractLocaleAndPathname(request, intlResponse);
 
   // ---------------------------------------------------------------------------
-  // 1. Root Domain Routing (crodic.click / localhost:3000)
+  // 1. Root Domain Routing (Domain A - e.g. crodic.click / localhost)
   // ---------------------------------------------------------------------------
   if (isRootDomain) {
-    // When visiting root home, rewrite internally to Landing page
-    if (pathname === "/" || pathname === "") {
-      return rewriteToLanding(request, intlResponse, locale);
-    }
-
-    // Explicit /landing URL -> 301 redirect to root home for clean SEO canonical
+    // 1a. Explicit /landing URL -> 301 redirect to clean root home for SEO
     if (pathname === "/landing") {
       const cleanRootUrl = new URL(
         locale === routing.defaultLocale ? "/" : `/${locale}`,
@@ -61,12 +61,17 @@ export async function proxy(request: NextRequest) {
       });
     }
 
-    // Public CMS / legal pages (/pages/*) are allowed on the root domain
-    if (isPublicRoute(pathname)) {
+    // 1b. Root home ("/" or "") -> rewrite internally to Landing page
+    if (pathname === "/" || pathname === "") {
+      return rewriteToLanding(request, intlResponse, locale);
+    }
+
+    // 1c. Configured Root Domain routes (CMS pages, marketing, legal)
+    if (isRootDomainRoute(pathname)) {
       return finalizeResponse(request, intlResponse, pathname, null);
     }
 
-    // Any app route accessed on root domain -> redirect to app subdomain (if enabled)
+    // 1d. Any App route accessed on root domain -> redirect to app subdomain (if enabled)
     if (isSubdomainRoutingEnabled()) {
       const targetSubdomain = getDefaultSubdomain();
       const appUrl = buildSubdomainUrl({
