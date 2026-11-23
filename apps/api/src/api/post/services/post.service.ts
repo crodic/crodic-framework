@@ -108,6 +108,25 @@ export class PostService {
         AllowedFilter.exact('isFeaturedWork'),
         AllowedFilter.exact('copyrightTagId'),
         AllowedFilter.exact('characterTagId'),
+        AllowedFilter.callback('tagId', (qb, value) => {
+          const tId = Array.isArray(value) ? value[0] : value;
+          if (!tId) return;
+          qb.andWhere(
+            new Brackets((b) => {
+              b.where('post.copyrightTagId = :tFilterId', { tFilterId: tId })
+                .orWhere('post.characterTagId = :tFilterId', { tFilterId: tId })
+                .orWhere(
+                  `EXISTS (
+                    SELECT 1 FROM entity_tags et
+                    WHERE et.entity_id = post.id
+                      AND et.entity_type = 'post'
+                      AND et.tag_id = :tFilterId
+                  )`,
+                  { tFilterId: tId },
+                );
+            }),
+          );
+        }),
         AllowedFilter.partial('title'),
         AllowedFilter.partial('characterName'),
         AllowedFilter.partial('fandomName'),
@@ -749,6 +768,35 @@ export class PostService {
     await this.dataSource.transaction(async (em) => {
       await em.softDelete(PostEntity, { id: postId });
 
+      // Clean up entity tags & decrement usageCount
+      const attachedTags = await em.find(EntityTagEntity, {
+        where: { entityType: ETaggableEntityType.POST, entityId: postId },
+      });
+      if (attachedTags.length > 0) {
+        await em.delete(
+          EntityTagEntity,
+          attachedTags.map((et) => et.id),
+        );
+        for (const et of attachedTags) {
+          await em.query(
+            `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+            [et.tagId],
+          );
+        }
+      }
+      if (post.copyrightTagId) {
+        await em.query(
+          `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+          [post.copyrightTagId],
+        );
+      }
+      if (post.characterTagId) {
+        await em.query(
+          `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+          [post.characterTagId],
+        );
+      }
+
       if (post.cosplayerCharacterId) {
         const char = await em.findOne(CosplayerCharacterEntity, {
           where: { id: post.cosplayerCharacterId },
@@ -978,6 +1026,35 @@ export class PostService {
 
     await this.dataSource.transaction(async (em) => {
       await em.softDelete(PostEntity, { id: postId });
+
+      // Clean up entity tags & decrement usageCount
+      const attachedTags = await em.find(EntityTagEntity, {
+        where: { entityType: ETaggableEntityType.POST, entityId: postId },
+      });
+      if (attachedTags.length > 0) {
+        await em.delete(
+          EntityTagEntity,
+          attachedTags.map((et) => et.id),
+        );
+        for (const et of attachedTags) {
+          await em.query(
+            `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+            [et.tagId],
+          );
+        }
+      }
+      if (post.copyrightTagId) {
+        await em.query(
+          `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+          [post.copyrightTagId],
+        );
+      }
+      if (post.characterTagId) {
+        await em.query(
+          `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
+          [post.characterTagId],
+        );
+      }
 
       const profile = await em.findOne(CosplayerProfileEntity, {
         where: { userId: post.authorId },

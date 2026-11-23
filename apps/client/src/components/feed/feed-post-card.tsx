@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { motion } from "@/components/ui/motion-primitives";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -242,7 +243,13 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
 
   return (
     <>
-      <article className="border-border/70 bg-card/70 hover:border-border rounded-3xl border p-4 shadow-xs backdrop-blur-md transition-colors sm:p-5">
+      <motion.article
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] }}
+        className="border-border/70 bg-card/70 hover:border-border rounded-3xl border p-4 shadow-xs backdrop-blur-md transition-colors sm:p-5"
+      >
         {/* 1. Post Header: Author info & options */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -256,7 +263,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   alt={post.author.displayName}
                   fill
                   sizes="44px"
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover"
                 />
               ) : (
                 <div className="bg-primary/10 text-primary flex size-full items-center justify-center font-bold">
@@ -374,14 +381,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
             {images.length === 1 ? (
               <div
                 onClick={() => openLightbox(0)}
-                className="group border-border/60 bg-muted/30 relative aspect-[16/10] w-full cursor-pointer overflow-hidden rounded-2xl border"
+                className="group border-border/60 hover:border-primary/50 bg-muted/30 relative aspect-[16/10] w-full cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
               >
                 <Image
                   src={images[0] ?? ""}
                   alt="Cosplay artwork"
                   fill
                   sizes="(max-width: 768px) 100vw, 700px"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                 />
               </div>
             ) : images.length === 2 ? (
@@ -390,14 +397,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   <div
                     key={i}
                     onClick={() => openLightbox(i)}
-                    className="group border-border/60 bg-muted/30 relative aspect-square cursor-pointer overflow-hidden rounded-2xl border"
+                    className="group border-border/60 hover:border-primary/50 bg-muted/30 relative aspect-square cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
                   >
                     <Image
                       src={img}
                       alt={`Artwork ${i + 1}`}
                       fill
                       sizes="(max-width: 768px) 50vw, 350px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                     />
                   </div>
                 ))}
@@ -408,14 +415,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 {/* Hero left */}
                 <div
                   onClick={() => openLightbox(0)}
-                  className="group border-border/60 bg-muted/30 relative col-span-2 aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl border"
+                  className="group border-border/60 hover:border-primary/50 bg-muted/30 relative col-span-2 aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
                 >
                   <Image
                     src={images[0] ?? ""}
                     alt="Main artwork"
                     fill
                     sizes="(max-width: 768px) 70vw, 450px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                   />
                 </div>
 
@@ -424,14 +431,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   {/* Top right */}
                   <div
                     onClick={() => openLightbox(1)}
-                    className="group border-border/60 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border"
+                    className="group border-border/60 hover:border-primary/50 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
                   >
                     <Image
                       src={images[1] ?? images[0] ?? ""}
                       alt="Artwork 2"
                       fill
                       sizes="(max-width: 768px) 30vw, 220px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                     />
                   </div>
 
@@ -440,14 +447,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                     <Link
                       href={`/posts/${postSlugOrId}`}
                       scroll={false}
-                      className="group border-border/60 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border"
+                      className="group border-border/60 hover:border-primary/50 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
                     >
                       <Image
                         src={images[2] ?? images[0] ?? ""}
                         alt="Artwork 3"
                         fill
                         sizes="(max-width: 768px) 30vw, 220px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                       />
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 font-medium text-white backdrop-blur-xs transition-colors hover:bg-black/55">
                         <Images className="size-5" />
@@ -459,14 +466,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                   ) : (
                     <div
                       onClick={() => openLightbox(2)}
-                      className="group border-border/60 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border"
+                      className="group border-border/60 hover:border-primary/50 bg-muted/30 relative flex-1 cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300"
                     >
                       <Image
                         src={images[2] ?? images[0] ?? ""}
                         alt="Artwork 3"
                         fill
                         sizes="(max-width: 768px) 30vw, 220px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                       />
                     </div>
                   )}
@@ -494,9 +501,11 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         <div className="text-muted-foreground border-border/40 mt-3 flex items-center justify-between border-t pt-3 text-xs">
           <div className="flex items-center gap-1 sm:gap-4">
             {/* Like button */}
-            <button
+            <motion.button
               type="button"
               onClick={handleToggleLike}
+              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.08 }}
               className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors ${
                 isLiked
                   ? "font-semibold text-rose-500"
@@ -504,10 +513,10 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
               }`}
             >
               <Heart
-                className={`size-4 ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
+                className={`size-4 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
               />
               <span>{likesCount}</span>
-            </button>
+            </motion.button>
 
             {/* Comment button */}
             <Link
@@ -520,20 +529,24 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
             </Link>
 
             {/* Share button */}
-            <button
+            <motion.button
               type="button"
               onClick={handleShare}
+              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.08 }}
               className="hover:bg-muted/60 hover:text-foreground flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors"
             >
               <Share2 className="size-4" />
               <span>{t("share")}</span>
-            </button>
+            </motion.button>
           </div>
 
           {/* Bookmark / Save button */}
-          <button
+          <motion.button
             type="button"
             onClick={handleToggleBookmark}
+            whileTap={{ scale: 0.85 }}
+            whileHover={{ scale: 1.08 }}
             className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors ${
               isBookmarked
                 ? "text-primary font-semibold"
@@ -542,10 +555,10 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
             title={isBookmarked ? t("unsavePost") : t("savePost")}
           >
             <Bookmark
-              className={`size-4 ${isBookmarked ? "fill-primary text-primary" : ""}`}
+              className={`size-4 transition-colors ${isBookmarked ? "fill-primary text-primary" : ""}`}
             />
             <span className="hidden sm:inline">{t("saved")}</span>
-          </button>
+          </motion.button>
         </div>
 
         {/* 6. Inline Quick Comment Form & Snippets */}
@@ -631,7 +644,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
             </div>
           )}
         </div>
-      </article>
+      </motion.article>
 
       {/* Fullscreen Photo Lightbox */}
       <PhotoLightbox

@@ -140,7 +140,7 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
               alt={cosplayer.displayName}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              className="object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
             />
           ) : (
             <div className="from-primary/10 to-muted flex size-full items-center justify-center bg-gradient-to-br">

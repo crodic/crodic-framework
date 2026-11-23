@@ -167,7 +167,7 @@ export function NotificationItemCard({
               src={notification.previewImageUrl}
               alt="Preview"
               fill
-              className="object-cover transition-transform group-hover:scale-105"
+              className="object-cover"
             />
           </div>
         )}

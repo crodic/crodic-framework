@@ -7,6 +7,7 @@ import { BadgeCheck, Bookmark, Heart, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { PostSummaryResDto } from "@/services/posts";
 import { usePostLike } from "@/hooks/use-post-like";
+import { motion } from "@/components/ui/motion-primitives";
 import { cn } from "@/lib/utils";
 
 interface ExploreCardProps {
@@ -41,37 +42,49 @@ export function ExploreCard({ item }: ExploreCardProps) {
 
   return (
     <div className="group flex cursor-pointer flex-col">
-      {/* Top Image Thumbnail */}
-      <Link
-        href={`/posts/${postSlugOrId}`}
-        className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/5 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-all duration-300 group-hover:shadow-md"
+      {/* Top Image Thumbnail with Modern Spring Lift */}
+      <motion.div
+        whileHover={{
+          y: -5,
+          transition: { type: "spring", stiffness: 350, damping: 25 },
+        }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full"
       >
-        <Image
-          src={item.coverImageUrl}
-          alt={item.title}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
-        />
+        <Link
+          href={`/posts/${postSlugOrId}`}
+          className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/10 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300 group-hover:shadow-lg"
+        >
+          <Image
+            src={item.coverImageUrl}
+            alt={item.title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover object-top transition-opacity duration-300 group-hover:opacity-95"
+          />
 
-        {/* Subtle hover gradient overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* Subtle hover gradient overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-        {/* Top-Left Video Short Badge */}
-        {(item.postType === "video" || Boolean(item.videoUrl)) && (
-          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">
-            <Video className="size-3 text-pink-400" />
-            <span>Video</span>
-          </div>
-        )}
+          {/* Top-Left Video Short Badge */}
+          {(item.postType === "video" || Boolean(item.videoUrl)) && (
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">
+              <Video className="size-3 text-pink-400" />
+              <span>Video</span>
+            </div>
+          )}
 
-        {/* Top-Right Tag Badge from Tag Management */}
-        {(item.tagNamesCache?.[0] || item.characterName || item.fandomName) && (
-          <span className="absolute top-2 right-2 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md select-none">
-            #{item.tagNamesCache?.[0] || item.characterName || item.fandomName}
-          </span>
-        )}
-      </Link>
+          {/* Top-Right Tag Badge from Tag Management */}
+          {(item.tagNamesCache?.[0] ||
+            item.characterName ||
+            item.fandomName) && (
+            <span className="absolute top-2 right-2 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md select-none">
+              #
+              {item.tagNamesCache?.[0] || item.characterName || item.fandomName}
+            </span>
+          )}
+        </Link>
+      </motion.div>
 
       {/* Line 1: Character / Post Title */}
       <Link href={`/posts/${postSlugOrId}`} className="block">
@@ -114,26 +127,30 @@ export function ExploreCard({ item }: ExploreCardProps) {
           )}
         </Link>
 
-        {/* Right: Likes & Bookmark */}
+        {/* Right: Likes & Bookmark with spring micro-interactions */}
         <div className="flex shrink-0 items-center gap-2">
-          <button
+          <motion.button
             type="button"
             onClick={toggleLike}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
             className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium transition-colors select-none hover:text-rose-400"
             aria-label={t("likeArtwork", { title: item.title })}
           >
             <Heart
               className={cn(
-                "size-3",
+                "size-3 transition-colors",
                 isLiked ? "fill-rose-500 text-rose-500" : "text-rose-500"
               )}
             />
             <span>{formattedLikes}</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             type="button"
             onClick={handleBookmark}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.85 }}
             className={cn(
               "text-muted-foreground hover:text-primary cursor-pointer p-0.5 transition-colors select-none",
               isBookmarked && "text-primary"
@@ -146,7 +163,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
                 isBookmarked && "fill-primary text-primary"
               )}
             />
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

@@ -326,7 +326,7 @@ export function PostInfo({
                   alt={post.author.displayName}
                   fill
                   sizes="44px"
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover"
                 />
               ) : (
                 <div className="bg-primary/20 text-primary flex size-full items-center justify-center font-bold">

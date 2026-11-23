@@ -50,6 +50,9 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
   const initialTab = searchParams.get("tab") || "wiki";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isMuted, setIsMuted] = useState(tag.isMutedByCurrentUser ?? false);
+  const [artworksCount, setArtworksCount] = useState<number | null>(null);
+  const displayArtworksCount =
+    artworksCount !== null ? artworksCount : Number(tag.usageCount || 0);
 
   const muteMutation = useMutation({
     mutationFn: async () => {
@@ -187,7 +190,9 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
               <div className="flex items-center gap-1.5">
                 <ImageIcon className="text-primary size-4" />
                 <span className="text-foreground font-bold tabular-nums">
-                  {t("postsCount", { count: tag.usageCount.toLocaleString() })}
+                  {t("postsCount", {
+                    count: displayArtworksCount.toLocaleString(),
+                  })}
                 </span>
               </div>
 
@@ -282,7 +287,7 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
               <ImageIcon className="size-3.5" />
               <span>{t("tabArtworks")}</span>
               <span className="bg-muted text-muted-foreground py-0.2 rounded-full px-1.5 font-mono text-[10px] tabular-nums">
-                {tag.usageCount.toLocaleString()}
+                {displayArtworksCount.toLocaleString()}
               </span>
             </TabsTrigger>
 
@@ -308,7 +313,11 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
 
         {/* Tab 2: Artworks & Photos Grid */}
         <TabsContent value="artworks" className="mt-0 space-y-6">
-          <TagArtworksGrid tagName={tag.name} />
+          <TagArtworksGrid
+            tagId={tag.id}
+            tagName={tag.name}
+            onCountLoaded={setArtworksCount}
+          />
         </TabsContent>
 
         {/* Tab 3: Semantic DAG Hierarchy */}

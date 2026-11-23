@@ -23,6 +23,10 @@ import {
   type TagSummaryResDto,
 } from "@/services/tags";
 import { TagCard } from "./tag-card";
+import {
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/motion-primitives";
 import { cn } from "@/lib/utils";
 
 export function TagDirectoryView() {
@@ -195,11 +199,13 @@ export function TagDirectoryView() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {tags.map((tag) => (
-            <TagCard key={tag.id} tag={tag} />
+            <StaggerItem key={tag.id}>
+              <TagCard tag={tag} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       )}
     </div>
   );

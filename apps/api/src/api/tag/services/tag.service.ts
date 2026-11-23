@@ -1016,7 +1016,7 @@ export class TagService {
     locale: string,
     currentUserId?: AutoIncrementID | null,
   ): Promise<TagDetailResDto> {
-    const [graph, encList, mutedRecord] = await Promise.all([
+    const [graph, encList, mutedRecord, postCountResult] = await Promise.all([
       this.hierarchyService.getTagGraph(tag.id),
       this.encyclopediaRepository.find({
         where: { tagId: tag.id },
@@ -1027,12 +1027,46 @@ export class TagService {
             where: { userId: currentUserId, tagId: tag.id },
           })
         : Promise.resolve(null),
+      this.dataSource.query(
+        `SELECT COUNT(DISTINCT post.id)::int AS count
+         FROM posts post
+         WHERE post.deleted_at IS NULL
+           AND post.status = 'published'
+           AND post.is_public = true
+           AND (
+             post.copyright_tag_id = $1
+             OR post.character_tag_id = $1
+             OR EXISTS (
+               SELECT 1 FROM entity_tags et
+               WHERE et.entity_id = post.id
+                 AND et.entity_type = 'post'
+                 AND et.tag_id = $1
+             )
+           )`,
+        [tag.id],
+      ),
     ]);
 
     tag.encyclopedias = encList;
 
+    const activePostCount =
+      postCountResult?.[0]?.count !== undefined
+        ? Number(postCountResult[0].count)
+        : Number(tag.usageCount || 0);
+
+    if (activePostCount !== Number(tag.usageCount || 0)) {
+      await this.tagRepository.update(
+        { id: tag.id },
+        { usageCount: activePostCount },
+      );
+      tag.usageCount = activePostCount;
+    }
+
+    const summary = this.toSummaryDto(tag, locale);
+    summary.usageCount = activePostCount;
+
     return {
-      ...this.toSummaryDto(tag, locale),
+      ...summary,
       redirectSlug: null,
       mergedIntoId: tag.mergedIntoId ?? null,
       isMutedByCurrentUser: Boolean(mutedRecord),

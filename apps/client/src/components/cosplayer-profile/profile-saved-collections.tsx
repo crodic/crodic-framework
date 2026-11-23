@@ -207,7 +207,7 @@ export function ProfileSavedCollections({
                         alt={col.title}
                         fill
                         sizes="(max-width: 640px) 70vw, (max-width: 1024px) 35vw, 25vw"
-                        className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover object-top transition-opacity duration-300 group-hover:opacity-95"
                       />
                     </div>
 
@@ -220,7 +220,7 @@ export function ProfileSavedCollections({
                             alt={col.title}
                             fill
                             sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                           />
                         )}
                       </div>
@@ -231,7 +231,7 @@ export function ProfileSavedCollections({
                             alt={col.title}
                             fill
                             sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                           />
                         )}
                         {col.itemsCount > 3 && (
@@ -363,7 +363,7 @@ export function ProfileSavedCollections({
                               alt={item.post?.title || "Collection item"}
                               fill
                               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                             />
                           ) : (
                             <div className="bg-muted flex size-full items-center justify-center">

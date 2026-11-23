@@ -9,6 +9,10 @@ import type { EventSummaryResDto } from "@/services/events";
 import { EventsHeroBanner } from "./events-hero-banner";
 import { EventsFilterBar } from "./events-filter-bar";
 import { EventCard } from "./event-card";
+import {
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/motion-primitives";
 import { EventDetailDialog } from "./event-detail-dialog";
 import { EventApplyDialog } from "./event-apply-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -112,16 +116,17 @@ export function EventsView() {
             <Loader2 className="text-primary size-8 animate-spin" />
           </div>
         ) : filteredEvents.length > 0 ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <StaggerContainer className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {filteredEvents.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onViewDetails={handleViewDetails}
-                onApply={handleApply}
-              />
+              <StaggerItem key={event.id}>
+                <EventCard
+                  event={event}
+                  onViewDetails={handleViewDetails}
+                  onApply={handleApply}
+                />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         ) : (
           <div className="border-border/80 bg-card/50 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
             <div className="bg-muted/80 text-muted-foreground flex size-14 items-center justify-center rounded-2xl">

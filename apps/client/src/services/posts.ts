@@ -143,6 +143,9 @@ export const getPosts = async (
             "isPublic",
             "status",
             "isFeaturedWork",
+            "copyrightTagId",
+            "characterTagId",
+            "tagId",
           ].includes(key)
         ) {
           searchParams.append(`filter[${key}]`, String(val));

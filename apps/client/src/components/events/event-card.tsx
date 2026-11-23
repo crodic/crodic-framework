@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/common/user-avatar";
 import { useTranslations } from "next-intl";
 import type { EventSummaryResDto } from "@/services/events";
+import { motion } from "@/components/ui/motion-primitives";
 
 export interface EventCardProps {
   event: EventSummaryResDto;
@@ -20,7 +21,13 @@ export function EventCard({ event, onApply }: EventCardProps) {
   const eventLink = `/events/${event.slug || event.id}`;
 
   return (
-    <article className="group border-border/70 bg-card hover:border-primary/40 relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:flex-col sm:p-3">
+    <motion.article
+      whileHover={{
+        y: -5,
+        transition: { type: "spring", stiffness: 350, damping: 25 },
+      }}
+      className="group border-border/70 hover:border-primary/50 bg-card hover:shadow-primary/5 relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-colors duration-300 hover:shadow-lg sm:flex-col sm:p-3"
+    >
       {/* 1. Poster Image (Links to Intercepting Route) */}
       <Link
         href={eventLink}
@@ -32,7 +39,7 @@ export function EventCard({ event, onApply }: EventCardProps) {
           alt={event.title}
           fill
           sizes="(max-width: 640px) 112px, (max-width: 1024px) 50vw, 25vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-opacity duration-300 group-hover:opacity-95"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
 
@@ -125,6 +132,6 @@ export function EventCard({ event, onApply }: EventCardProps) {
           </Button>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

@@ -145,7 +145,7 @@ export function ProfileCharacters({
                     alt={char.characterName}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover transition-opacity duration-300 group-hover:opacity-95"
                   />
                 ) : (
                   <div className="bg-muted text-muted-foreground flex size-full items-center justify-center">

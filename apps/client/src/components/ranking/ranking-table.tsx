@@ -23,6 +23,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { motion } from "@/components/ui/motion-primitives";
+
+const MotionTableRow = motion.create(TableRow);
 import type { LeaderboardItemResDto } from "@/services/ranking";
 import { toggleFollow } from "@/services/social";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -122,7 +125,7 @@ export function RankingTable({ items }: RankingTableProps) {
           </TableHeader>
 
           <TableBody className="divide-border/50 divide-y">
-            {items.map((item) => {
+            {items.map((item, index) => {
               const isFollowing = followingMap[item.id] ?? false;
               const formattedLikes =
                 item.likesCount >= 1000
@@ -130,8 +133,16 @@ export function RankingTable({ items }: RankingTableProps) {
                   : String(item.likesCount);
 
               return (
-                <TableRow
+                <MotionTableRow
                   key={item.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{
+                    duration: 0.35,
+                    delay: Math.min(index * 0.03, 0.35),
+                    ease: [0.21, 0.47, 0.32, 0.98],
+                  }}
                   className="border-border/40 hover:bg-muted/40 transition-colors"
                 >
                   {/* Rank & Trend */}
@@ -157,7 +168,7 @@ export function RankingTable({ items }: RankingTableProps) {
                             alt={item.displayName}
                             fill
                             sizes="40px"
-                            className="object-cover transition-transform group-hover:scale-105"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="bg-primary/15 text-primary flex size-full items-center justify-center text-xs font-bold">
@@ -200,7 +211,7 @@ export function RankingTable({ items }: RankingTableProps) {
                             <Link
                               key={idx}
                               href={item.portfolioHref}
-                              className="border-border/70 relative size-8 overflow-hidden rounded-lg border transition-transform hover:scale-105"
+                              className="border-border/70 hover:border-primary/60 relative size-8 overflow-hidden rounded-lg border transition-colors"
                             >
                               <Image
                                 src={p}
@@ -277,7 +288,7 @@ export function RankingTable({ items }: RankingTableProps) {
                       </Button>
                     </div>
                   </TableCell>
-                </TableRow>
+                </MotionTableRow>
               );
             })}
           </TableBody>

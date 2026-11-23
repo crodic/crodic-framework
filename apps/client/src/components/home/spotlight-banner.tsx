@@ -81,7 +81,7 @@ export function SpotlightBanner() {
                 fill
                 priority={index === 0}
                 sizes="(min-width: 1024px) 50vw, 70vw"
-                className="object-cover object-[70%_center] transition-transform duration-700 ease-out group-hover:scale-105"
+                className="object-cover object-[70%_center] transition-opacity duration-300 group-hover:opacity-95"
               />
 
               <div className="from-card/90 via-card/30 absolute inset-0 bg-gradient-to-r via-20% to-transparent" />

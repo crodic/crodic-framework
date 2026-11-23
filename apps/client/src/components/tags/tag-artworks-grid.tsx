@@ -1,21 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Flame, Clock, Image as ImageIcon, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExploreCard } from "@/components/explore/explore-card";
+import {
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/motion-primitives";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
 import { useAuthStore } from "@/store/use-auth-store";
 import { cn } from "@/lib/utils";
 
 interface TagArtworksGridProps {
+  tagId?: string;
   tagName: string;
+  onCountLoaded?: (count: number) => void;
 }
 
-export function TagArtworksGrid({ tagName }: TagArtworksGridProps) {
+export function TagArtworksGrid({
+  tagId,
+  tagName,
+  onCountLoaded,
+}: TagArtworksGridProps) {
   const t = useTranslations("Tags");
   const [filter, setFilter] = useState<"popular" | "latest">("popular");
   const isHydrating = useAuthStore((state) => state.isHydrating);
@@ -24,17 +34,25 @@ export function TagArtworksGrid({ tagName }: TagArtworksGridProps) {
   const sortParam = filter === "popular" ? "-trendingScore" : "-publishedAt";
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ["tag-artworks", tagName, filter, isAuthenticated],
+    queryKey: ["tag-artworks", tagId, tagName, filter, isAuthenticated],
     queryFn: () =>
       getPosts({
-        search: tagName,
+        tagId: tagId || undefined,
+        search: tagId ? undefined : tagName,
         sort: sortParam,
         limit: 40,
       }),
-    enabled: !isHydrating && Boolean(tagName),
+    enabled: !isHydrating && (Boolean(tagId) || Boolean(tagName)),
   });
 
   const posts: PostSummaryResDto[] = response?.data || [];
+  const totalCount = response?.meta?.totalItems ?? posts.length;
+
+  useEffect(() => {
+    if (!isLoading && response && onCountLoaded) {
+      onCountLoaded(totalCount);
+    }
+  }, [isLoading, response, totalCount, onCountLoaded]);
 
   return (
     <div className="space-y-5">
@@ -120,11 +138,13 @@ export function TagArtworksGrid({ tagName }: TagArtworksGridProps) {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+        <StaggerContainer className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {posts.map((post) => (
-            <ExploreCard key={post.id} item={post} />
+            <StaggerItem key={post.id}>
+              <ExploreCard item={post} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       )}
     </div>
   );

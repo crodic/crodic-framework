@@ -406,7 +406,7 @@ export function PostCommentsThread({
               <div className="flex items-start gap-2.5 text-xs sm:text-sm">
                 <Link
                   href={`/cosplayer/${rootAuthorHandle}`}
-                  className="border-border/60 relative size-8 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105 sm:size-9"
+                  className="border-border/60 relative size-8 shrink-0 overflow-hidden rounded-full border sm:size-9"
                 >
                   {rootComment.author?.avatarUrl ? (
                     <Image
@@ -546,7 +546,7 @@ export function PostCommentsThread({
                           >
                             <Link
                               href={`/cosplayer/${replyAuthorHandle}`}
-                              className="border-border/60 relative size-7 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105"
+                              className="border-border/60 relative size-7 shrink-0 overflow-hidden rounded-full border"
                             >
                               {reply.author?.avatarUrl ? (
                                 <Image

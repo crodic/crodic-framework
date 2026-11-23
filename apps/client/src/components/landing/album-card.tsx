@@ -37,7 +37,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
         alt={`${album.characterName || album.title} cosplay album`}
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+        className="object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
       />
 
       {/* Dark gradient overlay for contrast and atmospheric feel */}

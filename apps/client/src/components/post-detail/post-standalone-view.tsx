@@ -450,7 +450,7 @@ export function PostStandaloneView({
               <div className="flex items-center gap-3">
                 <Link
                   href={`/cosplayer/${authorHandle}`}
-                  className="border-border/60 relative size-10 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105 sm:size-11"
+                  className="border-border/60 relative size-10 shrink-0 overflow-hidden rounded-full border sm:size-11"
                 >
                   {post.author?.avatarUrl ? (
                     <Image
@@ -745,7 +745,7 @@ export function PostStandaloneView({
             <div className="flex items-center gap-3.5">
               <Link
                 href={`/cosplayer/${authorHandle}`}
-                className="border-border/60 relative size-14 shrink-0 overflow-hidden rounded-full border transition-transform hover:scale-105"
+                className="border-border/60 relative size-14 shrink-0 overflow-hidden rounded-full border"
               >
                 {post.author?.avatarUrl ? (
                   <Image
@@ -876,7 +876,7 @@ export function PostStandaloneView({
                             alt={item.title}
                             fill
                             sizes="56px"
-                            className="object-cover transition-transform duration-300 group-hover/item:scale-105"
+                            className="object-cover transition-opacity duration-200 group-hover/item:opacity-95"
                           />
                         ) : (
                           <div className="bg-muted text-muted-foreground flex size-full items-center justify-center">

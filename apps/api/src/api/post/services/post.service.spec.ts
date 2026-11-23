@@ -128,6 +128,8 @@ describe('PostService', () => {
       softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
       increment: jest.fn().mockResolvedValue({}),
       decrement: jest.fn().mockResolvedValue({}),
+      find: jest.fn().mockResolvedValue([]),
+      query: jest.fn().mockResolvedValue([]),
     };
 
     dataSource = {

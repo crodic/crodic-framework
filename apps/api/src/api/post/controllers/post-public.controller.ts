@@ -37,6 +37,7 @@ export class PostPublicController {
         AllowedFilter.exact('isFeaturedWork'),
         AllowedFilter.exact('copyrightTagId'),
         AllowedFilter.exact('characterTagId'),
+        AllowedFilter.exact('tagId'),
       ],
       sorts: [
         'publishedAt',
