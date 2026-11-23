@@ -5,19 +5,41 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ArrowRight, Flame } from "lucide-react";
-import { getCosplayers } from "@/services/cosplayer";
+import {
+  getCosplayers,
+  type CosplayerSummaryResDto,
+} from "@/services/cosplayer";
 import { CosplayerCard } from "./cosplayer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollReveal } from "./scroll-reveal";
 
-export function CosplayerShowcase() {
+interface CosplayerShowcaseProps {
+  initialCosplayers?: CosplayerSummaryResDto[];
+}
+
+export function CosplayerShowcase({
+  initialCosplayers,
+}: CosplayerShowcaseProps) {
   const t = useTranslations("Landing.cosplayers");
   const { data: cosplayersResponse, isLoading } = useQuery({
     queryKey: ["landing-cosplayers"],
     queryFn: () => getCosplayers({ limit: 4 }),
+    initialData: initialCosplayers
+      ? {
+          data: initialCosplayers,
+          meta: {
+            itemsPerPage: 4,
+            totalItems: initialCosplayers.length,
+            currentPage: 1,
+            totalPages: 1,
+            sortBy: [],
+          },
+        }
+      : undefined,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const cosplayers = cosplayersResponse?.data || [];
+  const cosplayers = cosplayersResponse?.data || initialCosplayers || [];
 
   return (
     <section id="cosplayers" className="py-16 sm:py-24">
@@ -47,7 +69,7 @@ export function CosplayerShowcase() {
         </ScrollReveal>
 
         {/* Cosplayer Cards Grid */}
-        {isLoading ? (
+        {isLoading && cosplayers.length === 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-48 rounded-2xl" />

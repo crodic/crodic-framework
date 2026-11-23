@@ -5,19 +5,36 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { getPosts } from "@/services/posts";
+import { getPosts, type PostSummaryResDto } from "@/services/posts";
 import { AlbumCard } from "./album-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollReveal } from "./scroll-reveal";
 
-export function AlbumShowcase() {
+interface AlbumShowcaseProps {
+  initialAlbums?: PostSummaryResDto[];
+}
+
+export function AlbumShowcase({ initialAlbums }: AlbumShowcaseProps) {
   const t = useTranslations("Landing.albums");
   const { data: postsResponse, isLoading } = useQuery({
     queryKey: ["landing-albums"],
     queryFn: () => getPosts({ limit: 4 }),
+    initialData: initialAlbums
+      ? {
+          data: initialAlbums,
+          meta: {
+            itemsPerPage: 4,
+            totalItems: initialAlbums.length,
+            currentPage: 1,
+            totalPages: 1,
+            sortBy: [],
+          },
+        }
+      : undefined,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const albums = postsResponse?.data || [];
+  const albums = postsResponse?.data || initialAlbums || [];
 
   return (
     <section id="albums" className="py-16 sm:py-24">
@@ -47,7 +64,7 @@ export function AlbumShowcase() {
         </ScrollReveal>
 
         {/* 4 Album Cards Grid */}
-        {isLoading ? (
+        {isLoading && albums.length === 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton

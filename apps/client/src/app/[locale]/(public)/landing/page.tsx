@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
+import { fetchPublishedCmsPages } from "@/services/cms-pages";
+import {
+  fetchLandingPosts,
+  fetchLandingCosplayers,
+} from "@/services/landing-server";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { HeroBanner } from "@/components/landing/hero-banner";
 import { FeaturesHighlight } from "@/components/landing/features-highlight";
@@ -11,6 +16,14 @@ import { AlbumShowcase } from "@/components/landing/album-showcase";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import type { WithContext, WebSite, Organization } from "schema-dts";
+
+// Incremental Static Regeneration (ISR): revalidate page every 5 minutes
+export const revalidate = 300;
+
+// Pre-render static paths for all configured locales at build time (SSG)
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
 interface LandingPageProps {
   params: Promise<{ locale: string }>;
@@ -90,7 +103,12 @@ export default async function LandingPage({ params }: LandingPageProps) {
   setRequestLocale(locale);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const whiteLabel = await fetchActiveClientWhiteLabel();
+  const [whiteLabel, cmsPages, albums, cosplayers] = await Promise.all([
+    fetchActiveClientWhiteLabel(),
+    fetchPublishedCmsPages(),
+    fetchLandingPosts(4),
+    fetchLandingCosplayers(4),
+  ]);
   const t = await getTranslations({ locale, namespace: "Landing" });
 
   const siteName = whiteLabel?.brandName || whiteLabel?.siteTitle || "Kosume";
@@ -141,11 +159,11 @@ export default async function LandingPage({ params }: LandingPageProps) {
       <main className="flex-1">
         <HeroBanner />
         <FeaturesHighlight />
-        <CosplayerShowcase />
-        <AlbumShowcase />
+        <CosplayerShowcase initialCosplayers={cosplayers} />
+        <AlbumShowcase initialAlbums={albums} />
         <CtaBanner />
       </main>
-      <LandingFooter />
+      <LandingFooter initialCmsPages={cmsPages} />
     </div>
   );
 }

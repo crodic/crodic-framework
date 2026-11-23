@@ -1,96 +1,40 @@
-import { fetchActiveClientWhiteLabel } from "@/lib/white-label";
-import { fetchPublishedCmsPages } from "@/services/cms-pages";
-
-// Enable ISR: Cache statically and revalidate in background every 1 hour (3600s)
-export const revalidate = 3600;
+// Statically served llms.txt with information about the website and author Crodic Crystal
+export const dynamic = "force-static";
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://crodic.click";
-  const whiteLabel = await fetchActiveClientWhiteLabel();
+  const content = `# Kosume - Nền Tảng Sáng Tạo & Portfolio Cosplay
 
-  const brandName = whiteLabel?.brandName || "Kosume";
-  const title =
-    whiteLabel?.metaTitle ||
-    whiteLabel?.siteTitle ||
-    `${brandName} - Creative Platform for Artists`;
+> Kosume là nền tảng mạng xã hội và không gian portfolio chuyên nghiệp dành cho cosplayer, nhiếp ảnh gia và người hâm mộ anime/manga/game để chia sẻ và tôn vinh nghệ thuật hóa thân.
 
-  const description =
-    whiteLabel?.metaDescription ||
-    whiteLabel?.siteTagline ||
-    "Nền tảng chia sẻ portfolio, kết nối và khám phá tác phẩm nghệ thuật số dành cho các artist, họa sĩ minh họa và cộng đồng sáng tạo.";
+## Tác giả & Nhà sáng lập (Author & Creator)
+- **Tác giả:** Crodic Crystal (crodic crystal)
+- **Hệ sinh thái:** Crodic Framework & Kosume Ecosystem
+- **Sứ mệnh:** Xây dựng nền tảng sáng tạo mở, kết nối cộng đồng cosplayer, từ điển bách khoa toàn thư nhân vật và bảo vệ quyền tác giả nghệ thuật.
 
-  const canonicalUrl = whiteLabel?.canonicalUrl || baseUrl;
-  const copyright =
-    whiteLabel?.copyrightText ||
-    `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`;
+## Giới thiệu Nền tảng (Platform Overview)
+- **Chuyên môn:** Mạng xã hội cosplay, portfolio bộ sưu tập ảnh HD, từ điển waifu/character, lịch fes & sự kiện cosplay, bảng xếp hạng vinh danh creator.
+- **Tính năng cốt lõi:**
+  - Creator Studio: Quản lý album ảnh cosplay chất lượng cao, tự do chọn ảnh bìa, phân loại nhân vật và bảo vệ tác quyền.
+  - Encyclopedia: Bách khoa toàn thư tags, series, waifu và cây phả hệ quan hệ nhân vật do cộng đồng biên soạn.
+  - Cosplay Fes: Lịch lễ hội anime & cosplay, đăng ký tham gia, check-in và hẹn gặp gỡ giao lưu cộng đồng.
+  - Leaderboard: Bảng xếp hạng thịnh hành tôn vinh các cosplayer tài năng và bộ ảnh nổi bật hàng tuần/tháng.
+  - Bản quyền & An toàn: Xác thực tag nghệ sĩ, bảo vệ bản quyền tác phẩm và hệ thống phân loại mức độ an toàn (Safety Ratings).
 
-  // Fetch published CMS pages (terms, privacy, guides, etc.)
-  let cmsPages: Awaited<ReturnType<typeof fetchPublishedCmsPages>> = [];
-  try {
-    cmsPages = await fetchPublishedCmsPages();
-  } catch {
-    // Graceful fallback if CMS endpoint is temporarily unavailable
-    cmsPages = [];
-  }
+## Điều hướng Nền tảng (Key Navigation)
+- Trang chủ: /
+- Khám phá Tác phẩm: /explore
+- Bách khoa toàn thư Tags: /tags
+- Lễ hội & Sự kiện: /events
+- Bảng xếp hạng: /ranking
+- Đăng nhập: /auth/login
+- Đăng ký: /auth/sign-up
+`;
 
-  const lines: string[] = [
-    `# ${title}`,
-    "",
-    `> ${description}`,
-    "",
-    "## Khám phá Nền tảng (Platform Navigation)",
-    `- [Trang chủ](${canonicalUrl}): Khám phá trang chủ và tác phẩm nổi bật của ${brandName}`,
-    `- [Khám phá Tags & Bách khoa toàn thư](${baseUrl}/vi/tags): Khám phá bộ sưu tập tranh theo phong cách, nhân vật và thể loại nghệ thuật`,
-    `- [Đăng nhập](${baseUrl}/vi/auth/login): Đăng nhập tài khoản artist`,
-    `- [Đăng ký](${baseUrl}/vi/auth/sign-up): Tạo tài khoản gia nhập cộng đồng nghệ thuật`,
-  ];
-
-  // If there are published CMS pages, add them under Documentation / Policies
-  const validCmsPages = cmsPages.filter((page) => {
-    return (
-      page.translations &&
-      page.translations.some(
-        (t) =>
-          t.slug && (!t.robots || !t.robots.toLowerCase().includes("noindex"))
-      )
-    );
-  });
-
-  if (validCmsPages.length > 0) {
-    lines.push("", "## Tài liệu & Chính sách (Documentation & Policies)");
-    for (const page of validCmsPages) {
-      const primaryTranslation =
-        page.translations.find((t) => t.locale === "vi") ||
-        page.translations.find((t) => t.locale === "en") ||
-        page.translations[0];
-
-      if (primaryTranslation && primaryTranslation.slug) {
-        const pageUrl = `${baseUrl}/${primaryTranslation.locale}/pages/${primaryTranslation.slug}`;
-        const pageTitle = primaryTranslation.title || primaryTranslation.slug;
-        const pageDesc = primaryTranslation.seoDescription
-          ? `: ${primaryTranslation.seoDescription}`
-          : "";
-        lines.push(`- [${pageTitle}](${pageUrl})${pageDesc}`);
-      }
-    }
-  }
-
-  // Brand and Metadata Section
-  lines.push(
-    "",
-    "## Thông tin Thương hiệu & Bản quyền",
-    `- Nền tảng: ${brandName}`,
-    `- Website chính thức: ${canonicalUrl}`,
-    `- Bản quyền: ${copyright}`
-  );
-
-  const body = lines.join("\n");
-
-  return new Response(body, {
+  return new Response(content, {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
     },
   });
 }

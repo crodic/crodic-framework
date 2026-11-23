@@ -91,19 +91,24 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
 ];
 
 export const FOOTER_LINKS_COL_1 = [
-  { key: "about", defaultLabel: "Về chúng tôi", href: "/pages/about" },
   { key: "features", defaultLabel: "Tính năng nổi bật", href: "#features" },
+  { key: "explore", defaultLabel: "Khám phá tác phẩm", href: "/explore" },
   { key: "tags", defaultLabel: "Bách khoa toàn thư Tags", href: "/tags" },
   { key: "events", defaultLabel: "Lễ hội & Sự kiện", href: "/events" },
+  { key: "ranking", defaultLabel: "Bảng xếp hạng", href: "/ranking" },
 ];
 
-export const FOOTER_LINKS_COL_2 = [
-  { key: "ranking", defaultLabel: "Bảng xếp hạng", href: "/ranking" },
-  { key: "explore", defaultLabel: "Khám phá tác phẩm", href: "/explore" },
+export const FOOTER_DEFAULT_CMS_LINKS = [
+  {
+    key: "terms",
+    defaultLabel: "Điều khoản dịch vụ",
+    href: "/pages/terms-of-service",
+  },
   {
     key: "privacy",
-    defaultLabel: "Quy định & Bảo mật",
-    href: "/pages/privacy",
+    defaultLabel: "Chính sách bảo mật",
+    href: "/pages/privacy-policy",
   },
+  { key: "about", defaultLabel: "Về chúng tôi", href: "/pages/about" },
   { key: "contact", defaultLabel: "Liên hệ & Hỗ trợ", href: "/pages/contact" },
 ];

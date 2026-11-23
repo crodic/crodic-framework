@@ -1,43 +1,81 @@
 "use client";
 
 import React from "react";
-import { FOOTER_LINKS_COL_1, FOOTER_LINKS_COL_2 } from "@/config/landing";
-import { useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { FOOTER_LINKS_COL_1, FOOTER_DEFAULT_CMS_LINKS } from "@/config/landing";
 import { WhiteLabelLogo, useWhiteLabel } from "@/lib/white-label";
+import { fetchPublishedCmsPagesClient } from "@/services/cms-pages-client";
+import type { CmsPageApiResponse } from "@/services/cms-pages";
 import { ScrollReveal } from "./scroll-reveal";
 
-export function LandingFooter() {
-  const t = useTranslations("Landing.footer");
+interface LandingFooterProps {
+  initialCmsPages?: CmsPageApiResponse[];
+}
+
+export function LandingFooter({ initialCmsPages }: LandingFooterProps) {
+  const t = useTranslations("Landing.footer") as any;
+  const locale = useLocale();
   const { whiteLabel, isEnabled } = useWhiteLabel();
 
   const brandName =
     isEnabled && whiteLabel?.brandName ? whiteLabel.brandName : "Kosume";
 
-  const footerLinkKeys: Record<
-    string,
-    | "links.about"
-    | "links.features"
-    | "links.tags"
-    | "links.events"
-    | "links.ranking"
-    | "links.explore"
-    | "links.privacy"
-    | "links.contact"
-  > = {
-    about: "links.about",
-    features: "links.features",
-    tags: "links.tags",
-    events: "links.events",
-    ranking: "links.ranking",
-    explore: "links.explore",
-    privacy: "links.privacy",
-    contact: "links.contact",
+  // Fetch or revalidate published CMS pages dynamically
+  const { data: dynamicPages } = useQuery({
+    queryKey: ["published-cms-pages"],
+    queryFn: fetchPublishedCmsPagesClient,
+    initialData: initialCmsPages,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const getLinkLabel = (key: string): string => {
+    switch (key) {
+      case "about":
+        return t("links.about");
+      case "features":
+        return t("links.features");
+      case "tags":
+        return t("links.tags");
+      case "events":
+        return t("links.events");
+      case "ranking":
+        return t("links.ranking");
+      case "explore":
+        return t("links.explore");
+      case "terms":
+        return t("links.terms");
+      case "privacy":
+        return t("links.privacy");
+      case "contact":
+        return t("links.contact");
+      default:
+        return t("links.about");
+    }
   };
 
-  const renderFooterLink = (item: { key: string; href: string }) => {
+  // Extract dynamic CMS page links localized for the active locale
+  const cmsLinks = (dynamicPages || [])
+    .map((page) => {
+      const translation =
+        page.translations?.find((tr) => tr.locale === locale) ||
+        page.translations?.[0];
+      if (!translation || !translation.slug) return null;
+      return {
+        key: `cms-${page.id}`,
+        label: translation.title,
+        href: `/pages/${translation.slug}`,
+      };
+    })
+    .filter(
+      (item): item is { key: string; label: string; href: string } =>
+        item !== null
+    );
+
+  const renderNavColLink = (item: { key: string; href: string }) => {
     const isAnchor = item.href.startsWith("#");
-    const linkText = t(footerLinkKeys[item.key] || "links.about");
+    const linkText = getLinkLabel(item.key);
 
     if (isAnchor) {
       return (
@@ -66,7 +104,7 @@ export function LandingFooter() {
         <ScrollReveal>
           <div className="grid grid-cols-1 gap-10 pb-12 md:grid-cols-12 lg:gap-12">
             {/* Brand Col */}
-            <div className="flex flex-col gap-3.5 md:col-span-5">
+            <div className="flex flex-col gap-3.5 md:col-span-4">
               <Link
                 href="/landing"
                 className="focus-visible:ring-ring inline-flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
@@ -88,27 +126,45 @@ export function LandingFooter() {
               </p>
             </div>
 
-            {/* Links Column 1 */}
-            <div className="md:col-span-2">
+            {/* Links Column 1: Explore / Platform Features */}
+            <div className="md:col-span-3">
               <h4 className="text-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
                 {t("exploreTitle")}
               </h4>
               <ul className="space-y-3">
                 {FOOTER_LINKS_COL_1.map((item) => (
-                  <li key={item.key}>{renderFooterLink(item)}</li>
+                  <li key={item.key}>{renderNavColLink(item)}</li>
                 ))}
               </ul>
             </div>
 
-            {/* Links Column 2 */}
+            {/* Links Column 2: Dynamic CMS Pages & Policies */}
             <div className="md:col-span-3">
               <h4 className="text-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
                 {t("companyTitle")}
               </h4>
               <ul className="space-y-3">
-                {FOOTER_LINKS_COL_2.map((item) => (
-                  <li key={item.key}>{renderFooterLink(item)}</li>
-                ))}
+                {cmsLinks.length > 0
+                  ? cmsLinks.map((item) => (
+                      <li key={item.key}>
+                        <Link
+                          href={item.href}
+                          className="text-muted-foreground hover:text-foreground text-xs transition-colors sm:text-sm"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))
+                  : FOOTER_DEFAULT_CMS_LINKS.map((item) => (
+                      <li key={item.key}>
+                        <Link
+                          href={item.href}
+                          className="text-muted-foreground hover:text-foreground text-xs transition-colors sm:text-sm"
+                        >
+                          {getLinkLabel(item.key)}
+                        </Link>
+                      </li>
+                    ))}
               </ul>
             </div>
 

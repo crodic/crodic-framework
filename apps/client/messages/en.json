@@ -131,7 +131,7 @@
       "description": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
       "tagline": "Connecting the passion for cosplay and creative expression.",
       "exploreTitle": "Explore",
-      "companyTitle": "Platform & Support",
+      "companyTitle": "Legal & Policies",
       "links": {
         "about": "About Us",
         "features": "Features",
@@ -139,7 +139,8 @@
         "events": "Festivals & Events",
         "ranking": "Leaderboard",
         "explore": "Explore Artworks",
-        "privacy": "Privacy & Terms",
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy",
         "contact": "Contact & Support"
       },
       "copyright": "© {year} {brand}. All rights reserved."
