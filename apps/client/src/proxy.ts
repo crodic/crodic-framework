@@ -10,7 +10,7 @@ import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_REFRESH_TOKEN,
   getAuthCookieOptions,
-  getDeleteCookieOptions,
+  deleteAuthCookies,
 } from "./lib/cookies";
 import {
   isAuthRoute,
@@ -333,17 +333,7 @@ const unauthorizedResponse = (
   pathname: string,
   code: AuthCode = AUTH_CODE.SESSION_EXPIRED
 ) => {
-  const deleteOptions = getDeleteCookieOptions();
-  intlResponse.cookies.set(COOKIE_ACCESS_TOKEN, "", {
-    ...deleteOptions,
-    maxAge: 0,
-  });
-  intlResponse.cookies.set(COOKIE_REFRESH_TOKEN, "", {
-    ...deleteOptions,
-    maxAge: 0,
-  });
-  intlResponse.cookies.delete(COOKIE_ACCESS_TOKEN);
-  intlResponse.cookies.delete(COOKIE_REFRESH_TOKEN);
+  deleteAuthCookies(intlResponse.cookies);
 
   // If already on an auth page, or on public home page, do not force-redirect to login
   if (!pathname || pathname === "/" || pathname.startsWith("/auth")) {
@@ -357,16 +347,7 @@ const unauthorizedResponse = (
   const response = NextResponse.redirect(redirectUrl, {
     headers: intlResponse.headers,
   });
-  response.cookies.set(COOKIE_ACCESS_TOKEN, "", {
-    ...deleteOptions,
-    maxAge: 0,
-  });
-  response.cookies.set(COOKIE_REFRESH_TOKEN, "", {
-    ...deleteOptions,
-    maxAge: 0,
-  });
-  response.cookies.delete(COOKIE_ACCESS_TOKEN);
-  response.cookies.delete(COOKIE_REFRESH_TOKEN);
+  deleteAuthCookies(response.cookies);
   return response;
 };
 

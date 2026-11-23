@@ -158,10 +158,17 @@ step_configure_ports() {
 
   log "Synchronizing ports & cross-service URLs (API: ${target_api_port}, Client: ${target_client_port}, Web: ${target_web_port})"
 
+  local app_subdomain="kosume"
+  if [[ -f "$CLIENT_DIR/.env" ]]; then
+    local s
+    s=$(grep -E "^NEXT_PUBLIC_APP_SUBDOMAIN=" "$CLIENT_DIR/.env" 2>/dev/null | cut -d= -f2 || true)
+    app_subdomain="${s:-kosume}"
+  fi
+
   # 1. Update apps/api/.env
   set_env_val "$API_DIR/.env" "APP_PORT" "$target_api_port"
   set_env_val "$API_DIR/.env" "APP_URL" "http://localhost:${target_api_port}"
-  set_env_val "$API_DIR/.env" "APP_CORS_ORIGIN" "http://localhost:${target_web_port},http://localhost:${target_client_port}"
+  set_env_val "$API_DIR/.env" "APP_CORS_ORIGIN" "http://localhost:${target_web_port},http://localhost:${target_client_port},http://${app_subdomain}.localhost:${target_client_port}"
   set_env_val "$API_DIR/.env" "APP_SECURE_HEADER_ORIGIN" "http://localhost:${target_client_port},http://localhost:${target_web_port}"
   set_env_val "$API_DIR/.env" "AUTH_PORTAL_URL" "http://localhost:${target_web_port}"
   set_env_val "$API_DIR/.env" "AUTH_PORTAL_RESET_PASSWORD_URL" "http://localhost:${target_web_port}/reset-password"
@@ -172,6 +179,7 @@ step_configure_ports() {
   # 2. Update apps/client/.env
   set_env_val "$CLIENT_DIR/.env" "PORT" "$target_client_port"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_APP_URL" "http://localhost:${target_client_port}"
+  set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_ROOT_DOMAIN" "localhost:${target_client_port}"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_API_URL" "http://localhost:${target_api_port}"
   set_env_val "$CLIENT_DIR/.env" "NEXT_PUBLIC_ADMIN_PORTAL_URL" "http://localhost:${target_web_port}"
   set_env_val "$CLIENT_DIR/.env" "SERVER_API_URL" "http://localhost:${target_api_port}"

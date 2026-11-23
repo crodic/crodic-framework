@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Helper to create mock JWT
 function createJwt(exp = Math.floor(Date.now() / 1000) + 3600) {
   const header = Buffer.from(
-    JSON.stringify({ alg: "HS256", typ: "JWT" }),
+    JSON.stringify({ alg: "HS256", typ: "JWT" })
   ).toString("base64url");
   const payload = Buffer.from(JSON.stringify({ exp, sub: "123" })).toString(
-    "base64url",
+    "base64url"
   );
   return `${header}.${payload}.mock_sig`;
 }
@@ -20,7 +20,10 @@ vi.mock("next/headers", () => ({
     get: (name: string) => mockCookies.get(name),
     set: (name: string, value: string, options: any) =>
       mockCookies.set(name, { value, ...options }),
-    delete: (name: string) => mockCookies.delete(name),
+    delete: (nameOrOptions: string | { name: string }) =>
+      typeof nameOrOptions === "string"
+        ? mockCookies.delete(nameOrOptions)
+        : mockCookies.delete(nameOrOptions.name),
   }),
 }));
 
@@ -69,8 +72,8 @@ describe("POST /api/auth/refresh (BFF Route Handler Unit Tests)", () => {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        },
-      ),
+        }
+      )
     );
 
     const { POST } = await import("./route");
@@ -98,7 +101,7 @@ describe("POST /api/auth/refresh (BFF Route Handler Unit Tests)", () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ message: "Revoked" }), {
         status: 401,
-      }),
+      })
     );
 
     const { POST } = await import("./route");
@@ -118,7 +121,7 @@ describe("POST /api/auth/refresh (BFF Route Handler Unit Tests)", () => {
     fetchMock.mockResolvedValueOnce(
       new Response("Bad Gateway", {
         status: 502,
-      }),
+      })
     );
 
     const { POST } = await import("./route");

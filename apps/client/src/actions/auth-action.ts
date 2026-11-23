@@ -5,7 +5,7 @@ import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_REFRESH_TOKEN,
   getAuthCookieOptions,
-  getDeleteCookieOptions,
+  deleteAuthCookies,
 } from "@/lib/cookies";
 import { decodeToken } from "@/lib/utils";
 import { JWTPayload } from "jose";
@@ -26,7 +26,7 @@ export const validateAuthActionRequest = async () => {
   const refreshToken = cookie.get(COOKIE_REFRESH_TOKEN)?.value || "";
   const accessToken = cookie.get(COOKIE_ACCESS_TOKEN)?.value || "";
   if (!refreshToken) {
-    cookie.delete(COOKIE_ACCESS_TOKEN);
+    deleteAuthCookies(cookie);
     redirect(
       `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`
     );
@@ -39,8 +39,7 @@ export const validateAuthActionRequest = async () => {
   if (accessToken && refreshToken) {
     const payload = decodeToken(accessToken);
     if (!payload) {
-      cookie.delete(COOKIE_ACCESS_TOKEN);
-      cookie.delete(COOKIE_REFRESH_TOKEN);
+      deleteAuthCookies(cookie);
       redirect(
         `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.INVALID_TOKEN}`
       );
@@ -77,11 +76,7 @@ const refreshTokenFormServerAction = async () => {
     const { exp: expRefreshToken } = decodeToken(newRefreshToken) as JWTPayload;
 
     if (!expAccessToken || !expRefreshToken) {
-      const deleteOptions = getDeleteCookieOptions();
-      cookie.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-      cookie.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-      cookie.delete(COOKIE_ACCESS_TOKEN);
-      cookie.delete(COOKIE_REFRESH_TOKEN);
+      deleteAuthCookies(cookie);
       throw new Error("Invalid JWT Token");
     }
 
@@ -107,11 +102,7 @@ const refreshTokenFormServerAction = async () => {
     );
     const status = error?.response?.status;
     if (status === 401 || status === 400) {
-      const deleteOptions = getDeleteCookieOptions();
-      cookie.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-      cookie.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-      cookie.delete(COOKIE_ACCESS_TOKEN);
-      cookie.delete(COOKIE_REFRESH_TOKEN);
+      deleteAuthCookies(cookie);
       redirect(
         `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`
       );

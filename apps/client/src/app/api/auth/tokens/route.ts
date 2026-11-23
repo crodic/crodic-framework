@@ -4,7 +4,7 @@ import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_REFRESH_TOKEN,
   getAuthCookieOptions,
-  getDeleteCookieOptions,
+  deleteAuthCookies,
 } from "@/lib/cookies";
 
 export const GET = async () => {
@@ -56,10 +56,6 @@ export const POST = async (req: Request) => {
 
 export const DELETE = async () => {
   const cookieStore = await cookies();
-  const deleteOptions = getDeleteCookieOptions();
-  cookieStore.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-  cookieStore.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-  cookieStore.delete(COOKIE_ACCESS_TOKEN);
-  cookieStore.delete(COOKIE_REFRESH_TOKEN);
+  deleteAuthCookies(cookieStore);
   return Response.json({ message: "Success" }, { status: 200 });
 };

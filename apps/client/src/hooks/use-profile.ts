@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { http } from "@/lib/http";
 import { SocialAccount, User, UserSession } from "@/types/apis";
-import { useRouter } from "@/i18n/navigation";
 import { useAuthStore } from "@/store/use-auth-store";
 import xior from "xior";
 
@@ -222,7 +221,6 @@ export function useLinkGoogle() {
 
 export function useSignOut() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: async () => {
@@ -237,10 +235,10 @@ export function useSignOut() {
         .catch(() => null);
 
       useAuthStore.getState().logout();
-      queryClient.setQueryData(PROFILE_QUERY_KEY, null);
-      queryClient.setQueryData(SOCIAL_ACCOUNTS_QUERY_KEY, []);
-      queryClient.setQueryData(SESSIONS_QUERY_KEY, []);
-      router.push("/auth/login");
+      queryClient.clear();
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth/login";
+      }
     },
   });
 }

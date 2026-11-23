@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_REFRESH_TOKEN,
-  getDeleteCookieOptions,
+  deleteAuthCookies,
 } from "@/lib/cookies";
 
 export const POST = async () => {
@@ -27,10 +27,6 @@ export const POST = async () => {
     }
   }
 
-  const deleteOptions = getDeleteCookieOptions();
-  cookieStore.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-  cookieStore.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
-  cookieStore.delete(COOKIE_ACCESS_TOKEN);
-  cookieStore.delete(COOKIE_REFRESH_TOKEN);
+  deleteAuthCookies(cookieStore);
   return Response.json({ message: "Success" }, { status: 200 });
 };

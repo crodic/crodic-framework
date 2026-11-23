@@ -43,6 +43,26 @@ export function getDeleteCookieOptions() {
   const domain = getCookieDomain();
   return {
     path: "/",
+    expires: new Date(0),
+    maxAge: 0,
     ...(domain ? { domain } : {}),
   };
+}
+
+/**
+ * Interface representing a Next.js cookie store capable of deleting cookies.
+ * Compatible with `await cookies()` and `NextResponse.cookies`.
+ */
+export interface CookieDeleter {
+  delete: (...args: any[]) => any;
+}
+
+/**
+ * Deletes authentication cookies cleanly using Next.js ResponseCookies API.
+ * Ensures domain is properly included so the browser purges shared domain cookies.
+ */
+export function deleteAuthCookies(cookieStore: CookieDeleter) {
+  const deleteOptions = getDeleteCookieOptions();
+  cookieStore.delete({ name: COOKIE_ACCESS_TOKEN, ...deleteOptions });
+  cookieStore.delete({ name: COOKIE_REFRESH_TOKEN, ...deleteOptions });
 }
