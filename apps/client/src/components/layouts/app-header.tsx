@@ -172,7 +172,7 @@ export function AppHeader() {
 
         {isHydrating ? (
           // Hydrating Skeleton
-          <div className="bg-muted/60 h-9 w-24 animate-pulse rounded-full" />
+          <div className="bg-muted/60 h-9 w-24 animate-pulse rounded-lg" />
         ) : isAuthenticated ? (
           <>
             {/* Notification Bell - Both Mobile & Desktop (Direct link to /notifications) */}
@@ -197,11 +197,15 @@ export function AppHeader() {
                 <Button
                   variant="ghost"
                   aria-label={displayName}
-                  className="border-border/70 bg-card/60 hover:bg-muted flex size-8.5 cursor-pointer items-center justify-center rounded-full border p-0 has-[>svg]:p-0 sm:size-9 md:size-auto md:h-9 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
+                  className="border-border/70 bg-card/60 hover:bg-muted flex size-8.5 cursor-pointer items-center justify-center rounded-lg border p-0 has-[>svg]:p-0 sm:size-9 md:size-auto md:h-9 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
                 >
-                  <Avatar className="border-primary/30 size-7 border">
-                    <AvatarImage src={displayAvatar} alt={displayName} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+                  <Avatar className="border-primary/30 size-7 rounded-md border">
+                    <AvatarImage
+                      src={displayAvatar}
+                      alt={displayName}
+                      className="rounded-md"
+                    />
+                    <AvatarFallback className="bg-primary/20 text-primary rounded-md text-xs font-bold">
                       {initials}
                     </AvatarFallback>
                   </Avatar>

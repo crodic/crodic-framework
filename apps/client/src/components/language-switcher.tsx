@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { getCookieDomain } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
 
 const flags: Record<Locale, typeof US> = {
@@ -62,6 +63,13 @@ export function LanguageSwitcher({
     if (selectedLocale === locale) return;
     const nextLocale = selectedLocale as Locale;
     const cleanPathname = stripLocalePrefix(pathname, locale);
+
+    // Save cookie explicitly across subdomains & root domain
+    const cookieDomain = getCookieDomain();
+    const domainPart = cookieDomain ? `; domain=${cookieDomain}` : "";
+    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=${
+      200 * 24 * 60 * 60
+    }; SameSite=Lax${domainPart}`;
 
     startTransition(() => {
       router.replace(

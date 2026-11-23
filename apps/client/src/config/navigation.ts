@@ -69,7 +69,7 @@ export const APP_SIDEBAR_NAV: NavGroup[] = [
       },
       {
         labelKey: "settings",
-        defaultLabel: "Cài đặt & Studio",
+        defaultLabel: "Cài đặt",
         href: "/settings",
         icon: "settings",
         requireAuth: true,

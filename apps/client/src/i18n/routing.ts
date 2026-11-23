@@ -1,6 +1,7 @@
 import { defineRouting } from "next-intl/routing";
+import { getCookieDomain } from "@/lib/cookies";
 
-const locales = process.env.NEXT_PUBLIC_ALLOWED_LOCALE || "en";
+const locales = process.env.NEXT_PUBLIC_ALLOWED_LOCALE || "en,vi";
 
 function resolveLocalePrefix(
   useCase: string | undefined
@@ -18,7 +19,7 @@ export const routing = defineRouting({
   locales: locales.split(","),
   defaultLocale: process.env.NEXT_PUBLIC_APP_LOCALE || "en",
   localePrefix: resolveLocalePrefix(process.env.NEXT_PUBLIC_USE_CASE),
-  localeDetection: false,
+  localeDetection: true,
   domains:
     process.env.NEXT_PUBLIC_USE_CASE === "domains"
       ? [
@@ -38,8 +39,11 @@ export const routing = defineRouting({
     process.env.NEXT_PUBLIC_USE_CASE === "cookies"
       ? false
       : {
-          // 200 days
+          name: "NEXT_LOCALE",
           maxAge: 200 * 24 * 60 * 60,
+          sameSite: "lax",
+          path: "/",
+          ...(getCookieDomain() ? { domain: getCookieDomain() } : {}),
         },
   // pathnames: {
   //   "/": "/",

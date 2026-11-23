@@ -61,7 +61,24 @@ export async function proxy(request: NextRequest) {
       });
     }
 
-    // 1b. Root home ("/" or "") -> rewrite internally to Landing page
+    // 1b. Auto-redirect to saved locale prefix if user visits clean root with a non-default locale cookie
+    const savedLocaleCookie = request.cookies.get("NEXT_LOCALE")?.value;
+    if (
+      (pathname === "/" || pathname === "") &&
+      request.nextUrl.pathname === "/" &&
+      savedLocaleCookie &&
+      savedLocaleCookie !== routing.defaultLocale &&
+      routing.locales.includes(savedLocaleCookie)
+    ) {
+      const redirectUrl = new URL(`/${savedLocaleCookie}`, request.url);
+      redirectUrl.search = request.nextUrl.search;
+      return NextResponse.redirect(redirectUrl, {
+        headers: intlResponse.headers,
+        status: 307,
+      });
+    }
+
+    // 1c. Root home ("/" or "") -> rewrite internally to Landing page
     if (pathname === "/" || pathname === "") {
       return rewriteToLanding(request, intlResponse, locale);
     }

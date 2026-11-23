@@ -22,7 +22,7 @@ export function TagCard({ tag }: TagCardProps) {
   return (
     <Link href={`/tags/${targetSlug}`} className="group block h-full">
       <HoverLiftCard yOffset={-5} className="h-full">
-        <Card className="border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/10 flex h-full flex-col overflow-hidden shadow-xs transition-colors duration-300 group-hover:shadow-lg">
+        <Card className="border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/10 flex h-full flex-col gap-0 overflow-hidden p-0 py-0 shadow-xs transition-colors duration-300 group-hover:shadow-lg">
           {/* Cover / Avatar Thumbnail Banner */}
           <div className="bg-muted/50 border-border/50 relative aspect-[16/9] w-full overflow-hidden border-b">
             {tag.featuredImageUrl ? (
