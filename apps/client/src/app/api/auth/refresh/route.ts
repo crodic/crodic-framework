@@ -1,6 +1,11 @@
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
-import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "@/lib/cookies";
+import {
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
+  getAuthCookieOptions,
+  getDeleteCookieOptions,
+} from "@/lib/cookies";
 
 export const POST = async () => {
   const cookieStore = await cookies();
@@ -23,12 +28,21 @@ export const POST = async () => {
 
     if (!res.ok) {
       if (res.status === 401 || res.status === 400) {
+        const deleteOptions = getDeleteCookieOptions();
+        cookieStore.set(COOKIE_ACCESS_TOKEN, "", {
+          ...deleteOptions,
+          maxAge: 0,
+        });
+        cookieStore.set(COOKIE_REFRESH_TOKEN, "", {
+          ...deleteOptions,
+          maxAge: 0,
+        });
         cookieStore.delete(COOKIE_ACCESS_TOKEN);
         cookieStore.delete(COOKIE_REFRESH_TOKEN);
       }
       return Response.json(
         { message: "Refresh token failed" },
-        { status: res.status },
+        { status: res.status }
       );
     }
 
@@ -42,21 +56,17 @@ export const POST = async () => {
       return Response.json({ message: "Invalid tokens" }, { status: 500 });
     }
 
-    cookieStore.set(COOKIE_ACCESS_TOKEN, newAccessToken, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(expAccessToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+    cookieStore.set(
+      COOKIE_ACCESS_TOKEN,
+      newAccessToken,
+      getAuthCookieOptions(new Date(expAccessToken * 1000))
+    );
 
-    cookieStore.set(COOKIE_REFRESH_TOKEN, newRefreshToken, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(expRefreshToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+    cookieStore.set(
+      COOKIE_REFRESH_TOKEN,
+      newRefreshToken,
+      getAuthCookieOptions(new Date(expRefreshToken * 1000))
+    );
 
     return Response.json({ accessToken: newAccessToken }, { status: 200 });
   } catch (error: any) {

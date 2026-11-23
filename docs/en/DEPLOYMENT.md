@@ -249,7 +249,7 @@ NODE_ENV=production
 APP_PORT=8000
 APP_URL=https://api.crodic.click
 APP_DEBUG=false
-APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://kosume.crodic.click,https://admin.crodic.click
 
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
@@ -277,8 +277,8 @@ AWS_USE_PATH_STYLE_ENDPOINT=true
 
 AUTH_PORTAL_URL=https://admin.crodic.click
 AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.crodic.click/reset-password
-USER_AUTH_CLIENT_URL=https://crodic.click
-USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://crodic.click/auth/reset-password
+USER_AUTH_CLIENT_URL=https://kosume.crodic.click
+USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://kosume.crodic.click/auth/reset-password
 
 # Generate secure 32+ character secrets: openssl rand -base64 32
 AUTH_JWT_SECRET=strong-random-admin-jwt-secret-string-32-chars
@@ -304,6 +304,11 @@ NEXT_PUBLIC_APP_URL=https://crodic.click
 NEXT_PUBLIC_API_URL=https://api.crodic.click
 NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.crodic.click
 
+# Dynamic Subdomain Routing & Cross-Subdomain Cookies
+NEXT_PUBLIC_ROOT_DOMAIN=crodic.click
+NEXT_PUBLIC_APP_SUBDOMAIN=kosume
+NEXT_PUBLIC_COOKIE_DOMAIN=.crodic.click
+
 # Internal Docker network SSR endpoint
 SERVER_API_URL=http://api:8000
 
@@ -327,16 +332,30 @@ SENTRY_ENVIROMENT=production
 2. Navigate to **Networks > Tunnels > Create a tunnel > Select Cloudflared**.
 3. Name your tunnel (e.g. `crodic-vps-tunnel`) and copy the installation token string.
 4. Paste the token into `CLOUDFLARE_TUNNEL_TOKEN` inside the root `.env` file.
-5. In the **Public Hostname** tab, configure the following 4 rules:
+5. In the **Public Hostname** tab, configure the following rules:
 
-| Public Hostname      | Service Type | Host Target URL  | Purpose                              |
-| :------------------- | :----------- | :--------------- | :----------------------------------- |
-| `crodic.click`       | `HTTP`       | `localhost:3000` | Client Web (Next.js SSR)             |
-| `admin.crodic.click` | `HTTP`       | `localhost:8080` | Admin Portal (Vite React SPA)        |
-| `api.crodic.click`   | `HTTP`       | `localhost:8001` | Backend API (NestJS)                 |
-| `cdn.crodic.click`   | `HTTP`       | `localhost:9000` | S3 Object Storage CDN (MinIO / Silo) |
+| Public Hostname       | Service Type | Host Target URL  | Purpose                                     |
+| :-------------------- | :----------- | :--------------- | :------------------------------------------ |
+| `crodic.click`        | `HTTP`       | `localhost:3000` | Landing Page (Next.js SSR Root)             |
+| `kosume.crodic.click` | `HTTP`       | `localhost:3000` | Client Web App Core (Next.js SSR Subdomain) |
+| `admin.crodic.click`  | `HTTP`       | `localhost:8080` | Admin Portal (Vite React SPA)               |
+| `api.crodic.click`    | `HTTP`       | `localhost:8001` | Backend API (NestJS)                        |
+| `cdn.crodic.click`    | `HTTP`       | `localhost:9000` | S3 Object Storage CDN (MinIO / Silo)        |
+
+> [!TIP]
+> You can also configure a wildcard rule `*.crodic.click` pointing to `localhost:3000` to support multi-tenant subdomains dynamically. Specific hostnames (`api`, `admin`, `cdn`) always take precedence.
 
 The `crodic_tunnel` container running `network_mode: host` in [`docker-compose.prod.yml`](../../docker-compose.prod.yml) will establish the outbound connection and forward traffic seamlessly.
+
+---
+
+### 4.2. Dynamic Subdomain Architecture (Landing vs App Subdomain)
+
+- `crodic.click` $\rightarrow$ Landing Page (internal rewrite from `/{locale}/landing` to `/`)
+- `kosume.crodic.click` $\rightarrow$ Main Application (Feed, Spotlight, Profile, Ranking, Auth...)
+- Local Development: `http://localhost:3000/` (Landing) vs `http://kosume.localhost:3000/` (App)
+- RFC 6761: Modern browsers natively resolve `*.localhost` to `127.0.0.1` with no hosts file modification required.
+- Shared Cookies: `NEXT_PUBLIC_COOKIE_DOMAIN=.crodic.click` ensures session continuity across all subdomains.
 
 ---
 
@@ -651,7 +670,7 @@ gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_pos
 - **Cause**: Origin not permitted in API configuration.
 - **Fix**: Ensure `APP_CORS_ORIGIN` in `apps/api/.env` lists all origins with `https://` and without trailing slashes:
   ```env
-  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://kosume.crodic.click,https://admin.crodic.click
   ```
   Then reload: `docker compose -f docker-compose.prod.yml up -d api`.
 

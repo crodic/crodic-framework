@@ -86,7 +86,7 @@ export default registerAs<AppConfig>('app', () => {
     apiPrefix: process.env.API_PREFIX || 'api',
     corsOrigin:
       process.env.APP_CORS_ORIGIN ||
-      'http://localhost:5173,http://localhost:3000',
+      'http://localhost:5173,http://localhost:3000,http://kosume.localhost:3000',
     fallbackLanguage: process.env.APP_FALLBACK_LANGUAGE || 'en',
     debug: process.env.APP_DEBUG === 'true',
     logLevel: process.env.APP_LOG_LEVEL || 'info',

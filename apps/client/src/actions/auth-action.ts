@@ -1,7 +1,12 @@
 "use server";
 
 import { AUTH_CODE, AUTH_QUERY_PARAM } from "@/constants/auth";
-import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "@/lib/cookies";
+import {
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
+  getAuthCookieOptions,
+  getDeleteCookieOptions,
+} from "@/lib/cookies";
 import { decodeToken } from "@/lib/utils";
 import { JWTPayload } from "jose";
 import { cookies } from "next/headers";
@@ -23,7 +28,7 @@ export const validateAuthActionRequest = async () => {
   if (!refreshToken) {
     cookie.delete(COOKIE_ACCESS_TOKEN);
     redirect(
-      `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`,
+      `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`
     );
   }
 
@@ -37,7 +42,7 @@ export const validateAuthActionRequest = async () => {
       cookie.delete(COOKIE_ACCESS_TOKEN);
       cookie.delete(COOKIE_REFRESH_TOKEN);
       redirect(
-        `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.INVALID_TOKEN}`,
+        `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.INVALID_TOKEN}`
       );
     }
 
@@ -57,7 +62,7 @@ const refreshTokenFormServerAction = async () => {
   if (!refreshToken) {
     cookie.delete(COOKIE_ACCESS_TOKEN);
     redirect(
-      `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`,
+      `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`
     );
   }
 
@@ -72,25 +77,24 @@ const refreshTokenFormServerAction = async () => {
     const { exp: expRefreshToken } = decodeToken(newRefreshToken) as JWTPayload;
 
     if (!expAccessToken || !expRefreshToken) {
+      const deleteOptions = getDeleteCookieOptions();
+      cookie.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
+      cookie.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
       cookie.delete(COOKIE_ACCESS_TOKEN);
       cookie.delete(COOKIE_REFRESH_TOKEN);
       throw new Error("Invalid JWT Token");
     }
 
-    cookie.set(COOKIE_ACCESS_TOKEN, newAccessToken, {
-      httpOnly: true,
-      path: "/",
-      expires: new Date(expAccessToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-    cookie.set(COOKIE_REFRESH_TOKEN, newRefreshToken, {
-      httpOnly: true,
-      path: "/",
-      expires: new Date(expRefreshToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+    cookie.set(
+      COOKIE_ACCESS_TOKEN,
+      newAccessToken,
+      getAuthCookieOptions(new Date(expAccessToken * 1000))
+    );
+    cookie.set(
+      COOKIE_REFRESH_TOKEN,
+      newRefreshToken,
+      getAuthCookieOptions(new Date(expRefreshToken * 1000))
+    );
   } catch (error: any) {
     // If error is already a Next.js redirect exception, re-throw it
     if (error?.digest?.startsWith("NEXT_REDIRECT")) {
@@ -99,14 +103,17 @@ const refreshTokenFormServerAction = async () => {
 
     console.error(
       "Refresh token server action error:",
-      error?.message || error,
+      error?.message || error
     );
     const status = error?.response?.status;
     if (status === 401 || status === 400) {
+      const deleteOptions = getDeleteCookieOptions();
+      cookie.set(COOKIE_ACCESS_TOKEN, "", { ...deleteOptions, maxAge: 0 });
+      cookie.set(COOKIE_REFRESH_TOKEN, "", { ...deleteOptions, maxAge: 0 });
       cookie.delete(COOKIE_ACCESS_TOKEN);
       cookie.delete(COOKIE_REFRESH_TOKEN);
       redirect(
-        `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`,
+        `/auth/login?${AUTH_QUERY_PARAM.CODE}=${AUTH_CODE.SESSION_EXPIRED}`
       );
     }
     // For transient/network errors, re-throw without clearing user's stored cookies

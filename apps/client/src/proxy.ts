@@ -6,18 +6,89 @@ import { JWTPayload } from "jose";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { AUTH_CODE, AUTH_QUERY_PARAM, AuthCode } from "./constants/auth";
-import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "./lib/cookies";
-import { isAuthRoute, isProtectedRoute } from "./config/routes";
+import {
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
+  getAuthCookieOptions,
+  getDeleteCookieOptions,
+} from "./lib/cookies";
+import { isAuthRoute, isProtectedRoute, isPublicRoute } from "./config/routes";
+import {
+  extractSubdomain,
+  getDefaultSubdomain,
+  buildSubdomainUrl,
+  buildRootUrl,
+} from "./lib/subdomain";
 
 const handleI18nRouting = createMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
+  const host =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    "";
+  const subdomain = extractSubdomain(host);
+  const isRootDomain = subdomain === null;
+
   const intlResponse = handleI18nRouting(request);
   if (!intlResponse.ok) {
     return intlResponse;
   }
 
   const { locale, pathname } = extractLocaleAndPathname(request, intlResponse);
+
+  // ---------------------------------------------------------------------------
+  // 1. Root Domain Routing (crodic.click / localhost:3000)
+  // ---------------------------------------------------------------------------
+  if (isRootDomain) {
+    // When visiting root home, rewrite internally to Landing page
+    if (pathname === "/" || pathname === "") {
+      return rewriteToLanding(request, intlResponse, locale);
+    }
+
+    // Explicit /landing URL -> 301 redirect to root home for clean SEO canonical
+    if (pathname === "/landing") {
+      const cleanRootUrl = new URL(
+        locale === routing.defaultLocale ? "/" : `/${locale}`,
+        request.url
+      );
+      cleanRootUrl.search = request.nextUrl.search;
+      return NextResponse.redirect(cleanRootUrl, {
+        headers: intlResponse.headers,
+        status: 301,
+      });
+    }
+
+    // Public CMS / legal pages (/pages/*) are allowed on the root domain
+    if (isPublicRoute(pathname)) {
+      return finalizeResponse(request, intlResponse, pathname, null);
+    }
+
+    // Any app route accessed on root domain -> redirect to app subdomain
+    const targetSubdomain = getDefaultSubdomain();
+    const appUrl = buildSubdomainUrl({
+      subdomain: targetSubdomain,
+      path: request.nextUrl.pathname,
+      requestUrl: request.nextUrl,
+    });
+    return NextResponse.redirect(appUrl, { status: 307 });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. Subdomain Routing (e.g. kosume.crodic.click / kosume.localhost:3000)
+  // ---------------------------------------------------------------------------
+  // If user accesses /landing on a subdomain, redirect to root domain
+  if (pathname === "/landing") {
+    const rootUrl = buildRootUrl({
+      path: locale === routing.defaultLocale ? "/" : `/${locale}`,
+      requestUrl: request.nextUrl,
+    });
+    return NextResponse.redirect(rootUrl, { status: 307 });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Auth & Session Management (Runs on Subdomain)
+  // ---------------------------------------------------------------------------
   const accessToken = request.cookies.get(COOKIE_ACCESS_TOKEN)?.value || "";
   const refreshToken = request.cookies.get(COOKIE_REFRESH_TOKEN)?.value || "";
 
@@ -71,7 +142,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return finalizeResponse(request, intlResponse, pathname);
+  return finalizeResponse(request, intlResponse, pathname, subdomain);
 }
 
 function extractLocaleAndPathname(
@@ -86,6 +157,38 @@ function extractLocaleAndPathname(
     locale: rawLocale || routing.defaultLocale,
     pathname: "/" + rest.join("/"),
   };
+}
+
+function rewriteToLanding(
+  request: NextRequest,
+  intlResponse: NextResponse,
+  locale: string
+) {
+  const rewriteUrl = new URL(`/${locale}/landing`, request.url);
+  rewriteUrl.search = request.nextUrl.search;
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", "/landing");
+  requestHeaders.set("x-subdomain", "");
+
+  intlResponse.headers.forEach((value, key) => {
+    if (key.startsWith("x-middleware-request-")) {
+      requestHeaders.set(key.replace("x-middleware-request-", ""), value);
+    }
+  });
+
+  const response = NextResponse.rewrite(rewriteUrl, {
+    request: {
+      headers: requestHeaders,
+    },
+    headers: intlResponse.headers,
+  });
+
+  intlResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie);
+  });
+
+  return response;
 }
 
 function evaluateTokenState(accessToken: string, refreshToken: string) {
@@ -111,10 +214,12 @@ function evaluateTokenState(accessToken: string, refreshToken: string) {
 function finalizeResponse(
   request: NextRequest,
   intlResponse: NextResponse,
-  pathname: string
+  pathname: string,
+  subdomain: string | null
 ) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+  requestHeaders.set("x-subdomain", subdomain || "");
 
   intlResponse.headers.forEach((value, key) => {
     if (key.startsWith("x-middleware-request-")) {
@@ -164,20 +269,16 @@ const refreshTokenMiddleware = async (
       );
     }
 
-    intlResponse.cookies.set(COOKIE_ACCESS_TOKEN, newAccessToken, {
-      httpOnly: true,
-      path: "/",
-      expires: new Date(expAccessToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-    intlResponse.cookies.set(COOKIE_REFRESH_TOKEN, newRefreshToken, {
-      httpOnly: true,
-      path: "/",
-      expires: new Date(expRefreshToken * 1000),
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+    intlResponse.cookies.set(
+      COOKIE_ACCESS_TOKEN,
+      newAccessToken,
+      getAuthCookieOptions(new Date(expAccessToken * 1000))
+    );
+    intlResponse.cookies.set(
+      COOKIE_REFRESH_TOKEN,
+      newRefreshToken,
+      getAuthCookieOptions(new Date(expRefreshToken * 1000))
+    );
 
     return intlResponse;
   } catch (error: any) {
@@ -204,6 +305,15 @@ const unauthorizedResponse = (
   pathname: string,
   code: AuthCode = AUTH_CODE.SESSION_EXPIRED
 ) => {
+  const deleteOptions = getDeleteCookieOptions();
+  intlResponse.cookies.set(COOKIE_ACCESS_TOKEN, "", {
+    ...deleteOptions,
+    maxAge: 0,
+  });
+  intlResponse.cookies.set(COOKIE_REFRESH_TOKEN, "", {
+    ...deleteOptions,
+    maxAge: 0,
+  });
   intlResponse.cookies.delete(COOKIE_ACCESS_TOKEN);
   intlResponse.cookies.delete(COOKIE_REFRESH_TOKEN);
 
@@ -218,6 +328,14 @@ const unauthorizedResponse = (
 
   const response = NextResponse.redirect(redirectUrl, {
     headers: intlResponse.headers,
+  });
+  response.cookies.set(COOKIE_ACCESS_TOKEN, "", {
+    ...deleteOptions,
+    maxAge: 0,
+  });
+  response.cookies.set(COOKIE_REFRESH_TOKEN, "", {
+    ...deleteOptions,
+    maxAge: 0,
   });
   response.cookies.delete(COOKIE_ACCESS_TOKEN);
   response.cookies.delete(COOKIE_REFRESH_TOKEN);

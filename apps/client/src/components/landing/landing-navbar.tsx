@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { WhiteLabelLogo } from "@/lib/white-label";
+import { getAppExternalUrl } from "@/lib/subdomain";
 
 export function LandingNavbar() {
   const t = useTranslations("Landing.nav");
@@ -101,7 +102,7 @@ export function LandingNavbar() {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <Link
-          href="/landing"
+          href="/"
           className="group focus-visible:ring-ring flex items-center gap-1.5 rounded-md focus-visible:ring-2 focus-visible:outline-none"
           aria-label={t("homeAria")}
         >
@@ -132,7 +133,7 @@ export function LandingNavbar() {
             size="sm"
             className="border-border/70 bg-card/40 hover:bg-muted/60 text-foreground h-9 cursor-pointer rounded-full border px-4 font-medium transition-colors"
           >
-            <Link href="/auth/login">{t("signIn")}</Link>
+            <a href={getAppExternalUrl("/auth/login")}>{t("signIn")}</a>
           </Button>
 
           <Button
@@ -140,7 +141,7 @@ export function LandingNavbar() {
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-full px-5 font-medium shadow-sm transition-all hover:scale-[1.02]"
           >
-            <Link href="/auth/sign-up">{t("signUp")}</Link>
+            <a href={getAppExternalUrl("/auth/sign-up")}>{t("signUp")}</a>
           </Button>
         </div>
 
@@ -152,7 +153,7 @@ export function LandingNavbar() {
             size="sm"
             className="bg-primary text-primary-foreground h-8 rounded-full px-3 text-xs"
           >
-            <Link href="/auth/sign-up">{t("signUp")}</Link>
+            <a href={getAppExternalUrl("/auth/sign-up")}>{t("signUp")}</a>
           </Button>
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -191,20 +192,23 @@ export function LandingNavbar() {
                   variant="outline"
                   className="border-border bg-background w-full rounded-full"
                 >
-                  <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
+                  <a
+                    href={getAppExternalUrl("/auth/login")}
+                    onClick={() => setMobileOpen(false)}
+                  >
                     {t("signIn")}
-                  </Link>
+                  </a>
                 </Button>
                 <Button
                   asChild
                   className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 w-full rounded-full shadow-md"
                 >
-                  <Link
-                    href="/auth/sign-up"
+                  <a
+                    href={getAppExternalUrl("/auth/sign-up")}
                     onClick={() => setMobileOpen(false)}
                   >
                     {t("signUp")}
-                  </Link>
+                  </a>
                 </Button>
               </div>
             </SheetContent>

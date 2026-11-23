@@ -257,7 +257,7 @@ NODE_ENV=production
 APP_PORT=8000
 APP_URL=https://api.crodic.click
 APP_DEBUG=false
-APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://kosume.crodic.click,https://admin.crodic.click
 
 # Kết nối database container qua mạng app-network
 DATABASE_HOST=postgres
@@ -285,11 +285,11 @@ AWS_ENDPOINT=http://minio:9000
 AWS_URL=https://cdn.crodic.click/crodic-public-uploads
 AWS_USE_PATH_STYLE_ENDPOINT=true
 
-# Điều hướng liên kết xác thực (Email, Reset Password, 2FA)
+# Điều hướng liên kết xác thực (Email, Reset Password, 2FA - Trỏ về App Subdomain)
 AUTH_PORTAL_URL=https://admin.crodic.click
 AUTH_PORTAL_RESET_PASSWORD_URL=https://admin.crodic.click/reset-password
-USER_AUTH_CLIENT_URL=https://crodic.click
-USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://crodic.click/auth/reset-password
+USER_AUTH_CLIENT_URL=https://kosume.crodic.click
+USER_AUTH_CLIENT_RESET_PASSWORD_URL=https://kosume.crodic.click/auth/reset-password
 
 # JWT Secrets (Bắt buộc tạo chuỗi ngẫu nhiên tối thiểu 32 ký tự)
 AUTH_JWT_SECRET=chuoi-ngau-nhien-bao-mat-admin-jwt-secret-32-chars
@@ -319,6 +319,11 @@ NEXT_PUBLIC_APP_URL=https://crodic.click
 NEXT_PUBLIC_API_URL=https://api.crodic.click
 NEXT_PUBLIC_ADMIN_PORTAL_URL=https://admin.crodic.click
 
+# Cấu hình Subdomain Routing & Cross-Subdomain Cookies
+NEXT_PUBLIC_ROOT_DOMAIN=crodic.click
+NEXT_PUBLIC_APP_SUBDOMAIN=kosume
+NEXT_PUBLIC_COOKIE_DOMAIN=.crodic.click
+
 # SSR server-to-server fetch qua mạng nội bộ Docker
 SERVER_API_URL=http://api:8000
 
@@ -344,16 +349,50 @@ Với Cloudflare Tunnel, bạn không cần mở cổng 80, 443 hay 8001 trên t
 2. Vào **Networks > Tunnels > Create a tunnel > Chọn Cloudflared**.
 3. Đặt tên tunnel (ví dụ: `crodic-vps-tunnel`) và sao chép chuỗi mã Token trong câu lệnh cài đặt.
 4. Gán token vào biến `CLOUDFLARE_TUNNEL_TOKEN` trong file `.env` ở thư mục gốc.
-5. Tại tab **Public Hostname**, thêm 4 quy tắc điều hướng:
+5. Tại tab **Public Hostname**, thêm các quy tắc điều hướng sau:
 
-| Public Hostname      | Service Type | URL Đích Trên Host | Chức Năng                            |
-| :------------------- | :----------- | :----------------- | :----------------------------------- |
-| `crodic.click`       | `HTTP`       | `localhost:3000`   | Client Web (Next.js SSR)             |
-| `admin.crodic.click` | `HTTP`       | `localhost:8080`   | Admin Portal (Vite React SPA)        |
-| `api.crodic.click`   | `HTTP`       | `localhost:8001`   | Backend API (NestJS)                 |
-| `cdn.crodic.click`   | `HTTP`       | `localhost:9000`   | S3 Object Storage CDN (MinIO / Silo) |
+| Public Hostname       | Service Type | URL Đích Trên Host | Chức Năng                                   |
+| :-------------------- | :----------- | :----------------- | :------------------------------------------ |
+| `crodic.click`        | `HTTP`       | `localhost:3000`   | Landing Page (Next.js SSR Root)             |
+| `kosume.crodic.click` | `HTTP`       | `localhost:3000`   | Client Web App Core (Next.js SSR Subdomain) |
+| `admin.crodic.click`  | `HTTP`       | `localhost:8080`   | Admin Portal (Vite React SPA)               |
+| `api.crodic.click`    | `HTTP`       | `localhost:8001`   | Backend API (NestJS)                        |
+| `cdn.crodic.click`    | `HTTP`       | `localhost:9000`   | S3 Object Storage CDN (MinIO / Silo)        |
+
+> [!TIP]
+> Bạn có thể thêm rule wildcard `*.crodic.click` trỏ tới `localhost:3000` nếu muốn hệ thống tự động phân giải bất kỳ subdomain người dùng / tenant nào trong tương lai. Cloudflare Tunnel luôn ưu tiên các hostname cụ thể (`api`, `admin`, `cdn`) trước wildcard.
 
 Container `crodic_tunnel` chạy với cờ `network_mode: host` trong [`docker-compose.prod.yml`](../../docker-compose.prod.yml) sẽ tự động đồng bộ và định tuyến lưu lượng vào các port nội bộ tương ứng.
+
+---
+
+### 4.2. Kiến Trúc Subdomain Định Tuyến Động (Landing vs App Subdomain)
+
+Hệ thống Client hỗ trợ kiến trúc định tuyến đa tên miền (Multi-domain / Multi-subdomain) động hoàn toàn qua biến môi trường:
+
+```
+                            [ Trình duyệt Người Dùng ]
+                                        │
+           ┌────────────────────────────┴────────────────────────────┐
+           ▼                                                         ▼
+[ crodic.click ] (Root Domain)                       [ kosume.crodic.click ] (App Subdomain)
+           │                                                         │
+           ▼                                                         ▼
+Next.js Proxy (`apps/client/src/proxy.ts`):         Next.js Proxy (`apps/client/src/proxy.ts`):
+• `/` hoặc `/{locale}`                               • `/` hoặc `/{locale}`
+  └─► Rewrite ngầm sang `/{locale}/landing`           └─► Trang chủ App (Spotlight, Feed...)
+• `/landing`                                         • `/landing`
+  └─► Redirect 301 về `/`                             └─► Redirect 307 về `crodic.click`
+• `/feed`, `/profile`, `/auth/*`, ...                • `/feed`, `/profile`, `/tags`, `/events`, ...
+  └─► Redirect 307 sang `kosume.crodic.click/...`     └─► Phục vụ đầy đủ tính năng App Core
+```
+
+#### Quy Trình Hoạt Động & Kiểm Thử Trên Local:
+
+- **Local Landing Page**: Truy cập `http://localhost:3000/` $\rightarrow$ Tự động hiển thị trang Landing.
+- **Local App Core**: Truy cập `http://kosume.localhost:3000/` $\rightarrow$ Tự động hiển thị ứng dụng chính.
+- **RFC 6761**: Mọi trình duyệt hiện đại (Chrome, Edge, Firefox) tự động hiểu `*.localhost` trỏ về `127.0.0.1` mà không cần sửa file `hosts`.
+- **Cấu hình Cookie Xuyên Miền**: Cấu hình `NEXT_PUBLIC_COOKIE_DOMAIN=.crodic.click` trong production cho phép người dùng đăng nhập tại `kosume.crodic.click` mà vẫn duy trì phiên làm việc khi quay lại trang gốc `crodic.click`.
 
 ---
 
@@ -679,7 +718,7 @@ gunzip -c /var/backups/postgres/db_2026-11-10.sql.gz | docker exec -i crodic_pos
 - **Hiện tượng**: Trình duyệt báo `Cross-Origin Request Blocked`.
 - **Xử lý**: Mở `apps/api/.env`, kiểm tra biến `APP_CORS_ORIGIN` đã chứa đầy đủ danh sách domain kèm giao thức `https://` và **không có dấu gạch chéo `/` ở cuối**:
   ```env
-  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://admin.crodic.click
+  APP_CORS_ORIGIN=https://crodic.click,https://www.crodic.click,https://kosume.crodic.click,https://admin.crodic.click
   ```
   Sau khi sửa, khởi động lại container API:
   ```bash
