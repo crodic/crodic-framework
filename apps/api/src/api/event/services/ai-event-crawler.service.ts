@@ -183,8 +183,9 @@ export class AiEventCrawlerService {
       preferredModel,
       'gemini-3.8-flash',
       'gemini-3.8-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.5-flash-lite',
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-lite',
+      'gemini-1.5-flash',
     ].filter((val, idx, arr) => arr.indexOf(val) === idx);
 
     const prompt = `
@@ -240,7 +241,7 @@ Mỗi phần tử trong mảng là một object có cấu trúc:
       }
     }
 
-    const failureSummary = `AI model request failed. Primary model (${preferredModel}): ${primaryError?.message || 'Unknown error'}`;
+    const failureSummary = `All candidate models failed (${candidateModels.join(', ')}). Primary error (${preferredModel}): ${primaryError?.message || 'Unknown error'}`;
     throw new Error(failureSummary);
   }
 
