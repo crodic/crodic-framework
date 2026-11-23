@@ -163,7 +163,7 @@ export class TagEncyclopediaService {
         id: '0' as AutoIncrementID,
         tagId,
         locale: locale.toLowerCase(),
-        summary: tagDetail.shortSummary || '',
+        summary: '',
         body: '',
         featuredImageUrl: null,
         featuredFileId: null,

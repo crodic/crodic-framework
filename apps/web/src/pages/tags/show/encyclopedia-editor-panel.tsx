@@ -14,6 +14,7 @@ import {
   SaveIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { cn } from '@/lib/utils'
@@ -98,15 +99,21 @@ export function EncyclopediaEditorPanel({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [selectedLocale, setSelectedLocale] = useState(() =>
-    resolveValidTagLocale(initialLocale)
+    resolveValidTagLocale(searchParams.get('locale') || initialLocale)
   )
 
   useEffect(() => {
-    if (initialLocale) {
-      setSelectedLocale(resolveValidTagLocale(initialLocale))
+    const urlLocale = searchParams.get('locale')
+    if (urlLocale) {
+      const valid = resolveValidTagLocale(urlLocale)
+      if (valid !== selectedLocale) {
+        setSelectedLocale(valid)
+      }
     }
-  }, [initialLocale])
+  }, [searchParams, selectedLocale])
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [rollbackTarget, setRollbackTarget] =
@@ -122,7 +129,7 @@ export function EncyclopediaEditorPanel({
     defaultValues: {
       locale: selectedLocale,
       summary: '',
-      body: `<p>${t('tags.encyclopedia.initialBody', 'Write the encyclopedia overview for')} <strong>#${tag.name}</strong>...</p>`,
+      body: '',
       featuredImageUrl: '',
       featuredFileId: null,
       changeNote: '',
@@ -130,32 +137,54 @@ export function EncyclopediaEditorPanel({
     },
   })
 
+  const handleLocaleChange = (locRaw: string) => {
+    const nextLocale = resolveValidTagLocale(locRaw)
+    if (nextLocale === selectedLocale) return
+
+    form.reset({
+      locale: nextLocale,
+      summary: '',
+      body: '',
+      featuredImageUrl: '',
+      featuredFileId: null,
+      changeNote: '',
+      isEditLocked: false,
+    })
+
+    setSelectedLocale(nextLocale)
+
+    const next = new URLSearchParams(searchParams)
+    next.set('locale', nextLocale)
+    setSearchParams(next, { replace: true })
+  }
+
   useEffect(() => {
-    if (wiki) {
+    if (isFetching || !wiki || wiki.locale !== selectedLocale) {
+      return
+    }
+
+    if (wiki.currentRevision > 0) {
       form.reset({
         locale: selectedLocale,
-        summary: wiki.summary,
-        body: wiki.body,
+        summary: wiki.summary ?? '',
+        body: wiki.body ?? '',
         featuredImageUrl: wiki.featuredImageUrl ?? '',
         featuredFileId: wiki.featuredFileId ?? null,
         changeNote: '',
-        isEditLocked: wiki.isEditLocked,
+        isEditLocked: wiki.isEditLocked ?? false,
       })
     } else {
       form.reset({
         locale: selectedLocale,
         summary: '',
-        body: `<p>${t('tags.encyclopedia.initialBody', 'Write the encyclopedia overview for')} <strong>#${tag.name}</strong>...</p>`,
+        body: '',
         featuredImageUrl: '',
         featuredFileId: null,
-        changeNote: t(
-          'tags.encyclopedia.initialChangeNote',
-          'Initial encyclopedia article'
-        ),
+        changeNote: '',
         isEditLocked: false,
       })
     }
-  }, [form, selectedLocale, t, tag.name, wiki])
+  }, [form, isFetching, selectedLocale, wiki])
 
   const upsertMutation = useMutation({
     mutationFn: apiUpsertTagEncyclopedia,
@@ -460,12 +489,7 @@ export function EncyclopediaEditorPanel({
               <span className='text-muted-foreground text-xs font-medium'>
                 {t('tags.encyclopedia.edition', 'Edition:')}
               </span>
-              <Select
-                value={selectedLocale}
-                onValueChange={(loc) =>
-                  setSelectedLocale(resolveValidTagLocale(loc))
-                }
-              >
+              <Select value={selectedLocale} onValueChange={handleLocaleChange}>
                 <SelectTrigger className='h-8 w-36 text-xs font-medium'>
                   <SelectValue
                     placeholder={t('tags.encyclopedia.colEdition', 'Edition')}
