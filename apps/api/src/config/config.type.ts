@@ -6,6 +6,7 @@ import { StorageConfig } from '../filesystem/config/storage-config.type';
 import { SentryConfig } from './sentry.config';
 import { AuthConfig } from '../api/auth/config/auth-config.type';
 import { ObserveConfig } from './observe.config';
+import { AiConfig } from './ai.config';
 
 export type AllConfigType = {
   app: AppConfig;
@@ -16,4 +17,5 @@ export type AllConfigType = {
   sentry: SentryConfig;
   auth: AuthConfig;
   observe: ObserveConfig;
+  ai: AiConfig;
 };

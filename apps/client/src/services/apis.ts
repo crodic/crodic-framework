@@ -1,4 +1,3 @@
-import { http } from "@/lib/http";
 import xior from "xior";
 
 export const getClientToken = async () => {
