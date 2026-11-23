@@ -87,12 +87,18 @@ export function PageCronJobsOverview() {
     if (!selectedJobToTrigger) return
     triggerMutation.mutate(selectedJobToTrigger.key, {
       onSuccess: (res) => {
-        toast.success(
-          `Job "${selectedJobToTrigger.name}" executed successfully!`,
-          {
-            description: res.summary || `Duration: ${res.durationMs}ms`,
-          }
-        )
+        if (res.status === 'FAILED' || res.success === false) {
+          toast.error(`Job "${selectedJobToTrigger.name}" failed`, {
+            description: res.summary || res.message || 'Job execution failed.',
+          })
+        } else {
+          toast.success(
+            `Job "${selectedJobToTrigger.name}" executed successfully!`,
+            {
+              description: res.summary || `Duration: ${res.durationMs}ms`,
+            }
+          )
+        }
         setSelectedJobToTrigger(null)
       },
       onError: (err: any) => {

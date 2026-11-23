@@ -182,8 +182,8 @@ export class AiEventCrawlerService {
     const candidateModels = [
       preferredModel,
       'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-3.5-flash-lite',
     ].filter((val, idx, arr) => arr.indexOf(val) === idx);
 
     const prompt = `
@@ -209,7 +209,8 @@ Mỗi phần tử trong mảng là một object có cấu trúc:
 ]
 `;
 
-    let lastError: Error | null = null;
+    let primaryError: Error | null = null;
+    const errors: string[] = [];
 
     for (const modelName of candidateModels) {
       try {
@@ -228,14 +229,18 @@ Mỗi phần tử trong mảng là một object có cấu trúc:
         const text = response.text || '';
         return this.parseJsonFromResponse(text);
       } catch (err: any) {
-        lastError = err;
+        if (!primaryError) {
+          primaryError = err;
+        }
+        errors.push(`[${modelName}]: ${err.message}`);
         this.logger.warn(
           `[AI Event Crawler] Model ${modelName} failed: ${err.message}. Trying next candidate...`,
         );
       }
     }
 
-    throw lastError || new Error('All candidate Gemini models failed.');
+    const failureSummary = `AI model request failed. Primary model (${preferredModel}): ${primaryError?.message || 'Unknown error'}`;
+    throw new Error(failureSummary);
   }
 
   /**
