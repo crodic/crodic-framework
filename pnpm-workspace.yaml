@@ -11,4 +11,4 @@ allowBuilds:
   "@sentry/cli": true
   esbuild: true
   sharp: true
-  protobufjs: set this to true or false
+  protobufjs: true
