@@ -33,7 +33,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Paginated, QueryParams } from '../../common/query-builder';
+import {
+  AllowedFilter,
+  Paginated,
+  QueryParams,
+} from '../../common/query-builder';
 import {
   FILE_UPLOAD_CHUNK_SIZE,
   FILE_UPLOAD_MAX_SIZE,
@@ -50,6 +54,7 @@ import { FileResDto } from './dto/file.res.dto';
 import {
   CreateFolderDto,
   FileFolderResDto,
+  FileStorageStatsResDto,
   RenameFolderDto,
 } from './dto/folder.dto';
 import { SortableImageListResDto } from './dto/sortable-image.dto';
@@ -80,6 +85,18 @@ export class FileController {
   )
   getDisks() {
     return this.storage?.getAvailableDisks() ?? [];
+  }
+
+  @Get('stats')
+  @ApiAuth({
+    type: FileStorageStatsResDto,
+    summary: 'Get storage stats grouped by file category',
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Read, AppSubjects.File),
+  )
+  getStats(@Query('folder') folder?: string) {
+    return this.fileService.getStorageStats(folder);
   }
 
   @Get()
@@ -114,6 +131,7 @@ export class FileController {
         'status',
         'is_starred',
         'createdAt',
+        AllowedFilter.trashed(),
       ],
     },
   })

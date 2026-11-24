@@ -40,6 +40,8 @@ export const fileQueryKeys = {
     'infinite',
     params,
   ],
+  stats: (folder?: string | null) =>
+    [...fileQueryKeys.all, 'stats', folder ?? '__all__'] as const,
   starredCount: () => [...fileQueryKeys.all, 'starred-count'] as const,
   detail: (publicId: string) => [...fileQueryKeys.all, publicId],
   folders: ['file-folders'] as const,
@@ -346,8 +348,40 @@ export const useDataFileTrashCount = () =>
     queryKey: [...fileQueryKeys.all, 'trash-count'] as const,
     queryFn: () =>
       apiGetFileListing({
-        filter: { status: 'trash' },
+        filter: { trashed: 'only' },
         limit: 1,
       }),
     select: (data) => data.meta.totalItems,
+  })
+
+export interface StorageCategoryStat {
+  count: number
+  bytes: number
+}
+
+export interface FileStorageStats {
+  totalCount: number
+  totalBytes: number
+  categories: {
+    image: StorageCategoryStat
+    video: StorageCategoryStat
+    document: StorageCategoryStat
+    archive: StorageCategoryStat
+    other: StorageCategoryStat
+  }
+}
+
+export async function apiGetFileStorageStats(
+  folder?: string | null
+): Promise<FileStorageStats> {
+  const response = await http.get('/files/stats', {
+    params: folder ? { folder } : undefined,
+  })
+  return response.data
+}
+
+export const useDataFileStorageStats = (folder?: string | null) =>
+  useQuery({
+    queryKey: fileQueryKeys.stats(folder),
+    queryFn: () => apiGetFileStorageStats(folder),
   })

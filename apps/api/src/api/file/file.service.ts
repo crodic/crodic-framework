@@ -34,6 +34,7 @@ import {
   FILE_UPLOAD_SINGLE_MAX_SIZE,
 } from './config/file.config';
 import { FileResDto } from './dto/file.res.dto';
+import { FileStorageStatsResDto } from './dto/folder.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { FileEntity } from './entities/file.entity';
 import { FileFolderService } from './file-folder.service';
@@ -155,34 +156,11 @@ export class FileService {
     return dto;
   }
 
-  async findAll(rawQuery: QueryParams): Promise<Paginated<FileResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<FileResDto>> {
     const queryBuilder = this.fileRepository
       .createQueryBuilder('file')
       .leftJoinAndSelect('file.createdByAdmin', 'createdByAdmin')
       .leftJoinAndSelect('file.updatedByAdmin', 'updatedByAdmin');
-
-    const query: QueryParams = {
-      ...rawQuery,
-      filter: rawQuery.filter ? { ...rawQuery.filter } : undefined,
-    };
-
-    const rawStatus = query.filter?.status;
-
-    const isTrash =
-      rawStatus === 'trash' ||
-      query.filter?.is_trash === 'true' ||
-      query.filter?.is_trash === true ||
-      query.filter?.trash === 'true' ||
-      query.filter?.trash === true;
-
-    if (isTrash) {
-      queryBuilder.withDeleted().andWhere('file.deleted_at IS NOT NULL');
-      if (query.filter) {
-        delete query.filter.status;
-        delete query.filter.is_trash;
-        delete query.filter.trash;
-      }
-    }
 
     const result = await QueryBuilder.for(queryBuilder, query)
       .allowedSorts([
@@ -205,13 +183,23 @@ export class FileService {
       .allowedFilters([
         'public_id',
         'original_name',
-        'folder',
-        'disk',
-        'visibility',
+        AllowedFilter.exact('folder'),
+        AllowedFilter.exact('disk'),
+        AllowedFilter.exact('visibility'),
         'mime',
-        'resource_type',
-        AllowedFilter.exact('status'),
+        AllowedFilter.exact('resource_type'),
         AllowedFilter.exact('is_starred'),
+        AllowedFilter.trashed(),
+        AllowedFilter.callback('status', (qb, value) => {
+          if (value === 'trash') {
+            if (typeof (qb as any).withDeleted === 'function') {
+              (qb as any).withDeleted();
+            }
+            qb.andWhere('file.deleted_at IS NOT NULL');
+          } else {
+            qb.andWhere('file.status = :fStatus', { fStatus: value });
+          }
+        }),
         AllowedFilter.callback('createdAt', (qb, value) => {
           if (!value) return;
           if (Array.isArray(value) && value.length === 2) {
@@ -236,6 +224,107 @@ export class FileService {
       result.data.map((file) => this.toDto(file)),
       result.meta,
       result.links,
+    );
+  }
+
+  async getStorageStats(folder?: string): Promise<FileStorageStatsResDto> {
+    const qb = this.fileRepository
+      .createQueryBuilder('file')
+      .select('file.resource_type', 'resourceType')
+      .addSelect('file.mime', 'mime')
+      .addSelect('COUNT(file.id)', 'count')
+      .addSelect('COALESCE(SUM(file.size), 0)', 'size')
+      .where('file.deleted_at IS NULL');
+
+    if (folder) {
+      qb.andWhere('(file.folder = :folder OR file.folder LIKE :subPattern)', {
+        folder,
+        subPattern: `${folder}/%`,
+      });
+    }
+
+    const rows = await qb
+      .groupBy('file.resource_type')
+      .addGroupBy('file.mime')
+      .getRawMany<{
+        resourceType: string;
+        mime: string;
+        count: string;
+        size: string;
+      }>();
+
+    const categorize = (
+      resourceType?: string,
+      mime?: string,
+    ): 'image' | 'video' | 'document' | 'archive' | 'other' => {
+      const rt = (resourceType || '').toLowerCase();
+      const m = (mime || '').toLowerCase();
+
+      if (rt === 'image' || m.startsWith('image/')) return 'image';
+      if (rt === 'video' || m.startsWith('video/')) return 'video';
+      if (rt === 'audio' || m.startsWith('audio/')) return 'other';
+
+      if (
+        m.includes('zip') ||
+        m.includes('tar') ||
+        m.includes('rar') ||
+        m.includes('7z') ||
+        m.includes('compressed') ||
+        m.includes('gzip')
+      ) {
+        return 'archive';
+      }
+
+      if (
+        rt === 'raw' ||
+        m.includes('pdf') ||
+        m.includes('document') ||
+        m.includes('word') ||
+        m.includes('excel') ||
+        m.includes('sheet') ||
+        m.includes('powerpoint') ||
+        m.includes('presentation') ||
+        m.includes('text/') ||
+        m.includes('json') ||
+        m.includes('javascript') ||
+        m.includes('xml')
+      ) {
+        return 'document';
+      }
+
+      return 'other';
+    };
+
+    const categories = {
+      image: { count: 0, bytes: 0 },
+      video: { count: 0, bytes: 0 },
+      document: { count: 0, bytes: 0 },
+      archive: { count: 0, bytes: 0 },
+      other: { count: 0, bytes: 0 },
+    };
+
+    let totalCount = 0;
+    let totalBytes = 0;
+
+    for (const row of rows) {
+      const cat = categorize(row.resourceType, row.mime);
+      const count = Number(row.count) || 0;
+      const bytes = Number(row.size) || 0;
+
+      categories[cat].count += count;
+      categories[cat].bytes += bytes;
+      totalCount += count;
+      totalBytes += bytes;
+    }
+
+    return plainToInstance(
+      FileStorageStatsResDto,
+      {
+        totalCount,
+        totalBytes,
+        categories,
+      },
+      { excludeExtraneousValues: true },
     );
   }
 

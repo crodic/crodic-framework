@@ -167,14 +167,12 @@ export function UploadDialog({
         onOpenChange(nextOpen)
       }}
     >
-      <DialogContent className='flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-h-[min(88vh,42rem)] sm:max-w-lg'>
-        <DialogHeader className='shrink-0 border-b p-6 pr-12 pb-4 text-left'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-lg'>
+        <DialogHeader>
           <DialogTitle>{t('files.upload.title')}</DialogTitle>
-          <DialogDescription className='mt-1 text-xs sm:text-sm'>
-            {t('files.upload.description')}
-          </DialogDescription>
+          <DialogDescription>{t('files.upload.description')}</DialogDescription>
         </DialogHeader>
-        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-6'>
+        <div className='space-y-4'>
           <div className='grid gap-2'>
             <Label className='text-foreground text-xs font-medium'>
               {t('files.upload.visibility', 'Visibility')}
@@ -184,7 +182,7 @@ export function UploadDialog({
                 type='button'
                 onClick={() => setTargetVisibility('public')}
                 className={cn(
-                  'group flex cursor-pointer flex-col items-start justify-between rounded-lg border p-3 text-left transition-all',
+                  'group flex cursor-pointer flex-col items-start justify-between rounded-lg border p-2.5 text-left transition-all sm:p-3',
                   targetVisibility === 'public'
                     ? 'border-primary bg-primary/5 ring-primary shadow-xs ring-1'
                     : 'border-input bg-card hover:bg-muted/40 hover:border-muted-foreground/30'
@@ -199,7 +197,7 @@ export function UploadDialog({
                     <Check className='text-primary size-3.5' />
                   )}
                 </div>
-                <p className='text-muted-foreground mt-1.5 text-xs leading-relaxed font-normal'>
+                <p className='text-muted-foreground mt-1 text-xs leading-relaxed font-normal'>
                   {t(
                     'files.upload.publicHelp',
                     'Accessible by anyone with the link / CDN'
@@ -211,7 +209,7 @@ export function UploadDialog({
                 type='button'
                 onClick={() => setTargetVisibility('private')}
                 className={cn(
-                  'group flex cursor-pointer flex-col items-start justify-between rounded-lg border p-3 text-left transition-all',
+                  'group flex cursor-pointer flex-col items-start justify-between rounded-lg border p-2.5 text-left transition-all sm:p-3',
                   targetVisibility === 'private'
                     ? 'border-primary bg-primary/5 ring-primary shadow-xs ring-1'
                     : 'border-input bg-card hover:bg-muted/40 hover:border-muted-foreground/30'
@@ -226,7 +224,7 @@ export function UploadDialog({
                     <Check className='text-primary size-3.5' />
                   )}
                 </div>
-                <p className='text-muted-foreground mt-1.5 text-xs leading-relaxed font-normal'>
+                <p className='text-muted-foreground mt-1 text-xs leading-relaxed font-normal'>
                   {t(
                     'files.upload.privateHelp',
                     'Restricted to authenticated sessions'
@@ -241,7 +239,7 @@ export function UploadDialog({
             folders={folders}
             onChange={setTargetFolder}
           />
-          <div className='border-input bg-card/60 flex items-center justify-between rounded-lg border p-3'>
+          <div className='border-input bg-card/60 flex items-center justify-between rounded-lg border p-2.5 sm:p-3'>
             <div className='flex flex-col gap-0.5'>
               <label
                 htmlFor='optimize-image'
@@ -293,14 +291,14 @@ export function UploadDialog({
               isDragOver &&
                 'border-primary bg-primary/5 ring-primary/20 ring-2',
               files.length > 0
-                ? 'flex-row gap-3 p-3.5'
-                : 'flex-col gap-2 p-8 text-center'
+                ? 'flex-row gap-3 p-3'
+                : 'flex-col gap-2 p-5 text-center'
             )}
           >
             <Upload
               className={cn(
                 'text-muted-foreground shrink-0',
-                files.length > 0 ? 'size-5' : 'size-8'
+                files.length > 0 ? 'size-4' : 'size-6'
               )}
             />
             <div className={files.length > 0 ? 'min-w-0 flex-1' : ''}>
@@ -374,7 +372,7 @@ export function UploadDialog({
             </p>
           )}
         </div>
-        <DialogFooter className='bg-background/50 flex shrink-0 flex-row justify-end gap-2 border-t p-4 px-6'>
+        <DialogFooter>
           <Button variant='outline' onClick={handleCancelUpload}>
             {t('buttons.cancel')}
           </Button>

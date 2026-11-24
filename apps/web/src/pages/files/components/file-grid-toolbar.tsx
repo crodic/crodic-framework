@@ -74,7 +74,7 @@ const CATEGORY_CHIPS = [
     icon: Music,
   },
   {
-    id: 'raw',
+    id: 'document',
     labelKey: 'files.categories.documents',
     fallback: 'Documents',
     icon: FileText,

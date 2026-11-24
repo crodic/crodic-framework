@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AxiosError } from 'axios'
 import { useMutation } from '@tanstack/react-query'
 import { Check } from 'lucide-react'
@@ -23,6 +23,7 @@ export interface FolderDialogProps {
   open: boolean
   title: string
   submitLabel: string
+  parentFolder?: string | null
   defaultValue?: string
   defaultColor?: string
   existingFolders?: string[]
@@ -44,6 +45,7 @@ export function FolderDialog({
   open,
   title,
   submitLabel,
+  parentFolder,
   defaultValue = '',
   defaultColor = '#8B5CF6',
   existingFolders,
@@ -55,18 +57,26 @@ export function FolderDialog({
   const [selectedColor, setSelectedColor] = useState(defaultColor)
   const normalizedFolder = folder.trim()
 
+  const fullTargetFolder = useMemo(() => {
+    if (!normalizedFolder) return ''
+    if (parentFolder && !normalizedFolder.startsWith(`${parentFolder}/`)) {
+      return `${parentFolder}/${normalizedFolder}`
+    }
+    return normalizedFolder
+  }, [parentFolder, normalizedFolder])
+
   const isDuplicate =
-    Boolean(normalizedFolder) &&
+    Boolean(fullTargetFolder) &&
     Boolean(
       existingFolders?.some(
         (f) =>
-          f.toLowerCase() === normalizedFolder.toLowerCase() &&
+          f.toLowerCase() === fullTargetFolder.toLowerCase() &&
           f.toLowerCase() !== defaultValue.trim().toLowerCase()
       )
     )
 
   const getFolderValidationError = (): string | null => {
-    if (normalizedFolder && !isValidFolderName(normalizedFolder)) {
+    if (fullTargetFolder && !isValidFolderName(fullTargetFolder)) {
       return t('files.folders.invalidName')
     }
     if (isDuplicate) {
@@ -78,7 +88,7 @@ export function FolderDialog({
   const folderError = getFolderValidationError()
 
   const mutation = useMutation({
-    mutationFn: () => onSubmit(normalizedFolder, selectedColor),
+    mutationFn: () => onSubmit(fullTargetFolder, selectedColor),
     onSuccess: () => {
       setFolder('')
       setSelectedColor(defaultColor)
@@ -106,6 +116,14 @@ export function FolderDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className='flex flex-col gap-4 py-1'>
+          {parentFolder && (
+            <div className='text-muted-foreground flex items-center gap-1 text-xs'>
+              <span>{t('files.folders.location', 'Location')}:</span>
+              <span className='text-foreground font-mono font-medium'>
+                {parentFolder}/
+              </span>
+            </div>
+          )}
           <div className='grid gap-2'>
             <Label htmlFor='folder-name'>{t('files.table.folder')}</Label>
             <Input
@@ -120,7 +138,7 @@ export function FolderDialog({
               onKeyDown={(e) => {
                 if (
                   e.key === 'Enter' &&
-                  normalizedFolder &&
+                  fullTargetFolder &&
                   !folderError &&
                   !mutation.isPending
                 ) {

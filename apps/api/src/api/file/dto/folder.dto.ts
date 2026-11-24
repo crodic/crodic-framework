@@ -1,4 +1,4 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   IsNumber,
   IsOptional,
@@ -75,4 +75,50 @@ export class DeleteFolderDto {
   @IsOptional()
   @IsString()
   folder?: string;
+}
+
+export class FileCategoryStatDto {
+  @Expose()
+  @IsNumber()
+  count: number;
+
+  @Expose()
+  @IsNumber()
+  bytes: number;
+}
+
+export class FileStorageStatsCategoriesDto {
+  @Expose()
+  @Type(() => FileCategoryStatDto)
+  image: FileCategoryStatDto;
+
+  @Expose()
+  @Type(() => FileCategoryStatDto)
+  video: FileCategoryStatDto;
+
+  @Expose()
+  @Type(() => FileCategoryStatDto)
+  document: FileCategoryStatDto;
+
+  @Expose()
+  @Type(() => FileCategoryStatDto)
+  archive: FileCategoryStatDto;
+
+  @Expose()
+  @Type(() => FileCategoryStatDto)
+  other: FileCategoryStatDto;
+}
+
+export class FileStorageStatsResDto {
+  @Expose()
+  @IsNumber()
+  totalCount: number;
+
+  @Expose()
+  @IsNumber()
+  totalBytes: number;
+
+  @Expose()
+  @Type(() => FileStorageStatsCategoriesDto)
+  categories: FileStorageStatsCategoriesDto;
 }

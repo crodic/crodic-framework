@@ -44,6 +44,7 @@ import {
   apiUploadFile,
   fileQueryKeys,
   useDataFileFolders,
+  useDataFileOverview,
   useInfiniteDataFileOverview,
 } from './queries'
 import type { FileSchema, FolderSchema } from './schema'
@@ -232,14 +233,15 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
     setSelectedFiles(initialFiles)
   }, [props.open, props.mode, props.value])
 
+  const effectiveResourceType =
+    props.resourceType ?? acceptSpec?.primaryResourceType
+
   const params = useMemo(() => {
     const builder = new RestQueryBuilder()
       .limit(32)
       .sortBy('createdAt', 'desc')
       .search(search)
 
-    const effectiveResourceType =
-      props.resourceType ?? acceptSpec?.primaryResourceType
     if (effectiveResourceType) {
       builder.filter('resource_type', effectiveResourceType)
     }
@@ -249,16 +251,23 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
     }
 
     return builder.build()
-  }, [
-    activeFolder,
-    props.resourceType,
-    acceptSpec?.primaryResourceType,
-    search,
-  ])
+  }, [activeFolder, effectiveResourceType, search])
+
+  // Total across all folders (including root) — only needs meta.totalItems
+  const allFilesParams = useMemo(() => {
+    const builder = new RestQueryBuilder().limit(1).search(search)
+    if (effectiveResourceType) {
+      builder.filter('resource_type', effectiveResourceType)
+    }
+    return builder.build()
+  }, [effectiveResourceType, search])
 
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteDataFileOverview(params)
   const { data: folders = [] } = useDataFileFolders()
+  const { data: allFilesData } = useDataFileOverview(allFilesParams, {
+    enabled: props.open,
+  })
 
   const rawFiles = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],
@@ -273,10 +282,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
 
   const currentPage = data?.pages[data.pages.length - 1]
   const visibleTotal = currentPage?.meta.totalItems ?? 0
-  const allFilesCount = folders.reduce(
-    (total, folder) => total + folder.count,
-    0
-  )
+  const allFilesCount = allFilesData?.meta.totalItems ?? 0
 
   // Match URL-based pre-selection with fetched files once loaded
   useEffect(() => {
@@ -333,10 +339,16 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
 
   const handleCreateFolder = async (folderName: string) => {
     try {
-      await apiCreateFolder({ folder: folderName })
+      const targetFolder =
+        activeFolder &&
+        !folderName.startsWith(`${activeFolder}/`) &&
+        !folderName.includes('/')
+          ? `${activeFolder}/${folderName}`
+          : folderName
+      await apiCreateFolder({ folder: targetFolder })
       void queryClient.invalidateQueries({ queryKey: fileQueryKeys.folders })
-      setActiveFolder(folderName)
-      setTargetUploadFolder(folderName)
+      setActiveFolder(targetFolder)
+      setTargetUploadFolder(targetFolder)
       toast.success(
         t('files.folders.createSuccess', 'Folder created successfully')
       )
@@ -553,7 +565,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent
-        className='border-border/80 bg-background flex h-[min(92vh,calc(100dvh-1.5rem))] max-h-[900px] min-h-0 w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl sm:w-[96vw] sm:max-w-5xl lg:max-w-6xl'
+        className='flex h-[min(90vh,900px)] flex-col sm:max-w-5xl lg:max-w-6xl'
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -574,13 +586,11 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         {/* Drag & Drop Visual Overlay */}
         {isDragging && (
           <div className='bg-background/85 pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 backdrop-blur-xs'>
-            <div className='border-primary/50 bg-primary/10 flex size-20 items-center justify-center rounded-3xl border-2 border-dashed'>
-              <UploadCloud className='text-primary size-10 animate-bounce' />
-            </div>
-            <p className='text-foreground text-base font-semibold'>
+            <UploadCloud className='text-primary size-10 animate-bounce' />
+            <p className='text-base font-semibold'>
               {t('files.picker.dropzoneTitle', 'Drop files to upload')}
             </p>
-            <p className='text-muted-foreground text-xs'>
+            <p className='text-muted-foreground text-sm'>
               {t('files.picker.dropzoneSubtitle', {
                 folder: currentUploadFolderLabel,
               })}
@@ -588,135 +598,109 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
           </div>
         )}
 
-        {/* Header */}
-        <DialogHeader className='border-border/60 bg-muted/20 flex shrink-0 flex-col items-start justify-between gap-3 border-b p-4 pr-12 sm:flex-row sm:items-center sm:px-6 sm:py-3.5 sm:pr-14'>
-          <div className='flex min-w-0 flex-1 flex-col gap-1'>
-            <div className='flex items-center gap-2'>
-              <DialogTitle className='text-base font-bold'>
-                {props.title ?? t('files.picker.title')}
-              </DialogTitle>
-              {acceptSpec && (
-                <Badge
-                  variant='secondary'
-                  className='font-mono text-[10px] font-normal tracking-wide'
-                >
-                  {acceptSpec.label}
-                </Badge>
-              )}
-            </div>
-            <DialogDescription className='text-xs'>
-              {props.description ?? t('files.picker.description')}
-            </DialogDescription>
-          </div>
-
-          {/* Direct Upload Actions & Target Folder Selector */}
-          <div className='flex w-full shrink-0 items-center justify-between gap-2 sm:w-auto sm:justify-end'>
-            <div className='flex items-center gap-1.5'>
-              <span className='text-muted-foreground hidden text-xs lg:inline'>
-                {t('files.picker.uploadTo', 'Upload to:')}
-              </span>
-              <Select
-                value={targetUploadFolder}
-                onValueChange={setTargetUploadFolder}
-              >
-                <SelectTrigger className='h-8 w-28 text-xs sm:w-36'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='__root__' className='text-xs'>
-                    📁 {t('files.folders.root', 'Root')}
-                  </SelectItem>
-                  {folders.map((f) => {
-                    const depth = f.depth ?? f.folder.split('/').length - 1
-                    const displayName =
-                      f.name ?? f.folder.split('/').pop() ?? f.folder
-                    return (
-                      <SelectItem
-                        key={f.folder}
-                        value={f.folder}
-                        className='text-xs'
-                        style={{ paddingLeft: `${8 + depth * 12}px` }}
-                        title={f.folder}
-                      >
-                        📁 {displayName}
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              type='button'
-              size='sm'
-              className='h-8 gap-1.5 text-xs font-medium'
-              disabled={isUploading}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isUploading ? (
-                <Loader2 className='size-3.5 animate-spin' />
-              ) : (
-                <Upload className='size-3.5' />
-              )}
-              <span>{t('files.picker.upload', 'Upload')}</span>
-            </Button>
-          </div>
+        <DialogHeader>
+          <DialogTitle className='flex items-center gap-2'>
+            {props.title ?? t('files.picker.title')}
+            {acceptSpec && (
+              <Badge variant='secondary'>{acceptSpec.label}</Badge>
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            {props.description ?? t('files.picker.description')}
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Search & Toolbar Bar */}
-        <div className='border-border/60 flex shrink-0 items-center justify-between gap-2.5 border-b px-4 py-2 sm:gap-3 sm:px-6 sm:py-2.5'>
-          <div className='relative max-w-sm flex-1'>
+        {/* Toolbar */}
+        <div className='flex flex-wrap items-center gap-2'>
+          <div className='relative min-w-48 flex-1 sm:max-w-sm'>
             <SearchIcon className='text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2' />
             <Input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder={t('files.picker.search')}
-              className='h-8 pr-7 pl-9 text-xs'
+              className='pl-9'
             />
-            {searchInput && (
-              <button
-                type='button'
-                onClick={() => {
-                  setSearchInput('')
-                  setSearch('')
-                }}
-                className='text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2'
-                aria-label={t('dataTable.filter.clear', 'Clear search')}
-              >
-                <X className='size-3.5' />
-              </button>
-            )}
           </div>
+          {searchInput && (
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon'
+              onClick={() => {
+                setSearchInput('')
+                setSearch('')
+              }}
+              aria-label={t('dataTable.filter.clear', 'Clear search')}
+            >
+              <X />
+            </Button>
+          )}
 
-          {/* View Mode Toggle */}
-          <div className='border-border/60 bg-muted/40 flex items-center rounded-lg border p-0.5'>
+          <div className='ml-auto flex items-center gap-2'>
+            <Select
+              value={targetUploadFolder}
+              onValueChange={setTargetUploadFolder}
+            >
+              <SelectTrigger
+                className='w-40'
+                aria-label={t('files.picker.uploadTo', 'Upload to:')}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='__root__'>
+                  📁 {t('files.folders.root', 'Root')}
+                </SelectItem>
+                {folders.map((f) => {
+                  const depth = f.depth ?? f.folder.split('/').length - 1
+                  const displayName =
+                    f.name ?? f.folder.split('/').pop() ?? f.folder
+                  return (
+                    <SelectItem
+                      key={f.folder}
+                      value={f.folder}
+                      style={{ paddingLeft: `${8 + depth * 12}px` }}
+                      title={f.folder}
+                    >
+                      📁 {displayName}
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+            <Button
+              type='button'
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? <Loader2 className='animate-spin' /> : <Upload />}
+              {t('files.picker.upload', 'Upload')}
+            </Button>
             <Button
               type='button'
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size='icon'
-              className='size-7 rounded-md'
               onClick={() => setViewMode('grid')}
               title={t('files.view.grid')}
               aria-label={t('files.view.grid')}
             >
-              <LayoutGrid className='size-3.5' />
+              <LayoutGrid />
             </Button>
             <Button
               type='button'
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size='icon'
-              className='size-7 rounded-md'
               onClick={() => setViewMode('list')}
               title={t('files.view.table')}
               aria-label={t('files.view.table')}
             >
-              <List className='size-3.5' />
+              <List />
             </Button>
           </div>
         </div>
 
         {/* Content Body: Sidebar + File List */}
-        <div className='grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]'>
+        <div className='grid min-h-0 flex-1 grid-cols-1 overflow-hidden rounded-lg border md:grid-cols-[220px_minmax(0,1fr)]'>
           <FilePickerFolderPane
             folders={folders}
             activeFolder={activeFolder}
@@ -725,7 +709,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
             onCreateFolder={handleCreateFolder}
           />
 
-          <div className='bg-muted/10 relative min-h-0 overflow-hidden'>
+          <div className='relative min-h-0 overflow-hidden'>
             <ScrollArea className='h-full'>
               {viewMode === 'grid' ? (
                 <div className='grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-4'>
@@ -887,12 +871,11 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
           </div>
         </div>
 
-        {/* Footer */}
-        <DialogFooter className='border-border/60 bg-muted/20 flex shrink-0 flex-col-reverse items-stretch justify-between gap-2 border-t px-4 py-2.5 sm:flex-row sm:items-center sm:px-6 sm:py-3.5'>
-          <div className='flex items-center justify-between gap-2 sm:justify-start'>
+        <DialogFooter className='sm:items-center sm:justify-between'>
+          <div className='flex items-center gap-2'>
             {selectedFiles.length > 0 ? (
-              <div className='flex items-center gap-2'>
-                <Badge variant='secondary' className='text-xs font-medium'>
+              <>
+                <Badge variant='secondary'>
                   {t('files.picker.selectedCount', {
                     count: selectedFiles.length,
                   })}
@@ -901,33 +884,23 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
                   type='button'
                   variant='ghost'
                   size='sm'
-                  className='text-muted-foreground hover:text-foreground h-7 px-2 text-xs'
                   onClick={() => setSelectedFiles([])}
                 >
                   {t('files.picker.clearSelection', 'Clear selection')}
                 </Button>
-              </div>
+              </>
             ) : (
-              <span className='text-muted-foreground text-xs'>
-                {activeFolder
-                  ? `${activeFolder}`
-                  : t('files.folders.all', 'All files')}
+              <span className='text-muted-foreground text-sm'>
+                {activeFolder ?? t('files.folders.all', 'All files')}
               </span>
             )}
           </div>
 
           <div className='flex items-center gap-2'>
-            <Button
-              variant='outline'
-              size='sm'
-              className='h-8 flex-1 text-xs sm:flex-initial'
-              onClick={() => props.onOpenChange(false)}
-            >
+            <Button variant='outline' onClick={() => props.onOpenChange(false)}>
               {t('buttons.cancel')}
             </Button>
             <Button
-              size='sm'
-              className='h-8 flex-1 gap-1 text-xs sm:flex-initial'
               disabled={selectedFiles.length === 0}
               onClick={handleConfirm}
             >
@@ -976,33 +949,30 @@ function FilePickerFolderPane({
   }
 
   return (
-    <aside className='border-border/60 bg-muted/15 flex max-h-40 min-h-0 flex-col gap-2 border-b p-3 md:max-h-none md:border-r md:border-b-0'>
-      <div className='flex items-center justify-between px-1 py-0.5'>
+    <aside className='flex max-h-40 min-h-0 flex-col gap-1 border-b p-2 md:max-h-none md:border-r md:border-b-0'>
+      <div className='flex items-center justify-between px-2 py-1'>
         <h3 className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
           {t('files.folders.title')}
         </h3>
         <div className='flex items-center gap-1'>
-          <Badge variant='secondary' className='text-[10px]'>
-            {folders.length}
-          </Badge>
+          <Badge variant='secondary'>{folders.length}</Badge>
           {onCreateFolder && (
             <Button
               type='button'
               variant='ghost'
-              size='icon'
-              className='hover:bg-muted text-muted-foreground hover:text-foreground size-5 rounded'
+              size='icon-xs'
               onClick={() => setIsCreating((prev) => !prev)}
               title={t('files.picker.newFolder', 'New folder')}
               aria-label={t('files.picker.newFolder', 'New folder')}
             >
-              <Plus className='size-3' />
+              <Plus />
             </Button>
           )}
         </div>
       </div>
 
       {isCreating && (
-        <div className='flex items-center gap-1 px-1 py-1'>
+        <div className='flex items-center gap-1 p-1'>
           <Input
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
@@ -1011,22 +981,16 @@ function FilePickerFolderPane({
               if (e.key === 'Escape') setIsCreating(false)
             }}
             placeholder='Folder name...'
-            className='h-7 text-xs'
             autoFocus
           />
           <Button
             type='button'
             size='icon'
-            className='size-7 shrink-0'
             disabled={!newFolderName.trim() || isSubmitting}
             onClick={() => void handleCreate()}
             aria-label={t('buttons.save', 'Create folder')}
           >
-            {isSubmitting ? (
-              <Loader2 className='size-3 animate-spin' />
-            ) : (
-              <Check className='size-3' />
-            )}
+            {isSubmitting ? <Loader2 className='animate-spin' /> : <Check />}
           </Button>
         </div>
       )}
@@ -1034,22 +998,17 @@ function FilePickerFolderPane({
       <Button
         type='button'
         variant={activeFolder === null ? 'secondary' : 'ghost'}
-        className={cn(
-          'h-8 justify-start gap-2 rounded-lg px-2.5 text-xs font-medium',
-          activeFolder === null && 'bg-secondary font-semibold'
-        )}
+        className='justify-start'
         onClick={() => onSelect(null)}
       >
-        <Folder className='text-primary size-3.5 shrink-0' />
+        <Folder />
         <span className='min-w-0 flex-1 truncate text-left'>
           {t('files.folders.all')}
         </span>
-        <span className='text-muted-foreground font-mono text-[10px]'>
-          {allFilesCount}
-        </span>
+        <span className='text-muted-foreground text-xs'>{allFilesCount}</span>
       </Button>
 
-      <ScrollArea className='min-h-0 flex-1 pr-1'>
+      <ScrollArea className='min-h-0 flex-1'>
         <div className='flex flex-col gap-1'>
           {folders.map((folder) => {
             const depth = folder.depth ?? folder.folder.split('/').length - 1
@@ -1061,19 +1020,16 @@ function FilePickerFolderPane({
                 key={folder.folder}
                 type='button'
                 variant={activeFolder === folder.folder ? 'secondary' : 'ghost'}
-                style={{ paddingLeft: `${10 + depth * 10}px` }}
-                className={cn(
-                  'h-8 justify-start gap-2 rounded-lg pr-2.5 text-xs font-medium',
-                  activeFolder === folder.folder && 'bg-secondary font-semibold'
-                )}
+                style={{ paddingLeft: `${12 + depth * 12}px` }}
+                className='justify-start'
                 title={folder.folder}
                 onClick={() => onSelect(folder.folder)}
               >
-                <Folder className='text-primary/80 size-3.5 shrink-0' />
+                <Folder />
                 <span className='min-w-0 flex-1 truncate text-left'>
                   {displayName}
                 </span>
-                <span className='text-muted-foreground font-mono text-[10px]'>
+                <span className='text-muted-foreground text-xs'>
                   {folder.count}
                 </span>
               </Button>

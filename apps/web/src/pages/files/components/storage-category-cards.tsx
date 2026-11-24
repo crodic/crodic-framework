@@ -7,10 +7,12 @@ import {
   getFileCategory,
   type FileCategoryType,
 } from '../file-types'
+import type { FileStorageStats } from '../queries'
 import type { FileSchema } from '../schema'
 
 export interface StorageCategoryCardsProps {
-  files: FileSchema[]
+  files?: FileSchema[]
+  statsData?: FileStorageStats
   activeCategory?: string | null
   onSelectCategory?: (category: string | null) => void
   className?: string
@@ -31,7 +33,8 @@ function resolveDisplayCategory(cat: FileCategoryType): FileCategoryType {
 }
 
 export function StorageCategoryCards({
-  files,
+  files = [],
+  statsData,
   activeCategory,
   onSelectCategory,
   className,
@@ -40,6 +43,22 @@ export function StorageCategoryCards({
 
   // Aggregate file count and total bytes per category
   const stats = useMemo(() => {
+    if (statsData) {
+      const categoryTotals: Record<
+        FileCategoryType,
+        { count: number; bytes: number }
+      > = {
+        image: statsData.categories?.image ?? { count: 0, bytes: 0 },
+        video: statsData.categories?.video ?? { count: 0, bytes: 0 },
+        document: statsData.categories?.document ?? { count: 0, bytes: 0 },
+        archive: statsData.categories?.archive ?? { count: 0, bytes: 0 },
+        other: statsData.categories?.other ?? { count: 0, bytes: 0 },
+        audio: { count: 0, bytes: 0 },
+        code: { count: 0, bytes: 0 },
+      }
+      return { categoryTotals, grandTotalBytes: statsData.totalBytes }
+    }
+
     const categoryTotals: Record<
       FileCategoryType,
       { count: number; bytes: number }
@@ -69,7 +88,7 @@ export function StorageCategoryCards({
     }
 
     return { categoryTotals, grandTotalBytes }
-  }, [files])
+  }, [files, statsData])
 
   return (
     <div

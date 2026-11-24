@@ -28,6 +28,7 @@ import {
 import { bulkDownloadFiles } from './download-helper'
 import { FilePickerDialog } from './file-picker-dialog'
 import { FilesTableActionBar } from './file-table-action-bar'
+import { useDataFileStorageStats } from './queries'
 import { useFileManagerCore } from './use-file-manager-core'
 
 export function PageFileOverview() {
@@ -120,6 +121,10 @@ export function PageFileOverview() {
     bulkPermanentDeleteFilesMutation,
   } = useFileManagerCore()
 
+  const { data: globalStats } = useDataFileStorageStats(null)
+  const { data: folderStats } = useDataFileStorageStats(activeFolder)
+  const effectiveStats = activeFolder ? folderStats : globalStats
+
   return (
     <>
       <FileDropzoneOverlay
@@ -176,9 +181,10 @@ export function PageFileOverview() {
             onViewChange={handleViewChange}
             folders={folders}
             activeFolder={activeFolder}
-            totalFiles={totalItems ?? 0}
+            totalFiles={globalStats?.totalCount ?? totalItems ?? 0}
             starredCount={starredCount}
             trashCount={trashCount}
+            storageStats={globalStats}
             onSelectFolder={handleFolderSelect}
             onUploadClick={() => {
               setDroppedFiles([])
@@ -201,6 +207,7 @@ export function PageFileOverview() {
             {activeView === 'all' && activeFolder === null && (
               <StorageCategoryCards
                 files={currentFiles}
+                statsData={effectiveStats}
                 activeCategory={activeCategory}
                 onSelectCategory={handleCategorySelect}
               />
@@ -339,6 +346,7 @@ export function PageFileOverview() {
         open={folderDialogOpen}
         title={t('files.folders.createTitle')}
         submitLabel={t('files.actions.createFolder')}
+        parentFolder={activeFolder}
         existingFolders={folders.map((item) => item.folder)}
         onOpenChange={setFolderDialogOpen}
         onSubmit={handleCreateFolder}

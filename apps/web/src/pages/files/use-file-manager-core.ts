@@ -318,7 +318,7 @@ export function useFileManagerCore() {
 
     // Handle view-specific filtering/sorting
     if (activeView === 'trash') {
-      builder.filter('status', 'trash')
+      builder.filterTrashed('only')
     } else {
       if (filter.status && filter.status !== 'all') {
         builder.filter('status', filter.status)
@@ -363,11 +363,12 @@ export function useFileManagerCore() {
 
   // Derive activeCategory from URL params so it persists across page reloads
   const activeCategory = useMemo(() => {
-    const mime = typeof filter.mime === 'string' ? filter.mime : null
     const resourceType =
       typeof filter.resource_type === 'string' ? filter.resource_type : null
-    if (mime === 'audio') return 'audio'
+    if (resourceType === 'raw') return 'document'
     if (resourceType) return resourceType
+    const mime = typeof filter.mime === 'string' ? filter.mime : null
+    if (mime === 'audio') return 'audio'
     return null
   }, [filter.mime, filter.resource_type])
 
@@ -582,15 +583,26 @@ export function useFileManagerCore() {
 
   const deleteFolderMutation = useMutation({
     mutationFn: apiDeleteFolder,
-    onSuccess: async () => {
+    onSuccess: async (_, variables) => {
+      const target = variables.folder
       setLocalFolders((current) =>
-        current.filter((folder) => folder.folder !== deletingFolder)
+        current.filter(
+          (folder) =>
+            folder.folder !== target && !folder.folder.startsWith(`${target}/`)
+        )
+      )
+      queryClient.setQueryData<FolderSchema[]>(
+        fileQueryKeys.folders,
+        (current) =>
+          current
+            ? current.filter(
+                (f) => f.folder !== target && !f.folder.startsWith(`${target}/`)
+              )
+            : []
       )
       if (
         activeFolder &&
-        deletingFolder &&
-        (activeFolder === deletingFolder ||
-          activeFolder.startsWith(`${deletingFolder}/`))
+        (activeFolder === target || activeFolder.startsWith(`${target}/`))
       ) {
         void setActiveFolder(null)
       }
@@ -673,8 +685,18 @@ export function useFileManagerCore() {
       } else if (category === 'audio') {
         void setFilterQuery((current) => ({
           ...current,
-          [ColumnKey.resourceType]: null,
-          [ColumnKey.mime]: 'audio',
+          [ColumnKey.resourceType]: 'audio',
+          [ColumnKey.mime]: null,
+        }))
+      } else if (
+        category === 'document' ||
+        category === 'archive' ||
+        category === 'raw'
+      ) {
+        void setFilterQuery((current) => ({
+          ...current,
+          [ColumnKey.resourceType]: 'raw',
+          [ColumnKey.mime]: null,
         }))
       } else {
         void setFilterQuery((current) => ({
@@ -704,9 +726,10 @@ export function useFileManagerCore() {
         ...current.filter((item) => item.folder !== created.folder),
         created,
       ])
+      await invalidateFiles()
       handleFolderSelect(created.folder)
     },
-    [handleFolderSelect]
+    [handleFolderSelect, invalidateFiles]
   )
 
   const handleRenameFolder = useCallback(
@@ -717,6 +740,10 @@ export function useFileManagerCore() {
         folder: target,
         data: { folder: newFolderName, color },
       })
+      setLocalFolders((current) => [
+        ...current.filter((item) => item.folder !== target),
+        renamed,
+      ])
       handleFolderSelect(renamed.folder)
       setFolderToRename(null)
       await invalidateFiles()

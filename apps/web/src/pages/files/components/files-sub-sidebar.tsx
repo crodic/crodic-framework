@@ -29,6 +29,7 @@ import {
   formatBytes,
   getFolderColor,
 } from '../file-types'
+import type { FileStorageStats } from '../queries'
 import { type FolderSchema } from '../schema'
 
 export type FileViewType = 'all' | 'starred' | 'recent' | 'trash'
@@ -41,6 +42,7 @@ export interface FilesSubSidebarProps {
   totalFiles: number
   starredCount: number
   trashCount?: number
+  storageStats?: FileStorageStats
   onSelectFolder: (folder: string | null) => void
   onUploadClick: () => void
   onCreateFolderClick: () => void
@@ -60,6 +62,7 @@ export function FilesSubSidebar({
   totalFiles,
   starredCount,
   trashCount,
+  storageStats,
   onSelectFolder,
   onUploadClick,
   onCreateFolderClick,
@@ -75,14 +78,38 @@ export function FilesSubSidebar({
 
   // Storage calculation
   const totalStorageBytes = useMemo(
-    () => folders.reduce((sum, f) => sum + f.size, 0),
-    [folders]
+    () =>
+      storageStats?.totalBytes ?? folders.reduce((sum, f) => sum + f.size, 0),
+    [storageStats, folders]
   )
   const quotaBytes = 15 * 1024 * 1024 * 1024 // 15 GB quota reference
   const storagePercent = Math.min(
     100,
     Math.round((totalStorageBytes / quotaBytes) * 100)
   )
+
+  const categoryPercents = useMemo(() => {
+    if (!storageStats || storageStats.totalBytes === 0) {
+      return {
+        image: Math.max(storagePercent * 0.4, 2),
+        video: Math.max(storagePercent * 0.25, 1),
+        document: Math.max(storagePercent * 0.2, 1),
+        archive: Math.max(storagePercent * 0.15, 1),
+      }
+    }
+    const cat = storageStats.categories
+    const calcShare = (bytes: number) => {
+      if (!bytes || bytes <= 0) return 0
+      const quotaPct = (bytes / quotaBytes) * 100
+      return Math.max(quotaPct, 1.5)
+    }
+    return {
+      image: calcShare(cat?.image?.bytes ?? 0),
+      video: calcShare(cat?.video?.bytes ?? 0),
+      document: calcShare(cat?.document?.bytes ?? 0),
+      archive: calcShare(cat?.archive?.bytes ?? 0),
+    }
+  }, [storageStats, quotaBytes, storagePercent])
 
   const filteredFolders = useMemo(() => {
     if (!folderSearch.trim()) return folders
@@ -368,38 +395,46 @@ export function FilesSubSidebar({
 
         {/* Multi-category colored bar representation */}
         <div className='bg-muted/80 flex h-2 w-full overflow-hidden rounded-full'>
-          <div
-            className='h-full bg-violet-500 transition-[width] duration-200 ease-out'
-            style={{ width: `${Math.max(storagePercent * 0.4, 2)}%` }}
-            title={t(
-              FILE_CATEGORY_CONFIG.image.i18nKey,
-              FILE_CATEGORY_CONFIG.image.label
-            )}
-          />
-          <div
-            className='h-full bg-pink-500 transition-[width] duration-200 ease-out'
-            style={{ width: `${Math.max(storagePercent * 0.25, 1)}%` }}
-            title={t(
-              FILE_CATEGORY_CONFIG.video.i18nKey,
-              FILE_CATEGORY_CONFIG.video.label
-            )}
-          />
-          <div
-            className='h-full bg-amber-500 transition-[width] duration-200 ease-out'
-            style={{ width: `${Math.max(storagePercent * 0.2, 1)}%` }}
-            title={t(
-              FILE_CATEGORY_CONFIG.document.i18nKey,
-              FILE_CATEGORY_CONFIG.document.label
-            )}
-          />
-          <div
-            className='h-full bg-emerald-500 transition-[width] duration-200 ease-out'
-            style={{ width: `${Math.max(storagePercent * 0.15, 1)}%` }}
-            title={t(
-              FILE_CATEGORY_CONFIG.archive.i18nKey,
-              FILE_CATEGORY_CONFIG.archive.label
-            )}
-          />
+          {categoryPercents.image > 0 && (
+            <div
+              className='h-full bg-violet-500 transition-[width] duration-200 ease-out'
+              style={{ width: `${categoryPercents.image}%` }}
+              title={t(
+                FILE_CATEGORY_CONFIG.image.i18nKey,
+                FILE_CATEGORY_CONFIG.image.label
+              )}
+            />
+          )}
+          {categoryPercents.video > 0 && (
+            <div
+              className='h-full bg-pink-500 transition-[width] duration-200 ease-out'
+              style={{ width: `${categoryPercents.video}%` }}
+              title={t(
+                FILE_CATEGORY_CONFIG.video.i18nKey,
+                FILE_CATEGORY_CONFIG.video.label
+              )}
+            />
+          )}
+          {categoryPercents.document > 0 && (
+            <div
+              className='h-full bg-amber-500 transition-[width] duration-200 ease-out'
+              style={{ width: `${categoryPercents.document}%` }}
+              title={t(
+                FILE_CATEGORY_CONFIG.document.i18nKey,
+                FILE_CATEGORY_CONFIG.document.label
+              )}
+            />
+          )}
+          {categoryPercents.archive > 0 && (
+            <div
+              className='h-full bg-emerald-500 transition-[width] duration-200 ease-out'
+              style={{ width: `${categoryPercents.archive}%` }}
+              title={t(
+                FILE_CATEGORY_CONFIG.archive.i18nKey,
+                FILE_CATEGORY_CONFIG.archive.label
+              )}
+            />
+          )}
         </div>
 
         {/* Legend dots */}
