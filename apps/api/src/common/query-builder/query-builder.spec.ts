@@ -1213,5 +1213,44 @@ describe('Spatie-style QueryBuilder', () => {
       expect(qbZero.skip).toHaveBeenCalledWith(0);
       expect(qbZero.take).toHaveBeenCalledWith(10);
     });
+
+    it('should automatically build full pagination URLs via configured pathResolver (Laravel Paginator parity)', async () => {
+      QueryBuilder.configure({
+        pathResolver: () => 'https://api.crodic.click/api/v1/users',
+      });
+
+      const qb = createMockQb();
+      (qb.getManyAndCount as jest.Mock).mockResolvedValue([[], 30]);
+
+      const result = await QueryBuilder.for(qb, {
+        page: 2,
+        limit: 10,
+        filter: { status: 'active' },
+        path: 'https://evil.com/spoofed', // must still be ignored
+      }).paginate();
+
+      expect(result.links.first).toBe(
+        'https://api.crodic.click/api/v1/users?page=1&limit=10&filter[status]=active',
+      );
+      expect(result.links.previous).toBe(
+        'https://api.crodic.click/api/v1/users?page=1&limit=10&filter[status]=active',
+      );
+      expect(result.links.current).toBe(
+        'https://api.crodic.click/api/v1/users?page=2&limit=10&filter[status]=active',
+      );
+      expect(result.links.next).toBe(
+        'https://api.crodic.click/api/v1/users?page=3&limit=10&filter[status]=active',
+      );
+      expect(result.links.last).toBe(
+        'https://api.crodic.click/api/v1/users?page=3&limit=10&filter[status]=active',
+      );
+
+      // Explicit options.path still takes precedence over global pathResolver
+      const overrideRes = await QueryBuilder.for(qb, {
+        page: 1,
+        limit: 10,
+      }).paginate({ path: '/custom/path' });
+      expect(overrideRes.links.current).toBe('/custom/path?page=1&limit=10');
+    });
   });
 });

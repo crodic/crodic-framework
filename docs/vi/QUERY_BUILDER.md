@@ -466,6 +466,8 @@ QueryBuilder.configure({
   maxPage: 10_000, // giới hạn số trang tối đa chống DoS OFFSET
   arrayDelimiter: ",", // ký tự phân tách mảng (mặc định ',' chuẩn Spatie)
   filterValueSplittingEnabled: true, // bật/tắt tách mảng toàn cục
+  pathResolver: () =>
+    ClsServiceManager.getClsService()?.get(CLS_REQUEST_URL_KEY), // tự động sinh full URL cho links.next/previous (như Laravel Paginator)
   strictMode: false,
 });
 ```

@@ -1,5 +1,7 @@
 import { DEFAULT_PAGE_LIMIT } from '../constants/app.constant';
 
+export const CLS_REQUEST_URL_KEY = 'queryBuilder:requestUrl';
+
 export interface QueryBuilderParametersConfig {
   filter: string;
   sort: string;
@@ -59,6 +61,13 @@ export interface QueryBuilderConfig {
    * If false, silently ignores unallowed parameters.
    */
   strictMode: boolean;
+
+  /**
+   * Resolver returning the current request's base URL (e.g. via nestjs-cls AsyncLocalStorage),
+   * matching Laravel's `Paginator::currentPathResolver()`.
+   * Used automatically by `.paginate()` to build full `first`/`previous`/`current`/`next`/`last` links.
+   */
+  pathResolver?: () => string | undefined;
 }
 
 export type QueryBuilderUserConfig = Partial<{
@@ -70,6 +79,7 @@ export type QueryBuilderUserConfig = Partial<{
   strictMode: boolean;
   arrayDelimiter: string | null;
   filterValueSplittingEnabled: boolean;
+  pathResolver?: () => string | undefined;
 }>;
 
 const DEFAULT_CONFIG: QueryBuilderConfig = {
@@ -89,6 +99,7 @@ const DEFAULT_CONFIG: QueryBuilderConfig = {
   strictMode: false,
   arrayDelimiter: ',',
   filterValueSplittingEnabled: true,
+  pathResolver: undefined,
 };
 
 let currentConfig: QueryBuilderConfig = {

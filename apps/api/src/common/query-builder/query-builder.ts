@@ -382,6 +382,12 @@ export class QueryBuilder<T extends ObjectLiteral> {
     if (typeof options === 'object' && typeof options?.path === 'string') {
       return options.path;
     }
+    if (typeof this.config.pathResolver === 'function') {
+      const resolved = this.config.pathResolver();
+      if (typeof resolved === 'string' && resolved.length > 0) {
+        return resolved;
+      }
+    }
     return '';
   }
 

@@ -467,6 +467,8 @@ QueryBuilder.configure({
   maxPage: 10_000, // caps page number to prevent deep OFFSET DoS
   arrayDelimiter: ",", // multi-value delimiter (default ',' matching Spatie)
   filterValueSplittingEnabled: true, // toggle global delimiter splitting
+  pathResolver: () =>
+    ClsServiceManager.getClsService()?.get(CLS_REQUEST_URL_KEY), // auto-build full URLs for links.next/previous (Laravel Paginator parity)
   strictMode: false,
 });
 ```

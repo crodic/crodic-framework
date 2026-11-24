@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
@@ -15,11 +20,12 @@ import {
   I18nModule,
   QueryResolver,
 } from 'nestjs-i18n';
-import { ClsModule } from 'nestjs-cls';
+import { ClsModule, ClsServiceManager } from 'nestjs-cls';
 import { LoggerModule } from 'nestjs-pino';
 import appConfig from './config/app.config';
 import { AllConfigType } from './config/config.type';
 import { Environment } from './common/constants/app.constant';
+import { CLS_REQUEST_URL_KEY, QueryBuilder } from './common/query-builder';
 import databaseConfig from './database/config/database.config';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { HealthModule } from './health/health.module';
@@ -82,7 +88,29 @@ import { ObserveModule } from './observe';
       useFactory: loggerFactory,
     }),
     ClsModule.forRoot({
-      middleware: { mount: true },
+      middleware: {
+        mount: true,
+        setup: (cls, req) => {
+          const pathname = (req.originalUrl || req.url || '').split('?')[0];
+          const forwardedProto = req.headers?.['x-forwarded-proto'];
+          const proto =
+            (typeof forwardedProto === 'string'
+              ? forwardedProto.split(',')[0].trim()
+              : undefined) ||
+            req.protocol ||
+            'http';
+          const forwardedHost = req.headers?.['x-forwarded-host'];
+          const host =
+            (typeof forwardedHost === 'string'
+              ? forwardedHost.split(',')[0].trim()
+              : undefined) ||
+            req.get?.('host') ||
+            req.headers?.host;
+
+          const baseUrl = host ? `${proto}://${host}${pathname}` : pathname;
+          cls.set(CLS_REQUEST_URL_KEY, baseUrl);
+        },
+      },
       global: true,
     }),
     TypeOrmModule.forRootAsync({
@@ -204,7 +232,14 @@ import { ObserveModule } from './observe';
     },
   ],
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnModuleInit {
+  onModuleInit() {
+    QueryBuilder.configure({
+      pathResolver: () =>
+        ClsServiceManager.getClsService()?.get<string>(CLS_REQUEST_URL_KEY),
+    });
+  }
+
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RequestIdMiddleware).forRoutes('*');
   }

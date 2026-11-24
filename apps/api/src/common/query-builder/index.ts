@@ -12,6 +12,7 @@ export {
   type ApiQueryBuilderFilterConfig,
 } from './swagger.decorator';
 export {
+  CLS_REQUEST_URL_KEY,
   getGlobalConfig,
   setGlobalConfig,
   resetGlobalConfig,
