@@ -20,7 +20,7 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   private _defaultValue: any = undefined;
   private _ignoredValues: Set<any> = new Set();
   private _nullable = false;
-  private _arrayValueDelimiter?: string;
+  private _arrayValueDelimiter: string | null = ',';
 
   private constructor(
     /** Name used in the query string: ?filter[name]=... */
@@ -269,6 +269,15 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   }
 
   /**
+   * Set custom delimiter for splitting comma-separated filter values into arrays (e.g. `,`).
+   * Matches Spatie's delimiter support. Pass `null` to disable delimiter splitting.
+   */
+  delimiter(delimiter: string | null): this {
+    this._arrayValueDelimiter = delimiter;
+    return this;
+  }
+
+  /**
    * Allow `null` (or empty string / `"null"` marker) to pass through or match `IS NULL`.
    * Matches Spatie's `->nullable()`.
    */
@@ -305,13 +314,16 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   ): void {
     let value = rawValue;
 
-    // Optional delimiter splitting (e.g. "a,b" -> ["a", "b"])
+    // Delimiter splitting for multi-select comma-separated values (e.g. "a,b" -> ["a", "b"])
     if (
       this._arrayValueDelimiter &&
       typeof value === 'string' &&
       value.includes(this._arrayValueDelimiter)
     ) {
-      value = value.split(this._arrayValueDelimiter);
+      value = value
+        .split(this._arrayValueDelimiter)
+        .map((s) => s.trim())
+        .filter((s) => s !== '');
     }
 
     // Apply Spatie ignore(...) filtering before executing
@@ -386,6 +398,15 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       case FilterOperator.STARTS_WITH: {
         if (normalizedNull) {
           qb.andWhere(`${target} IS NULL`);
+        } else if (Array.isArray(value)) {
+          const conditions = value.map(
+            (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
+          );
+          const params: Record<string, string> = {};
+          value.forEach((v: string, i: number) => {
+            params[`${paramName}_${i}`] = `${v}%`;
+          });
+          qb.andWhere(`(${conditions.join(' OR ')})`, params);
         } else {
           qb.andWhere(`${target} ILIKE :${paramName}`, {
             [paramName]: `${value}%`,
@@ -397,6 +418,15 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       case FilterOperator.ENDS_WITH: {
         if (normalizedNull) {
           qb.andWhere(`${target} IS NULL`);
+        } else if (Array.isArray(value)) {
+          const conditions = value.map(
+            (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
+          );
+          const params: Record<string, string> = {};
+          value.forEach((v: string, i: number) => {
+            params[`${paramName}_${i}`] = `%${v}`;
+          });
+          qb.andWhere(`(${conditions.join(' OR ')})`, params);
         } else {
           qb.andWhere(`${target} ILIKE :${paramName}`, {
             [paramName]: `%${value}`,
@@ -413,6 +443,25 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
               ? `${target} IS NOT NULL`
               : `${target} IS NULL`,
           );
+        } else if (Array.isArray(value)) {
+          if (op === '!=' || op === '<>') {
+            qb.andWhere(`${target} NOT IN (:...${paramName})`, {
+              [paramName]: value,
+            });
+          } else if (op === '=') {
+            qb.andWhere(`${target} IN (:...${paramName})`, {
+              [paramName]: value,
+            });
+          } else {
+            const conditions = value.map(
+              (_: any, i: number) => `${target} ${op} :${paramName}_${i}`,
+            );
+            const params: Record<string, any> = {};
+            value.forEach((v: any, i: number) => {
+              params[`${paramName}_${i}`] = v;
+            });
+            qb.andWhere(`(${conditions.join(' OR ')})`, params);
+          }
         } else {
           qb.andWhere(`${target} ${op} :${paramName}`, {
             [paramName]: value,

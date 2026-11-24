@@ -141,6 +141,18 @@ describe('Spatie-style QueryBuilder', () => {
       );
     });
 
+    it('should split comma-separated strings for multi-select exact filter using IN', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, { filter: { 'roles.id': '1,2' } })
+        .allowedFilters([AllowedFilter.exact('roles.id')])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'roles.id IN (:...qb_f_roles_id_0)',
+        { qb_f_roles_id_0: ['1', '2'] },
+      );
+    });
+
     it('should apply startsWith filter (prefix match)', () => {
       const qb = createMockQb();
       QueryBuilder.for(qb, { filter: { code: 'INV' } })

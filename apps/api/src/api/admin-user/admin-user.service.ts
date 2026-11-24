@@ -190,7 +190,8 @@ export class AdminUserService {
     const queryBuilder = this.adminUserRepository
       .createQueryBuilder('admin')
       .leftJoinAndSelect('admin.roles', 'roles')
-      .leftJoinAndSelect('roles.permissionEntities', 'permissionEntities');
+      .leftJoinAndSelect('roles.permissionEntities', 'permissionEntities')
+      .withDeleted();
 
     const result = await QueryBuilder.for(queryBuilder, query)
       .allowedFilters([
