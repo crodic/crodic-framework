@@ -919,11 +919,19 @@ export class QueryBuilder<T extends ObjectLiteral> {
     const sortParam = this.query[this.config.parameters.sort];
     const parts = this.toParameterArray(sortParam);
     if (parts.length > 0) {
-      return parts.map((part) => {
-        const isDesc = part.startsWith('-');
-        const col = isDesc ? part.slice(1) : part;
-        return [col, isDesc ? 'DESC' : 'ASC'];
-      });
+      const allowedNames =
+        this._sorts.length > 0 ? new Set(this._sorts.map((s) => s.name)) : null;
+      const resolved = parts
+        .map((part): [string, 'ASC' | 'DESC'] => {
+          const isDesc = part.startsWith('-');
+          const col = isDesc ? part.slice(1) : part;
+          return [col, isDesc ? 'DESC' : 'ASC'];
+        })
+        .filter(([col]) => !allowedNames || allowedNames.has(col));
+
+      if (resolved.length > 0) {
+        return resolved;
+      }
     }
 
     if (this._defaultSortStr) {
