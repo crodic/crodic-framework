@@ -20,7 +20,7 @@ graph TD
     end
 
     subgraph Packages ["Shared Packages (packages/)"]
-        QB["@repo/query-builder\n(RestQueryBuilder & PaginateQueryBuilder)"]
+        QB["@repo/query-builder\n(RestQueryBuilder)"]
         CONF["@repo/*-config\n(eslint, prettier, typescript, commitlint)"]
     end
 
@@ -34,13 +34,13 @@ graph TD
 
 ### Workspace Responsibility Matrix
 
-| Workspace                                                      | Type        | Core Technologies                                                        | Primary Responsibility                                                                                                                                 |
-| :------------------------------------------------------------- | :---------- | :----------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[`apps/api`](file:///apps/api)**                             | Application | NestJS 11, TypeORM, PostgreSQL 16, Redis 7, BullMQ, Swagger, Sentry      | Core REST API backend. Handles persistence, authentication, authorization (RBAC), background queue processing, and email dispatching.                  |
-| **[`apps/web`](file:///apps/web)**                             | Application | Vite 6, React 19, Tailwind CSS v4, TanStack Query, Radix UI, Tiptap      | Administrative portal. Provides rich interactive data tables, entity forms, drag-and-drop sortable lists, theme editors, and file managers.            |
-| **[`apps/client`](file:///apps/client)**                       | Application | Next.js 16 (App Router), React 19, Turbopack, Tailwind CSS v4, next-intl | Customer-facing web application. Optimized for SEO (metadata), fast SSR/SSG rendering via React Server Components, and multi-language i18n.            |
-| **[`packages/query-builder`](file:///packages/query-builder)** | Package     | TypeScript, Vitest                                                       | Type-safe query builder library providing `RestQueryBuilder` (for JSON:API/REST whitelist queries) and `PaginateQueryBuilder` (for `nestjs-paginate`). |
-| **`packages/*-config`**                                        | Configs     | ESLint 9/10, Prettier, TypeScript, Commitlint                            | Standardized code style, linting rules, type-checking baselines, and commit message conventions.                                                       |
+| Workspace                                                      | Type        | Core Technologies                                                        | Primary Responsibility                                                                                                                      |
+| :------------------------------------------------------------- | :---------- | :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| **[`apps/api`](file:///apps/api)**                             | Application | NestJS 11, TypeORM, PostgreSQL 16, Redis 7, BullMQ, Swagger, Sentry      | Core REST API backend. Handles persistence, authentication, authorization (RBAC), background queue processing, and email dispatching.       |
+| **[`apps/web`](file:///apps/web)**                             | Application | Vite 6, React 19, Tailwind CSS v4, TanStack Query, Radix UI, Tiptap      | Administrative portal. Provides rich interactive data tables, entity forms, drag-and-drop sortable lists, theme editors, and file managers. |
+| **[`apps/client`](file:///apps/client)**                       | Application | Next.js 16 (App Router), React 19, Turbopack, Tailwind CSS v4, next-intl | Customer-facing web application. Optimized for SEO (metadata), fast SSR/SSG rendering via React Server Components, and multi-language i18n. |
+| **[`packages/query-builder`](file:///packages/query-builder)** | Package     | TypeScript, Vitest                                                       | Type-safe query builder library providing `RestQueryBuilder` (for JSON:API/REST whitelist queries).                                         |
+| **`packages/*-config`**                                        | Configs     | ESLint 9/10, Prettier, TypeScript, Commitlint                            | Standardized code style, linting rules, type-checking baselines, and commit message conventions.                                            |
 
 ---
 

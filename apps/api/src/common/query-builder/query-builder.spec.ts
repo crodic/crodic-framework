@@ -1772,5 +1772,145 @@ describe('Spatie-style QueryBuilder', () => {
       const roleJoins = sql.match(/LEFT JOIN "spec_roles" "roles"/g) || [];
       expect(roleJoins).toHaveLength(1);
     });
+
+    it('should skip unjoined relation fields when fields[relation] is requested without include', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, {
+        fields: { user: 'id,name', roles: 'id,name' },
+      })
+        .allowedIncludes(['roles'])
+        .allowedFields(['id', 'name', 'roles.id', 'roles.name'])
+        .getQueryBuilder();
+
+      const [sql] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        'SELECT "user"."id" AS "user_id", "user"."name" AS "user_name"',
+      );
+      expect(sql).not.toContain('roles.id');
+      expect(sql).not.toContain('roles.name');
+    });
+
+    it('should preserve parenthesized tenant isolation WHERE clauses when combined with groupOr', () => {
+      const qb = userRepo
+        .createQueryBuilder('user')
+        .where('user.id = :tenantUserId', { tenantUserId: 'tenant-1' });
+
+      QueryBuilder.for(qb, { filter: { q: 'alice' } })
+        .allowedFilters([
+          AllowedFilter.groupOr('q', [
+            AllowedFilter.partial('name'),
+            AllowedFilter.partial('email'),
+          ]),
+        ])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        '"user"."id" = $1 AND (("user"."name" ILIKE $2) OR ("user"."email" ILIKE $3))',
+      );
+      expect(params).toEqual(['tenant-1', '%alice%', '%alice%']);
+    });
+
+    it('should support array fields (?fields[]=id&fields[]=name) and custom include aliases in sparse fieldsets', () => {
+      const qbArr = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qbArr, { fields: ['id', 'name'] as any })
+        .allowedFields(['id', 'name', 'email'])
+        .getQueryBuilder();
+      const [sqlArr] = qbArr.getQueryAndParameters();
+      expect(sqlArr).toContain('"user"."id"');
+      expect(sqlArr).toContain('"user"."name"');
+      expect(sqlArr).not.toContain('"user"."email"');
+
+      const qbCustom = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qbCustom, {
+        include: 'activeRoles',
+        fields: { user: 'id,name', roles: 'id,name' },
+      })
+        .allowedIncludes([
+          AllowedInclude.custom('activeRoles', (q, alias) => {
+            q.leftJoinAndSelect(`${alias}.roles`, 'roles');
+          }),
+        ])
+        .allowedFields(['id', 'name', 'roles.id', 'roles.name'])
+        .getQueryBuilder();
+      const [sqlCustom] = qbCustom.getQueryAndParameters();
+      expect(sqlCustom).toContain('"roles"."id"');
+      expect(sqlCustom).toContain('"roles"."name"');
+    });
+
+    it('should ignore array filter payloads in strict mode and skip bare dynamic operators without operands', () => {
+      const qbArrFilter = userRepo.createQueryBuilder('user');
+      expect(() =>
+        QueryBuilder.for(qbArrFilter, { filter: ['foo', 'bar'] as any })
+          .allowedFilters(['name'])
+          .strict(true)
+          .getQueryBuilder(),
+      ).not.toThrow();
+
+      const qbBareOp = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qbBareOp, { filter: { score: '>=' } })
+        .allowedFilters([
+          AllowedFilter.json('score', 'userMeta', 'stats.score', {
+            operator: 'dynamic',
+            cast: 'numeric',
+          }),
+        ])
+        .getQueryBuilder();
+      const [sqlBareOp] = qbBareOp.getQueryAndParameters();
+      expect(sqlBareOp).not.toContain("'stats'");
+    });
+
+    it('should deduplicate repeated sort keys and emit SQL IS NULL/IS NOT NULL for NULL cursor values', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      const cursor = new Cursor({ createdAt: null, id: '10' }, true).encode();
+      const builder = QueryBuilder.for(qb, {
+        sort: '-createdAt,createdAt',
+        cursor,
+        limit: 5,
+      }).allowedSorts(['createdAt', 'id']);
+
+      (builder as any).build(true);
+      const orders = (builder as any).resolveCursorOrders('id');
+      expect(orders).toHaveLength(2); // deduplicated createdAt + id tie-breaker
+
+      (builder as any).applyCursorWhere(
+        orders,
+        Cursor.fromEncoded(cursor)!.parameters,
+        false,
+      );
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        '(("user"."created_at" IS NOT NULL) OR ("user"."created_at" IS NULL AND "user"."id" < $1))',
+      );
+      expect(params).toEqual(['10']);
+    });
+
+    it('should preserve root entity selection when only relation fields are requested and auto-include PK', () => {
+      const qbRelOnly = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qbRelOnly, {
+        include: 'roles',
+        fields: { roles: 'id,name' },
+      })
+        .allowedIncludes(['roles'])
+        .allowedFields(['id', 'name', 'roles.id', 'roles.name'])
+        .getQueryBuilder();
+      const [sqlRelOnly] = qbRelOnly.getQueryAndParameters();
+      expect(sqlRelOnly).toContain('"user"."id" AS "user_id"');
+      expect(sqlRelOnly).toContain('"roles"."id" AS "roles_id"');
+      expect(sqlRelOnly).toContain('"roles"."name" AS "roles_name"');
+
+      const qbNoPk = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qbNoPk, {
+        include: 'roles',
+        fields: 'name',
+      })
+        .allowedIncludes(['roles'])
+        .allowedFields(['id', 'name', 'email'])
+        .getQueryBuilder();
+      const [sqlNoPk] = qbNoPk.getQueryAndParameters();
+      expect(sqlNoPk).toContain('"user"."id" AS "user_id"');
+      expect(sqlNoPk).toContain('"user"."name" AS "user_name"');
+      expect(sqlNoPk).not.toContain('"user"."email"');
+    });
   });
 });

@@ -1,3 +1,5 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 /**
  * Encodes and decodes opaque, URL-safe keyset pagination cursors.
  * Mirrors Laravel's `Illuminate\Pagination\Cursor`.
@@ -57,24 +59,69 @@ export class Cursor {
   }
 }
 
-export interface CursorPaginatedMeta {
-  itemsPerPage: number;
-  nextCursor: string | null;
-  prevCursor: string | null;
-  hasMore: boolean;
+export class CursorPaginatedMeta {
+  @ApiProperty({ example: 20, description: 'Number of items per page' })
+  itemsPerPage!: number;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: 'eyJpZCI6IjEwMCIsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0',
+    description: 'Opaque cursor for fetching the next page (null on last page)',
+  })
+  nextCursor!: string | null;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: null,
+    description:
+      'Opaque cursor for fetching the previous page (null on first page)',
+  })
+  prevCursor!: string | null;
+
+  @ApiProperty({
+    example: true,
+    description: 'Whether more items exist after the current page',
+  })
+  hasMore!: boolean;
 }
 
-export interface CursorPaginatedLinks {
+export class CursorPaginatedLinks {
+  @ApiPropertyOptional({
+    example:
+      'https://api.example.com/v1/posts?limit=20&cursor=eyJpZCI6IjEwMCIsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0',
+    description: 'URL for the next page',
+  })
   next?: string;
+
+  @ApiPropertyOptional({
+    example:
+      'https://api.example.com/v1/posts?limit=20&cursor=eyJpZCI6IjEyMCIsIl9wb2ludHNUb05leHRJdGVtcyI6ZmFsc2V9',
+    description: 'URL for the previous page',
+  })
   previous?: string;
 }
 
 export class CursorPaginated<T> {
+  @ApiProperty({ isArray: true })
+  public readonly data: T[];
+
+  @ApiProperty({ type: () => CursorPaginatedMeta })
+  public readonly meta: CursorPaginatedMeta;
+
+  @ApiProperty({ type: () => CursorPaginatedLinks })
+  public readonly links: CursorPaginatedLinks;
+
   constructor(
-    public readonly data: T[],
-    public readonly meta: CursorPaginatedMeta,
-    public readonly links: CursorPaginatedLinks,
-  ) {}
+    data: T[],
+    meta: CursorPaginatedMeta,
+    links: CursorPaginatedLinks,
+  ) {
+    this.data = data;
+    this.meta = meta;
+    this.links = links;
+  }
 }
 
 export interface CursorPaginateOptions {

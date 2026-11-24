@@ -305,13 +305,12 @@ export class QueryBuilder<T extends ObjectLiteral> {
         ? this.query.search.trim()
         : undefined;
     const select = this.resolveSelectFields();
+    const rawFilter = this.query[this.config.parameters.filter];
     const filter =
-      typeof this.query[this.config.parameters.filter] === 'object' &&
-      this.query[this.config.parameters.filter] !== null
-        ? (this.query[this.config.parameters.filter] as Record<
-            string,
-            string | string[]
-          >)
+      typeof rawFilter === 'object' &&
+      rawFilter !== null &&
+      !Array.isArray(rawFilter)
+        ? (rawFilter as Record<string, string | string[]>)
         : undefined;
 
     const meta: PaginatedMeta<T> = {
@@ -539,6 +538,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
     const orders: Array<{ sort: AllowedSort<T>; direction: 'ASC' | 'DESC' }> =
       [];
+    const seenKeys = new Set<string>();
 
     if (parts.length > 0) {
       const invalid: string[] = [];
@@ -553,7 +553,11 @@ export class QueryBuilder<T extends ObjectLiteral> {
           continue;
         }
         if (!sort.customFn) {
-          orders.push({ sort, direction });
+          const cursorKey = sort.getCursorKey();
+          if (!seenKeys.has(cursorKey)) {
+            seenKeys.add(cursorKey);
+            orders.push({ sort, direction });
+          }
         }
       }
 
@@ -569,10 +573,13 @@ export class QueryBuilder<T extends ObjectLiteral> {
         const name = isDesc ? trimmed.slice(1) : trimmed;
         const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
         const sort = sortMap.get(name);
-        orders.push({
-          sort: sort && !sort.customFn ? sort : AllowedSort.field<T>(name),
-          direction,
-        });
+        const resolved =
+          sort && !sort.customFn ? sort : AllowedSort.field<T>(name);
+        const cursorKey = resolved.getCursorKey();
+        if (!seenKeys.has(cursorKey)) {
+          seenKeys.add(cursorKey);
+          orders.push({ sort: resolved, direction });
+        }
       }
     }
 
@@ -603,45 +610,82 @@ export class QueryBuilder<T extends ObjectLiteral> {
           ? 'DESC'
           : 'ASC'
         : order.direction;
-      const op = effectiveDir === 'ASC' ? '>' : '<';
       const target = order.sort.getTargetExpression(this.alias);
+      const val = cursorParams[order.sort.getCursorKey()];
+      if (val === null) {
+        if (effectiveDir === 'DESC') {
+          this.qb.andWhere(`${target} IS NOT NULL`);
+        } else {
+          this.qb.andWhere('1 = 0');
+        }
+        return;
+      }
+      const op = effectiveDir === 'ASC' ? '>' : '<';
       this.qb.andWhere(`${target} ${op} :qb_c_0`, {
-        qb_c_0: cursorParams[order.sort.getCursorKey()],
+        qb_c_0: val,
       });
       return;
     }
 
     // Multi-column lexicographic keyset comparison:
     // (c0 < :v0) OR (c0 = :v0 AND c1 < :v1) OR ...
+    // Handles PostgreSQL NULL ordering (DESC = NULLS FIRST, ASC = NULLS LAST)
+    const branches: Array<{ expr: string; params: Record<string, any> }> = [];
+
+    orders.forEach((order, i) => {
+      const effectiveDir = isReverse
+        ? order.direction === 'ASC'
+          ? 'DESC'
+          : 'ASC'
+        : order.direction;
+      const curVal = cursorParams[order.sort.getCursorKey()];
+
+      // In PostgreSQL ASC (NULLS LAST), no value comes strictly after NULL
+      if (curVal === null && effectiveDir === 'ASC') {
+        return;
+      }
+
+      const clauses: string[] = [];
+      const params: Record<string, any> = {};
+
+      for (let j = 0; j < i; j++) {
+        const prevTarget = orders[j].sort.getTargetExpression(this.alias);
+        const prevVal = cursorParams[orders[j].sort.getCursorKey()];
+        if (prevVal === null) {
+          clauses.push(`${prevTarget} IS NULL`);
+        } else {
+          const eqParam = `qb_c_${i}_${j}`;
+          clauses.push(`${prevTarget} = :${eqParam}`);
+          params[eqParam] = prevVal;
+        }
+      }
+
+      const curTarget = order.sort.getTargetExpression(this.alias);
+      if (curVal === null) {
+        // DESC (NULLS FIRST): all non-null values come after NULL
+        clauses.push(`${curTarget} IS NOT NULL`);
+      } else {
+        const op = effectiveDir === 'ASC' ? '>' : '<';
+        const cmpParam = `qb_c_${i}_${i}`;
+        clauses.push(`${curTarget} ${op} :${cmpParam}`);
+        params[cmpParam] = curVal;
+      }
+
+      branches.push({ expr: `(${clauses.join(' AND ')})`, params });
+    });
+
+    if (branches.length === 0) {
+      this.qb.andWhere('1 = 0');
+      return;
+    }
+
     this.qb.andWhere(
       new Brackets((subQb) => {
-        orders.forEach((order, i) => {
-          const effectiveDir = isReverse
-            ? order.direction === 'ASC'
-              ? 'DESC'
-              : 'ASC'
-            : order.direction;
-          const op = effectiveDir === 'ASC' ? '>' : '<';
-          const clauses: string[] = [];
-          const params: Record<string, any> = {};
-
-          for (let j = 0; j < i; j++) {
-            const eqParam = `qb_c_${i}_${j}`;
-            const prevTarget = orders[j].sort.getTargetExpression(this.alias);
-            clauses.push(`${prevTarget} = :${eqParam}`);
-            params[eqParam] = cursorParams[orders[j].sort.getCursorKey()];
-          }
-
-          const cmpParam = `qb_c_${i}_${i}`;
-          const curTarget = order.sort.getTargetExpression(this.alias);
-          clauses.push(`${curTarget} ${op} :${cmpParam}`);
-          params[cmpParam] = cursorParams[order.sort.getCursorKey()];
-
-          const expr = `(${clauses.join(' AND ')})`;
-          if (i === 0) {
-            subQb.where(expr, params);
+        branches.forEach((branch, idx) => {
+          if (idx === 0) {
+            subQb.where(branch.expr, branch.params);
           } else {
-            subQb.orWhere(expr, params);
+            subQb.orWhere(branch.expr, branch.params);
           }
         });
       }),
@@ -697,6 +741,16 @@ export class QueryBuilder<T extends ObjectLiteral> {
           .map((f) => f.trim())
           .filter(Boolean),
       );
+    } else if (Array.isArray(fieldsParam)) {
+      for (const raw of fieldsParam) {
+        if (typeof raw !== 'string') continue;
+        requestedFields.push(
+          ...raw
+            .split(',')
+            .map((f) => f.trim())
+            .filter(Boolean),
+        );
+      }
     } else if (typeof fieldsParam === 'object' && fieldsParam !== null) {
       for (const [scope, value] of Object.entries(fieldsParam)) {
         const valArr = this.parseScopedFieldValues(value);
@@ -738,23 +792,48 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
     const rootFields: string[] = [];
     const relationFields: string[] = [];
+    const joinAttrs = (this.qb as any).expressionMap?.joinAttributes;
+    const hasJoinMetadata = Array.isArray(joinAttrs);
+    const activeJoinAliases = hasJoinMetadata
+      ? new Set<string>([
+          ...this._joinedAliases,
+          ...joinAttrs
+            .map((j: any) => j?.alias?.name)
+            .filter((n: any): n is string => typeof n === 'string'),
+        ])
+      : this._joinedAliases;
 
     for (const f of validFields) {
       if (f.includes('.')) {
-        relationFields.push(f);
+        const relAlias = f.split('.')[0];
+        if (!hasJoinMetadata || activeJoinAliases.has(relAlias)) {
+          relationFields.push(f);
+        }
       } else {
         rootFields.push(`${this.alias}.${f}`);
       }
     }
 
     if (rootFields.length > 0) {
+      // Ensure primary key columns are always selected on real TypeORM queries so entity hydration and take() distinct subqueries never fail
+      const primaryCols = (this.qb as any).expressionMap?.mainAlias?.metadata
+        ?.primaryColumns;
+      if (Array.isArray(primaryCols)) {
+        for (const col of primaryCols) {
+          const pkField = `${this.alias}.${col.propertyName}`;
+          if (!rootFields.includes(pkField)) {
+            rootFields.unshift(pkField);
+          }
+        }
+      }
       this.qb.select(rootFields);
     }
     if (relationFields.length > 0) {
       if (rootFields.length > 0) {
         this.qb.addSelect(relationFields);
       } else {
-        this.qb.select(relationFields);
+        // Preserve root entity columns when only relation sparse fields are requested
+        this.qb.select(this.alias).addSelect(relationFields);
       }
     }
   }
@@ -762,7 +841,9 @@ export class QueryBuilder<T extends ObjectLiteral> {
   private applyFilters(): void {
     const rawFilterParams = this.query[this.config.parameters.filter];
     const filterParams: Record<string, any> =
-      rawFilterParams && typeof rawFilterParams === 'object'
+      rawFilterParams &&
+      typeof rawFilterParams === 'object' &&
+      !Array.isArray(rawFilterParams)
         ? rawFilterParams
         : {};
 
@@ -832,6 +913,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
     if (parts.length > 0) {
       const invalid: string[] = [];
+      const seenSorts = new Set<string>();
       let isFirst = true;
 
       for (const trimmed of parts) {
@@ -844,6 +926,8 @@ export class QueryBuilder<T extends ObjectLiteral> {
           invalid.push(name);
           continue;
         }
+        if (seenSorts.has(name)) continue;
+        seenSorts.add(name);
 
         sort.apply(this.qb, this.alias, direction, isFirst);
         isFirst = false;

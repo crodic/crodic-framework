@@ -115,10 +115,10 @@ export class RestQueryBuilder {
     if (!params || typeof params !== "object") return;
 
     if (params.filter && typeof params.filter === "object") {
+      const forbidden = new Set(["__proto__", "constructor", "prototype"]);
       for (const key of Object.keys(params.filter)) {
-        const val = params.filter[key];
-        if (this.isValidValue(val)) {
-          this.filterParams[key] = val;
+        if (!forbidden.has(key)) {
+          this.filter(key, params.filter[key]);
         }
       }
     }
@@ -457,7 +457,9 @@ export class RestQueryBuilder {
     const arr = Array.isArray(fields)
       ? fields
       : fields.split(",").map((s) => s.trim());
-    const valid = arr.filter((s) => typeof s === "string" && s.trim() !== "");
+    const valid = arr
+      .map((s) => (typeof s === "string" ? s.trim() : ""))
+      .filter(Boolean);
 
     if (valid.length > 0) {
       this.fieldParams[scope] = valid;

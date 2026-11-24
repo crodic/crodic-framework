@@ -11,10 +11,15 @@ import {
   PaginatedLinks,
   PaginatedMeta,
 } from '../dto/offset-pagination/paginated.dto';
-import { AllowedFilter, FilterOperator } from './allowed-filter';
+import { AllowedFilter } from './allowed-filter';
 import { AllowedInclude } from './allowed-include';
 import { AllowedSort } from './allowed-sort';
 import { getGlobalConfig } from './config';
+import {
+  CursorPaginated,
+  CursorPaginatedLinks,
+  CursorPaginatedMeta,
+} from './cursor';
 
 export interface ApiQueryBuilderFilterConfig {
   name: string;
@@ -32,19 +37,33 @@ export interface ApiQueryBuilderDocsOptions<T extends Type<any> = any> {
   entity: T;
 
   /**
+   * Pagination strategy documented in Swagger.
+   * - `'offset'` (default): `Paginated<T>` response + `page` & `limit` query params
+   * - `'cursor'`: `CursorPaginated<T>` response + `cursor` & `limit` query params
+   */
+  paginationType?: 'offset' | 'cursor';
+
+  /**
    * Whitelisted filter definitions or filter names.
-   * Can accept plain strings, AllowedFilter instances, or detailed config objects.
+   * Can accept plain strings, AllowedFilter instances (including json, dynamic, groupOr/groupAnd, trashed),
+   * or detailed config objects.
    *
    * @example
-   * filters: ['name', AllowedFilter.exact('status'), AllowedFilter.trashed()]
+   * filters: [
+   *   'name',
+   *   AllowedFilter.exact('status'),
+   *   AllowedFilter.json('score', 'meta', 'stats.score', { operator: 'dynamic', cast: 'numeric' }),
+   *   AllowedFilter.groupOr('search', [AllowedFilter.partial('name'), AllowedFilter.partial('email')]),
+   *   AllowedFilter.trashed(),
+   * ]
    */
   filters?: (string | AllowedFilter<any> | ApiQueryBuilderFilterConfig)[];
 
   /**
-   * Whitelisted sort columns or AllowedSort instances.
+   * Whitelisted sort columns or AllowedSort instances (including AllowedSort.json()).
    *
    * @example
-   * sorts: ['createdAt', 'name', AllowedSort.field('role', 'roles.name')]
+   * sorts: ['createdAt', 'name', AllowedSort.field('role', 'roles.name'), AllowedSort.json('score', 'meta', 'stats.score', { cast: 'numeric' })]
    */
   sorts?: (string | AllowedSort<any>)[];
 
@@ -88,61 +107,73 @@ export interface ApiQueryBuilderDocsOptions<T extends Type<any> = any> {
 /**
  * Swagger documentation decorator for Spatie-style QueryBuilder endpoints.
  * Automatically documents:
- * - 200 OK Paginated response schema containing the given entity type
- * - Filter query parameters (`filter[name]`, `filter[status]`, etc.)
- * - Sort query parameter with allowed sort options
+ * - 200 OK `Paginated` (offset) or `CursorPaginated` (cursor) response schema
+ * - Filter query parameters (`filter[name]`, JSONB, dynamic operators, groupOr/groupAnd, trashed)
+ * - Sort query parameter with allowed sort options (including JSONB sorts)
  * - Include query parameter with allowed relations
  * - Sparse fieldsets parameter (`fields`)
- * - Pagination parameters (`page`, `limit`) with defaults and bounds
- *
- * @example
- * ```ts
- * @Get()
- * @ApiQueryBuilderDocs({
- *   entity: UserDto,
- *   filters: ['name', AllowedFilter.exact('status'), AllowedFilter.trashed()],
- *   sorts: ['createdAt', 'name'],
- *   defaultSort: '-createdAt',
- *   includes: ['roles', 'profile'],
- *   fields: ['id', 'name', 'email'],
- * })
- * findAll(@Query() query: QueryParams) {
- *   return this.userService.findAll(query);
- * }
- * ```
+ * - Pagination parameters (`page` + `limit` or `cursor` + `limit`)
  */
 export function ApiQueryBuilderDocs<T extends Type<any>>(
   options: ApiQueryBuilderDocsOptions<T>,
 ): MethodDecorator {
   const config = getGlobalConfig();
   const decorators: MethodDecorator[] = [];
+  const isCursor = options.paginationType === 'cursor';
 
-  // 1. Extra models and Paginated Response Schema
-  decorators.push(
-    ApiExtraModels(
-      Paginated,
-      PaginatedMeta,
-      PaginatedLinks,
-      OffsetPaginationDto,
-      options.entity,
-    ),
-    ApiOkResponse({
-      description: options.description ?? 'Paginated list of results',
-      schema: {
-        allOf: [
-          { $ref: getSchemaPath(Paginated) },
-          {
-            properties: {
-              data: {
-                type: 'array',
-                items: { $ref: getSchemaPath(options.entity) },
+  // 1. Extra models and Paginated / CursorPaginated Response Schema
+  if (isCursor) {
+    decorators.push(
+      ApiExtraModels(
+        CursorPaginated,
+        CursorPaginatedMeta,
+        CursorPaginatedLinks,
+        options.entity,
+      ),
+      ApiOkResponse({
+        description: options.description ?? 'Cursor-paginated list of results',
+        schema: {
+          allOf: [
+            { $ref: getSchemaPath(CursorPaginated) },
+            {
+              properties: {
+                data: {
+                  type: 'array',
+                  items: { $ref: getSchemaPath(options.entity) },
+                },
               },
             },
-          },
-        ],
-      },
-    }),
-  );
+          ],
+        },
+      }),
+    );
+  } else {
+    decorators.push(
+      ApiExtraModels(
+        Paginated,
+        PaginatedMeta,
+        PaginatedLinks,
+        OffsetPaginationDto,
+        options.entity,
+      ),
+      ApiOkResponse({
+        description: options.description ?? 'Paginated list of results',
+        schema: {
+          allOf: [
+            { $ref: getSchemaPath(Paginated) },
+            {
+              properties: {
+                data: {
+                  type: 'array',
+                  items: { $ref: getSchemaPath(options.entity) },
+                },
+              },
+            },
+          ],
+        },
+      }),
+    );
+  }
 
   // 2. Filters
   const filterKey = config.parameters.filter;
@@ -158,25 +189,17 @@ export function ApiQueryBuilderDocs<T extends Type<any>>(
           }),
         );
       } else if (filter instanceof AllowedFilter) {
-        if (filter.operator === FilterOperator.TRASHED) {
-          decorators.push(
-            ApiQuery({
-              name: `${filterKey}[${filter.name}]`,
-              required: false,
-              enum: ['with', 'only', 'without'],
-              description: `Filter soft-deleted records: 'with' (all), 'only' (deleted only), 'without' (active only)`,
-            }),
-          );
-        } else {
-          decorators.push(
-            ApiQuery({
-              name: `${filterKey}[${filter.name}]`,
-              required: false,
-              type: String,
-              description: `Filter by ${filter.name} (operator: ${filter.operator})`,
-            }),
-          );
-        }
+        const meta = filter.getSwaggerMetadata();
+        decorators.push(
+          ApiQuery({
+            name: `${filterKey}[${filter.name}]`,
+            required: false,
+            enum: meta.enum,
+            type: meta.enum ? undefined : String,
+            description: meta.description,
+            example: meta.example,
+          }),
+        );
       } else if (typeof filter === 'object' && 'name' in filter) {
         decorators.push(
           ApiQuery({
@@ -199,12 +222,15 @@ export function ApiQueryBuilderDocs<T extends Type<any>>(
     const sortNames = options.sorts.map((s) =>
       typeof s === 'string' ? s : s.name,
     );
+    const sortLabels = options.sorts.map((s) =>
+      typeof s === 'string' ? s : s.getSwaggerLabel(),
+    );
     decorators.push(
       ApiQuery({
         name: sortKey,
         required: false,
         type: String,
-        description: `Sort criteria (comma-separated). Prefix with '-' for descending order. Allowed: [${sortNames.join(', ')}]`,
+        description: `Sort criteria (comma-separated). Prefix with '-' for descending order. Allowed: [${sortLabels.join(', ')}]`,
         example:
           options.defaultSort ??
           (sortNames.length > 0 ? `-${sortNames[0]}` : undefined),
@@ -246,25 +272,39 @@ export function ApiQueryBuilderDocs<T extends Type<any>>(
     );
   }
 
-  // 6. Pagination (Page & Limit)
-  const pageKey = config.parameters.page;
+  // 6. Pagination (Offset: page + limit | Cursor: cursor + limit)
   const limitKey = config.parameters.limit;
   const defaultLimit = options.defaultLimit ?? config.defaultLimit;
   const maxLimit = options.maxLimit ?? config.maxLimit;
 
+  if (isCursor) {
+    decorators.push(
+      ApiQuery({
+        name: config.parameters.cursor,
+        required: false,
+        type: String,
+        description:
+          'Opaque base64url cursor token from meta.nextCursor or meta.prevCursor',
+      }),
+    );
+  } else {
+    decorators.push(
+      ApiQuery({
+        name: config.parameters.page,
+        required: false,
+        type: Number,
+        description: 'Page number (1-based index)',
+        example: 1,
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          default: 1,
+        },
+      }),
+    );
+  }
+
   decorators.push(
-    ApiQuery({
-      name: pageKey,
-      required: false,
-      type: Number,
-      description: 'Page number (1-based index)',
-      example: 1,
-      schema: {
-        type: 'integer',
-        minimum: 1,
-        default: 1,
-      },
-    }),
     ApiQuery({
       name: limitKey,
       required: false,

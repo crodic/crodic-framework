@@ -129,6 +129,15 @@ export class AllowedSort<T extends ObjectLiteral = any> {
     return current instanceof Date ? current.toISOString() : current;
   }
 
+  /** @internal Human-readable sort label for Swagger documentation. */
+  getSwaggerLabel(): string {
+    if (this._jsonPathSegments) {
+      const cast = this._jsonCast ? `::${this._jsonCast}` : '';
+      return `${this.name} (JSONB: ${this.column}.${this._jsonPathSegments.join('.')}${cast})`;
+    }
+    return this.name;
+  }
+
   /**
    * Apply this sort to the query builder.
    * @param isFirst - Whether this is the first ORDER BY clause (uses orderBy vs addOrderBy)

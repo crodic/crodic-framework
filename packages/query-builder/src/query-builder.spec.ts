@@ -1,46 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  NestjsPaginateQueryBuilder,
-  PaginateQueryBuilder,
-} from "./nestjs-paginate-query-builder";
 import { RestQueryBuilder } from "./rest-query-builder";
-
-describe("NestJS Paginate Query Builder", () => {
-  it("should build basic pagination and sort params", () => {
-    const qb = new PaginateQueryBuilder()
-      .page(2)
-      .limit(10)
-      .sortBy("createdAt", "DESC");
-
-    const qs = qb.toQueryString();
-    expect(qs).toContain("page=2");
-    expect(qs).toContain("limit=10");
-    expect(qs).toContain("sort=createdAt:DESC");
-  });
-
-  it("should format filters with operators correctly", () => {
-    const qb = new PaginateQueryBuilder()
-      .eq("status", "active")
-      .in("roles", ["admin", "manager"])
-      .btw("age", [18, 65]);
-
-    const qs = qb.toQueryString();
-    expect(qs).toContain("filter.status=$eq:active");
-    expect(qs).toContain("filter.roles=$in:admin,manager");
-    expect(qs).toContain("filter.age=$btw:18,65");
-  });
-
-  it("should handle search and searchBy properly", () => {
-    const qb = new NestjsPaginateQueryBuilder()
-      .search("john")
-      .searchBy(["email", "name"]);
-
-    const qs = qb.toQueryString();
-    expect(qs).toContain("search=john");
-    expect(qs).toContain("searchBy=email");
-    expect(qs).toContain("searchBy=name");
-  });
-});
 
 describe("REST Query Builder", () => {
   it("should format filters, sorts, and includes in REST style", () => {
@@ -141,5 +100,23 @@ describe("REST Query Builder", () => {
     expect(qb.toQueryString()).toBe(
       "filter[active]=false&filter[count]=0&filter[score]=%3E%3D0&page=2",
     );
+  });
+
+  it("should sanitize filter array values and ignore prototype keys in constructor params", () => {
+    const rawParams = JSON.parse(
+      '{"filter":{"tags":["","  ",null,"cosplay"],"__proto__":{"polluted":true}}}',
+    );
+    const qb = new RestQueryBuilder(rawParams);
+
+    expect(qb.build().filter).toEqual({ tags: ["cosplay"] });
+    expect(qb.toQueryString()).toBe("filter[tags]=cosplay");
+    expect(({} as any).polluted).toBeUndefined();
+
+    const spacedFields = new RestQueryBuilder().fieldsFor("user", [
+      " id ",
+      " name ",
+      "  ",
+    ]);
+    expect(spacedFields.build().fields).toEqual({ user: "id,name" });
   });
 });

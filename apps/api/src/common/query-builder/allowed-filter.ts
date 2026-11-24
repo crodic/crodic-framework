@@ -462,6 +462,64 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     return this._defaultValue;
   }
 
+  /**
+   * Build structured Swagger metadata (description, example, enum) for ApiQueryBuilderDocs.
+   * @internal
+   */
+  getSwaggerMetadata(): {
+    description: string;
+    example?: any;
+    enum?: any[];
+  } {
+    if (this.operator === FilterOperator.TRASHED) {
+      return {
+        enum: ['with', 'only', 'without'],
+        description: `Filter soft-deleted records: 'with' (all), 'only' (deleted only), 'without' (active only)`,
+      };
+    }
+
+    if (this.operator === FilterOperator.GROUP) {
+      const conjunction = (this._groupConjunction ?? 'or').toUpperCase();
+      const memberNames = (this._groupMembers ?? []).map((m) => m.name);
+      return {
+        description: `Filter by ${this.name} (${conjunction} across: ${memberNames.join(', ')})`,
+      };
+    }
+
+    const jsonSuffix = this._jsonPathSegments
+      ? ` [JSONB: ${this.column}.${this._jsonPathSegments.join('.')}${this._jsonCast ? `::${this._jsonCast}` : ''}]`
+      : '';
+
+    if (this.operator === FilterOperator.OPERATOR) {
+      if (this.comparisonOp === 'dynamic') {
+        return {
+          description: `Filter by ${this.name}${jsonSuffix} using dynamic comparison prefixes (=, !=, >, >=, <, <=; comma-separated for ranges)`,
+          example: this._jsonCast === 'numeric' ? '>=100,<=500' : '>=10,<=100',
+        };
+      }
+      return {
+        description: `Filter by ${this.name}${jsonSuffix} (operator: ${this.comparisonOp ?? '='})`,
+      };
+    }
+
+    if (this._jsonPathSegments) {
+      const example =
+        this._jsonCast === 'boolean'
+          ? 'true'
+          : this._jsonCast === 'numeric'
+            ? '100'
+            : undefined;
+      return {
+        description: `Filter by ${this.name}${jsonSuffix} (operator: ${this.operator})`,
+        example,
+      };
+    }
+
+    return {
+      description: `Filter by ${this.name} (operator: ${this.operator})`,
+    };
+  }
+
   private isIgnoredScalar(val: any): boolean {
     if (typeof val === 'boolean') {
       return (
@@ -751,36 +809,35 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       case FilterOperator.OPERATOR: {
         const op = this.comparisonOp ?? '=';
         if (op === 'dynamic') {
-          if (normalizedNull) {
-            qb.andWhere(`${target} IS NULL`);
-          } else if (Array.isArray(value)) {
-            value.forEach((item: any, i: number) => {
-              const parsed = this.parseDynamicOperator(item);
-              if (parsed.val === null) {
+          const applyDynamicItem = (item: any, pName: string) => {
+            const parsed = this.parseDynamicOperator(item);
+            if (parsed.val === null) {
+              if (
+                parsed.op === '=' ||
+                parsed.op === '!=' ||
+                parsed.op === '<>'
+              ) {
                 qb.andWhere(
                   parsed.op === '!=' || parsed.op === '<>'
                     ? `${target} IS NOT NULL`
                     : `${target} IS NULL`,
                 );
-              } else {
-                qb.andWhere(`${target} ${parsed.op} :${paramName}_${i}`, {
-                  [`${paramName}_${i}`]: parsed.val,
-                });
               }
-            });
-          } else {
-            const parsed = this.parseDynamicOperator(value);
-            if (parsed.val === null) {
-              qb.andWhere(
-                parsed.op === '!=' || parsed.op === '<>'
-                  ? `${target} IS NOT NULL`
-                  : `${target} IS NULL`,
-              );
-            } else {
-              qb.andWhere(`${target} ${parsed.op} :${paramName}`, {
-                [paramName]: parsed.val,
-              });
+              return;
             }
+            qb.andWhere(`${target} ${parsed.op} :${pName}`, {
+              [pName]: parsed.val,
+            });
+          };
+
+          if (normalizedNull) {
+            qb.andWhere(`${target} IS NULL`);
+          } else if (Array.isArray(value)) {
+            value.forEach((item: any, i: number) =>
+              applyDynamicItem(item, `${paramName}_${i}`),
+            );
+          } else {
+            applyDynamicItem(value, paramName);
           }
           break;
         }

@@ -653,29 +653,7 @@ const queryString = new RestQueryBuilder()
 // filter[status]=ACTIVE&filter[roles]=ADMIN,MANAGER&sort=-createdAt,name&include=profile,roles&fields[user]=id,name,email&q=john&page=1&limit=20
 ```
 
-### 2. `NestjsPaginateQueryBuilder` (Dành cho API cũ dùng `nestjs-paginate`)
-
-Dành cho các endpoint backend vẫn đang dùng package thư viện `nestjs-paginate`:
-
-```typescript
-import { PaginateQueryBuilder } from "@repo/query-builder";
-
-const queryString = new PaginateQueryBuilder()
-  .page(1)
-  .limit(20)
-  .sortBy("createdAt", "DESC")
-  .eq("status", "ACTIVE")
-  .in("role", ["ADMIN", "USER"])
-  .btw("age", [18, 65])
-  .search("john")
-  .searchBy(["email", "name"])
-  .toQueryString();
-
-// Chuỗi query sinh ra:
-// page=1&limit=20&sort=createdAt:DESC&filter.status=$eq:ACTIVE&filter.role=$in:ADMIN,USER&filter.age=$btw:18,65&search=john&searchBy=email&searchBy=name
-```
-
-### 3. Query Contracts dùng chung (`ResourceQueryContract`)
+### 2. Query Contracts dùng chung (`ResourceQueryContract`)
 
 Nhằm kết nối whitelist của backend với định nghĩa filter/sort ở frontend một cách an toàn và tránh sai lệch kiểu dữ liệu, `@repo/query-builder` xuất bản các helper hợp đồng:
 
@@ -697,12 +675,9 @@ export const userQueryContract = defineQueryContract<UserDto>({
 });
 ```
 
-### 4. Hook Bảng Cao Cấp (`useResourceTable` & `useRestResourceTable`)
+### 3. Hook Bảng Cao Cấp (`useRestResourceTable`)
 
-`apps/web` cung cấp các hook pipeline khép kín kết nối trực tiếp Query Builder với TanStack Table:
-
-- **`useResourceTable`**: Kết nối `PaginateQueryBuilder` + `PaginateQueryParams` với TanStack Table.
-- **`useRestResourceTable`**: Kết nối `RestQueryBuilder` + `RestQueryParams` với TanStack Table.
+`apps/web` cung cấp hook pipeline khép kín kết nối trực tiếp `RestQueryBuilder` + `RestQueryParams` với TanStack Table:
 
 ```typescript
 import { useRestResourceTable } from "@/hooks/use-rest-resource-table";

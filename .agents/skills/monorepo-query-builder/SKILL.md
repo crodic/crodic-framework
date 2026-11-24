@@ -347,30 +347,7 @@ export function UserTableContainer() {
 
 ---
 
-## 4. Legacy / `nestjs-paginate` Support
-
-For third-party or legacy endpoints using the `nestjs-paginate` library:
-
-```typescript
-import { PaginateQueryBuilder } from "@repo/query-builder";
-// or: import { NestjsPaginateQueryBuilder } from "@/lib/query-builder";
-
-const queryString = new PaginateQueryBuilder()
-  .page(1)
-  .limit(20)
-  .sortBy("createdAt", "DESC")
-  .eq("status", "ACTIVE")
-  .in("role", ["ADMIN", "USER"])
-  .btw("age", [18, 65])
-  .search("john")
-  .searchBy(["email", "name"])
-  .select(["id", "name", "email"])
-  .toQueryString();
-```
-
----
-
-## 5. Security & Best Practice Rules
+## 4. Security & Best Practice Rules
 
 1. **Always Enforce Whitelists**:
    - Never pass arbitrary client columns to TypeORM queries.

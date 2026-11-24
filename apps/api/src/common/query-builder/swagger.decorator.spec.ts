@@ -91,4 +91,69 @@ describe('ApiQueryBuilderDocs Decorator', () => {
     const controller = new AuthSampleController();
     expect(controller).toBeDefined();
   });
+
+  it('should document cursor pagination, JSONB filters/sorts, groupOr, and dynamic operators in OpenAPI metadata', () => {
+    class CursorController {
+      @Get()
+      @ApiQueryBuilderDocs({
+        entity: TestDto,
+        paginationType: 'cursor',
+        filters: [
+          AllowedFilter.json('score', 'userMeta', 'stats.score', {
+            operator: 'dynamic',
+            cast: 'numeric',
+          }),
+          AllowedFilter.json('emailNotify', 'userMeta', 'notifications.email', {
+            cast: 'boolean',
+          }),
+          AllowedFilter.groupOr('search', [
+            AllowedFilter.partial('name'),
+            AllowedFilter.partial('email'),
+          ]),
+          AllowedFilter.operator('age', 'dynamic'),
+        ],
+        sorts: [
+          'createdAt',
+          AllowedSort.json('priority', 'userMeta', 'stats.priority', {
+            cast: 'numeric',
+          }),
+        ],
+      })
+      feed() {
+        return [];
+      }
+    }
+
+    const params: any[] =
+      Reflect.getMetadata(
+        'swagger/apiParameters',
+        CursorController.prototype.feed,
+      ) ?? [];
+    const paramNames = params.map((p) => p.name);
+
+    expect(paramNames).toContain('cursor');
+    expect(paramNames).toContain('limit');
+    expect(paramNames).not.toContain('page');
+
+    const scoreParam = params.find((p) => p.name === 'filter[score]');
+    expect(scoreParam.description).toContain(
+      'JSONB: userMeta.stats.score::numeric',
+    );
+    expect(scoreParam.description).toContain('dynamic comparison prefixes');
+    expect(scoreParam.example).toBe('>=100,<=500');
+
+    const emailParam = params.find((p) => p.name === 'filter[emailNotify]');
+    expect(emailParam.description).toContain(
+      'JSONB: userMeta.notifications.email::boolean',
+    );
+    expect(emailParam.example).toBe('true');
+
+    const groupParam = params.find((p) => p.name === 'filter[search]');
+    expect(groupParam.description).toContain('OR across: name, email');
+
+    const sortParam = params.find((p) => p.name === 'sort');
+    expect(sortParam.description).toContain(
+      'priority (JSONB: userMeta.stats.priority::numeric)',
+    );
+  });
 });

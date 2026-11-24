@@ -654,29 +654,7 @@ const queryString = new RestQueryBuilder()
 // filter[status]=ACTIVE&filter[roles]=ADMIN,MANAGER&sort=-createdAt,name&include=profile,roles&fields[user]=id,name,email&q=john&page=1&limit=20
 ```
 
-### 2. `NestjsPaginateQueryBuilder` (Legacy / `nestjs-paginate`)
-
-For endpoints backed by the `nestjs-paginate` library:
-
-```typescript
-import { PaginateQueryBuilder } from "@repo/query-builder";
-
-const queryString = new PaginateQueryBuilder()
-  .page(1)
-  .limit(20)
-  .sortBy("createdAt", "DESC")
-  .eq("status", "ACTIVE")
-  .in("role", ["ADMIN", "USER"])
-  .btw("age", [18, 65])
-  .search("john")
-  .searchBy(["email", "name"])
-  .toQueryString();
-
-// Output:
-// page=1&limit=20&sort=createdAt:DESC&filter.status=$eq:ACTIVE&filter.role=$in:ADMIN,USER&filter.age=$btw:18,65&search=john&searchBy=email&searchBy=name
-```
-
-### 3. Shared Query Contracts (`ResourceQueryContract`)
+### 2. Shared Query Contracts (`ResourceQueryContract`)
 
 To bridge backend whitelists with frontend table options without type drift, `@repo/query-builder` exports typed contract helpers:
 
@@ -698,12 +676,9 @@ export const userQueryContract = defineQueryContract<UserDto>({
 });
 ```
 
-### 4. High-Level React Table Hooks (`useResourceTable` & `useRestResourceTable`)
+### 3. High-Level React Table Hook (`useRestResourceTable`)
 
-`apps/web` provides declarative hooks that connect query builders directly to TanStack Table:
-
-- **`useResourceTable`**: Connects `PaginateQueryBuilder` + `PaginateQueryParams` with TanStack Table.
-- **`useRestResourceTable`**: Connects `RestQueryBuilder` + `RestQueryParams` with TanStack Table.
+`apps/web` provides a declarative hook that connects `RestQueryBuilder` + `RestQueryParams` directly to TanStack Table:
 
 ```typescript
 import { useRestResourceTable } from "@/hooks/use-rest-resource-table";
