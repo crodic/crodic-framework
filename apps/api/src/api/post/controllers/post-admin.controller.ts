@@ -52,6 +52,9 @@ export class PostAdminController {
         AllowedFilter.exact('characterTagId'),
       ],
       sorts: [
+        'id',
+        'title',
+        'status',
         'publishedAt',
         'createdAt',
         'trendingScore',

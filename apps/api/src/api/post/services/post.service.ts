@@ -916,6 +916,9 @@ export class PostService {
         }),
       ])
       .allowedSorts([
+        'id',
+        'title',
+        'status',
         'publishedAt',
         'createdAt',
         'trendingScore',

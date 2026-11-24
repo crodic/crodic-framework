@@ -101,6 +101,12 @@ export function getPostsTableColumns({
           </div>
         </div>
       ),
+      meta: {
+        label: i18n.t('posts.columns.title', 'Tác phẩm & Bộ ảnh'),
+        placeholder: i18n.t('posts.filter.searchTitle', 'Tìm kiếm tác phẩm...'),
+        variant: 'text',
+      },
+      enableColumnFilter: true,
       enableSorting: true,
     },
     {
@@ -196,6 +202,21 @@ export function getPostsTableColumns({
           )}
         </div>
       ),
+      meta: {
+        label: i18n.t('posts.columns.featured', 'Nổi bật'),
+        variant: 'select',
+        options: [
+          {
+            label: i18n.t('common.featured', 'Nổi bật'),
+            value: 'true',
+          },
+          {
+            label: i18n.t('common.standard', 'Thường'),
+            value: 'false',
+          },
+        ],
+      },
+      enableColumnFilter: true,
       enableSorting: false,
     },
     {
@@ -236,6 +257,29 @@ export function getPostsTableColumns({
           </Badge>
         )
       },
+      meta: {
+        label: i18n.t('posts.columns.status', 'Trạng thái'),
+        variant: 'select',
+        options: [
+          {
+            label: i18n.t('posts.status.published', 'Đã xuất bản'),
+            value: 'published',
+          },
+          {
+            label: i18n.t('posts.status.pending_review', 'Chờ duyệt'),
+            value: 'pending_review',
+          },
+          {
+            label: i18n.t('posts.status.hidden', 'Bị ẩn / Vi phạm'),
+            value: 'hidden',
+          },
+          {
+            label: i18n.t('posts.status.draft', 'Bản nháp'),
+            value: 'draft',
+          },
+        ],
+      },
+      enableColumnFilter: true,
       enableSorting: true,
     },
     {

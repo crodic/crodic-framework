@@ -29,6 +29,7 @@ import { PostColumnKey, type Post } from './schema'
 const postFilterParsers = {
   status: parseAsString,
   title: parseAsString,
+  isFeaturedWork: parseAsString,
   albumCategory: parseAsString,
 } as const
 
@@ -110,6 +111,13 @@ export function PagePostsOverview() {
       if (filter.title) {
         builder.filter('title', filter.title)
       }
+      if (
+        filter.isFeaturedWork !== undefined &&
+        filter.isFeaturedWork !== null &&
+        filter.isFeaturedWork !== ''
+      ) {
+        builder.filter('isFeaturedWork', filter.isFeaturedWork)
+      }
       if (filter.albumCategory) {
         builder.filter('albumCategory', filter.albumCategory)
       }
@@ -121,11 +129,16 @@ export function PagePostsOverview() {
   >({
     columns,
     allowedSorts: [
+      PostColumnKey.id,
+      PostColumnKey.title,
+      PostColumnKey.status,
       PostColumnKey.createdAt,
       PostColumnKey.publishedAt,
       'likesCount',
       'viewsCount',
       'commentsCount',
+      'photosCount',
+      'trendingScore',
     ],
     filterParsers: postFilterParsers,
     queryHook: useDataAdminPostsOverview,
