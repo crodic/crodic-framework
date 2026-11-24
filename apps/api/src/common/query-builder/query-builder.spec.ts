@@ -1912,5 +1912,19 @@ describe('Spatie-style QueryBuilder', () => {
       expect(sqlNoPk).toContain('"user"."name" AS "user_name"');
       expect(sqlNoPk).not.toContain('"user"."email"');
     });
+
+    it('should not overwrite bracket-parsed filter object when query contains filter: undefined', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, {
+        'filter[name]': 'John',
+        filter: undefined,
+      } as any)
+        .allowedFilters(['name'])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain('ILIKE');
+      expect(params).toContain('%John%');
+    });
   });
 });

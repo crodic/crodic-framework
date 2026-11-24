@@ -44,7 +44,7 @@ export class AdminUserController {
     description: 'Admin can find all users in the system with pagination',
     isQueryBuilder: true,
     queryBuilderOptions: {
-      sorts: ['id', 'email', 'createdAt', 'updatedAt'],
+      sorts: ['id', 'email', 'fullName', 'createdAt', 'updatedAt'],
       defaultSort: '-id',
       filters: [
         'email',

@@ -61,7 +61,12 @@ export function PageAdminOverview() {
     typeof adminsFilterParsers
   >({
     columns,
-    allowedSorts: [ColumnKey.email, ColumnKey.fullName, ColumnKey.verifiedAt],
+    allowedSorts: [
+      ColumnKey.id,
+      ColumnKey.email,
+      ColumnKey.fullName,
+      ColumnKey.createdAt,
+    ],
     filterParsers: adminsFilterParsers,
     queryHook: useDataAdminOverview,
     buildQuery,

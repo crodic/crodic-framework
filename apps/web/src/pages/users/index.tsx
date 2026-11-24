@@ -82,7 +82,13 @@ export function PageUserOverview() {
     typeof userFilterParsers
   >({
     columns,
-    allowedSorts: [ColumnKey.createdAt],
+    allowedSorts: [
+      ColumnKey.id,
+      ColumnKey.email,
+      ColumnKey.username,
+      ColumnKey.createdAt,
+      ColumnKey.updatedAt,
+    ],
     filterParsers: userFilterParsers,
     queryHook: useDataUserOverview,
     buildQuery,

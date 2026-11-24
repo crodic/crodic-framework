@@ -60,7 +60,7 @@ Features:
 Response includes paginated data, metadata, and navigation links.`,
     isQueryBuilder: true,
     queryBuilderOptions: {
-      sorts: ['id', 'email', 'createdAt', 'updatedAt'],
+      sorts: ['id', 'email', 'username', 'createdAt', 'updatedAt'],
       defaultSort: '-id',
       filters: [
         'email',

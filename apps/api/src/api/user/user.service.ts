@@ -124,7 +124,7 @@ export class UserService {
           );
         }),
       ])
-      .allowedSorts(['id', 'email', 'createdAt', 'updatedAt'])
+      .allowedSorts(['id', 'email', 'username', 'createdAt', 'updatedAt'])
       .defaultSort('-id')
       .paginate();
 

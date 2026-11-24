@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
+  AllowedFilter,
   Paginated,
   QueryBuilder,
   QueryParams,
@@ -44,7 +45,7 @@ export class CountryService {
         'updatedAt',
       ])
       .defaultSort('name')
-      .allowedFilters(['regionId', 'iso2', 'iso3', 'name'])
+      .allowedFilters([AllowedFilter.exact('regionId'), 'iso2', 'iso3', 'name'])
       .paginate();
 
     return new Paginated(this.toDtos(result.data), result.meta, result.links);

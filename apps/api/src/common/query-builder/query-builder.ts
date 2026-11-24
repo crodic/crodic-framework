@@ -140,7 +140,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
       } else if (val && typeof val === 'object' && !Array.isArray(val)) {
         const sanitizedNested: Record<string, any> = {};
         for (const [nKey, nVal] of Object.entries(val)) {
-          if (!FORBIDDEN_KEYS.has(nKey)) {
+          if (!FORBIDDEN_KEYS.has(nKey) && nVal !== undefined) {
             sanitizedNested[nKey] = nVal;
           }
         }
@@ -149,10 +149,20 @@ export class QueryBuilder<T extends ObjectLiteral> {
           result[key] &&
           typeof result[key] === 'object' &&
           !Array.isArray(result[key])
-            ? { ...sanitizedNested, ...result[key] }
+            ? { ...result[key], ...sanitizedNested }
             : sanitizedNested;
       } else {
-        result[key] = val;
+        if (val !== undefined) {
+          // If this key is already an object (e.g. from bracket notation parsing like filter[status]),
+          // do not overwrite it with a primitive/undefined
+          if (
+            !Object.prototype.hasOwnProperty.call(result, key) ||
+            !result[key] ||
+            typeof result[key] !== 'object'
+          ) {
+            result[key] = val;
+          }
+        }
       }
     }
 

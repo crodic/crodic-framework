@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import {
+  AllowedFilter,
   Paginated,
   QueryBuilder,
   QueryParams,
@@ -112,7 +113,28 @@ export class CosplayerApplicationService {
     const result = await QueryBuilder.for(queryBuilder, query)
       .allowedSorts(['id', 'createdAt', 'updatedAt', 'status', 'stageName'])
       .defaultSort('-id')
-      .allowedFilters(['status', 'createdAt', 'stageName', 'bio'])
+      .allowedFilters([
+        AllowedFilter.exact('status'),
+        'stageName',
+        'bio',
+        AllowedFilter.callback('createdAt', (qb, value) => {
+          if (!value) return;
+          if (Array.isArray(value) && value.length === 2) {
+            qb.andWhere('app.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: value[0],
+              cTo: value[1],
+            });
+          } else if (typeof value === 'string' && value.includes(',')) {
+            const [from, to] = value.split(',');
+            qb.andWhere('app.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: from,
+              cTo: to,
+            });
+          } else {
+            qb.andWhere('app.created_at >= :cFrom', { cFrom: value });
+          }
+        }),
+      ])
       .paginate();
 
     return new Paginated(

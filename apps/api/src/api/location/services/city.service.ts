@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
+  AllowedFilter,
   Paginated,
   QueryBuilder,
   QueryParams,
@@ -39,8 +40,8 @@ export class CityService {
       ])
       .defaultSort('name')
       .allowedFilters([
-        'stateId',
-        'countryId',
+        AllowedFilter.exact('stateId'),
+        AllowedFilter.exact('countryId'),
         'countryCode',
         'stateCode',
         'code',

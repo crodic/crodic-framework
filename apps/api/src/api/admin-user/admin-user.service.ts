@@ -218,7 +218,7 @@ export class AdminUserService {
           );
         }),
       ])
-      .allowedSorts(['id', 'email', 'createdAt', 'updatedAt'])
+      .allowedSorts(['id', 'email', 'fullName', 'createdAt', 'updatedAt'])
       .defaultSort('-id')
       .paginate();
 
