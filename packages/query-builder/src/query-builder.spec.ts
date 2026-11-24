@@ -92,4 +92,37 @@ describe("REST Query Builder", () => {
     const qs = qb.toQueryString();
     expect(qs).toContain("filter[status][]=active&filter[status][]=pending");
   });
+
+  it("should support cursor pagination and clear page when cursor is set", () => {
+    const qb = new RestQueryBuilder()
+      .page(3)
+      .cursorPaginate("eyJpZCI6IjEwMCJ9", 20)
+      .filter("emailNotify", true);
+
+    const built = qb.build();
+    expect(built.page).toBeUndefined();
+    expect(built.cursor).toBe("eyJpZCI6IjEwMCJ9");
+    expect(built.limit).toBe(20);
+
+    const qs = qb.toQueryString();
+    expect(qs).not.toContain("page=");
+    expect(qs).toContain("cursor=eyJpZCI6IjEwMCJ9");
+    expect(qs).toContain("limit=20");
+    expect(qs).toContain("filter[emailNotify]=true");
+
+    // Round-trip initialization from params
+    const restored = new RestQueryBuilder(built);
+    expect(restored.build().cursor).toBe("eyJpZCI6IjEwMCJ9");
+  });
+
+  it("should support filterDynamic for single and range comparison operators", () => {
+    const single = new RestQueryBuilder().filterDynamic("minAge", ">=", 18);
+    expect(single.build().filter).toEqual({ minAge: ">=18" });
+
+    const range = new RestQueryBuilder()
+      .filterDynamic("price", ">=", 100)
+      .filterDynamic("price", "<=", 500);
+    expect(range.build().filter).toEqual({ price: [">=100", "<=500"] });
+    expect(range.toQueryString()).toBe("filter[price]=%3E%3D100,%3C%3D500");
+  });
 });

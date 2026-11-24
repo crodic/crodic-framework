@@ -29,6 +29,7 @@ interface SpecUser {
   id: string;
   name: string;
   email: string;
+  userMeta?: Record<string, any>;
   createdAt: Date;
   deletedAt?: Date | null;
   roles?: SpecRole[];
@@ -50,6 +51,7 @@ const SpecUserSchema = new EntitySchema<SpecUser>({
     id: { type: 'bigint', primary: true, generated: true },
     name: { type: 'varchar' },
     email: { type: 'varchar' },
+    userMeta: { name: 'user_meta', type: 'jsonb', nullable: true },
     createdAt: { name: 'created_at', type: 'timestamptz' },
     deletedAt: { name: 'deleted_at', type: 'timestamptz', deleteDate: true },
   },
@@ -1602,6 +1604,87 @@ describe('Spatie-style QueryBuilder', () => {
         .allowedFilters([AllowedFilter.trashed()])
         .getQueryBuilder();
       expect(qbAll.getSql()).not.toContain('WHERE');
+    });
+
+    it('should compile valid PostgreSQL JSONB WHERE and ORDER BY with camelCase-to-snake_case column mapping', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, {
+        filter: {
+          emailNotify: 'true',
+          authorName: 'alice_100%',
+          score: '>=100,<=500',
+          tags: 'cosplay,anime',
+        },
+        sort: '-priority',
+      })
+        .allowedFilters([
+          AllowedFilter.json('emailNotify', 'userMeta', 'notifications.email'),
+          AllowedFilter.json('authorName', 'userMeta', ['author', 'name'], {
+            operator: 'partial',
+          }),
+          AllowedFilter.json('score', 'userMeta', 'stats.score', {
+            operator: 'dynamic',
+            cast: 'numeric',
+          }),
+          AllowedFilter.json('tags', 'userMeta', 'category'),
+        ])
+        .allowedSorts([
+          AllowedSort.json('priority', 'userMeta', 'stats.priority', {
+            cast: 'numeric',
+          }),
+        ])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+
+      // TypeORM must translate `user.userMeta` -> `"user"."user_meta"`
+      expect(sql).toContain(
+        `"user"."user_meta" -> 'notifications' ->> 'email' = $1`,
+      );
+      expect(sql).toContain(
+        `"user"."user_meta" -> 'author' ->> 'name' ILIKE $2`,
+      );
+      expect(sql).toContain(
+        `("user"."user_meta" -> 'stats' ->> 'score')::numeric >= $3`,
+      );
+      expect(sql).toContain(
+        `("user"."user_meta" -> 'stats' ->> 'score')::numeric <= $4`,
+      );
+      expect(sql).toContain(`"user"."user_meta" ->> 'category' IN ($5, $6)`);
+      expect(sql).toContain(
+        `ORDER BY ("user"."user_meta" -> 'stats' ->> 'priority')::numeric DESC`,
+      );
+
+      expect(params).toEqual([
+        'true', // kept as string for uncasted ->> text comparison
+        '%alice\\_100\\%%', // LIKE wildcards escaped
+        '100',
+        '500',
+        'cosplay',
+        'anime',
+      ]);
+    });
+
+    it('should cast JSONB boolean values when cast: "boolean" is specified and reject unsafe JSONB keys', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, { filter: { enabled: 'true' } })
+        .allowedFilters([
+          AllowedFilter.json('enabled', 'userMeta', 'enabled', {
+            cast: 'boolean',
+          }),
+        ])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(`("user"."user_meta" ->> 'enabled')::boolean = $1`);
+      expect(params).toEqual([true]);
+
+      expect(() =>
+        AllowedFilter.json('bad', 'userMeta', "email'; DROP TABLE users;--"),
+      ).toThrow(/Invalid JSONB key segment/);
+      expect(() => AllowedSort.json('bad', 'userMeta', '')).toThrow(
+        /Invalid JSONB path/,
+      );
     });
   });
 });

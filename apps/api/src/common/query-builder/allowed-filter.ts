@@ -1,5 +1,10 @@
 import { Brackets, ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { getGlobalConfig } from './config';
+import {
+  buildJsonbExpression,
+  JsonbCastType,
+  normalizeJsonbPath,
+} from './jsonb.helper';
 import { FilterApplyFn, FilterCallbackFn, FilterInterface } from './types';
 
 export enum FilterOperator {
@@ -17,6 +22,14 @@ export enum FilterOperator {
 
 export type ComparisonOperator =
   '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=' | 'dynamic';
+
+export interface JsonFilterOptions {
+  /** Filter operator: 'exact' (default), 'partial', 'starts_with', 'ends_with', or comparison operator */
+  operator?:
+    'exact' | 'partial' | 'starts_with' | 'ends_with' | ComparisonOperator;
+  /** Optional PostgreSQL type cast (e.g. 'numeric', 'boolean', 'timestamptz') */
+  cast?: JsonbCastType;
+}
 
 const DYNAMIC_OPERATORS: readonly Exclude<ComparisonOperator, 'dynamic'>[] = [
   '>=',
@@ -51,6 +64,8 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   private _arrayValueDelimiter?: string | null = undefined;
   private _groupConjunction?: 'and' | 'or';
   private _groupMembers?: AllowedFilter<T>[];
+  private _jsonPathSegments?: string[];
+  private _jsonCast?: JsonbCastType;
 
   private constructor(
     /** Name used in the query string: ?filter[name]=... */
@@ -266,6 +281,58 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     column = 'deletedAt',
   ): AllowedFilter<T> {
     return new AllowedFilter(name, column, FilterOperator.TRASHED);
+  }
+
+  /**
+   * Create a PostgreSQL JSONB filter using JS dot-notation or path array.
+   * Supports exact (default), partial, starts_with, ends_with, and comparison/dynamic operators,
+   * with optional PostgreSQL type casting (`'text' | 'numeric' | 'boolean' | 'timestamptz'`).
+   *
+   * @param name - Filter name in query string (`?filter[emailNotify]=true`)
+   * @param column - Entity JSONB column property name (e.g. `'notifications'` or `'profile.meta'`)
+   * @param path - Dot-notation path or string array (e.g. `'author.name'` or `['author', 'name']`)
+   * @param options - Optional operator and PostgreSQL type cast
+   *
+   * @example
+   * AllowedFilter.json('emailNotify', 'notifications', 'email')
+   * AllowedFilter.json('authorName', 'meta', 'author.name', { operator: 'partial' })
+   * AllowedFilter.json('minScore', 'meta', 'stats.score', { operator: '>=', cast: 'numeric' })
+   */
+  static json<T extends ObjectLiteral = any>(
+    name: string,
+    column: string,
+    path: string | string[],
+    options?: JsonFilterOptions,
+  ): AllowedFilter<T> {
+    const segments = normalizeJsonbPath(path);
+    const opOpt = options?.operator ?? 'exact';
+
+    let filterOp: FilterOperator;
+    let comparisonOp: ComparisonOperator | undefined;
+
+    if (opOpt === 'exact') {
+      filterOp = FilterOperator.EXACT;
+    } else if (opOpt === 'partial') {
+      filterOp = FilterOperator.PARTIAL;
+    } else if (opOpt === 'starts_with') {
+      filterOp = FilterOperator.STARTS_WITH;
+    } else if (opOpt === 'ends_with') {
+      filterOp = FilterOperator.ENDS_WITH;
+    } else {
+      filterOp = FilterOperator.OPERATOR;
+      comparisonOp = opOpt;
+    }
+
+    const filter = new AllowedFilter<T>(
+      name,
+      column,
+      filterOp,
+      undefined,
+      comparisonOp,
+    );
+    filter._jsonPathSegments = segments;
+    filter._jsonCast = options?.cast;
+    return filter;
   }
 
   /**
@@ -585,11 +652,25 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       }
     }
 
-    const target = this.column.includes('.')
-      ? this.column
-      : `${alias}.${this.column}`;
+    const target = this._jsonPathSegments
+      ? buildJsonbExpression(
+          alias,
+          this.column,
+          this._jsonPathSegments,
+          this._jsonCast,
+        )
+      : this.column.includes('.')
+        ? this.column
+        : `${alias}.${this.column}`;
 
     const paramName = `qb_f_${this.column.replace(/\W/g, '_')}_${paramIndex}`;
+
+    // PostgreSQL `->>` returns text; only cast 'true'/'false' to boolean when not comparing against uncasted JSONB text
+    const isJsonbText =
+      Boolean(this._jsonPathSegments) &&
+      (!this._jsonCast || this._jsonCast === 'text');
+    const normalizeExactScalar = (v: any) =>
+      isJsonbText ? String(v) : this.castBooleanScalar(v);
 
     switch (this.operator) {
       case FilterOperator.EXACT: {
@@ -597,11 +678,11 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
           qb.andWhere(`${target} IS NULL`);
         } else if (Array.isArray(value)) {
           qb.andWhere(`${target} IN (:...${paramName})`, {
-            [paramName]: value.map((v) => this.castBooleanScalar(v)),
+            [paramName]: value.map(normalizeExactScalar),
           });
         } else {
           qb.andWhere(`${target} = :${paramName}`, {
-            [paramName]: this.castBooleanScalar(value),
+            [paramName]: normalizeExactScalar(value),
           });
         }
         break;

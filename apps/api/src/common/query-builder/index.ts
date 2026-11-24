@@ -3,8 +3,10 @@ export {
   AllowedFilter,
   FilterOperator,
   type ComparisonOperator,
+  type JsonFilterOptions,
 } from './allowed-filter';
-export { AllowedSort } from './allowed-sort';
+export { AllowedSort, type JsonSortOptions } from './allowed-sort';
+export { type JsonbCastType } from './jsonb.helper';
 export { AllowedInclude } from './allowed-include';
 export {
   ApiQueryBuilderDocs,

@@ -1,7 +1,20 @@
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
+import {
+  buildJsonbExpression,
+  JsonbCastType,
+  normalizeJsonbPath,
+} from './jsonb.helper';
 import { SortApplyFn, SortInterface } from './types';
 
+export interface JsonSortOptions {
+  /** Optional PostgreSQL type cast (e.g. 'numeric' to sort numbers numerically instead of text) */
+  cast?: JsonbCastType;
+}
+
 export class AllowedSort<T extends ObjectLiteral = any> {
+  private _jsonPathSegments?: string[];
+  private _jsonCast?: JsonbCastType;
+
   private constructor(
     /** Name used in the query string: ?sort=name or ?sort=-name */
     public readonly name: string,
@@ -30,25 +43,33 @@ export class AllowedSort<T extends ObjectLiteral = any> {
   }
 
   /**
-   * Create a custom sort using a callback function or a class implementing SortInterface.
-   * Matches Spatie's `AllowedSort::custom(...)`.
+   * Create a PostgreSQL JSONB field sort using JS dot-notation or path array.
    *
-   * @param name - Sort name in query string
-   * @param sortClassOrFn - Function callback or SortInterface instance
+   * @param name - Sort name in query string (`?sort=-score`)
+   * @param column - Entity JSONB column property name (e.g. `'meta'` or `'profile.meta'`)
+   * @param path - Dot-notation path or string array (e.g. `'stats.score'` or `['stats', 'score']`)
+   * @param options - Optional PostgreSQL type cast (`'text' | 'numeric' | 'boolean' | 'timestamptz'`)
    *
    * @example
-   * // Function callback:
-   * AllowedSort.custom('popularity', (qb, dir, alias) => {
-   *   qb.addOrderBy(`${alias}.viewCount + ${alias}.likeCount`, dir);
-   * })
-   *
-   * // Class-based (Spatie style):
-   * class PopularitySort implements SortInterface {
-   *   apply(qb, dir, alias) {
-   *     qb.addOrderBy(`${alias}.views + ${alias}.likes`, dir);
-   *   }
-   * }
-   * AllowedSort.custom('popularity', new PopularitySort())
+   * AllowedSort.json('score', 'meta', 'stats.score', { cast: 'numeric' })
+   * // ?sort=-score → ORDER BY ("entity"."meta" -> 'stats' ->> 'score')::numeric DESC
+   */
+  static json<T extends ObjectLiteral = any>(
+    name: string,
+    column: string,
+    path: string | string[],
+    options?: JsonSortOptions,
+  ): AllowedSort<T> {
+    const segments = normalizeJsonbPath(path);
+    const sort = new AllowedSort<T>(name, column);
+    sort._jsonPathSegments = segments;
+    sort._jsonCast = options?.cast;
+    return sort;
+  }
+
+  /**
+   * Create a custom sort using a callback function or a class implementing SortInterface.
+   * Matches Spatie's `AllowedSort::custom(...)`.
    */
   static custom<T extends ObjectLiteral = any>(
     name: string,
@@ -89,9 +110,16 @@ export class AllowedSort<T extends ObjectLiteral = any> {
       return;
     }
 
-    const target = this.column.includes('.')
-      ? this.column
-      : `${alias}.${this.column}`;
+    const target = this._jsonPathSegments
+      ? buildJsonbExpression(
+          alias,
+          this.column,
+          this._jsonPathSegments,
+          this._jsonCast,
+        )
+      : this.column.includes('.')
+        ? this.column
+        : `${alias}.${this.column}`;
 
     if (isFirst) {
       qb.orderBy(target, direction);

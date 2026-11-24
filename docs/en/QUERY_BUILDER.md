@@ -225,6 +225,31 @@ AllowedFilter.groupAnd("match", [
 
 - `GET /users?filter[q]=john` ➔ `WHERE ((user.email ILIKE '%john%') OR (user.username ILIKE '%john%') OR (user.fullName ILIKE '%john%'))`
 
+### PostgreSQL JSONB Filtering & Sorting (`AllowedFilter.json`, `AllowedSort.json`)
+
+Idiomatic JS/TS JSONB access using dot-notation (`'author.name'`) or path arrays (`['author', 'name']`), with key validation against SQL injection and optional PostgreSQL casting (`'text' | 'numeric' | 'boolean' | 'timestamptz'`):
+
+```typescript
+// JSONB Filtering:
+AllowedFilter.json("emailNotify", "notifications", "email");
+// ?filter[emailNotify]=true ➔ "user"."notifications" ->> 'email' = 'true'
+
+AllowedFilter.json("authorName", "meta", ["author", "name"], {
+  operator: "partial",
+});
+// ?filter[authorName]=john ➔ "user"."meta" -> 'author' ->> 'name' ILIKE '%john%'
+
+AllowedFilter.json("score", "meta", "stats.score", {
+  operator: "dynamic",
+  cast: "numeric",
+});
+// ?filter[score]=>=100,<=500 ➔ ("user"."meta" -> 'stats' ->> 'score')::numeric >= 100 AND ... <= 500
+
+// JSONB Sorting:
+AllowedSort.json("priority", "meta", "stats.priority", { cast: "numeric" });
+// ?sort=-priority ➔ ORDER BY ("user"."meta" -> 'stats' ->> 'priority')::numeric DESC
+```
+
 ### Relation Filtering (Dot Notation)
 
 ```typescript

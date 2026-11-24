@@ -224,6 +224,31 @@ AllowedFilter.groupAnd("match", [
 
 - `GET /users?filter[q]=john` ➔ `WHERE ((user.email ILIKE '%john%') OR (user.username ILIKE '%john%') OR (user.fullName ILIKE '%john%'))`
 
+### Lọc & Sắp xếp cột JSONB (`AllowedFilter.json`, `AllowedSort.json`)
+
+Hỗ trợ truy vấn cột PostgreSQL `jsonb` theo phong cách thuần JS/TS (dùng chuỗi dot-notation `'author.name'` hoặc mảng `['author', 'name']`), có kiểm tra tính hợp lệ của key chống SQL Injection và hỗ trợ ép kiểu PostgreSQL (`'text' | 'numeric' | 'boolean' | 'timestamptz'`):
+
+```typescript
+// Lọc JSONB:
+AllowedFilter.json("emailNotify", "notifications", "email");
+// ?filter[emailNotify]=true ➔ "user"."notifications" ->> 'email' = 'true'
+
+AllowedFilter.json("authorName", "meta", ["author", "name"], {
+  operator: "partial",
+});
+// ?filter[authorName]=john ➔ "user"."meta" -> 'author' ->> 'name' ILIKE '%john%'
+
+AllowedFilter.json("score", "meta", "stats.score", {
+  operator: "dynamic",
+  cast: "numeric",
+});
+// ?filter[score]=>=100,<=500 ➔ ("user"."meta" -> 'stats' ->> 'score')::numeric >= 100 AND ... <= 500
+
+// Sắp xếp theo JSONB:
+AllowedSort.json("priority", "meta", "stats.priority", { cast: "numeric" });
+// ?sort=-priority ➔ ORDER BY ("user"."meta" -> 'stats' ->> 'priority')::numeric DESC
+```
+
 ### Lọc trên quan hệ (`roles.name`)
 
 ```typescript

@@ -12,6 +12,11 @@ export type RestSortDirection = "asc" | "desc" | "ASC" | "DESC";
 export type RestTrashedMode = "with" | "only" | "without";
 
 /**
+ * Dynamic comparison operator prefix matching backend `AllowedFilter.operator(name, 'dynamic')`.
+ */
+export type RestDynamicOperator = "=" | "!=" | "<>" | ">" | ">=" | "<" | "<=";
+
+/**
  * Structured query parameters representing a RESTful query request.
  */
 export interface RestQueryParams {
@@ -22,6 +27,7 @@ export interface RestQueryParams {
   append?: string;
   page?: number | string | Record<string, number | string>;
   limit?: number | string;
+  cursor?: string;
   q?: string;
   [key: string]: any;
 }
@@ -78,6 +84,7 @@ export class RestQueryBuilder {
   private appendList: string[] = [];
   private pageParam?: number;
   private limitParam?: number;
+  private cursorParam?: string;
   private searchParam?: string;
   private extraParams: Record<string, any> = {};
   private options: RestBuilderOptions;
@@ -302,6 +309,37 @@ export class RestQueryBuilder {
   }
 
   /**
+   * Dynamic operator filter matching backend `AllowedFilter.operator(name, 'dynamic')`
+   * or `AllowedFilter.json(name, col, path, { operator: 'dynamic' })`.
+   * Chaining multiple calls on the same field accumulates range bounds (e.g. `>=100,<=500`).
+   *
+   * @example
+   * builder.filterDynamic('price', '>=', 100).filterDynamic('price', '<=', 500)
+   * // => filter[price]=>=100,<=500
+   */
+  public filterDynamic(
+    name: string,
+    operator: RestDynamicOperator,
+    value: string | number | boolean | null | undefined,
+  ): this {
+    if (!this.isValidValue(value)) {
+      return this;
+    }
+
+    const expr = `${operator}${String(value)}`;
+    const existing = this.filterParams[name];
+    if (Array.isArray(existing)) {
+      this.filterParams[name] = [...existing, expr];
+    } else if (existing !== undefined) {
+      this.filterParams[name] = [existing, expr];
+    } else {
+      this.filterParams[name] = expr;
+    }
+
+    return this;
+  }
+
+  /**
    * Custom scope filter: `.filterScope('search', 'john')`
    *
    * @param name Scope name
@@ -516,6 +554,29 @@ export class RestQueryBuilder {
   }
 
   /**
+   * Set opaque keyset pagination cursor: `cursor=<base64url>`
+   * Clears `page` to avoid mixing offset and cursor pagination.
+   */
+  public cursor(cursor?: string | null): this {
+    if (typeof cursor === "string" && cursor.trim() !== "") {
+      this.cursorParam = cursor.trim();
+      this.pageParam = undefined;
+    } else {
+      this.cursorParam = undefined;
+    }
+    return this;
+  }
+
+  /**
+   * Set both cursor and limit in a single call for keyset pagination.
+   */
+  public cursorPaginate(cursor?: string | null, limit?: number): this {
+    this.cursor(cursor);
+    this.limit(limit);
+    return this;
+  }
+
+  /**
    * Add custom extra query parameter.
    *
    * @param key Parameter key
@@ -588,6 +649,10 @@ export class RestQueryBuilder {
     } else {
       if (this.pageParam) params.page = this.pageParam;
       if (this.limitParam) params.limit = this.limitParam;
+    }
+
+    if (this.cursorParam) {
+      params.cursor = this.cursorParam;
     }
 
     if (this.searchParam) {
@@ -679,6 +744,14 @@ export class RestQueryBuilder {
       parts.push(`limit=${encodeURIComponent(String(p.limit))}`);
     }
 
+    if (
+      p.cursor !== undefined &&
+      p.cursor !== null &&
+      String(p.cursor).trim() !== ""
+    ) {
+      parts.push(`cursor=${encodeURIComponent(String(p.cursor))}`);
+    }
+
     if (p.q !== undefined && p.q !== null && String(p.q).trim() !== "") {
       parts.push(`q=${encodeURIComponent(String(p.q))}`);
     }
@@ -691,6 +764,7 @@ export class RestQueryBuilder {
       "append",
       "page",
       "limit",
+      "cursor",
       "q",
     ]);
 
