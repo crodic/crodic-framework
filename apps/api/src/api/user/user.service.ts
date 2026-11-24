@@ -78,8 +78,7 @@ export class UserService {
   async findAllUser(query: QueryParams): Promise<Paginated<UserResDto>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.cosplayerProfile', 'cosplayerProfile')
-      .withDeleted();
+      .leftJoinAndSelect('user.cosplayerProfile', 'cosplayerProfile');
 
     const result = await QueryBuilder.for(queryBuilder, query)
       .allowedFilters([

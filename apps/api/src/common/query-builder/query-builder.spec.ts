@@ -25,6 +25,7 @@ interface TestUser extends ObjectLiteral {
 function createMockQb(alias = 'user') {
   const qb: any = {
     alias,
+    expressionMap: { withDeleted: false },
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     addOrderBy: jest.fn().mockReturnThis(),
@@ -32,7 +33,10 @@ function createMockQb(alias = 'user') {
     loadRelationCountAndMap: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
-    withDeleted: jest.fn().mockReturnThis(),
+    withDeleted: jest.fn().mockImplementation(function (this: any) {
+      if (this.expressionMap) this.expressionMap.withDeleted = true;
+      return this;
+    }),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue([]),
@@ -190,6 +194,7 @@ describe('Spatie-style QueryBuilder', () => {
         .getQueryBuilder();
 
       expect(qbWith.withDeleted).toHaveBeenCalled();
+      expect((qbWith as any).expressionMap.withDeleted).toBe(true);
 
       const qbOnly = createMockQb();
       QueryBuilder.for(qbOnly, { filter: { trashed: 'only' } })
@@ -200,6 +205,16 @@ describe('Spatie-style QueryBuilder', () => {
       expect(qbOnly.andWhere).toHaveBeenCalledWith(
         'user.deletedAt IS NOT NULL',
       );
+      expect((qbOnly as any).expressionMap.withDeleted).toBe(true);
+
+      const qbWithout = createMockQb();
+      (qbWithout as any).expressionMap.withDeleted = true; // simulate base qb having withDeleted called
+      QueryBuilder.for(qbWithout, { filter: { trashed: 'without' } })
+        .allowedFilters([AllowedFilter.trashed()])
+        .getQueryBuilder();
+
+      expect(qbWithout.andWhere).toHaveBeenCalledWith('user.deletedAt IS NULL');
+      expect((qbWithout as any).expressionMap.withDeleted).toBe(false);
     });
 
     it('should apply custom scope filter callback', () => {

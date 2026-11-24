@@ -439,13 +439,24 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
 
       case FilterOperator.TRASHED: {
         const strVal = String(value).toLowerCase();
-        if (typeof (qb as any).withDeleted === 'function') {
-          if (strVal === 'with') {
+        if (strVal === 'with') {
+          if (typeof (qb as any).withDeleted === 'function') {
             qb.withDeleted();
-          } else if (strVal === 'only') {
-            qb.withDeleted();
-            qb.andWhere(`${target} IS NOT NULL`);
           }
+        } else if (strVal === 'only' || strVal === 'true') {
+          if (typeof (qb as any).withDeleted === 'function') {
+            qb.withDeleted();
+          }
+          qb.andWhere(`${target} IS NOT NULL`);
+        } else if (
+          strVal === 'without' ||
+          strVal === 'none' ||
+          strVal === 'false'
+        ) {
+          if ((qb as any).expressionMap) {
+            (qb as any).expressionMap.withDeleted = false;
+          }
+          qb.andWhere(`${target} IS NULL`);
         }
         break;
       }
