@@ -95,6 +95,16 @@ export class QueryBuilder<T extends ObjectLiteral> {
     this._defaultLimit = this.config.defaultLimit;
     this._maxLimit = this.config.maxLimit;
     this._strictMode = this.config.strictMode;
+
+    // Seed already-joined aliases from the base SelectQueryBuilder to prevent duplicate JOIN SQL errors
+    const existingJoins = (qb as any).expressionMap?.joinAttributes;
+    if (Array.isArray(existingJoins)) {
+      for (const join of existingJoins) {
+        if (join?.alias?.name) {
+          this._joinedAliases.add(join.alias.name);
+        }
+      }
+    }
   }
 
   /**

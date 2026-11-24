@@ -1758,5 +1758,19 @@ describe('Spatie-style QueryBuilder', () => {
       );
       expect(extracted).toEqual({ 'userMeta:stats.priority': 41, id: '9' });
     });
+
+    it('should NOT emit duplicate LEFT JOIN when base query already joined the requested include', () => {
+      const qb = userRepo
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.roles', 'roles');
+
+      QueryBuilder.for(qb, { include: 'roles' })
+        .allowedIncludes(['roles'])
+        .getQueryBuilder();
+
+      const sql = qb.getSql();
+      const roleJoins = sql.match(/LEFT JOIN "spec_roles" "roles"/g) || [];
+      expect(roleJoins).toHaveLength(1);
+    });
   });
 });
