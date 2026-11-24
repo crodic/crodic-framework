@@ -35,11 +35,23 @@ export interface QueryBuilderConfig {
   maxLimit: number;
 
   /**
+   * Maximum allowed page number to prevent deep OFFSET DoS.
+   * Default: 10000.
+   */
+  maxPage: number;
+
+  /**
    * Delimiter used to separate multiple values in a filter.
-   * Default: ',' matching Spatie's array_delimiter ('filter[name]=a,b').
-   * Set to null to disable delimiter splitting globally.
+   * Default: ',' matching Spatie's delimiter ('filter[name]=a,b').
+   * Set to null or '' to disable delimiter splitting globally.
    */
   arrayDelimiter: string | null;
+
+  /**
+   * Whether filter values should be split by the configured delimiter.
+   * Default: true matching Spatie's filter_value_splitting_enabled.
+   */
+  filterValueSplittingEnabled: boolean;
 
   /**
    * If true, throws BadRequestException when client passes an unallowed
@@ -54,8 +66,10 @@ export type QueryBuilderUserConfig = Partial<{
   countSuffix: string;
   defaultLimit: number;
   maxLimit: number;
+  maxPage: number;
   strictMode: boolean;
   arrayDelimiter: string | null;
+  filterValueSplittingEnabled: boolean;
 }>;
 
 const DEFAULT_CONFIG: QueryBuilderConfig = {
@@ -71,8 +85,10 @@ const DEFAULT_CONFIG: QueryBuilderConfig = {
   countSuffix: 'Count',
   defaultLimit: DEFAULT_PAGE_LIMIT ?? 20,
   maxLimit: 100,
+  maxPage: 10_000,
   strictMode: false,
   arrayDelimiter: ',',
+  filterValueSplittingEnabled: true,
 };
 
 let currentConfig: QueryBuilderConfig = {

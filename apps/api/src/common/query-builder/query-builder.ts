@@ -89,29 +89,48 @@ export class QueryBuilder<T extends ObjectLiteral> {
    * Normalizes incoming query params by deserializing bracket notation (e.g. filter[name]=foo -> filter.name = foo)
    * while preserving raw primitive types (numbers, booleans, objects) from programmatic calls,
    * matching standard Laravel / Spatie QueryBuilder specification.
+   * Blocks prototype-polluting keys (__proto__, constructor, prototype).
    */
   private normalizeQuery(raw: QueryParams | Record<string, any>): QueryParams {
     if (!raw || typeof raw !== 'object') return {} as QueryParams;
 
-    const result: Record<string, any> = { ...raw };
+    const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+    const result: Record<string, any> = {};
 
     for (const [key, val] of Object.entries(raw)) {
+      if (FORBIDDEN_KEYS.has(key)) continue;
+
       const match = key.match(/^([^[]+)\[([^\]]+)\]$/);
       if (match) {
         const [, rootKey, nestedKey] = match;
+        if (FORBIDDEN_KEYS.has(rootKey) || FORBIDDEN_KEYS.has(nestedKey)) {
+          continue;
+        }
         if (
+          !Object.prototype.hasOwnProperty.call(result, rootKey) ||
           !result[rootKey] ||
           typeof result[rootKey] !== 'object' ||
           Array.isArray(result[rootKey])
         ) {
-          result[rootKey] = {
-            ...(typeof result[rootKey] === 'object' &&
-            !Array.isArray(result[rootKey])
-              ? result[rootKey]
-              : {}),
-          };
+          result[rootKey] = {};
         }
         result[rootKey][nestedKey] = val;
+      } else if (val && typeof val === 'object' && !Array.isArray(val)) {
+        const sanitizedNested: Record<string, any> = {};
+        for (const [nKey, nVal] of Object.entries(val)) {
+          if (!FORBIDDEN_KEYS.has(nKey)) {
+            sanitizedNested[nKey] = nVal;
+          }
+        }
+        result[key] =
+          Object.prototype.hasOwnProperty.call(result, key) &&
+          result[key] &&
+          typeof result[key] === 'object' &&
+          !Array.isArray(result[key])
+            ? { ...sanitizedNested, ...result[key] }
+            : sanitizedNested;
+      } else {
+        result[key] = val;
       }
     }
 
@@ -293,7 +312,9 @@ export class QueryBuilder<T extends ObjectLiteral> {
       q[this.config.parameters.limit] = limit;
 
       const queryString = qs.stringify(q, {
-        encode: false,
+        encode: true,
+        encoder: (str, _defaultEncoder, _charset, type) =>
+          type === 'key' ? str : encodeURIComponent(str).replace(/%2C/g, ','),
         arrayFormat: 'brackets',
         filter: (_prefix, value) => (value === undefined ? undefined : value),
       });
@@ -348,8 +369,9 @@ export class QueryBuilder<T extends ObjectLiteral> {
     if (this._built) return;
     this._built = true;
 
-    this.applyFields();
+    // Apply includes before fields so sparse fieldsets on relations are not overwritten by leftJoinAndSelect
     this.applyIncludes();
+    this.applyFields();
     this.applyFilters();
     this.applySorts();
   }
@@ -357,10 +379,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
   private resolveBasePath(
     options?: number | { defaultLimit?: number; path?: string },
   ): string {
-    if (typeof this.query.path === 'string') {
-      return this.query.path;
-    }
-    if (typeof options === 'object' && options?.path) {
+    if (typeof options === 'object' && typeof options?.path === 'string') {
       return options.path;
     }
     return '';
@@ -495,18 +514,38 @@ export class QueryBuilder<T extends ObjectLiteral> {
     }
   }
 
+  private toParameterArray(param: unknown): string[] {
+    if (Array.isArray(param)) {
+      return param
+        .filter(
+          (p) =>
+            typeof p === 'string' ||
+            typeof p === 'number' ||
+            typeof p === 'boolean',
+        )
+        .map((p) => String(p).trim())
+        .filter(Boolean);
+    }
+    if (typeof param === 'string') {
+      return param
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
+    }
+    return [];
+  }
+
   private applySorts(): void {
     const sortParam = this.query[this.config.parameters.sort];
     const sortMap = new Map(this._sorts.map((s) => [s.name, s]));
     const allowedNames = Array.from(sortMap.keys());
+    const parts = this.toParameterArray(sortParam);
 
-    if (sortParam && typeof sortParam === 'string') {
-      const parts = sortParam.split(',').filter(Boolean);
+    if (parts.length > 0) {
       const invalid: string[] = [];
       let isFirst = true;
 
-      for (const part of parts) {
-        const trimmed = part.trim();
+      for (const trimmed of parts) {
         const isDesc = trimmed.startsWith('-');
         const name = isDesc ? trimmed.slice(1) : trimmed;
         const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
@@ -561,14 +600,11 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   private applyIncludes(): void {
     const includeParam = this.query[this.config.parameters.include];
-    if (!includeParam || typeof includeParam !== 'string') return;
+    const parts = this.toParameterArray(includeParam);
+    if (parts.length === 0) return;
 
     const allowedMap = new Map(this._includes.map((i) => [i.name, i]));
     const allowedNames = Array.from(allowedMap.keys());
-    const parts = includeParam
-      .split(',')
-      .map((p) => p.trim())
-      .filter(Boolean);
 
     if (this._strictMode) {
       const invalid = parts.filter((p) => !allowedMap.has(p));
@@ -592,16 +628,13 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   private resolveSortBy(): [string, 'ASC' | 'DESC'][] {
     const sortParam = this.query[this.config.parameters.sort];
-    if (typeof sortParam === 'string' && sortParam.trim()) {
-      return sortParam
-        .split(',')
-        .map((p) => p.trim())
-        .filter(Boolean)
-        .map((part) => {
-          const isDesc = part.startsWith('-');
-          const col = isDesc ? part.slice(1) : part;
-          return [col, isDesc ? 'DESC' : 'ASC'];
-        });
+    const parts = this.toParameterArray(sortParam);
+    if (parts.length > 0) {
+      return parts.map((part) => {
+        const isDesc = part.startsWith('-');
+        const col = isDesc ? part.slice(1) : part;
+        return [col, isDesc ? 'DESC' : 'ASC'];
+      });
     }
 
     if (this._defaultSortStr) {
@@ -635,19 +668,20 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   private resolveLimit(overrideDefault?: number): number {
     const limitKey = this.config.parameters.limit;
-    const raw = Number(this.query[limitKey]);
+    const raw = Math.floor(Number(this.query[limitKey]));
     const limit =
-      Number.isFinite(raw) && raw > 0
+      Number.isFinite(raw) && raw >= 1
         ? raw
         : (overrideDefault ?? this._defaultLimit);
 
-    return Math.min(limit, this._maxLimit);
+    return Math.max(1, Math.min(limit, this._maxLimit));
   }
 
   private resolvePage(): number {
     const pageKey = this.config.parameters.page;
-    const raw = Number(this.query[pageKey]);
-    return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 1;
+    const raw = Math.floor(Number(this.query[pageKey]));
+    const page = Number.isFinite(raw) && raw >= 1 ? raw : 1;
+    return Math.min(page, this.config.maxPage);
   }
 }
 

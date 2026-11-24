@@ -1,4 +1,4 @@
-import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
+import { Brackets, ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { getGlobalConfig } from './config';
 import { FilterApplyFn, FilterCallbackFn, FilterInterface } from './types';
 
@@ -12,16 +12,45 @@ export enum FilterOperator {
   CUSTOM = 'custom',
   CALLBACK = 'callback',
   TRASHED = 'trashed',
+  GROUP = 'group',
 }
 
-export type ComparisonOperator = '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=';
+export type ComparisonOperator =
+  '=' | '!=' | '<>' | '>' | '>=' | '<' | '<=' | 'dynamic';
+
+const DYNAMIC_OPERATORS: readonly Exclude<ComparisonOperator, 'dynamic'>[] = [
+  '>=',
+  '<=',
+  '!=',
+  '<>',
+  '>',
+  '<',
+  '=',
+];
+
+function isScalar(value: unknown): value is string | number | boolean {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  );
+}
+
+/**
+ * Escapes SQL LIKE/ILIKE wildcard characters (\\, _, %) matching Spatie FiltersPartial::escapeLike.
+ */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`);
+}
 
 export class AllowedFilter<T extends ObjectLiteral = any> {
   private _hasDefault = false;
   private _defaultValue: any = undefined;
   private _ignoredValues: Set<any> = new Set();
   private _nullable = false;
-  private _arrayValueDelimiter: string | null = ',';
+  private _arrayValueDelimiter?: string | null = undefined;
+  private _groupConjunction?: 'and' | 'or';
+  private _groupMembers?: AllowedFilter<T>[];
 
   private constructor(
     /** Name used in the query string: ?filter[name]=... */
@@ -32,7 +61,7 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     public readonly operator: FilterOperator,
     /** Custom scope function (for CUSTOM / SCOPE) */
     public readonly scopeFn?: FilterApplyFn<T>,
-    /** Comparison operator for OPERATOR type (e.g. '>=') */
+    /** Comparison operator for OPERATOR type (e.g. '>=', 'dynamic') */
     public readonly comparisonOp?: ComparisonOperator,
     /** Callback closure (for CALLBACK matching Spatie Laravel QueryBuilder) */
     public readonly callbackFn?: FilterCallbackFn<T>,
@@ -239,6 +268,55 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     return new AllowedFilter(name, column, FilterOperator.TRASHED);
   }
 
+  /**
+   * Group multiple filters under a single URL parameter joined with OR.
+   * Matches Spatie v7 `AllowedFilter::groupOr()`.
+   *
+   * @example
+   * AllowedFilter.groupOr('q', [
+   *   AllowedFilter.partial('name'),
+   *   AllowedFilter.partial('email'),
+   * ])
+   */
+  static groupOr<T extends ObjectLiteral = any>(
+    name: string,
+    members: AllowedFilter<T>[],
+  ): AllowedFilter<T> {
+    return AllowedFilter.createGroup(name, 'or', members);
+  }
+
+  /**
+   * Group multiple filters under a single URL parameter joined with AND.
+   * Matches Spatie v7 `AllowedFilter::groupAnd()`.
+   */
+  static groupAnd<T extends ObjectLiteral = any>(
+    name: string,
+    members: AllowedFilter<T>[],
+  ): AllowedFilter<T> {
+    return AllowedFilter.createGroup(name, 'and', members);
+  }
+
+  private static createGroup<T extends ObjectLiteral = any>(
+    name: string,
+    conjunction: 'and' | 'or',
+    members: AllowedFilter<T>[],
+  ): AllowedFilter<T> {
+    if (!Array.isArray(members) || members.length === 0) {
+      throw new Error('FiltersGroup requires at least one member.');
+    }
+    for (const member of members) {
+      if (!(member instanceof AllowedFilter)) {
+        throw new Error(
+          'FiltersGroup members must be AllowedFilter instances.',
+        );
+      }
+    }
+    const filter = new AllowedFilter<T>(name, name, FilterOperator.GROUP);
+    filter._groupConjunction = conjunction;
+    filter._groupMembers = members;
+    return filter;
+  }
+
   // ─── FLUENT MODIFIERS (Spatie Laravel QueryBuilder parity) ──────────
 
   /**
@@ -248,6 +326,9 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   default(value: any): this {
     this._hasDefault = true;
     this._defaultValue = value;
+    if (value === null) {
+      this.nullable(true);
+    }
     return this;
   }
 
@@ -271,11 +352,28 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
 
   /**
    * Set custom delimiter for splitting comma-separated filter values into arrays (e.g. `,`).
-   * Matches Spatie's delimiter support. Pass `null` to disable delimiter splitting.
+   * Matches Spatie's delimiter support. Pass `null` or `''` to disable delimiter splitting.
    */
   delimiter(delimiter: string | null): this {
     this._arrayValueDelimiter = delimiter;
     return this;
+  }
+
+  /**
+   * Resolve the effective array delimiter for this filter, falling back to global config.
+   * Matches Spatie's `AllowedFilter::getDelimiter()` & `filterValueSplittingDisabled()`.
+   */
+  getDelimiter(): string | null {
+    if (this._arrayValueDelimiter !== undefined) {
+      return this._arrayValueDelimiter || null;
+    }
+
+    const config = getGlobalConfig();
+    if (!config.filterValueSplittingEnabled) {
+      return null;
+    }
+
+    return config.arrayDelimiter || null;
   }
 
   /**
@@ -298,9 +396,60 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
   }
 
   private isIgnoredScalar(val: any): boolean {
+    if (typeof val === 'boolean') {
+      return (
+        this._ignoredValues.has(val) ||
+        this._ignoredValues.has(val ? 'true' : 'false')
+      );
+    }
     if (this._ignoredValues.has(val)) return true;
     if (val === 'null' && this._ignoredValues.has(null)) return true;
     return false;
+  }
+
+  private splitFilterValue(rawValue: any, delimiter: string | null): any {
+    if (!delimiter) return rawValue;
+
+    if (Array.isArray(rawValue)) {
+      return rawValue.flatMap((v) =>
+        typeof v === 'string' && v.includes(delimiter)
+          ? v
+              .split(delimiter)
+              .map((s) => s.trim())
+              .filter((s) => s !== '')
+          : [v],
+      );
+    }
+
+    if (typeof rawValue === 'string' && rawValue.includes(delimiter)) {
+      return rawValue
+        .split(delimiter)
+        .map((s) => s.trim())
+        .filter((s) => s !== '');
+    }
+
+    return rawValue;
+  }
+
+  private castBooleanScalar(val: any): any {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    return val;
+  }
+
+  private parseDynamicOperator(raw: any): {
+    op: Exclude<ComparisonOperator, 'dynamic'>;
+    val: any;
+  } {
+    if (typeof raw === 'string') {
+      for (const candidate of DYNAMIC_OPERATORS) {
+        if (raw.startsWith(candidate)) {
+          const stripped = raw.slice(candidate.length).trim();
+          return { op: candidate, val: stripped === '' ? null : stripped };
+        }
+      }
+    }
+    return { op: '=', val: raw };
   }
 
   /**
@@ -313,20 +462,45 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     rawValue: any,
     paramIndex: number,
   ): void {
-    let value = rawValue;
+    // Delegate GROUP filters directly so each member handles its own delimiter/ignore/nullable rules
+    if (this.operator === FilterOperator.GROUP) {
+      if (
+        rawValue === undefined ||
+        rawValue === null ||
+        rawValue === '' ||
+        !this._groupMembers?.length
+      ) {
+        return;
+      }
+
+      const members = this._groupMembers;
+      const conjunction = this._groupConjunction ?? 'or';
+
+      qb.andWhere(
+        new Brackets((subQb) => {
+          members.forEach((member, idx) => {
+            const inner = new Brackets((innerQb) => {
+              member.apply(
+                innerQb as unknown as SelectQueryBuilder<T>,
+                alias,
+                rawValue,
+                paramIndex * 100 + idx,
+              );
+            });
+            if (conjunction === 'or' && idx > 0) {
+              subQb.orWhere(inner);
+            } else {
+              subQb.andWhere(inner);
+            }
+          });
+        }),
+      );
+      return;
+    }
 
     // Delimiter splitting for multi-select comma-separated values (e.g. "a,b" -> ["a", "b"])
-    const delimiter =
-      this._arrayValueDelimiter !== undefined
-        ? this._arrayValueDelimiter
-        : getGlobalConfig().arrayDelimiter;
-
-    if (delimiter && typeof value === 'string' && value.includes(delimiter)) {
-      value = value
-        .split(delimiter)
-        .map((s) => s.trim())
-        .filter((s) => s !== '');
-    }
+    const delimiter = this.getDelimiter();
+    let value = this.splitFilterValue(rawValue, delimiter);
 
     // Apply Spatie ignore(...) filtering before executing
     if (this._ignoredValues.size > 0) {
@@ -355,6 +529,23 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     const normalizedNull =
       this._nullable && (value === null || value === '' || value === 'null');
 
+    // Sanitize non-custom operators: drop nested objects/arrays and empty arrays to prevent SQL 500 crashes (IN ())
+    const isBuiltInOperator =
+      this.operator !== FilterOperator.CALLBACK &&
+      this.operator !== FilterOperator.CUSTOM &&
+      this.operator !== FilterOperator.SCOPE;
+
+    if (isBuiltInOperator && !normalizedNull) {
+      if (Array.isArray(value)) {
+        value = value.filter((item) => isScalar(item) && item !== '');
+        if (value.length === 0) {
+          return;
+        }
+      } else if (!isScalar(value)) {
+        return;
+      }
+    }
+
     const target = this.column.includes('.')
       ? this.column
       : `${alias}.${this.column}`;
@@ -367,11 +558,11 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
           qb.andWhere(`${target} IS NULL`);
         } else if (Array.isArray(value)) {
           qb.andWhere(`${target} IN (:...${paramName})`, {
-            [paramName]: value,
+            [paramName]: value.map((v) => this.castBooleanScalar(v)),
           });
         } else {
           qb.andWhere(`${target} = :${paramName}`, {
-            [paramName]: value,
+            [paramName]: this.castBooleanScalar(value),
           });
         }
         break;
@@ -385,13 +576,13 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
             (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
           );
           const params: Record<string, string> = {};
-          value.forEach((v: string, i: number) => {
-            params[`${paramName}_${i}`] = `%${v}%`;
+          value.forEach((v: string | number | boolean, i: number) => {
+            params[`${paramName}_${i}`] = `%${escapeLike(String(v))}%`;
           });
           qb.andWhere(`(${conditions.join(' OR ')})`, params);
         } else {
           qb.andWhere(`${target} ILIKE :${paramName}`, {
-            [paramName]: `%${value}%`,
+            [paramName]: `%${escapeLike(String(value))}%`,
           });
         }
         break;
@@ -405,13 +596,13 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
             (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
           );
           const params: Record<string, string> = {};
-          value.forEach((v: string, i: number) => {
-            params[`${paramName}_${i}`] = `${v}%`;
+          value.forEach((v: string | number | boolean, i: number) => {
+            params[`${paramName}_${i}`] = `${escapeLike(String(v))}%`;
           });
           qb.andWhere(`(${conditions.join(' OR ')})`, params);
         } else {
           qb.andWhere(`${target} ILIKE :${paramName}`, {
-            [paramName]: `${value}%`,
+            [paramName]: `${escapeLike(String(value))}%`,
           });
         }
         break;
@@ -425,13 +616,13 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
             (_: any, i: number) => `${target} ILIKE :${paramName}_${i}`,
           );
           const params: Record<string, string> = {};
-          value.forEach((v: string, i: number) => {
-            params[`${paramName}_${i}`] = `%${v}`;
+          value.forEach((v: string | number | boolean, i: number) => {
+            params[`${paramName}_${i}`] = `%${escapeLike(String(v))}`;
           });
           qb.andWhere(`(${conditions.join(' OR ')})`, params);
         } else {
           qb.andWhere(`${target} ILIKE :${paramName}`, {
-            [paramName]: `%${value}`,
+            [paramName]: `%${escapeLike(String(value))}`,
           });
         }
         break;
@@ -439,6 +630,41 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
 
       case FilterOperator.OPERATOR: {
         const op = this.comparisonOp ?? '=';
+        if (op === 'dynamic') {
+          if (normalizedNull) {
+            qb.andWhere(`${target} IS NULL`);
+          } else if (Array.isArray(value)) {
+            value.forEach((item: any, i: number) => {
+              const parsed = this.parseDynamicOperator(item);
+              if (parsed.val === null) {
+                qb.andWhere(
+                  parsed.op === '!=' || parsed.op === '<>'
+                    ? `${target} IS NOT NULL`
+                    : `${target} IS NULL`,
+                );
+              } else {
+                qb.andWhere(`${target} ${parsed.op} :${paramName}_${i}`, {
+                  [`${paramName}_${i}`]: parsed.val,
+                });
+              }
+            });
+          } else {
+            const parsed = this.parseDynamicOperator(value);
+            if (parsed.val === null) {
+              qb.andWhere(
+                parsed.op === '!=' || parsed.op === '<>'
+                  ? `${target} IS NOT NULL`
+                  : `${target} IS NULL`,
+              );
+            } else {
+              qb.andWhere(`${target} ${parsed.op} :${paramName}`, {
+                [paramName]: parsed.val,
+              });
+            }
+          }
+          break;
+        }
+
         if (normalizedNull) {
           qb.andWhere(
             op === '!=' || op === '<>'

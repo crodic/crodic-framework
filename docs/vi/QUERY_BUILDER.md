@@ -14,13 +14,14 @@ Package này cho phép ứng dụng frontend lọc dữ liệu (filter), sắp x
 - [Cấu trúc thư mục & Kiến trúc](#cấu-trúc-thư-mục--kiến-trúc)
 - [Bắt đầu nhanh (Quick Start)](#bắt-đầu-nhanh-quick-start)
 - [Bộ lọc (`allowedFilters`)](#bộ-lọc-allowedfilters)
-  - [Khớp chính xác & Mảng IN (`exact`)](#khớp-chính-xác--mảng-in-exact)
+  - [Khớp chính xác, Mảng IN & Boolean (`exact`)](#khớp-chính-xác-mảng-in--boolean-exact)
   - [Khớp một phần (`partial` / ILIKE)](#khớp-một-phần-partial--ilike)
   - [Khớp tiền tố và hậu tố (`startsWith`, `endsWith`)](#khớp-tiền-tố-và-hậu-tố-startswith-endswith)
-  - [Toán tử so sánh (`operator`)](#toán-tử-so-sánh-operator)
+  - [Toán tử so sánh tĩnh & động (`operator` / `dynamic`)](#toán-tử-so-sánh-tĩnh--động-operator--dynamic)
+  - [Nhóm bộ lọc OR / AND (`groupOr`, `groupAnd`)](#nhóm-bộ-lọc-or--and-groupor-groupand)
   - [Lọc trên quan hệ (`roles.name`)](#lọc-trên-quan-hệ-rolesname)
   - [Xóa mềm (`trashed`)](#xóa-mềm-trashed)
-  - [Custom Scope Callback](#custom-scope-callback)
+  - [Custom Filters (`AllowedFilter.custom` / `callback`)](#custom-filters-allowedfiltercustom)
 - [Sắp xếp (`allowedSorts`)](#sắp-xếp-allowedsorts)
   - [Sắp xếp theo cột & Hướng](#sắp-xếp-theo-cột--hướng)
   - [Sắp xếp theo quan hệ](#sắp-xếp-theo-quan-hệ)
@@ -153,27 +154,31 @@ export class UserService {
 
 ## Bộ lọc (`allowedFilters`)
 
-### Khớp chính xác & Mảng IN (`exact`)
+### Khớp chính xác, Mảng IN & Boolean (`exact`)
 
 ```typescript
 AllowedFilter.exact("status");
 AllowedFilter.exact("roleId");
 AllowedFilter.exact("role", "roleId"); // ánh xạ tên param role sang cột roleId
+AllowedFilter.exact("isActive"); // tự động ép kiểu 'true'/'false' sang boolean
+AllowedFilter.exact("title").delimiter(null); // tắt tách dấu phẩy riêng cho trường này
 ```
 
 - **Giá trị đơn**: `GET /users?filter[status]=active` ➔ `WHERE status = 'active'`
-- **Mảng giá trị**: `GET /users?filter[status][]=active&filter[status][]=pending` ➔ `WHERE status IN ('active', 'pending')`
+- **Mảng phân tách bằng dấu phẩy (Multi-select)**: `GET /users?filter[roles.id]=1,2` hoặc `GET /posts?filter[slug]=genshin,honkai` ➔ `WHERE col IN ('1', '2')`
+- **Mảng bracket**: `GET /users?filter[status][]=active&filter[status][]=pending` ➔ `WHERE status IN ('active', 'pending')`
+- **Boolean tự động**: `GET /users?filter[isActive]=true` ➔ `WHERE isActive = true`
 
 ### Khớp một phần (`partial` / ILIKE)
 
-Khi truyền dạng chuỗi `'name'`, mặc định sẽ là `partial`:
+Khi truyền dạng chuỗi `'name'`, mặc định sẽ là `partial`. Các ký tự wildcard SQL (`%`, `_`, `\`) sẽ tự động được escape an toàn:
 
 ```typescript
 .allowedFilters(['name', AllowedFilter.partial('title')])
 ```
 
 - **Giá trị đơn**: `GET /users?filter[name]=john` ➔ `WHERE name ILIKE '%john%'`
-- **Mảng giá trị**: `GET /users?filter[name][]=john&filter[name][]=jane` ➔ `WHERE (name ILIKE '%john%' OR name ILIKE '%jane%')`
+- **Mảng giá trị**: `GET /users?filter[name]=john,jane` ➔ `WHERE (name ILIKE '%john%' OR name ILIKE '%jane%')`
 
 ### Khớp tiền tố và hậu tố (`startsWith`, `endsWith`)
 
@@ -182,16 +187,42 @@ AllowedFilter.startsWith("invoiceNumber", "code"); // ?filter[invoiceNumber]=INV
 AllowedFilter.endsWith("domain", "email"); // ?filter[domain]=.com ➔ email ILIKE '%.com'
 ```
 
-### Toán tử so sánh (`operator`)
+### Toán tử so sánh tĩnh & động (`operator` / `dynamic`)
 
-Hỗ trợ các toán tử `=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`:
+Hỗ trợ các toán tử tĩnh (`=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`) và toán tử động (`'dynamic'` chuẩn Spatie v7):
 
 ```typescript
+// 1. Toán tử tĩnh (cố định ở backend):
 AllowedFilter.operator("minPrice", ">=", "price");
 AllowedFilter.operator("maxPrice", "<=", "price");
+
+// 2. Toán tử động (client tự truyền toán tử trước giá trị):
+AllowedFilter.operator("price", "dynamic");
 ```
 
-- `GET /products?filter[minPrice]=100&filter[maxPrice]=500` ➔ `WHERE price >= 100 AND price <= 500`
+- **Tĩnh**: `GET /products?filter[minPrice]=100&filter[maxPrice]=500` ➔ `WHERE price >= 100 AND price <= 500`
+- **Động**: `GET /products?filter[price]=>=100,<=500` ➔ `WHERE price >= 100 AND price <= 500`
+
+### Nhóm bộ lọc OR / AND (`groupOr`, `groupAnd`)
+
+Gom nhiều bộ lọc dưới một tham số URL duy nhất (chuẩn Spatie v7), rất tiện lợi để thay thế cho việc tự viết callback search lặp lại:
+
+```typescript
+// Tìm kiếm khớp email HOẶC username HOẶC fullName:
+AllowedFilter.groupOr("q", [
+  AllowedFilter.partial("email"),
+  AllowedFilter.partial("username"),
+  AllowedFilter.partial("fullName"),
+]);
+
+// Hoặc kết hợp bằng AND:
+AllowedFilter.groupAnd("match", [
+  AllowedFilter.partial("firstName"),
+  AllowedFilter.partial("lastName"),
+]);
+```
+
+- `GET /users?filter[q]=john` ➔ `WHERE ((user.email ILIKE '%john%') OR (user.username ILIKE '%john%') OR (user.fullName ILIKE '%john%'))`
 
 ### Lọc trên quan hệ (`roles.name`)
 
@@ -432,6 +463,9 @@ QueryBuilder.configure({
   countSuffix: "Count", // hoặc '_count' cho snake_case
   defaultLimit: 20,
   maxLimit: 100,
+  maxPage: 10_000, // giới hạn số trang tối đa chống DoS OFFSET
+  arrayDelimiter: ",", // ký tự phân tách mảng (mặc định ',' chuẩn Spatie)
+  filterValueSplittingEnabled: true, // bật/tắt tách mảng toàn cục
   strictMode: false,
 });
 ```
@@ -526,9 +560,13 @@ findAll(@Query() query: QueryParams) {
 
 ## Bảo mật
 
-1. **Tuyệt đối không dùng chuỗi SQL raw**: Tất cả các giá trị filter đều được truyền qua TypeORM parameter binding (`:paramName`) để chống SQL Injection.
-2. **Whitelist bắt buộc**: Client không thể tự ý chèn bất kỳ cột nào ngoài danh sách khai báo tại `allowedFilters`, `allowedSorts`, `allowedIncludes`, `allowedFields`.
-3. **Giới hạn kích thước trang (`maxLimit`)**: Luôn chặn đứng các request lạm dụng (ví dụ `?limit=999999`) bằng `maxLimit` (mặc định 100) để chống DoS.
+1. **Chống SQL Injection & LIKE Wildcard Injection**: Tất cả giá trị filter đều truyền qua TypeORM parameter binding (`:paramName`). Các bộ lọc `partial`, `startsWith`, `endsWith` tự động escape các ký tự wildcard `%`, `_`, `\`.
+2. **Chống Prototype Pollution**: Tự động chặn các khóa nguy hiểm (`__proto__`, `constructor`, `prototype`) khi parse bracket notation trên URL.
+3. **Làm sạch giá trị đầu vào (Input Sanitization)**: Tự động loại bỏ mảng rỗng (vd `?filter[id]=,,,`) và object lồng nhau (vd `?filter[id][a]=1`) để tránh lỗi SQL 500 (`IN ()`).
+4. **Whitelist bắt buộc**: Client không thể tự ý chèn bất kỳ cột nào ngoài danh sách khai báo tại `allowedFilters`, `allowedSorts`, `allowedIncludes`, `allowedFields`.
+5. **Chống DoS & URL Injection**:
+   - Luôn ép kiểu nguyên dương và giới hạn bằng `maxLimit` (mặc định `100`) và `maxPage` (mặc định `10,000`).
+   - Không tin tưởng tham số `path` từ query string của client khi tạo pagination `links`, và tự động URL-encode các ký tự đặc biệt (`&`, `#`, `=`) trong giá trị filter.
 
 ---
 

@@ -1,4 +1,9 @@
-import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { QueryBuilder } from './query-builder';
 import { AllowedFilter, FilterOperator } from './allowed-filter';
 import { AllowedSort } from './allowed-sort';
@@ -757,6 +762,456 @@ describe('Spatie-style QueryBuilder', () => {
       builder.getQueryBuilder();
 
       expect(qb.andWhere).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Security Hardening & Spatie v7 Parity', () => {
+    it('should block prototype pollution via bracket keys (__proto__, constructor, prototype)', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        '__proto__[polluted]': 'yes',
+        'constructor[prototype]': 'hacked',
+        'filter[__proto__]': 'bad',
+        'filter[name]': 'alice',
+      })
+        .allowedFilters(['name'])
+        .getQueryBuilder();
+
+      expect(({} as any).polluted).toBeUndefined();
+      expect(qb.andWhere).toHaveBeenCalledWith('user.name ILIKE :qb_f_name_0', {
+        qb_f_name_0: '%alice%',
+      });
+    });
+
+    it('should skip empty arrays (e.g. commas only) and nested objects to prevent SQL 500 crashes', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        filter: {
+          'roles.id': ',,,',
+          id: { nested: 'object' },
+          status: [{ a: 1 }, { b: 2 }],
+        },
+      })
+        .allowedFilters([
+          AllowedFilter.exact('roles.id'),
+          AllowedFilter.exact('id'),
+          AllowedFilter.exact('status'),
+        ])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).not.toHaveBeenCalled();
+    });
+
+    it('should ignore nested objects in filter arrays while preserving valid scalar siblings', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        filter: {
+          name: [{ x: 'ignored' }, 'John'],
+        },
+      })
+        .allowedFilters(['name'])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        '(user.name ILIKE :qb_f_name_0_0)',
+        { qb_f_name_0_0: '%John%' },
+      );
+    });
+
+    it('should respect global arrayDelimiter and filterValueSplittingEnabled config', () => {
+      QueryBuilder.configure({ arrayDelimiter: '|' });
+      const qbPipe = createMockQb();
+      QueryBuilder.for(qbPipe, { filter: { status: 'active|pending' } })
+        .allowedFilters([AllowedFilter.exact('status')])
+        .getQueryBuilder();
+
+      expect(qbPipe.andWhere).toHaveBeenCalledWith(
+        'user.status IN (:...qb_f_status_0)',
+        { qb_f_status_0: ['active', 'pending'] },
+      );
+
+      QueryBuilder.configure({
+        arrayDelimiter: ',',
+        filterValueSplittingEnabled: false,
+      });
+      const qbDisabled = createMockQb();
+      QueryBuilder.for(qbDisabled, { filter: { status: 'active,pending' } })
+        .allowedFilters([AllowedFilter.exact('status')])
+        .getQueryBuilder();
+
+      expect(qbDisabled.andWhere).toHaveBeenCalledWith(
+        'user.status = :qb_f_status_0',
+        { qb_f_status_0: 'active,pending' },
+      );
+
+      const qbOverride = createMockQb();
+      QueryBuilder.for(qbOverride, { filter: { status: 'a;b' } })
+        .allowedFilters([AllowedFilter.exact('status').delimiter(';')])
+        .getQueryBuilder();
+
+      expect(qbOverride.andWhere).toHaveBeenCalledWith(
+        'user.status IN (:...qb_f_status_0)',
+        { qb_f_status_0: ['a', 'b'] },
+      );
+    });
+
+    it('should escape LIKE wildcard characters (%, _, \\) in partial/startsWith/endsWith', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, { filter: { email: '100%_test\\a' } })
+        .allowedFilters(['email'])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.email ILIKE :qb_f_email_0',
+        { qb_f_email_0: '%100\\%\\_test\\\\a%' },
+      );
+    });
+
+    it('should auto-cast boolean strings in exact filters', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        filter: { isActive: 'true', isDeleted: 'false' },
+      })
+        .allowedFilters([
+          AllowedFilter.exact('isActive'),
+          AllowedFilter.exact('isDeleted'),
+        ])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.isActive = :qb_f_isActive_0',
+        { qb_f_isActive_0: true },
+      );
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.isDeleted = :qb_f_isDeleted_1',
+        { qb_f_isDeleted_1: false },
+      );
+    });
+
+    it('should ignore untrusted query.path and safely encode special chars in pagination links', async () => {
+      const qb = createMockQb();
+      (qb.getManyAndCount as jest.Mock).mockResolvedValue([[], 30]);
+
+      const result = await QueryBuilder.for(qb, {
+        path: 'https://evil.com/phishing',
+        page: 1,
+        limit: 10,
+        filter: { name: 'a&b=c#d' },
+      }).paginate();
+
+      expect(result.links.current).not.toContain('evil.com');
+      expect(result.links.current).toBe(
+        '?page=1&limit=10&filter[name]=a%26b%3Dc%23d',
+      );
+    });
+
+    it('should floor fractional limits and clamp extreme page numbers to maxPage', async () => {
+      const qbFrac = createMockQb();
+      await QueryBuilder.for(qbFrac, { limit: 0.5 }).paginate();
+      expect(qbFrac.take).toHaveBeenCalledWith(10); // falls back to default
+
+      const qbFloat = createMockQb();
+      await QueryBuilder.for(qbFloat, { limit: 15.9, page: 999999999 })
+        .setLimit(10, 50)
+        .paginate();
+      expect(qbFloat.take).toHaveBeenCalledWith(15);
+      expect(qbFloat.skip).toHaveBeenCalledWith((10_000 - 1) * 15);
+    });
+
+    it('should apply includes before sparse fieldsets so relation fields are not overwritten', () => {
+      const callOrder: string[] = [];
+      const qb = createMockQb();
+      (qb.leftJoinAndSelect as jest.Mock).mockImplementation(() => {
+        callOrder.push('include');
+        return qb;
+      });
+      (qb.select as jest.Mock).mockImplementation(() => {
+        callOrder.push('select');
+        return qb;
+      });
+
+      QueryBuilder.for(qb, {
+        include: 'roles',
+        fields: { user: 'id,name', roles: 'id,title' },
+      })
+        .allowedIncludes(['roles'])
+        .allowedFields(['id', 'name', 'roles.id', 'roles.title'])
+        .getQueryBuilder();
+
+      expect(callOrder).toEqual(['include', 'select']);
+    });
+
+    it('should support dynamic operator filters (e.g. >=100, <=500)', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, { filter: { price: '>=100,<=500' } })
+        .allowedFilters([AllowedFilter.operator('price', 'dynamic')])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.price >= :qb_f_price_0_0',
+        {
+          qb_f_price_0_0: '100',
+        },
+      );
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.price <= :qb_f_price_0_1',
+        {
+          qb_f_price_0_1: '500',
+        },
+      );
+    });
+
+    it('should support AllowedFilter.groupOr and groupAnd with validation', () => {
+      expect(() => AllowedFilter.groupOr('q', [])).toThrow(
+        'FiltersGroup requires at least one member.',
+      );
+
+      const qb = createMockQb();
+      QueryBuilder.for(qb, { filter: { q: 'john' } })
+        .allowedFilters([
+          AllowedFilter.groupOr('q', [
+            AllowedFilter.partial('name'),
+            AllowedFilter.partial('email'),
+          ]),
+        ])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledTimes(1);
+      const bracketArg = (qb.andWhere as jest.Mock).mock.calls[0][0];
+      expect(bracketArg).toBeInstanceOf(Brackets);
+
+      // Execute bracket callback against a mock WhereExpressionBuilder
+      const subQb = {
+        andWhere: jest.fn().mockImplementation((b: Brackets) => {
+          b.whereFactory(innerQb1 as any);
+          return subQb;
+        }),
+        orWhere: jest.fn().mockImplementation((b: Brackets) => {
+          b.whereFactory(innerQb2 as any);
+          return subQb;
+        }),
+      };
+      const innerQb1 = { andWhere: jest.fn().mockReturnThis() };
+      const innerQb2 = { andWhere: jest.fn().mockReturnThis() };
+
+      bracketArg.whereFactory(subQb as any);
+
+      expect(subQb.andWhere).toHaveBeenCalledTimes(1);
+      expect(subQb.orWhere).toHaveBeenCalledTimes(1);
+      expect(innerQb1.andWhere).toHaveBeenCalledWith(
+        'user.name ILIKE :qb_f_name_0',
+        { qb_f_name_0: '%john%' },
+      );
+      expect(innerQb2.andWhere).toHaveBeenCalledWith(
+        'user.email ILIKE :qb_f_email_1',
+        { qb_f_email_1: '%john%' },
+      );
+    });
+
+    it('should support AllowedFilter.groupAnd, skip empty values, and reject invalid members', () => {
+      expect(() => AllowedFilter.groupAnd('m', ['invalid' as any])).toThrow(
+        'FiltersGroup members must be AllowedFilter instances.',
+      );
+
+      // Empty value should be skipped without calling andWhere
+      const qbEmpty = createMockQb();
+      QueryBuilder.for(qbEmpty, { filter: { m: '' } })
+        .allowedFilters([
+          AllowedFilter.groupAnd('m', [
+            AllowedFilter.partial('firstName'),
+            AllowedFilter.partial('lastName'),
+          ]),
+        ])
+        .getQueryBuilder();
+      expect(qbEmpty.andWhere).not.toHaveBeenCalled();
+
+      // Non-empty value uses AND for every member
+      const qb = createMockQb();
+      QueryBuilder.for(qb, { filter: { m: 'doe' } })
+        .allowedFilters([
+          AllowedFilter.groupAnd('m', [
+            AllowedFilter.partial('firstName'),
+            AllowedFilter.partial('lastName'),
+          ]),
+        ])
+        .getQueryBuilder();
+
+      const bracketArg = (qb.andWhere as jest.Mock).mock.calls[0][0];
+      const innerQb1 = { andWhere: jest.fn().mockReturnThis() };
+      const innerQb2 = { andWhere: jest.fn().mockReturnThis() };
+      let callCount = 0;
+      const subQb = {
+        andWhere: jest.fn().mockImplementation((b: Brackets) => {
+          b.whereFactory((callCount++ === 0 ? innerQb1 : innerQb2) as any);
+          return subQb;
+        }),
+        orWhere: jest.fn(),
+      };
+
+      bracketArg.whereFactory(subQb as any);
+
+      expect(subQb.andWhere).toHaveBeenCalledTimes(2);
+      expect(subQb.orWhere).not.toHaveBeenCalled();
+      expect(innerQb1.andWhere).toHaveBeenCalledWith(
+        'user.firstName ILIKE :qb_f_firstName_0',
+        { qb_f_firstName_0: '%doe%' },
+      );
+      expect(innerQb2.andWhere).toHaveBeenCalledWith(
+        'user.lastName ILIKE :qb_f_lastName_1',
+        { qb_f_lastName_1: '%doe%' },
+      );
+    });
+
+    it('should handle all dynamic operator edge cases (single, bare value, !=, empty stripped value)', () => {
+      const qbSingle = createMockQb();
+      QueryBuilder.for(qbSingle, {
+        filter: {
+          age: '>18',
+          score: '!=0',
+          rank: '5',
+          deleted: '!=',
+          emptyEq: '=',
+        },
+      })
+        .allowedFilters([
+          AllowedFilter.operator('age', 'dynamic'),
+          AllowedFilter.operator('score', 'dynamic'),
+          AllowedFilter.operator('rank', 'dynamic'),
+          AllowedFilter.operator('deleted', 'dynamic'),
+          AllowedFilter.operator('emptyEq', 'dynamic'),
+        ])
+        .getQueryBuilder();
+
+      expect(qbSingle.andWhere).toHaveBeenCalledWith('user.age > :qb_f_age_0', {
+        qb_f_age_0: '18',
+      });
+      expect(qbSingle.andWhere).toHaveBeenCalledWith(
+        'user.score != :qb_f_score_1',
+        { qb_f_score_1: '0' },
+      );
+      expect(qbSingle.andWhere).toHaveBeenCalledWith(
+        'user.rank = :qb_f_rank_2',
+        { qb_f_rank_2: '5' },
+      );
+      expect(qbSingle.andWhere).toHaveBeenCalledWith(
+        'user.deleted IS NOT NULL',
+      );
+      expect(qbSingle.andWhere).toHaveBeenCalledWith('user.emptyEq IS NULL');
+    });
+
+    it('should escape LIKE wildcards in startsWith and endsWith (single and array)', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        filter: {
+          code: 'INV_100%',
+          domain: '.co_m,%.net',
+        },
+      })
+        .allowedFilters([
+          AllowedFilter.startsWith('code'),
+          AllowedFilter.endsWith('domain'),
+        ])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith('user.code ILIKE :qb_f_code_0', {
+        qb_f_code_0: 'INV\\_100\\%%',
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        '(user.domain ILIKE :qb_f_domain_1_0 OR user.domain ILIKE :qb_f_domain_1_1)',
+        {
+          qb_f_domain_1_0: '%.co\\_m',
+          qb_f_domain_1_1: '%\\%.net',
+        },
+      );
+    });
+
+    it('should support exact multi-select for string slugs, boolean arrays, and per-filter delimiter(null)', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        filter: {
+          slug: 'genshin,honkai,zenless',
+          flags: 'true,false',
+          title: 'Hello, World',
+        },
+      })
+        .allowedFilters([
+          AllowedFilter.exact('slug'),
+          AllowedFilter.exact('flags'),
+          AllowedFilter.exact('title').delimiter(null),
+        ])
+        .getQueryBuilder();
+
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.slug IN (:...qb_f_slug_0)',
+        {
+          qb_f_slug_0: ['genshin', 'honkai', 'zenless'],
+        },
+      );
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'user.flags IN (:...qb_f_flags_1)',
+        { qb_f_flags_1: [true, false] },
+      );
+      expect(qb.andWhere).toHaveBeenCalledWith('user.title = :qb_f_title_2', {
+        qb_f_title_2: 'Hello, World',
+      });
+    });
+
+    it('should auto-enable nullable when default(null) is set and handle boolean ignore() strictly', () => {
+      const qbNullDefault = createMockQb();
+      QueryBuilder.for(qbNullDefault, {})
+        .allowedFilters([AllowedFilter.exact('deletedAt').default(null)])
+        .getQueryBuilder();
+
+      expect(qbNullDefault.andWhere).toHaveBeenCalledWith(
+        'user.deletedAt IS NULL',
+      );
+
+      // ignore(null, '') must NOT drop boolean false
+      const qbBoolKeep = createMockQb();
+      QueryBuilder.for(qbBoolKeep, { filter: { active: false } })
+        .allowedFilters([AllowedFilter.exact('active').ignore(null, '')])
+        .getQueryBuilder();
+      expect(qbBoolKeep.andWhere).toHaveBeenCalledWith(
+        'user.active = :qb_f_active_0',
+        { qb_f_active_0: false },
+      );
+
+      // ignore('false') DOES drop boolean false
+      const qbBoolDrop = createMockQb();
+      QueryBuilder.for(qbBoolDrop, { filter: { active: false } })
+        .allowedFilters([AllowedFilter.exact('active').ignore('false')])
+        .getQueryBuilder();
+      expect(qbBoolDrop.andWhere).not.toHaveBeenCalled();
+    });
+
+    it('should safely ignore nested objects in sort and include arrays while keeping scalar siblings', () => {
+      const qb = createMockQb();
+      QueryBuilder.for(qb, {
+        sort: [{ bad: 1 } as any, '-createdAt'],
+        include: [{ nested: 'bad' } as any, 'roles'],
+      })
+        .allowedSorts(['createdAt'])
+        .allowedIncludes(['roles'])
+        .getQueryBuilder();
+
+      expect(qb.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
+      expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('user.roles', 'roles');
+    });
+
+    it('should fallback to defaults for negative, zero, or NaN page and limit values', async () => {
+      const qb = createMockQb();
+      await QueryBuilder.for(qb, {
+        page: -5,
+        limit: 'not-a-number',
+      }).paginate();
+
+      expect(qb.skip).toHaveBeenCalledWith(0);
+      expect(qb.take).toHaveBeenCalledWith(10);
+
+      const qbZero = createMockQb();
+      await QueryBuilder.for(qbZero, { page: 0, limit: 0 }).paginate();
+      expect(qbZero.skip).toHaveBeenCalledWith(0);
+      expect(qbZero.take).toHaveBeenCalledWith(10);
     });
   });
 });

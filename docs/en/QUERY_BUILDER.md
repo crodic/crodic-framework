@@ -14,13 +14,14 @@ It enables frontends to filter, sort, include relations, select sparse fieldsets
 - [Architecture & Directory Structure](#architecture--directory-structure)
 - [Quick Start](#quick-start)
 - [Filtering (`allowedFilters`)](#filtering-allowedfilters)
-  - [Exact Matches & IN Queries](#exact-matches--in-queries)
+  - [Exact Matches, IN Queries & Booleans (`exact`)](#exact-matches-in-queries--booleans-exact)
   - [Partial Matches (ILIKE)](#partial-matches-ilike)
   - [Prefix and Suffix Matches (`startsWith`, `endsWith`)](#prefix-and-suffix-matches-startswith-endswith)
-  - [Comparison Operators](#comparison-operators)
+  - [Static & Dynamic Comparison Operators (`operator` / `dynamic`)](#static--dynamic-comparison-operators-operator--dynamic)
+  - [Filter Groups (`groupOr`, `groupAnd`)](#filter-groups-groupor-groupand)
   - [Relation Filtering (Dot Notation)](#relation-filtering-dot-notation)
   - [Soft Deletes (`trashed`)](#soft-deletes-trashed)
-  - [Custom Scope Functions](#custom-scope-functions)
+  - [Custom Filters (`AllowedFilter.custom` / `callback`)](#custom-filters-allowedfiltercustom)
 - [Sorting (`allowedSorts`)](#sorting-allowedsorts)
   - [Field Sorting & Direction](#field-sorting--direction)
   - [Relation Sorting](#relation-sorting)
@@ -154,27 +155,31 @@ export class UserService {
 
 ## Filtering (`allowedFilters`)
 
-### Exact Matches & IN Queries
+### Exact Matches, IN Queries & Booleans (`exact`)
 
 ```typescript
 AllowedFilter.exact("status");
 AllowedFilter.exact("roleId");
 AllowedFilter.exact("role", "roleId"); // custom column mapping
+AllowedFilter.exact("isActive"); // auto-casts 'true'/'false' to boolean
+AllowedFilter.exact("title").delimiter(null); // disable comma splitting for this field
 ```
 
 - **Single value**: `GET /users?filter[status]=active` ➔ `WHERE status = 'active'`
-- **Array values**: `GET /users?filter[status][]=active&filter[status][]=pending` ➔ `WHERE status IN ('active', 'pending')`
+- **Comma-separated multi-select**: `GET /users?filter[roles.id]=1,2` or `GET /posts?filter[slug]=genshin,honkai` ➔ `WHERE col IN ('1', '2')`
+- **Bracket array**: `GET /users?filter[status][]=active&filter[status][]=pending` ➔ `WHERE status IN ('active', 'pending')`
+- **Auto boolean**: `GET /users?filter[isActive]=true` ➔ `WHERE isActive = true`
 
 ### Partial Matches (ILIKE)
 
-Passing a string to `.allowedFilters()` defaults to a partial match:
+Passing a string to `.allowedFilters()` defaults to a partial match. SQL LIKE wildcards (`%`, `_`, `\`) are automatically escaped:
 
 ```typescript
 .allowedFilters(['name', AllowedFilter.partial('title')])
 ```
 
 - **Single value**: `GET /users?filter[name]=john` ➔ `WHERE name ILIKE '%john%'`
-- **Array values**: `GET /users?filter[name][]=john&filter[name][]=jane` ➔ `WHERE (name ILIKE '%john%' OR name ILIKE '%jane%')`
+- **Array values**: `GET /users?filter[name]=john,jane` ➔ `WHERE (name ILIKE '%john%' OR name ILIKE '%jane%')`
 
 ### Prefix and Suffix Matches (`startsWith`, `endsWith`)
 
@@ -183,16 +188,42 @@ AllowedFilter.startsWith("invoiceNumber", "code"); // GET ?filter[invoiceNumber]
 AllowedFilter.endsWith("domain", "email"); // GET ?filter[domain]=.com ➔ email ILIKE '%.com'
 ```
 
-### Comparison Operators
+### Static & Dynamic Comparison Operators (`operator` / `dynamic`)
 
-Supports `=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`:
+Supports static operators (`=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`) and dynamic operators (`'dynamic'`, matching Spatie v7):
 
 ```typescript
+// 1. Static operators (fixed on the backend):
 AllowedFilter.operator("minPrice", ">=", "price");
 AllowedFilter.operator("maxPrice", "<=", "price");
+
+// 2. Dynamic operator (client prefixes value with operator):
+AllowedFilter.operator("price", "dynamic");
 ```
 
-- `GET /products?filter[minPrice]=100&filter[maxPrice]=500` ➔ `WHERE price >= 100 AND price <= 500`
+- **Static**: `GET /products?filter[minPrice]=100&filter[maxPrice]=500` ➔ `WHERE price >= 100 AND price <= 500`
+- **Dynamic**: `GET /products?filter[price]=>=100,<=500` ➔ `WHERE price >= 100 AND price <= 500`
+
+### Filter Groups (`groupOr`, `groupAnd`)
+
+Group multiple filters under a single URL parameter using SQL brackets (`OR` or `AND`), matching Spatie v7:
+
+```typescript
+// Match email OR username OR fullName:
+AllowedFilter.groupOr("q", [
+  AllowedFilter.partial("email"),
+  AllowedFilter.partial("username"),
+  AllowedFilter.partial("fullName"),
+]);
+
+// Match with AND conjunction:
+AllowedFilter.groupAnd("match", [
+  AllowedFilter.partial("firstName"),
+  AllowedFilter.partial("lastName"),
+]);
+```
+
+- `GET /users?filter[q]=john` ➔ `WHERE ((user.email ILIKE '%john%') OR (user.username ILIKE '%john%') OR (user.fullName ILIKE '%john%'))`
 
 ### Relation Filtering (Dot Notation)
 
@@ -433,6 +464,9 @@ QueryBuilder.configure({
   countSuffix: "Count", // or '_count' for snake_case
   defaultLimit: 20,
   maxLimit: 100,
+  maxPage: 10_000, // caps page number to prevent deep OFFSET DoS
+  arrayDelimiter: ",", // multi-value delimiter (default ',' matching Spatie)
+  filterValueSplittingEnabled: true, // toggle global delimiter splitting
   strictMode: false,
 });
 ```
@@ -527,9 +561,13 @@ findAll(@Query() query: QueryParams) {
 
 ## Security Best Practices
 
-1. **Never use raw strings from queries in SQL**: Parameter values are always parameterized (`:paramName`).
-2. **Whitelist everything**: Never allow arbitrary client-defined columns without `allowedFilters`, `allowedSorts`, `allowedIncludes`, or `allowedFields`.
-3. **Cap pagination limits**: Always enforce `maxLimit` (default: 100) to protect against DoS attacks via huge `?limit=999999` requests.
+1. **SQL Injection & LIKE Wildcard Escaping**: All filter values are bound via TypeORM parameters (`:paramName`). `partial`, `startsWith`, and `endsWith` automatically escape `%`, `_`, and `\`.
+2. **Prototype Pollution Protection**: Dangerous keys (`__proto__`, `constructor`, `prototype`) are stripped when parsing bracket-notation query params.
+3. **Input Sanitization**: Empty arrays (e.g. `?filter[id]=,,,`) and nested objects (e.g. `?filter[id][a]=1`) are safely dropped so PostgreSQL never receives invalid `IN ()` queries.
+4. **Whitelist Everything**: Never allow arbitrary client-defined columns without `allowedFilters`, `allowedSorts`, `allowedIncludes`, or `allowedFields`.
+5. **DoS & URL Injection Prevention**:
+   - Fractional limits are floored (`>= 1`) and clamped to `maxLimit` (default `100`); pages are clamped to `maxPage` (default `10,000`).
+   - Untrusted `query.path` is never used in pagination `links`, and filter values in links are safely URL-encoded.
 
 ---
 

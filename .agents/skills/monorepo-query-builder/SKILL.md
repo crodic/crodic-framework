@@ -158,15 +158,19 @@ export class UserService {
 
 ### C. Available Filter Operators
 
-| Method                             | Target Parameter       | SQL Behavior                                     | Example URL                                      |
-| :--------------------------------- | :--------------------- | :----------------------------------------------- | :----------------------------------------------- |
-| `AllowedFilter.exact(name)`        | `filter[name]=value`   | `= :value` or `IN (:...value)`                   | `?filter[status]=active` or `?filter[roles]=1,2` |
-| `AllowedFilter.partial(name)`      | `filter[name]=value`   | `ILIKE '%value%'`                                | `?filter[name]=john`                             |
-| `AllowedFilter.startsWith(name)`   | `filter[name]=value`   | `ILIKE 'value%'`                                 | `?filter[code]=PRJ-`                             |
-| `AllowedFilter.endsWith(name)`     | `filter[name]=value`   | `ILIKE '%value'`                                 | `?filter[domain]=.com`                           |
-| `AllowedFilter.operator(name)`     | `filter[name]=$gt:10`  | Comparison (`$gt`, `$gte`, `$lt`, `$lte`, `$ne`) | `?filter[age]=$gte:18`                           |
-| `AllowedFilter.trashed()`          | `filter[trashed]=with` | Soft deletes: `with`, `only`, `without`          | `?filter[trashed]=only`                          |
-| `AllowedFilter.callback(name, fn)` | `filter[name]=value`   | Custom query builder callback                    | `?filter[search]=term`                           |
+| Method                                    | Target Parameter       | SQL Behavior                                                     | Example URL                                          |
+| :---------------------------------------- | :--------------------- | :--------------------------------------------------------------- | :--------------------------------------------------- |
+| `AllowedFilter.exact(name)`               | `filter[name]=value`   | `= :value` or `IN (:...value)` (auto-casts `'true'`/`'false'`)   | `?filter[status]=active` or `?filter[roles]=1,2`     |
+| `AllowedFilter.partial(name)`             | `filter[name]=value`   | `ILIKE '%value%'` (auto-escapes `%`, `_`, `\`)                   | `?filter[name]=john`                                 |
+| `AllowedFilter.startsWith(name)`          | `filter[name]=value`   | `ILIKE 'value%'` (auto-escapes `%`, `_`, `\`)                    | `?filter[code]=PRJ-`                                 |
+| `AllowedFilter.endsWith(name)`            | `filter[name]=value`   | `ILIKE '%value'` (auto-escapes `%`, `_`, `\`)                    | `?filter[domain]=.com`                               |
+| `AllowedFilter.operator(name, op, col?)`  | `filter[name]=value`   | Static (`>=`, `<=`, `>`, `<`, `!=`, `=`) or `'dynamic'` operator | `?filter[minAge]=18` or `?filter[price]=>=100,<=500` |
+| `AllowedFilter.groupOr(name, members[])`  | `filter[name]=value`   | Groups multiple filters with `OR` in SQL brackets                | `?filter[q]=john`                                    |
+| `AllowedFilter.groupAnd(name, members[])` | `filter[name]=value`   | Groups multiple filters with `AND` in SQL brackets               | `?filter[match]=john`                                |
+| `AllowedFilter.trashed()`                 | `filter[trashed]=only` | Soft deletes: `with`, `only`, `without`                          | `?filter[trashed]=only`                              |
+| `AllowedFilter.callback(name, fn)`        | `filter[name]=value`   | Custom query builder callback `(qb, value, property, alias)`     | `?filter[verifiedAt]=unverified`                     |
+
+> **Multi-value Delimiter**: Configured globally via `QueryBuilder.configure({ arrayDelimiter: ',', filterValueSplittingEnabled: true })`. Override per-filter with `.delimiter('|')` or disable with `.delimiter(null)`.
 
 ---
 
