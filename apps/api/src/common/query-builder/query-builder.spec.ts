@@ -1,5 +1,7 @@
 import {
   Brackets,
+  DataSource,
+  EntitySchema,
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
@@ -17,6 +19,48 @@ import {
   InvalidSortQueryException,
 } from './exceptions';
 import { FilterInterface, SortInterface, IncludeInterface } from './types';
+
+interface SpecRole {
+  id: string;
+  name: string;
+}
+
+interface SpecUser {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+  deletedAt?: Date | null;
+  roles?: SpecRole[];
+}
+
+const SpecRoleSchema = new EntitySchema<SpecRole>({
+  name: 'SpecRole',
+  tableName: 'spec_roles',
+  columns: {
+    id: { type: 'bigint', primary: true, generated: true },
+    name: { type: 'varchar' },
+  },
+});
+
+const SpecUserSchema = new EntitySchema<SpecUser>({
+  name: 'SpecUser',
+  tableName: 'spec_users',
+  columns: {
+    id: { type: 'bigint', primary: true, generated: true },
+    name: { type: 'varchar' },
+    email: { type: 'varchar' },
+    createdAt: { name: 'created_at', type: 'timestamptz' },
+    deletedAt: { name: 'deleted_at', type: 'timestamptz', deleteDate: true },
+  },
+  relations: {
+    roles: {
+      type: 'many-to-many',
+      target: 'SpecRole',
+      joinTable: true,
+    },
+  },
+});
 
 interface TestUser extends ObjectLiteral {
   id: string;
@@ -1448,6 +1492,116 @@ describe('Spatie-style QueryBuilder', () => {
           .strict(true)
           .cursorPaginate(),
       ).rejects.toThrow(InvalidSortQueryException);
+    });
+  });
+
+  describe('Real TypeORM PostgreSQL SQL Compilation (No Mocks)', () => {
+    let dataSource: DataSource;
+    let userRepo: Repository<SpecUser>;
+
+    beforeAll(async () => {
+      dataSource = new DataSource({
+        type: 'postgres',
+        entities: [SpecUserSchema, SpecRoleSchema],
+      });
+      await (dataSource as any).buildMetadatas();
+      userRepo = dataSource.getRepository(SpecUserSchema);
+    });
+
+    it('should compile valid PostgreSQL keyset WHERE and ORDER BY for multi-column cursorPaginate', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      const cursor = new Cursor(
+        { createdAt: '2026-11-24T00:00:00.000Z', id: '50' },
+        true,
+      ).encode();
+
+      const builder = QueryBuilder.for(qb, {
+        sort: '-createdAt',
+        cursor,
+        limit: 2,
+      }).allowedSorts(['createdAt', 'id']);
+
+      (builder as any).build(true);
+      const orders = (builder as any).resolveCursorOrders('id');
+      orders.forEach((o: any, i: number) =>
+        i === 0
+          ? qb.orderBy(`user.${o.column}`, o.direction)
+          : qb.addOrderBy(`user.${o.column}`, o.direction),
+      );
+      (builder as any).applyCursorWhere(
+        orders,
+        Cursor.fromEncoded(cursor)!.parameters,
+        false,
+      );
+      qb.take(3);
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        '(("user"."created_at" < $1) OR ("user"."created_at" = $2 AND "user"."id" < $3))',
+      );
+      expect(sql).toContain(
+        'ORDER BY "user"."created_at" DESC, "user"."id" DESC LIMIT 3',
+      );
+      expect(params).toEqual([
+        '2026-11-24T00:00:00.000Z',
+        '2026-11-24T00:00:00.000Z',
+        '50',
+      ]);
+    });
+
+    it('should NOT emit 1=1 OR ... when a groupOr member ignores the filter value', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, { filter: { q: 'skipme' } })
+        .allowedFilters([
+          AllowedFilter.groupOr('q', [
+            AllowedFilter.partial('name').ignore('skipme'),
+            AllowedFilter.partial('email'),
+          ]),
+        ])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).not.toContain('1=1');
+      expect(sql).toContain('"user"."email" ILIKE $1');
+      expect(params).toEqual(['%skipme%']);
+    });
+
+    it('should preserve sparse fieldsets on joined relations when include + fields are combined', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, {
+        include: 'roles',
+        fields: { user: 'id,name', roles: 'id,name' },
+      })
+        .allowedIncludes(['roles'])
+        .allowedFields(['id', 'name', 'roles.id', 'roles.name'])
+        .getQueryBuilder();
+
+      const [sql] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        'SELECT "user"."id" AS "user_id", "user"."name" AS "user_name", "roles"."id" AS "roles_id", "roles"."name" AS "roles_name"',
+      );
+      expect(sql).toContain('LEFT JOIN "spec_roles" "roles"');
+      expect(sql).not.toContain('"user"."email"');
+    });
+
+    it('should compile valid soft-delete SQL for trashed=only, without, and with', () => {
+      const qbOnly = userRepo.createQueryBuilder('user').withDeleted();
+      QueryBuilder.for(qbOnly, { filter: { trashed: 'only' } })
+        .allowedFilters([AllowedFilter.trashed()])
+        .getQueryBuilder();
+      expect(qbOnly.getSql()).toContain('"user"."deleted_at" IS NOT NULL');
+
+      const qbWithout = userRepo.createQueryBuilder('user').withDeleted();
+      QueryBuilder.for(qbWithout, { filter: { trashed: 'without' } })
+        .allowedFilters([AllowedFilter.trashed()])
+        .getQueryBuilder();
+      expect(qbWithout.getSql()).toContain('"user"."deleted_at" IS NULL');
+
+      const qbAll = userRepo.createQueryBuilder('user').withDeleted();
+      QueryBuilder.for(qbAll, {})
+        .allowedFilters([AllowedFilter.trashed()])
+        .getQueryBuilder();
+      expect(qbAll.getSql()).not.toContain('WHERE');
     });
   });
 });

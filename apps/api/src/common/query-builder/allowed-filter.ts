@@ -476,16 +476,55 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
       const members = this._groupMembers;
       const conjunction = this._groupConjunction ?? 'or';
 
+      const recordedMembers: Array<
+        Array<{ method: 'where' | 'andWhere' | 'orWhere'; args: any[] }>
+      > = [];
+
+      members.forEach((member, idx) => {
+        const calls: Array<{
+          method: 'where' | 'andWhere' | 'orWhere';
+          args: any[];
+        }> = [];
+        const recorder: any = {
+          alias,
+          expressionMap: (qb as any).expressionMap,
+          where: (...args: any[]) => {
+            calls.push({ method: 'where', args });
+            return recorder;
+          },
+          andWhere: (...args: any[]) => {
+            calls.push({ method: 'andWhere', args });
+            return recorder;
+          },
+          orWhere: (...args: any[]) => {
+            calls.push({ method: 'orWhere', args });
+            return recorder;
+          },
+          withDeleted: () => {
+            if (typeof (qb as any).withDeleted === 'function') {
+              qb.withDeleted();
+            }
+            return recorder;
+          },
+        };
+
+        member.apply(recorder, alias, rawValue, paramIndex * 100 + idx);
+        if (calls.length > 0) {
+          recordedMembers.push(calls);
+        }
+      });
+
+      if (recordedMembers.length === 0) {
+        return;
+      }
+
       qb.andWhere(
         new Brackets((subQb) => {
-          members.forEach((member, idx) => {
+          recordedMembers.forEach((calls, idx) => {
             const inner = new Brackets((innerQb) => {
-              member.apply(
-                innerQb as unknown as SelectQueryBuilder<T>,
-                alias,
-                rawValue,
-                paramIndex * 100 + idx,
-              );
+              for (const call of calls) {
+                (innerQb as any)[call.method](...call.args);
+              }
             });
             if (conjunction === 'or' && idx > 0) {
               subQb.orWhere(inner);
