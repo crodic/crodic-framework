@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useRouter, usePathname } from "@/i18n/navigation";
 import {
   Flame,
   Search,
@@ -40,8 +39,6 @@ export function TagDirectoryView() {
   const t = useTranslations("Tags");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const directoryTopRef = useRef<HTMLDivElement>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,16 +49,6 @@ export function TagDirectoryView() {
 
   // Debounce search query to prevent high API frequency
   const debouncedSearch = useDebounce(searchQuery.trim(), 400);
-
-  // Reset page in URL query params whenever search query or category changes
-  useEffect(() => {
-    if (searchParams.get("page") && Number(searchParams.get("page")) > 1) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete("page");
-      const qs = newParams.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname);
-    }
-  }, [debouncedSearch, activeCategory, searchParams, pathname, router]);
 
   // Categories list
   const categories = [
