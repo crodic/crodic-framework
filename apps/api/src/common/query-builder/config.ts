@@ -8,6 +8,7 @@ export interface QueryBuilderParametersConfig {
   include: string;
   page: string;
   limit: string;
+  cursor: string;
   fields: string;
   append: string;
 }
@@ -89,6 +90,7 @@ const DEFAULT_CONFIG: QueryBuilderConfig = {
     include: 'include',
     page: 'page',
     limit: 'limit',
+    cursor: 'cursor',
     fields: 'fields',
     append: 'append',
   },

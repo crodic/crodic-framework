@@ -442,6 +442,35 @@ Cấu trúc JSON trả về:
 > [!NOTE]
 > Nhằm duy trì tính tương thích ngược với các code consumer trước đây, thuộc tính `result.pagination` vẫn được hỗ trợ dưới dạng getter gồm `limit`, `currentPage`, `totalRecords`, `totalPages`, `nextPage`, và `previousPage`.
 
+### Phân trang con trỏ (`cursorPaginate`) — chuẩn Laravel `cursorPaginate()`
+
+Dành cho bảng dữ liệu lớn hoặc infinite scroll (không dùng `OFFSET`, hiệu năng ổn định `O(log N)` nhờ keyset `WHERE` + `LIMIT (n + 1)` lookahead):
+
+```typescript
+const result = await QueryBuilder.for(this.postRepository, query)
+  .allowedFilters([AllowedFilter.exact("status")])
+  .allowedSorts(["createdAt", "id"])
+  .defaultSort("-createdAt")
+  .cursorPaginate({ defaultLimit: 20, tieBreaker: "id" });
+```
+
+- **Đầu ra `CursorPaginated<T>`:**
+  ```json
+  {
+    "data": [...],
+    "meta": {
+      "itemsPerPage": 20,
+      "nextCursor": "eyJjcmVhdGVkQXQiOiIyMDI2LTExLTI0VDAwOjAwOjAwLjAwMFoiLCJpZCI6IjUwIiwiX3BvaW50c1RvTmV4dEl0ZW1zIjp0cnVlfQ",
+      "prevCursor": null,
+      "hasMore": true
+    },
+    "links": {
+      "next": "https://api.crodic.click/api/v1/posts?limit=20&cursor=eyJ..."
+    }
+  }
+  ```
+- Hỗ trợ di chuyển 2 chiều (`next` / `previous`), tự động thêm cột tie-breaker (`id`), và tự động sinh full URL qua `pathResolver`.
+
 ---
 
 ## Cấu hình toàn cục & Tùy biến tham số URL

@@ -8,6 +8,7 @@ import { QueryBuilder } from './query-builder';
 import { AllowedFilter, FilterOperator } from './allowed-filter';
 import { AllowedSort } from './allowed-sort';
 import { AllowedInclude } from './allowed-include';
+import { Cursor, CursorPaginated } from './cursor';
 import { resetGlobalConfig, setGlobalConfig } from './config';
 import {
   InvalidFieldQueryException,
@@ -1251,6 +1252,202 @@ describe('Spatie-style QueryBuilder', () => {
         limit: 10,
       }).paginate({ path: '/custom/path' });
       expect(overrideRes.links.current).toBe('/custom/path?page=1&limit=10');
+    });
+  });
+
+  describe('Cursor Pagination (cursorPaginate)', () => {
+    it('should encode and decode Cursor safely and reject malformed or prototype-polluting inputs', () => {
+      const encoded = new Cursor(
+        { id: '42', createdAt: '2026-11-24T00:00:00.000Z' },
+        true,
+      ).encode();
+      const decoded = Cursor.fromEncoded(encoded);
+
+      expect(decoded).not.toBeNull();
+      expect(decoded!.parameters).toEqual({
+        id: '42',
+        createdAt: '2026-11-24T00:00:00.000Z',
+      });
+      expect(decoded!.pointsToNextItems).toBe(true);
+
+      const prevDecoded = Cursor.fromEncoded(
+        new Cursor({ id: '10' }, false).encode(),
+      );
+      expect(prevDecoded!.pointsToNextItems).toBe(false);
+
+      expect(Cursor.fromEncoded(null)).toBeNull();
+      expect(Cursor.fromEncoded('')).toBeNull();
+      expect(Cursor.fromEncoded('not-valid-base64!!!')).toBeNull();
+      expect(
+        Cursor.fromEncoded(Buffer.from('[]').toString('base64url')),
+      ).toBeNull();
+
+      // Prototype pollution payload inside base64 cursor
+      const evilCursor = Buffer.from(
+        '{"__proto__":{"hacked":true},"_pointsToNextItems":true}',
+      ).toString('base64url');
+      expect(Cursor.fromEncoded(evilCursor)).toBeNull();
+      expect(({} as any).hacked).toBeUndefined();
+    });
+
+    it('should paginate first page using limit + 1 lookahead and build full URL next link via pathResolver', async () => {
+      QueryBuilder.configure({
+        pathResolver: () => 'https://api.crodic.click/api/v1/posts',
+      });
+
+      const qb = createMockQb('post');
+      (qb.getMany as jest.Mock).mockResolvedValue([
+        { id: '100', name: 'A' },
+        { id: '99', name: 'B' },
+        { id: '98', name: 'C' }, // lookahead row (+1)
+      ]);
+
+      const result = await QueryBuilder.for(qb, {
+        limit: 2,
+        filter: { status: 'published' },
+      })
+        .allowedFilters([AllowedFilter.exact('status')])
+        .cursorPaginate();
+
+      expect(result).toBeInstanceOf(CursorPaginated);
+      expect(qb.orderBy).toHaveBeenCalledWith('post.id', 'DESC');
+      expect(qb.take).toHaveBeenCalledWith(3); // limit + 1
+      expect(result.data).toHaveLength(2);
+      expect(result.data.map((d: any) => d.id)).toEqual(['100', '99']);
+      expect(result.meta.itemsPerPage).toBe(2);
+      expect(result.meta.hasMore).toBe(true);
+      expect(result.meta.prevCursor).toBeNull();
+      expect(result.meta.nextCursor).toBeTruthy();
+      expect(result.links.previous).toBeUndefined();
+      expect(result.links.next).toBe(
+        `https://api.crodic.click/api/v1/posts?limit=2&filter[status]=published&cursor=${result.meta.nextCursor}`,
+      );
+
+      const decodedNext = Cursor.fromEncoded(result.meta.nextCursor);
+      expect(decodedNext!.parameters).toEqual({ id: '99' });
+      expect(decodedNext!.pointsToNextItems).toBe(true);
+    });
+
+    it('should navigate forward and detect the final page accurately', async () => {
+      const qb = createMockQb('post');
+      const forwardCursor = new Cursor({ id: '99' }, true).encode();
+      (qb.getMany as jest.Mock).mockResolvedValue([
+        { id: '98', name: 'C' },
+        { id: '97', name: 'D' },
+      ]); // exactly limit (no +1 row -> final page)
+
+      const result = await QueryBuilder.for(qb, {
+        limit: 2,
+        cursor: forwardCursor,
+      }).cursorPaginate();
+
+      expect(qb.orderBy).toHaveBeenCalledWith('post.id', 'DESC');
+      expect(qb.andWhere).toHaveBeenCalledWith('post.id < :qb_c_0', {
+        qb_c_0: '99',
+      });
+      expect(result.meta.hasMore).toBe(false);
+      expect(result.meta.nextCursor).toBeNull();
+      expect(result.meta.prevCursor).toBeTruthy();
+      expect(result.links.next).toBeUndefined();
+      expect(result.links.previous).toBeDefined();
+
+      const decodedPrev = Cursor.fromEncoded(result.meta.prevCursor);
+      expect(decodedPrev!.parameters).toEqual({ id: '98' });
+      expect(decodedPrev!.pointsToNextItems).toBe(false);
+    });
+
+    it('should invert ORDER BY and WHERE when navigating backwards and reverse results back to display order', async () => {
+      const qb = createMockQb('post');
+      const prevCursor = new Cursor({ id: '98' }, false).encode();
+      // DB returns in ASC order because ORDER BY was inverted from DESC to ASC
+      (qb.getMany as jest.Mock).mockResolvedValue([
+        { id: '99', name: 'B' },
+        { id: '100', name: 'A' },
+        { id: '101', name: 'Z' }, // lookahead row showing there are still earlier pages
+      ]);
+
+      const result = await QueryBuilder.for(qb, {
+        limit: 2,
+        cursor: prevCursor,
+      }).cursorPaginate();
+
+      expect(qb.orderBy).toHaveBeenCalledWith('post.id', 'ASC');
+      expect(qb.andWhere).toHaveBeenCalledWith('post.id > :qb_c_0', {
+        qb_c_0: '98',
+      });
+      // Reversed back to DESC display order
+      expect(result.data.map((d: any) => d.id)).toEqual(['100', '99']);
+      expect(result.meta.prevCursor).toBeTruthy();
+      expect(result.meta.nextCursor).toBeTruthy();
+      expect(result.meta.hasMore).toBe(true);
+    });
+
+    it('should append tie-breaker column and build lexicographic Brackets WHERE for multi-column sorts', async () => {
+      const qb = createMockQb('post');
+      const cursor = new Cursor(
+        { createdAt: '2026-11-24T00:00:00.000Z', id: '50' },
+        true,
+      ).encode();
+
+      (qb.getMany as jest.Mock).mockResolvedValue([
+        { id: '49', createdAt: new Date('2026-11-23T12:00:00.000Z') },
+      ]);
+
+      await QueryBuilder.for(qb, {
+        sort: '-createdAt',
+        cursor,
+        limit: 5,
+      })
+        .allowedSorts(['createdAt', 'id'])
+        .cursorPaginate();
+
+      expect(qb.orderBy).toHaveBeenCalledWith('post.createdAt', 'DESC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('post.id', 'DESC');
+
+      const bracketArg = (qb.andWhere as jest.Mock).mock.calls[0][0];
+      expect(bracketArg).toBeInstanceOf(Brackets);
+
+      const subQb = {
+        where: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+      };
+      bracketArg.whereFactory(subQb as any);
+
+      expect(subQb.where).toHaveBeenCalledWith('(post.createdAt < :qb_c_0_0)', {
+        qb_c_0_0: '2026-11-24T00:00:00.000Z',
+      });
+      expect(subQb.orWhere).toHaveBeenCalledWith(
+        '(post.createdAt = :qb_c_1_0 AND post.id < :qb_c_1_1)',
+        {
+          qb_c_1_0: '2026-11-24T00:00:00.000Z',
+          qb_c_1_1: '50',
+        },
+      );
+    });
+
+    it('should safely ignore stale cursors when sort columns changed and enforce strict sort validation', async () => {
+      const qb = createMockQb('post');
+      // Cursor only has 'id', but request now sorts by '-createdAt' (requires createdAt + id)
+      const staleCursor = new Cursor({ id: '50' }, true).encode();
+      (qb.getMany as jest.Mock).mockResolvedValue([]);
+
+      await QueryBuilder.for(qb, {
+        sort: '-createdAt',
+        cursor: staleCursor,
+      })
+        .allowedSorts(['createdAt'])
+        .cursorPaginate();
+
+      expect(qb.andWhere).not.toHaveBeenCalled();
+
+      // Strict mode still throws InvalidSortQueryException
+      const qbStrict = createMockQb('post');
+      await expect(
+        QueryBuilder.for(qbStrict, { sort: '-forbiddenCol' })
+          .allowedSorts(['createdAt'])
+          .strict(true)
+          .cursorPaginate(),
+      ).rejects.toThrow(InvalidSortQueryException);
     });
   });
 });

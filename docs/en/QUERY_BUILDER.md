@@ -443,6 +443,35 @@ Response structure:
 > [!NOTE]
 > For backwards compatibility with existing backend DTO consumers, `result.pagination` is also accessible as a getter exposing `limit`, `currentPage`, `totalRecords`, `totalPages`, `nextPage`, and `previousPage`.
 
+### Cursor Pagination (`cursorPaginate`) — Laravel `cursorPaginate()` parity
+
+Ideal for large datasets and infinite scrolling (no `OFFSET` scan; uses keyset `WHERE` conditions + `LIMIT (n + 1)` lookahead):
+
+```typescript
+const result = await QueryBuilder.for(this.postRepository, query)
+  .allowedFilters([AllowedFilter.exact("status")])
+  .allowedSorts(["createdAt", "id"])
+  .defaultSort("-createdAt")
+  .cursorPaginate({ defaultLimit: 20, tieBreaker: "id" });
+```
+
+- **Response shape (`CursorPaginated<T>`):**
+  ```json
+  {
+    "data": [...],
+    "meta": {
+      "itemsPerPage": 20,
+      "nextCursor": "eyJjcmVhdGVkQXQiOiIyMDI2LTExLTI0VDAwOjAwOjAwLjAwMFoiLCJpZCI6IjUwIiwiX3BvaW50c1RvTmV4dEl0ZW1zIjp0cnVlfQ",
+      "prevCursor": null,
+      "hasMore": true
+    },
+    "links": {
+      "next": "https://api.crodic.click/api/v1/posts?limit=20&cursor=eyJ..."
+    }
+  }
+  ```
+- Supports bidirectional navigation (`next` / `previous`), automatic tie-breaker column (`id`), and full URLs via `pathResolver`.
+
 ---
 
 ## Configuration & Custom Parameters

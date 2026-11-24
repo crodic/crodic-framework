@@ -10,6 +10,7 @@ export interface QueryParams {
   include?: string;
   page?: number | string;
   limit?: number | string;
+  cursor?: string;
   fields?: Record<string, string | string[]> | string;
   append?: string;
   q?: string;

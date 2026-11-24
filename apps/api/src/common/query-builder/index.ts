@@ -28,6 +28,13 @@ export {
   InvalidFieldQueryException,
 } from './exceptions';
 export {
+  Cursor,
+  CursorPaginated,
+  type CursorPaginatedMeta,
+  type CursorPaginatedLinks,
+  type CursorPaginateOptions,
+} from './cursor';
+export {
   Paginated,
   PaginatedMeta,
   PaginatedLinks,

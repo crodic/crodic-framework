@@ -1,4 +1,9 @@
-import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Brackets,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import qs from 'qs';
 import {
   Paginated,
@@ -14,6 +19,13 @@ import {
   QueryBuilderUserConfig,
   setGlobalConfig,
 } from './config';
+import {
+  Cursor,
+  CursorPaginated,
+  CursorPaginatedLinks,
+  CursorPaginatedMeta,
+  CursorPaginateOptions,
+} from './cursor';
 import {
   InvalidFieldQueryException,
   InvalidFilterQueryException,
@@ -337,6 +349,137 @@ export class QueryBuilder<T extends ObjectLiteral> {
     return new Paginated<T>(entities, meta, links);
   }
 
+  /**
+   * Execute the query with keyset cursor pagination matching Laravel's `cursorPaginate()`.
+   *
+   * Uses `WHERE` keyset conditions + `LIMIT (n + 1)` lookahead (no `OFFSET` scan),
+   * supports bidirectional navigation (`next` / `previous`) with URL-safe base64 cursors,
+   * and automatically builds full `links.next` / `links.previous` via `pathResolver`.
+   */
+  async cursorPaginate(
+    options?: number | CursorPaginateOptions,
+  ): Promise<CursorPaginated<T>> {
+    this.build(true);
+
+    const opts: CursorPaginateOptions =
+      typeof options === 'number' ? { defaultLimit: options } : (options ?? {});
+    const limit = this.resolveLimit(opts.defaultLimit);
+    const tieBreaker = opts.tieBreaker ?? 'id';
+    const orders = this.resolveCursorOrders(tieBreaker);
+
+    const cursorKey = this.config.parameters.cursor;
+    const rawCursor = this.query[cursorKey];
+    const parsedCursor =
+      typeof rawCursor === 'string' ? Cursor.fromEncoded(rawCursor) : null;
+
+    // Only apply cursor if all active sort columns exist in the decoded cursor parameters
+    const hasAllCursorKeys =
+      parsedCursor !== null &&
+      orders.every(
+        (o) =>
+          Object.prototype.hasOwnProperty.call(
+            parsedCursor.parameters,
+            o.column,
+          ) && parsedCursor.parameters[o.column] !== undefined,
+      );
+    const activeCursor = hasAllCursorKeys ? parsedCursor : null;
+    const isReverse = activeCursor !== null && !activeCursor.pointsToNextItems;
+
+    // Apply ORDER BY (inverted when navigating backwards, matching Laravel's paginateUsingCursor)
+    orders.forEach((order, idx) => {
+      const target = order.column.includes('.')
+        ? order.column
+        : `${this.alias}.${order.column}`;
+      const effectiveDir: 'ASC' | 'DESC' = isReverse
+        ? order.direction === 'ASC'
+          ? 'DESC'
+          : 'ASC'
+        : order.direction;
+
+      if (idx === 0) {
+        this.qb.orderBy(target, effectiveDir);
+      } else {
+        this.qb.addOrderBy(target, effectiveDir);
+      }
+    });
+
+    // Apply keyset WHERE clause when navigating from a cursor
+    if (activeCursor) {
+      this.applyCursorWhere(orders, activeCursor.parameters, isReverse);
+    }
+
+    // Fetch limit + 1 rows to determine if more items exist without running COUNT(*)
+    this.qb.take(limit + 1);
+    const rows = await this.qb.getMany();
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+
+    if (isReverse) {
+      items.reverse();
+    }
+
+    const hasNext =
+      activeCursor === null
+        ? hasMore
+        : activeCursor.pointsToNextItems
+          ? hasMore
+          : items.length > 0;
+
+    const hasPrevious =
+      activeCursor === null
+        ? false
+        : activeCursor.pointsToNextItems
+          ? items.length > 0
+          : hasMore;
+
+    const nextCursor =
+      hasNext && items.length > 0
+        ? new Cursor(
+            this.extractCursorParams(items[items.length - 1], orders),
+            true,
+          ).encode()
+        : null;
+
+    const prevCursor =
+      hasPrevious && items.length > 0
+        ? new Cursor(this.extractCursorParams(items[0], orders), false).encode()
+        : null;
+
+    const basePath = this.resolveBasePath(opts);
+
+    const buildCursorLink = (targetCursor: string): string => {
+      const q: Record<string, any> = { ...this.query };
+      delete q.path;
+      delete q[this.config.parameters.page];
+      q[cursorKey] = targetCursor;
+      q[this.config.parameters.limit] = limit;
+
+      const queryString = qs.stringify(q, {
+        encode: true,
+        encoder: (str, _defaultEncoder, _charset, type) =>
+          type === 'key' ? str : encodeURIComponent(str).replace(/%2C/g, ','),
+        arrayFormat: 'brackets',
+        filter: (_prefix, value) => (value === undefined ? undefined : value),
+      });
+
+      return basePath ? `${basePath}?${queryString}` : `?${queryString}`;
+    };
+
+    const meta: CursorPaginatedMeta = {
+      itemsPerPage: limit,
+      nextCursor,
+      prevCursor,
+      hasMore: Boolean(nextCursor),
+    };
+
+    const links: CursorPaginatedLinks = {
+      next: nextCursor ? buildCursorLink(nextCursor) : undefined,
+      previous: prevCursor ? buildCursorLink(prevCursor) : undefined,
+    };
+
+    return new CursorPaginated<T>(items, meta, links);
+  }
+
   /** Execute the query and return all matching entities. */
   async getMany(): Promise<T[]> {
     this.build();
@@ -365,7 +508,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   // ─── INTERNAL BUILD PROCESS ─────────────────────────────
 
-  private build(): void {
+  private build(skipSorts = false): void {
     if (this._built) return;
     this._built = true;
 
@@ -373,7 +516,140 @@ export class QueryBuilder<T extends ObjectLiteral> {
     this.applyIncludes();
     this.applyFields();
     this.applyFilters();
-    this.applySorts();
+    if (!skipSorts) {
+      this.applySorts();
+    }
+  }
+
+  private resolveCursorOrders(
+    tieBreaker: string,
+  ): Array<{ column: string; direction: 'ASC' | 'DESC' }> {
+    const sortParam = this.query[this.config.parameters.sort];
+    const sortMap = new Map(this._sorts.map((s) => [s.name, s]));
+    const allowedNames = Array.from(sortMap.keys());
+    const parts = this.toParameterArray(sortParam);
+
+    const orders: Array<{ column: string; direction: 'ASC' | 'DESC' }> = [];
+
+    if (parts.length > 0) {
+      const invalid: string[] = [];
+      for (const trimmed of parts) {
+        const isDesc = trimmed.startsWith('-');
+        const name = isDesc ? trimmed.slice(1) : trimmed;
+        const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
+
+        const sort = sortMap.get(name);
+        if (!sort) {
+          invalid.push(name);
+          continue;
+        }
+        if (!sort.customFn) {
+          orders.push({ column: sort.column, direction });
+        }
+      }
+
+      if (this._strictMode && invalid.length > 0) {
+        throw new InvalidSortQueryException(invalid, allowedNames);
+      }
+    }
+
+    if (orders.length === 0 && this._defaultSortStr) {
+      for (const part of this._defaultSortStr.split(',').filter(Boolean)) {
+        const trimmed = part.trim();
+        const isDesc = trimmed.startsWith('-');
+        const name = isDesc ? trimmed.slice(1) : trimmed;
+        const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
+        const sort = sortMap.get(name);
+        orders.push({
+          column: sort && !sort.customFn ? sort.column : name,
+          direction,
+        });
+      }
+    }
+
+    if (orders.length === 0) {
+      orders.push({ column: tieBreaker, direction: 'DESC' });
+    } else if (!orders.some((o) => o.column === tieBreaker)) {
+      orders.push({
+        column: tieBreaker,
+        direction: orders[orders.length - 1].direction,
+      });
+    }
+
+    return orders;
+  }
+
+  private applyCursorWhere(
+    orders: Array<{ column: string; direction: 'ASC' | 'DESC' }>,
+    cursorParams: Record<string, any>,
+    isReverse: boolean,
+  ): void {
+    const toTarget = (col: string) =>
+      col.includes('.') ? col : `${this.alias}.${col}`;
+
+    if (orders.length === 1) {
+      const order = orders[0];
+      const effectiveDir = isReverse
+        ? order.direction === 'ASC'
+          ? 'DESC'
+          : 'ASC'
+        : order.direction;
+      const op = effectiveDir === 'ASC' ? '>' : '<';
+      this.qb.andWhere(`${toTarget(order.column)} ${op} :qb_c_0`, {
+        qb_c_0: cursorParams[order.column],
+      });
+      return;
+    }
+
+    // Multi-column lexicographic keyset comparison:
+    // (c0 < :v0) OR (c0 = :v0 AND c1 < :v1) OR ...
+    this.qb.andWhere(
+      new Brackets((subQb) => {
+        orders.forEach((order, i) => {
+          const effectiveDir = isReverse
+            ? order.direction === 'ASC'
+              ? 'DESC'
+              : 'ASC'
+            : order.direction;
+          const op = effectiveDir === 'ASC' ? '>' : '<';
+          const clauses: string[] = [];
+          const params: Record<string, any> = {};
+
+          for (let j = 0; j < i; j++) {
+            const eqParam = `qb_c_${i}_${j}`;
+            clauses.push(`${toTarget(orders[j].column)} = :${eqParam}`);
+            params[eqParam] = cursorParams[orders[j].column];
+          }
+
+          const cmpParam = `qb_c_${i}_${i}`;
+          clauses.push(`${toTarget(order.column)} ${op} :${cmpParam}`);
+          params[cmpParam] = cursorParams[order.column];
+
+          const expr = `(${clauses.join(' AND ')})`;
+          if (i === 0) {
+            subQb.where(expr, params);
+          } else {
+            subQb.orWhere(expr, params);
+          }
+        });
+      }),
+    );
+  }
+
+  private extractCursorParams(
+    entity: T,
+    orders: Array<{ column: string; direction: 'ASC' | 'DESC' }>,
+  ): Record<string, any> {
+    const params: Record<string, any> = {};
+    for (const order of orders) {
+      let current: any = entity;
+      for (const segment of order.column.split('.')) {
+        current = current?.[segment];
+      }
+      params[order.column] =
+        current instanceof Date ? current.toISOString() : current;
+    }
+    return params;
   }
 
   private resolveBasePath(
