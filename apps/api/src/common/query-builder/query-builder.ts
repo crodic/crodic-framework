@@ -113,24 +113,6 @@ export class QueryBuilder<T extends ObjectLiteral> {
         }
         result[rootKey][nestedKey] = val;
       }
-
-      const dotMatch = key.match(/^([^.]+)\.([^.]+)$/);
-      if (dotMatch) {
-        const [, rootKey, nestedKey] = dotMatch;
-        if (
-          !result[rootKey] ||
-          typeof result[rootKey] !== 'object' ||
-          Array.isArray(result[rootKey])
-        ) {
-          result[rootKey] = {
-            ...(typeof result[rootKey] === 'object' &&
-            !Array.isArray(result[rootKey])
-              ? result[rootKey]
-              : {}),
-          };
-        }
-        result[rootKey][nestedKey] = val;
-      }
     }
 
     return result as QueryParams;
@@ -524,20 +506,10 @@ export class QueryBuilder<T extends ObjectLiteral> {
       let isFirst = true;
 
       for (const part of parts) {
-        let trimmed = part.trim();
-        let direction: 'ASC' | 'DESC' = 'ASC';
-
-        if (trimmed.includes(':')) {
-          const [f, dir] = trimmed.split(':');
-          trimmed = f ?? '';
-          direction = dir?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        }
-
+        const trimmed = part.trim();
         const isDesc = trimmed.startsWith('-');
         const name = isDesc ? trimmed.slice(1) : trimmed;
-        if (isDesc) {
-          direction = 'DESC';
-        }
+        const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
 
         const sort = sortMap.get(name);
         if (!sort) {
