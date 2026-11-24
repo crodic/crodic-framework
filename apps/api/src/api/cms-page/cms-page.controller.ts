@@ -19,11 +19,10 @@ import {
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { CmsPageService } from './cms-page.service';
 import { CmsPageResDto } from './dto/cms-page.res.dto';
 import { CreateCmsPageReqDto } from './dto/create-cms-page.req.dto';
@@ -39,19 +38,17 @@ export class CmsPageAdminController {
   @ApiAuth({
     type: CmsPageResDto,
     summary: 'Get paginated list of CMS pages',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: ['id', 'status', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        status: [FilterOperator.EQ],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'status', 'createdAt', 'updatedAt'],
+      defaultSort: '-id',
+      filters: ['status', 'search', AllowedFilter.exact('status')],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Page),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<CmsPageResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<CmsPageResDto>> {
     return this.cmsPageService.findAll(query);
   }
 

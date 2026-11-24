@@ -4,11 +4,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import assert from 'assert';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { LessThan, Repository } from 'typeorm';
 import { AuditLogResDto } from './dto/audit-log.res.dto';
 import { ActivityLogEntity } from './entities/activity-log.entity';
@@ -20,46 +20,44 @@ export class AuditLogService {
     private readonly auditLogRepository: Repository<ActivityLogEntity>,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<AuditLogResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<AuditLogResDto>> {
     const qb = this.auditLogRepository.createQueryBuilder('log');
 
-    const result = await paginate(query, qb, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(qb, query)
+      .allowedFilters([
+        AllowedFilter.exact('event'),
+        AllowedFilter.exact('logName'),
+        AllowedFilter.exact('subjectId'),
+        AllowedFilter.exact('causerId'),
+        AllowedFilter.exact('batchUuid'),
+        AllowedFilter.partial('subjectType'),
+        AllowedFilter.partial('causerType'),
+        AllowedFilter.partial('description'),
+        AllowedFilter.callback('search', (builder, value) => {
+          builder.andWhere(
+            '(log.description ILIKE :search OR log.subjectType ILIKE :search OR log.causerType ILIKE :search OR log.logName ILIKE :search OR log.event ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts([
         'id',
         'createdAt',
         'logName',
         'event',
         'subjectType',
         'causerType',
-      ],
-      searchableColumns: [
-        'description',
-        'subjectType',
-        'subjectId',
-        'causerId',
-        'logName',
-        'event',
-      ],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        event: [FilterOperator.IN, FilterOperator.EQ],
-        logName: [FilterOperator.IN, FilterOperator.EQ],
-        subjectType: [FilterOperator.ILIKE, FilterOperator.EQ],
-        subjectId: [FilterOperator.EQ],
-        causerType: [FilterOperator.ILIKE, FilterOperator.EQ],
-        causerId: [FilterOperator.EQ],
-        batchUuid: [FilterOperator.EQ],
-        description: [FilterOperator.ILIKE],
-      },
-    });
+      ])
+      .defaultSort('-createdAt')
+      .paginate();
 
-    return {
-      ...result,
-      data: plainToInstance(AuditLogResDto, result.data, {
+    return new Paginated(
+      plainToInstance(AuditLogResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<AuditLogResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<AuditLogResDto> {

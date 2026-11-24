@@ -11,11 +11,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { EntityManager, In, Repository } from 'typeorm';
 import { AdminPermissionEntity } from '../admin-permission/entities/admin-permission.entity';
 import { CreateAdminRoleReqDto } from './dto/create-admin-role.req.dto';
@@ -80,26 +80,32 @@ export class AdminRoleService {
     }
   }
 
-  async findAll(query: PaginateQuery): Promise<Paginated<AdminRoleResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<AdminRoleResDto>> {
     const queryBuilder = this.roleRepository
       .createQueryBuilder('role')
       .leftJoinAndSelect('role.permissionEntities', 'permission');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
-      searchableColumns: ['name', 'description'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        name: [FilterOperator.ILIKE],
-      },
-    });
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.partial('name'),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            '(role.name ILIKE :search OR role.description ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'name', 'description', 'createdAt', 'updatedAt'])
+      .defaultSort('-id')
+      .paginate();
 
-    return {
-      ...result,
-      data: plainToInstance(AdminRoleResDto, result.data, {
+    return new Paginated(
+      plainToInstance(AdminRoleResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<AdminRoleResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async hasRole(): Promise<boolean> {

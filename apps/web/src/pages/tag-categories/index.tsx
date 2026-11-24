@@ -4,9 +4,9 @@ import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -65,23 +65,26 @@ export function PageTagCategoriesOverview() {
     [t, handleEdit, handleDelete]
   )
 
-  const buildQuery: ResourceQueryBuilderFn<typeof categoryFilterParsers> =
+  const buildQuery: RestResourceQueryBuilderFn<typeof categoryFilterParsers> =
     useCallback((builder, filter) => {
-      if (filter.name) {
-        builder.ilike('name', filter.name)
-      }
-      if (filter.slug) {
-        builder.ilike('slug', filter.slug)
-      }
-      if (filter.isSystem) {
-        builder.eq('isSystem', filter.isSystem === 'system')
-      }
-      if (filter.isActive) {
-        builder.eq('isActive', filter.isActive === 'active')
-      }
+      builder
+        .filter('name', filter.name)
+        .filter('slug', filter.slug)
+        .filter(
+          'isSystem',
+          filter.isSystem !== undefined && filter.isSystem !== null
+            ? filter.isSystem === 'system'
+            : undefined
+        )
+        .filter(
+          'isActive',
+          filter.isActive !== undefined && filter.isActive !== null
+            ? filter.isActive === 'active'
+            : undefined
+        )
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     TagCategorySchema,
     typeof categoryFilterParsers
   >({

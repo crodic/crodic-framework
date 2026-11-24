@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
+import {
+  Paginated,
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { AutoIncrementID } from '../../common/types/common.type';
 import { UserEntity } from '../user/entities/user.entity';
 import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.entity';
@@ -98,28 +102,24 @@ export class CosplayerApplicationService {
   }
 
   async findAll(
-    query: PaginateQuery,
+    query: QueryParams,
   ): Promise<Paginated<CosplayerApplicationResDto>> {
     const queryBuilder = this.appRepo
       .createQueryBuilder('app')
       .leftJoinAndSelect('app.user', 'user')
       .leftJoinAndSelect('app.reviewedBy', 'reviewedBy');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'createdAt', 'updatedAt', 'status', 'stageName'],
-      defaultSortBy: [['id', 'DESC']],
-      searchableColumns: ['stageName', 'bio', 'user.email', 'user.fullName'],
-      relations: ['user', 'reviewedBy'],
-      filterableColumns: {
-        status: true,
-        createdAt: true,
-      },
-    });
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts(['id', 'createdAt', 'updatedAt', 'status', 'stageName'])
+      .defaultSort('-id')
+      .allowedFilters(['status', 'createdAt', 'stageName', 'bio'])
+      .paginate();
 
-    return {
-      ...result,
-      data: result.data.map((item) => item.toDto(CosplayerApplicationResDto)),
-    } as unknown as Paginated<CosplayerApplicationResDto>;
+    return new Paginated(
+      result.data.map((item) => item.toDto(CosplayerApplicationResDto)),
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<CosplayerApplicationResDto> {

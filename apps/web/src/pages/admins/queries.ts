@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import {
@@ -14,7 +14,7 @@ import {
 } from './schema'
 
 async function getAdminListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: AdminSchema[] }> {
   const response = await http.get('/admin-users', { params })
 
@@ -60,7 +60,7 @@ export async function apiResendAdminVerification(id: string) {
   return response.data
 }
 
-export const useDataAdminOverview = (params: PaginateQueryParams) =>
+export const useDataAdminOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['admins', params],
     queryFn: () => getAdminListing(params),

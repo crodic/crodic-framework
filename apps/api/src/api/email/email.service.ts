@@ -3,11 +3,11 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { Repository } from 'typeorm';
 import { EmailLogResDto } from './dto/email-log.res.dto';
 import { EmailLogEntity } from './entities/email-log.entity';
@@ -22,14 +22,9 @@ export class EmailService {
   ) {}
 
   async findAll(
-    rawQuery: PaginateQuery,
+    query: QueryParams,
     filter: Partial<EmailLogEntity> = {},
   ): Promise<Paginated<EmailLogResDto>> {
-    const query: PaginateQuery = {
-      ...rawQuery,
-      filter: rawQuery.filter ? { ...rawQuery.filter } : undefined,
-    };
-
     const qb = this.emailLogRepository
       .createQueryBuilder('emailLog')
       .leftJoinAndSelect('emailLog.createdByAdmin', 'createdByAdmin');
@@ -40,35 +35,35 @@ export class EmailService {
       });
     }
 
-    if (query.filter?.to) {
-      const toVal = query.filter.to as string;
-      const search = toVal.startsWith('$ilike:') ? toVal.substring(7) : toVal;
-      qb.andWhere('CAST(emailLog.to AS TEXT) ILIKE :toSearch', {
-        toSearch: `%${search}%`,
-      });
-      delete query.filter.to;
-    }
+    const result = await QueryBuilder.for(qb, query)
+      .allowedFilters([
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('source'),
+        AllowedFilter.exact('createdByAdminId'),
+        AllowedFilter.partial('subject'),
+        AllowedFilter.callback('to', (builder, value) => {
+          builder.andWhere('CAST(emailLog.to AS TEXT) ILIKE :toSearch', {
+            toSearch: `%${value}%`,
+          });
+        }),
+        AllowedFilter.callback('search', (builder, value) => {
+          builder.andWhere(
+            '(emailLog.subject ILIKE :search OR CAST(emailLog.to AS TEXT) ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'createdAt', 'scheduledAt', 'sentAt', 'status'])
+      .defaultSort('-createdAt')
+      .paginate();
 
-    const result = await paginate(query, qb, {
-      sortableColumns: ['id', 'createdAt', 'scheduledAt', 'sentAt', 'status'],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        status: [FilterOperator.IN],
-        source: [FilterOperator.IN],
-        subject: [FilterOperator.ILIKE],
-        createdByAdminId: [FilterOperator.EQ],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        scheduledAt: [FilterOperator.GTE, FilterOperator.LTE],
-        sentAt: [FilterOperator.GTE, FilterOperator.LTE],
-      },
-    });
-
-    return {
-      ...result,
-      data: plainToInstance(EmailLogResDto, result.data, {
+    return new Paginated(
+      plainToInstance(EmailLogResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<EmailLogResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<EmailLogResDto> {

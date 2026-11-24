@@ -13,15 +13,11 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import {
-  FilterOperator,
-  Paginate,
-  Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+import { Paginated, QueryParams } from '../../../common/query-builder';
 import { CreateCityReqDto, UpdateCityReqDto } from '../dto/city.req.dto';
 import { CityResDto } from '../dto/city.res.dto';
 import { CityService } from '../services/city.service';
@@ -36,9 +32,9 @@ export class CityAdminController {
   @ApiAuth({
     type: CityResDto,
     summary: 'Get paginated list of cities',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'name',
         'stateId',
@@ -49,20 +45,21 @@ export class CityAdminController {
         'createdAt',
         'updatedAt',
       ],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        stateId: [FilterOperator.EQ],
-        countryId: [FilterOperator.EQ],
-        countryCode: [FilterOperator.EQ, FilterOperator.ILIKE],
-        stateCode: [FilterOperator.EQ, FilterOperator.ILIKE],
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
+      defaultSort: 'name',
+      filters: [
+        'stateId',
+        'countryId',
+        'countryCode',
+        'stateCode',
+        'code',
+        'name',
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Location),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<CityResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<CityResDto>> {
     return this.cityService.findAll(query);
   }
 

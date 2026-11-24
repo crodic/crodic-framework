@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+export type { RestQueryParams } from '@repo/query-builder'
+
 export const CURRENT_PAGE = 1
 export const PER_PAGE = 10
 export const MAX_FILE_SIZE = 5 * 1024 * 1024

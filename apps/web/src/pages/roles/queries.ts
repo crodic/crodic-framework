@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import {
@@ -13,7 +13,7 @@ import {
 } from '../roles/schema'
 
 async function apiGetRoleListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: RoleSchema[] }> {
   const response = await http.get('/admin/roles', { params })
 
@@ -53,7 +53,7 @@ export async function apiEditRole({
   return await http.put(`/admin/roles/${id}`, data)
 }
 
-export const useDataRoleOverview = (params: PaginateQueryParams) =>
+export const useDataRoleOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['roles', params],
     queryFn: () => apiGetRoleListing(params),

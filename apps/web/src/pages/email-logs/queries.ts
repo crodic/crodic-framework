@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import { emailLogSchema, type EmailLogSchema } from './schema'
 
 async function getEmailLogs(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: EmailLogSchema[] }> {
   const response = await http.get('/email-logs', { params })
 
@@ -24,7 +24,7 @@ export async function apiGetEmailLog(id: string): Promise<EmailLogSchema> {
   return emailLogSchema.parse(response.data)
 }
 
-export const useDataEmailLogs = (params: PaginateQueryParams) =>
+export const useDataEmailLogs = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['email_logs', params],
     queryFn: () => getEmailLogs(params),

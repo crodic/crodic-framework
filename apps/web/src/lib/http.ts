@@ -1,6 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import { RestQueryBuilder } from '@repo/query-builder'
 import { useAuthStore } from '@/stores/auth-store'
-import { PaginateQueryBuilder, RestQueryBuilder } from './query-builder'
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean
@@ -18,38 +18,6 @@ function serializeQueryParams(params: any): string {
     return params.toQueryString()
   }
 
-  // Detect explicit PaginateQuery patterns (used by nestjs-paginate endpoints):
-  // e.g. searchBy, select, withDeleted, colon-based sort (e.g. 'createdAt:DESC'), or filter with $ operator
-  const isPaginateSort =
-    typeof params.sort === 'string' &&
-    (params.sort.includes(':ASC') ||
-      params.sort.includes(':DESC') ||
-      params.sort.includes(':asc') ||
-      params.sort.includes(':desc'))
-
-  const hasPaginateFilter =
-    params.filter &&
-    typeof params.filter === 'object' &&
-    Object.values(params.filter).some(
-      (v) =>
-        (typeof v === 'object' &&
-          v !== null &&
-          Object.keys(v).some((k) => k.startsWith('$'))) ||
-        (typeof v === 'string' && v.startsWith('$'))
-    )
-
-  const isExplicitPaginate =
-    Boolean(params.searchBy) ||
-    Boolean(params.select) ||
-    params.withDeleted !== undefined ||
-    isPaginateSort ||
-    hasPaginateFilter
-
-  if (isExplicitPaginate) {
-    return new PaginateQueryBuilder(params).toQueryString()
-  }
-
-  // Otherwise, use RestQueryBuilder (standard REST / Spatie style with filter[field]=..., sort=-field)
   return new RestQueryBuilder(params).toQueryString()
 }
 

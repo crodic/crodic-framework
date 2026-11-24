@@ -20,11 +20,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { createHash, createHmac } from 'crypto';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { posix as posixPath } from 'path';
 import sharp from 'sharp';
 import { In, Repository } from 'typeorm';
@@ -155,26 +155,25 @@ export class FileService {
     return dto;
   }
 
-  async findAll(rawQuery: PaginateQuery): Promise<Paginated<FileResDto>> {
+  async findAll(rawQuery: QueryParams): Promise<Paginated<FileResDto>> {
     const queryBuilder = this.fileRepository
       .createQueryBuilder('file')
       .leftJoinAndSelect('file.createdByAdmin', 'createdByAdmin')
       .leftJoinAndSelect('file.updatedByAdmin', 'updatedByAdmin');
 
-    const query: PaginateQuery = {
+    const query: QueryParams = {
       ...rawQuery,
       filter: rawQuery.filter ? { ...rawQuery.filter } : undefined,
     };
 
-    const rawStatus =
-      typeof query.filter?.status === 'string'
-        ? query.filter.status.replace(/^\$[a-z]+:/, '')
-        : query.filter?.status;
+    const rawStatus = query.filter?.status;
 
     const isTrash =
       rawStatus === 'trash' ||
       query.filter?.is_trash === 'true' ||
-      query.filter?.trash === 'true';
+      query.filter?.is_trash === true ||
+      query.filter?.trash === 'true' ||
+      query.filter?.trash === true;
 
     if (isTrash) {
       queryBuilder.withDeleted().andWhere('file.deleted_at IS NOT NULL');
@@ -185,8 +184,8 @@ export class FileService {
       }
     }
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts([
         'id',
         'public_id',
         'original_name',
@@ -201,35 +200,43 @@ export class FileService {
         'createdAt',
         'updatedAt',
         'deletedAt',
-      ],
-      searchableColumns: [
+      ])
+      .defaultSort('-createdAt')
+      .allowedFilters([
         'public_id',
         'original_name',
         'folder',
         'disk',
         'visibility',
         'mime',
-      ],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        public_id: [FilterOperator.EQ],
-        original_name: [FilterOperator.ILIKE],
-        folder: [FilterOperator.EQ, FilterOperator.ILIKE],
-        disk: [FilterOperator.EQ, FilterOperator.IN],
-        visibility: [FilterOperator.EQ, FilterOperator.IN],
-        mime: [FilterOperator.ILIKE],
-        resource_type: [FilterOperator.EQ, FilterOperator.IN],
-        status: [FilterOperator.EQ, FilterOperator.IN],
-        is_starred: [FilterOperator.EQ],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-        deletedAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-      },
-    });
+        'resource_type',
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('is_starred'),
+        AllowedFilter.callback('createdAt', (qb, value) => {
+          if (!value) return;
+          if (Array.isArray(value) && value.length === 2) {
+            qb.andWhere('file.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: value[0],
+              cTo: value[1],
+            });
+          } else if (typeof value === 'string' && value.includes(',')) {
+            const [from, to] = value.split(',');
+            qb.andWhere('file.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: from,
+              cTo: to,
+            });
+          } else {
+            qb.andWhere('file.created_at >= :cFrom', { cFrom: value });
+          }
+        }),
+      ])
+      .paginate();
 
-    return {
-      ...result,
-      data: result.data.map((file) => this.toDto(file)),
-    } as Paginated<FileResDto>;
+    return new Paginated(
+      result.data.map((file) => this.toDto(file)),
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(publicId: string): Promise<FileResDto> {

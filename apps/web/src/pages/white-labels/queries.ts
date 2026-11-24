@@ -1,10 +1,7 @@
 import z from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import {
-  type ApiMetadata,
-  apiMetadataSchema,
-  type PaginateQueryParams,
-} from '@/global'
+import { type ApiMetadata, apiMetadataSchema } from '@/global'
+import type { RestQueryParams } from '@repo/query-builder'
 import http from '@/lib/http'
 import {
   activeWhiteLabelSchema,
@@ -19,7 +16,7 @@ export const WHITE_LABEL_ACTIVE_STORAGE_KEY = 'active_white_label_cache'
 
 export const whiteLabelQueryKeys = {
   all: ['white-labels'] as const,
-  list: (params: PaginateQueryParams) => [...whiteLabelQueryKeys.all, params],
+  list: (params: RestQueryParams) => [...whiteLabelQueryKeys.all, params],
   detail: (id: string) => [...whiteLabelQueryKeys.all, id],
   active: (target: WhiteLabelTarget = 'admin') =>
     ['active-white-label', target] as const,
@@ -78,7 +75,7 @@ function buildWhiteLabelFormData(data: WhiteLabelFormSchema): FormData {
 }
 
 export async function apiGetWhiteLabelListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: WhiteLabelSchema[] }> {
   const response = await http.get('/white-labels', { params })
 
@@ -162,7 +159,7 @@ export async function apiDeleteWhiteLabel(id: string) {
   return http.delete(`/white-labels/${id}`)
 }
 
-export const useDataWhiteLabelOverview = (params: PaginateQueryParams) =>
+export const useDataWhiteLabelOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: whiteLabelQueryKeys.list(params),
     queryFn: () => apiGetWhiteLabelListing(params),

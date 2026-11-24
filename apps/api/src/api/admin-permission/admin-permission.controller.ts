@@ -5,14 +5,21 @@ import { AdminAuthGuard } from '../../guards/admin-auth.guard';
 import { PoliciesGuard } from '../../guards/policies.guard';
 import { AppAbility } from '../../shared/casl/ability.factory';
 import { AppActions, AppSubjects } from '../../utils/permissions.constant';
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { AdminPermissionResDto } from './dto/admin-permission.res.dto';
 import { UpdatePermissionReqDto } from './dto/update-permission.req.dto';
 import { AdminPermissionService } from './admin-permission.service';
@@ -27,15 +34,19 @@ export class AdminPermissionController {
   @ApiAuth({
     type: AdminPermissionResDto,
     summary: 'Get paginated list of admin permissions',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: ['id', 'key', 'name', 'group', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['id', 'ASC']],
-      filterableColumns: {
-        key: [FilterOperator.ILIKE],
-        name: [FilterOperator.ILIKE],
-        group: [FilterOperator.ILIKE],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'key', 'name', 'group', 'createdAt', 'updatedAt'],
+      defaultSort: 'id',
+      filters: [
+        'key',
+        'name',
+        'group',
+        'search',
+        AllowedFilter.partial('key'),
+        AllowedFilter.partial('name'),
+        AllowedFilter.partial('group'),
+      ],
     },
   })
   @CheckAnyPolicies(
@@ -43,7 +54,7 @@ export class AdminPermissionController {
     (ability: AppAbility) => ability.can(AppActions.Update, AppSubjects.Role),
   )
   findAll(
-    @Paginate() query: PaginateQuery,
+    @Query() query: QueryParams,
   ): Promise<Paginated<AdminPermissionResDto>> {
     return this.permissionService.findAll(query);
   }

@@ -5,15 +5,11 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import {
-  FilterOperator,
-  Paginate,
-  Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+import { Paginated, QueryParams } from '../../../common/query-builder';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiAuth } from '../../../decorators/http.decorators';
@@ -38,23 +34,18 @@ export class AdminCosplayerApplicationController {
   @ApiAuth({
     type: CosplayerApplicationResDto,
     summary: 'Get paginated list of cosplayer applications',
-    isPaginated: true,
-    paginateOptions: {
-      searchableColumns: ['stageName', 'bio'],
-      sortableColumns: ['id', 'createdAt', 'updatedAt', 'status', 'stageName'],
-      defaultSortBy: [['id', 'DESC']],
-      relations: ['user', 'reviewedBy'],
-      filterableColumns: {
-        status: [FilterOperator.EQ, FilterOperator.IN],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'createdAt', 'updatedAt', 'status', 'stageName'],
+      defaultSort: '-id',
+      filters: ['status', 'createdAt', 'stageName', 'bio'],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.User),
   )
   findAll(
-    @Paginate() query: PaginateQuery,
+    @Query() query: QueryParams,
   ): Promise<Paginated<CosplayerApplicationResDto>> {
     return this.applicationService.findAll(query);
   }

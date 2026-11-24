@@ -19,11 +19,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { DataSource, EntityManager, In, LessThan, Repository } from 'typeorm';
 import { AdminAccountRecoveryService } from '../auth/services/admin-account-recovery.service';
 import { AdminRoleEntity } from '../admin-role/entities/admin-role.entity';
@@ -186,50 +186,42 @@ export class AdminUserService {
     return plainToInstance(AdminUserResDto, savedUser);
   }
 
-  async findAllUser(query: PaginateQuery): Promise<Paginated<AdminUserResDto>> {
+  async findAllUser(query: QueryParams): Promise<Paginated<AdminUserResDto>> {
     const queryBuilder = this.adminUserRepository
       .createQueryBuilder('admin')
+      .leftJoinAndSelect('admin.roles', 'roles')
+      .leftJoinAndSelect('roles.permissionEntities', 'permissionEntities')
       .withDeleted();
 
-    const isTrashedOnly =
-      query.filter?.trashed === '$eq:only' ||
-      query.filter?.deleted === '$eq:true' ||
-      query.filter?.trashed === 'only' ||
-      query.filter?.deleted === 'true' ||
-      query.filter?.status === 'deleted' ||
-      query.filter?.status === '$eq:deleted';
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.partial('email'),
+        AllowedFilter.exact('roles.id'),
+        AllowedFilter.trashed(),
+        AllowedFilter.callback('fullName', (qb, value) => {
+          qb.andWhere(
+            "CONCAT(COALESCE(admin.firstName, ''), ' ', COALESCE(admin.lastName, '')) ILIKE :fullName",
+            { fullName: `%${value}%` },
+          );
+        }),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            "(admin.email ILIKE :search OR CONCAT(COALESCE(admin.firstName, ''), ' ', COALESCE(admin.lastName, '')) ILIKE :search)",
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'email', 'createdAt', 'updatedAt'])
+      .defaultSort('-id')
+      .paginate();
 
-    const isActiveOnly =
-      query.filter?.status === 'active' ||
-      query.filter?.status === '$eq:active' ||
-      query.filter?.trashed === 'none' ||
-      query.filter?.trashed === '$eq:none';
-
-    if (isTrashedOnly) {
-      queryBuilder.andWhere('admin.deleted_at IS NOT NULL');
-    } else if (isActiveOnly) {
-      queryBuilder.andWhere('admin.deleted_at IS NULL');
-    }
-
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      searchableColumns: ['email'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        'roles.id': [FilterOperator.IN],
-        email: [FilterOperator.ILIKE],
-        fullName: [FilterOperator.ILIKE],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-      },
-      relations: { roles: { permissionEntities: true } },
-    });
-
-    return {
-      ...result,
-      data: plainToInstance(AdminUserResDto, result.data, {
+    return new Paginated(
+      plainToInstance(AdminUserResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<AdminUserResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<AdminUserResDto> {

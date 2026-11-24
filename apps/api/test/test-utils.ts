@@ -13,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { updateGlobalConfig } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { AdminPermissionEntity } from '../src/api/admin-permission/entities/admin-permission.entity';
 import { AdminRoleEntity } from '../src/api/admin-role/entities/admin-role.entity';
@@ -66,12 +65,6 @@ export async function createTestApp(): Promise<INestApplication> {
   );
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
-
-  updateGlobalConfig({
-    defaultOrigin: undefined,
-    defaultLimit: 20,
-    defaultMaxLimit: 100,
-  });
 
   await app.init();
   return app;

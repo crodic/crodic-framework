@@ -25,11 +25,10 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import {
   WHITE_LABEL_MAX_FILE_SIZE,
   whiteLabelUploadOptions,
@@ -104,9 +103,9 @@ export class WhiteLabelController {
   @ApiAuth({
     type: WhiteLabelResDto,
     summary: 'Get paginated white label profiles',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'name',
         'slug',
@@ -115,21 +114,24 @@ export class WhiteLabelController {
         'createdAt',
         'updatedAt',
       ],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        name: [FilterOperator.ILIKE],
-        slug: [FilterOperator.ILIKE],
-        target: [FilterOperator.EQ, FilterOperator.IN],
-        isActive: [FilterOperator.EQ],
-      },
+      defaultSort: '-createdAt',
+      filters: [
+        'name',
+        'slug',
+        'target',
+        'isActive',
+        'search',
+        AllowedFilter.partial('name'),
+        AllowedFilter.partial('slug'),
+        AllowedFilter.exact('target'),
+        AllowedFilter.exact('isActive'),
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.WhiteLabel),
   )
-  findAll(
-    @Paginate() query: PaginateQuery,
-  ): Promise<Paginated<WhiteLabelResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<WhiteLabelResDto>> {
     return this.whiteLabelService.findAll(query);
   }
 

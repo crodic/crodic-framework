@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import {
@@ -14,7 +14,7 @@ import {
 } from './schema'
 
 export async function apiGetCmsPageListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: CmsPageSchema[] }> {
   const response = await http.get('/cms-pages', { params })
 
@@ -56,7 +56,7 @@ export async function apiDeleteCmsPage(id: string) {
   return http.delete(`/cms-pages/${id}`)
 }
 
-export const useDataCmsPageOverview = (params: PaginateQueryParams) =>
+export const useDataCmsPageOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['cms-pages', params],
     queryFn: () => apiGetCmsPageListing(params),

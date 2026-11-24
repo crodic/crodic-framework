@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import { userSchema, type UserSchema } from './schema'
 
 async function getUserListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: UserSchema[] }> {
   const response = await http.get('/users', { params })
 
@@ -68,7 +68,7 @@ export async function apiEditUser({
   return await http.put(`/users/${id}`, data)
 }
 
-export const useDataUserOverview = (params: PaginateQueryParams) =>
+export const useDataUserOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['users', params],
     queryFn: () => getUserListing(params),

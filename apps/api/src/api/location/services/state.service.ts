@@ -3,11 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../../common/query-builder';
 import { Repository } from 'typeorm';
 import { CityResDto } from '../dto/city.res.dto';
 import { CreateStateReqDto, UpdateStateReqDto } from '../dto/state.req.dto';
@@ -24,13 +23,13 @@ export class StateService {
     private readonly cityRepository: Repository<CityEntity>,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<StateResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<StateResDto>> {
     const queryBuilder = this.stateRepository
       .createQueryBuilder('state')
       .leftJoinAndSelect('state.country', 'country');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts([
         'id',
         'name',
         'countryId',
@@ -39,25 +38,12 @@ export class StateService {
         'iso2',
         'createdAt',
         'updatedAt',
-      ],
-      searchableColumns: ['name', 'countryCode', 'iso2'],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        countryId: [FilterOperator.EQ, FilterOperator.IN],
-        countryCode: [
-          FilterOperator.EQ,
-          FilterOperator.ILIKE,
-          FilterOperator.IN,
-        ],
-        iso2: [FilterOperator.EQ, FilterOperator.ILIKE, FilterOperator.IN],
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
-    });
+      ])
+      .defaultSort('name')
+      .allowedFilters(['countryId', 'countryCode', 'iso2', 'name'])
+      .paginate();
 
-    return {
-      ...result,
-      data: this.toDtos(result.data),
-    } as Paginated<StateResDto>;
+    return new Paginated(this.toDtos(result.data), result.meta, result.links);
   }
 
   async listByCountry(countryId: AutoIncrementID): Promise<StateResDto[]> {

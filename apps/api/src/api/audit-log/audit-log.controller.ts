@@ -5,14 +5,13 @@ import { AdminAuthGuard } from '../../guards/admin-auth.guard';
 import { PoliciesGuard } from '../../guards/policies.guard';
 import { AppAbility } from '../../shared/casl/ability.factory';
 import { AppActions, AppSubjects } from '../../utils/permissions.constant';
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { AuditLogService } from './audit-log.service';
 import { AuditLogResDto } from './dto/audit-log.res.dto';
 
@@ -27,9 +26,9 @@ export class AuditLogController {
     type: AuditLogResDto,
     statusCode: 200,
     summary: 'Get paginated audit and activity logs',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'createdAt',
         'logName',
@@ -37,26 +36,32 @@ export class AuditLogController {
         'subjectType',
         'causerType',
       ],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        event: [FilterOperator.IN, FilterOperator.EQ],
-        logName: [FilterOperator.IN, FilterOperator.EQ],
-        subjectType: [FilterOperator.ILIKE, FilterOperator.EQ],
-        subjectId: [FilterOperator.EQ],
-        causerType: [FilterOperator.ILIKE, FilterOperator.EQ],
-        causerId: [FilterOperator.EQ],
-        batchUuid: [FilterOperator.EQ],
-        description: [FilterOperator.ILIKE],
-      },
+      defaultSort: '-createdAt',
+      filters: [
+        'event',
+        'logName',
+        'subjectType',
+        'subjectId',
+        'causerType',
+        'causerId',
+        'batchUuid',
+        'description',
+        'search',
+        AllowedFilter.exact('event'),
+        AllowedFilter.exact('logName'),
+        AllowedFilter.exact('subjectId'),
+        AllowedFilter.exact('causerId'),
+        AllowedFilter.exact('batchUuid'),
+        AllowedFilter.partial('subjectType'),
+        AllowedFilter.partial('causerType'),
+        AllowedFilter.partial('description'),
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Log),
   )
-  findAll(
-    @Paginate() query: PaginateQuery,
-  ): Promise<Paginated<AuditLogResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<AuditLogResDto>> {
     return this.auditLogService.findAll(query);
   }
 

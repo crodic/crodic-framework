@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -30,16 +30,20 @@ export function PageEmailLogOverview() {
   useBreadcrumb([{ title: t('navigation.general.emailLogs', 'Email Logs') }])
   const columns = useMemo(() => getEmailTableColumns(), [])
 
-  const buildQuery: ResourceQueryBuilderFn<typeof emailLogFilterParsers> =
-    useCallback((builder, filter) => {
+  const buildQuery: RestResourceQueryBuilderFn<typeof emailLogFilterParsers> =
+    useCallback((builder, filter, search) => {
       builder
-        .ilike('subject', filter.subject)
-        .ilike('to', filter.to)
-        .in('status', filter.status || [])
-        .in('source', filter.source || [])
+        .filter('subject', filter.subject)
+        .filter('to', filter.to)
+        .filter('status', filter.status || [])
+        .filter('source', filter.source || [])
+
+      if (search) {
+        builder.filter('search', search)
+      }
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     EmailLogSchema,
     typeof emailLogFilterParsers
   >({

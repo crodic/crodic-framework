@@ -26,6 +26,11 @@ export {
   InvalidIncludeQueryException,
   InvalidFieldQueryException,
 } from './exceptions';
+export {
+  Paginated,
+  PaginatedMeta,
+  PaginatedLinks,
+} from '../dto/offset-pagination/paginated.dto';
 export type {
   QueryParams,
   FilterApplyFn,

@@ -13,15 +13,11 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import {
-  FilterOperator,
-  Paginate,
-  Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+import { Paginated, QueryParams } from '../../../common/query-builder';
 import { CreateRegionReqDto, UpdateRegionReqDto } from '../dto/region.req.dto';
 import { RegionResDto } from '../dto/region.res.dto';
 import { RegionService } from '../services/region.service';
@@ -36,19 +32,17 @@ export class RegionAdminController {
   @ApiAuth({
     type: RegionResDto,
     summary: 'Get paginated list of regions',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: ['id', 'name', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'name', 'createdAt', 'updatedAt'],
+      defaultSort: 'name',
+      filters: ['name'],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Location),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<RegionResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<RegionResDto>> {
     return this.regionService.findAll(query);
   }
 

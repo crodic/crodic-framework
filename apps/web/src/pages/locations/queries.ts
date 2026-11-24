@@ -1,10 +1,7 @@
 import z from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import {
-  type ApiMetadata,
-  apiMetadataSchema,
-  type PaginateQueryParams,
-} from '@/global'
+import { type ApiMetadata, apiMetadataSchema } from '@/global'
+import type { RestQueryParams } from '@repo/query-builder'
 import http from '@/lib/http'
 import { type AsyncSelectResponse } from '@/components/data-table/data-table-async-select-filter'
 import {
@@ -24,7 +21,7 @@ import {
 
 // ==================== COUNTRIES ====================
 export async function apiGetCountriesListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: CountrySchema[] }> {
   const response = await http.get('/countries', { params })
   return apiMetadataSchema
@@ -61,7 +58,7 @@ export async function apiDeleteCountry(id: string) {
   return http.delete(`/countries/${id}`)
 }
 
-export const useCountriesQuery = (params: PaginateQueryParams) =>
+export const useCountriesQuery = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['countries', params],
     queryFn: () => apiGetCountriesListing(params),
@@ -69,7 +66,7 @@ export const useCountriesQuery = (params: PaginateQueryParams) =>
 
 // ==================== STATES ====================
 export async function apiGetStatesListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: StateSchema[] }> {
   const response = await http.get('/states', { params })
   return apiMetadataSchema
@@ -106,7 +103,7 @@ export async function apiDeleteState(id: string) {
   return http.delete(`/states/${id}`)
 }
 
-export const useStatesQuery = (params: PaginateQueryParams) =>
+export const useStatesQuery = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['states', params],
     queryFn: () => apiGetStatesListing(params),
@@ -114,7 +111,7 @@ export const useStatesQuery = (params: PaginateQueryParams) =>
 
 // ==================== CITIES ====================
 export async function apiGetCitiesListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: CitySchema[] }> {
   const response = await http.get('/cities', { params })
   return apiMetadataSchema
@@ -149,7 +146,7 @@ export async function apiDeleteCity(id: string) {
   return http.delete(`/cities/${id}`)
 }
 
-export const useCitiesQuery = (params: PaginateQueryParams) =>
+export const useCitiesQuery = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['cities', params],
     queryFn: () => apiGetCitiesListing(params),
@@ -157,7 +154,7 @@ export const useCitiesQuery = (params: PaginateQueryParams) =>
 
 // ==================== REGIONS ====================
 export async function apiGetRegionsListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: RegionSchema[] }> {
   const response = await http.get('/regions', { params })
   return apiMetadataSchema
@@ -189,7 +186,7 @@ export async function apiDeleteRegion(id: string) {
   return http.delete(`/regions/${id}`)
 }
 
-export const useRegionsQuery = (params: PaginateQueryParams) =>
+export const useRegionsQuery = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['regions', params],
     queryFn: () => apiGetRegionsListing(params),
@@ -245,9 +242,12 @@ export const usePublicCitiesQuery = (stateId?: string) =>
   })
 
 // ==================== ASYNC SELECT FILTER FETCHERS ====================
-export async function fetchCountryFilterOptions(
-  params: PaginateQueryParams
-): Promise<AsyncSelectResponse> {
+export async function fetchCountryFilterOptions(params: {
+  page?: number
+  per_page?: number
+  limit?: number
+  search?: string
+}): Promise<AsyncSelectResponse> {
   const page = params.page || 1
   const limit = params.per_page || params.limit || 15
   const search =
@@ -259,8 +259,8 @@ export async function fetchCountryFilterOptions(
     params: {
       page,
       limit,
-      search,
-      sortBy: 'name:ASC',
+      filter: search ? { name: search } : undefined,
+      sort: 'name',
     },
   })
 
@@ -286,9 +286,12 @@ function formatStateFilterLabel(s: StateSchema): string {
   return countrySuffix ? `${s.name} (${countrySuffix})` : s.name
 }
 
-export async function fetchStateFilterOptions(
-  params: PaginateQueryParams
-): Promise<AsyncSelectResponse> {
+export async function fetchStateFilterOptions(params: {
+  page?: number
+  per_page?: number
+  limit?: number
+  search?: string
+}): Promise<AsyncSelectResponse> {
   const page = params.page || 1
   const limit = params.per_page || params.limit || 15
   const search =
@@ -300,8 +303,8 @@ export async function fetchStateFilterOptions(
     params: {
       page,
       limit,
-      search,
-      sortBy: 'name:ASC',
+      filter: search ? { name: search } : undefined,
+      sort: 'name',
     },
   })
 

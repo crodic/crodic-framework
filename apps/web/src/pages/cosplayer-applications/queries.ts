@@ -1,10 +1,7 @@
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import {
-  type ApiMetadata,
-  apiMetadataSchema,
-  type PaginateQueryParams,
-} from '@/global'
+import { type ApiMetadata, apiMetadataSchema } from '@/global'
+import type { RestQueryParams } from '@repo/query-builder'
 import http from '@/lib/http'
 import {
   cosplayerApplicationSchema,
@@ -12,7 +9,7 @@ import {
 } from './schema'
 
 export async function getCosplayerApplications(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: CosplayerApplicationSchema[] }> {
   const response = await http.get('/admin/cosplayer-applications', { params })
   return apiMetadataSchema
@@ -20,7 +17,7 @@ export async function getCosplayerApplications(
     .parse(response.data)
 }
 
-export function useDataCosplayerApplications(params: PaginateQueryParams) {
+export function useDataCosplayerApplications(params: RestQueryParams) {
   return useQuery({
     queryKey: ['admin-cosplayer-applications', params],
     queryFn: () => getCosplayerApplications(params),

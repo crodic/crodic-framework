@@ -3,11 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../../common/query-builder';
 import { Repository } from 'typeorm';
 import { CreateCityReqDto, UpdateCityReqDto } from '../dto/city.req.dto';
 import { CityResDto } from '../dto/city.res.dto';
@@ -20,14 +19,14 @@ export class CityService {
     private readonly cityRepository: Repository<CityEntity>,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<CityResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<CityResDto>> {
     const queryBuilder = this.cityRepository
       .createQueryBuilder('city')
       .leftJoinAndSelect('city.state', 'state')
       .leftJoinAndSelect('city.country', 'country');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts([
         'id',
         'name',
         'stateId',
@@ -37,27 +36,19 @@ export class CityService {
         'code',
         'createdAt',
         'updatedAt',
-      ],
-      searchableColumns: ['name', 'stateCode', 'countryCode', 'code'],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        stateId: [FilterOperator.EQ, FilterOperator.IN],
-        countryId: [FilterOperator.EQ, FilterOperator.IN],
-        countryCode: [
-          FilterOperator.EQ,
-          FilterOperator.ILIKE,
-          FilterOperator.IN,
-        ],
-        stateCode: [FilterOperator.EQ, FilterOperator.ILIKE, FilterOperator.IN],
-        code: [FilterOperator.EQ, FilterOperator.ILIKE],
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
-    });
+      ])
+      .defaultSort('name')
+      .allowedFilters([
+        'stateId',
+        'countryId',
+        'countryCode',
+        'stateCode',
+        'code',
+        'name',
+      ])
+      .paginate();
 
-    return {
-      ...result,
-      data: this.toDtos(result.data),
-    } as Paginated<CityResDto>;
+    return new Paginated(this.toDtos(result.data), result.meta, result.links);
   }
 
   async listByState(stateId: AutoIncrementID): Promise<CityResDto[]> {

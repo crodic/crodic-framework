@@ -77,7 +77,6 @@
     "multer": "^2.4.0",
     "nestjs-cls": "^7.0.1",
     "nestjs-i18n": "^10.8.5",
-    "nestjs-paginate": "^15.0.1",
     "nestjs-pino": "^5.3.1",
     "nodemailer": "^10.1.0",
     "otplib": "^13.5.0",

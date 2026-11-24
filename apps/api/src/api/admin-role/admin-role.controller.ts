@@ -13,15 +13,15 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { CreateAdminRoleReqDto } from './dto/create-admin-role.req.dto';
 import { AdminRoleResDto } from './dto/admin-role.res.dto';
 import { UpdateAdminRoleReqDto } from './dto/update-admin-role.req.dto';
@@ -40,21 +40,17 @@ export class AdminRoleController {
     description: 'Return all admin roles',
     errorResponses: [404, 400, 401, 403],
     statusCode: 200,
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        name: [FilterOperator.ILIKE],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
+      defaultSort: '-id',
+      filters: ['name', 'search', AllowedFilter.partial('name')],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Role),
   )
-  findAll(
-    @Paginate() query: PaginateQuery,
-  ): Promise<Paginated<AdminRoleResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<AdminRoleResDto>> {
     return this.roleService.findAll(query);
   }
 

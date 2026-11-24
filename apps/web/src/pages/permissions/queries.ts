@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import {
@@ -15,7 +15,7 @@ import {
 } from './schema'
 
 async function apiGetPermissionListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: PermissionSchema[] }> {
   const response = await http.get('/admin/permissions', { params })
 
@@ -54,7 +54,7 @@ export async function apiEditPermission({
   )
 }
 
-export const useDataPermissionOverview = (params: PaginateQueryParams) =>
+export const useDataPermissionOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['permissions', params],
     queryFn: () => apiGetPermissionListing(params),

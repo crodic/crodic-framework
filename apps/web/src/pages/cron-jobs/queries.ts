@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import {
@@ -21,7 +21,7 @@ export async function getCronJobs(): Promise<CronJobSchema[]> {
 }
 
 export async function getCronJobLogs(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: CronJobLogSchema[] }> {
   const response = await http.get('/cron-jobs/logs', { params })
   return apiMetadataSchema
@@ -50,7 +50,7 @@ export const useDataCronJobs = () =>
     staleTime: 1000 * 30,
   })
 
-export const useDataCronJobLogs = (params: PaginateQueryParams) =>
+export const useDataCronJobLogs = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['cron_job_logs', params],
     queryFn: () => getCronJobLogs(params),

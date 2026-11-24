@@ -10,7 +10,6 @@ import {
   ApiSecurity,
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'http';
-import { PaginateConfig, PaginatedSwaggerDocs } from 'nestjs-paginate';
 import { AuthOptional } from './auth-optional.decorator';
 import { Public } from './public.decorator';
 
@@ -38,39 +37,24 @@ interface IApiBaseOptions<T extends Type<any>> {
   statusCode?: HttpStatus;
 }
 
-type IApiPaginatedOptions<T extends Type<any>> = Omit<
-  IApiBaseOptions<T>,
-  'type'
-> & {
-  type: T;
-  isPaginated: true;
-  isQueryBuilder?: false;
-  paginateOptions?: PaginateConfig<InstanceType<T>>;
-  queryBuilderOptions?: never;
-};
-
 type IApiQueryBuilderOptions<T extends Type<any>> = Omit<
   IApiBaseOptions<T>,
   'type'
 > & {
   type: T;
-  isQueryBuilder: true;
-  isPaginated?: false;
-  paginateOptions?: never;
+  isQueryBuilder?: true;
+  isPaginated?: true;
   queryBuilderOptions?: Omit<ApiQueryBuilderDocsOptions<T>, 'entity'>;
 };
 
 type IApiNonPaginatedOptions<T extends Type<any>> = IApiBaseOptions<T> & {
   isPaginated?: false;
   isQueryBuilder?: false;
-  paginateOptions?: never;
   queryBuilderOptions?: never;
 };
 
 export type IApiOptions<T extends Type<any> = any> =
-  | IApiPaginatedOptions<T>
-  | IApiQueryBuilderOptions<T>
-  | IApiNonPaginatedOptions<T>;
+  IApiQueryBuilderOptions<T> | IApiNonPaginatedOptions<T>;
 
 export type IApiAuthOptions<T extends Type<any> = any> = IApiOptions<T> & {
   auths?: ApiAuthType[];
@@ -96,20 +80,12 @@ function buildSuccessDecorator<T extends Type<any>>(opts: IApiOptions<T>) {
   const status = opts.statusCode ?? HttpStatus.OK;
   const desc = opts.description ?? (status === 201 ? 'Created' : 'OK');
 
-  if (opts.isQueryBuilder && opts.type) {
+  if ((opts.isQueryBuilder || opts.isPaginated) && opts.type) {
     return ApiQueryBuilderDocs({
       entity: opts.type,
       ...(opts.queryBuilderOptions ?? {}),
       description: desc,
     });
-  }
-
-  if (opts.isPaginated && opts.type) {
-    return PaginatedSwaggerDocs(
-      opts.type,
-      opts.paginateOptions ??
-        ({ sortableColumns: [] } as PaginateConfig<InstanceType<T>>),
-    );
   }
 
   return status === HttpStatus.CREATED

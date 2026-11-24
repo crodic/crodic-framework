@@ -3,11 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../../common/query-builder';
 import { Repository } from 'typeorm';
 import { CreateRegionReqDto, UpdateRegionReqDto } from '../dto/region.req.dto';
 import { RegionResDto } from '../dto/region.res.dto';
@@ -20,22 +19,16 @@ export class RegionService {
     private readonly regionRepository: Repository<RegionEntity>,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<RegionResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<RegionResDto>> {
     const queryBuilder = this.regionRepository.createQueryBuilder('region');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'name', 'createdAt', 'updatedAt'],
-      searchableColumns: ['name'],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
-    });
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts(['id', 'name', 'createdAt', 'updatedAt'])
+      .defaultSort('name')
+      .allowedFilters(['name'])
+      .paginate();
 
-    return {
-      ...result,
-      data: this.toDtos(result.data),
-    } as Paginated<RegionResDto>;
+    return new Paginated(this.toDtos(result.data), result.meta, result.links);
   }
 
   async listAll(): Promise<RegionResDto[]> {

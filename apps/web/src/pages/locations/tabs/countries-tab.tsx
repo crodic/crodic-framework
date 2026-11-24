@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DataTable } from '@/components/data-table/data-table'
@@ -65,15 +65,15 @@ export function CountriesTab() {
     [regions, handleEdit, handleDelete]
   )
 
-  const buildQuery: ResourceQueryBuilderFn<typeof countryFilterParsers> =
+  const buildQuery: RestResourceQueryBuilderFn<typeof countryFilterParsers> =
     useCallback((builder, filter) => {
       builder
-        .ilike('name', filter.name)
-        .ilike('iso2', filter.iso2)
-        .in('regionId', filter.regionId || [])
+        .filter('name', filter.name)
+        .filter('iso2', filter.iso2)
+        .filter('regionId', filter.regionId)
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     CountrySchema,
     typeof countryFilterParsers
   >({

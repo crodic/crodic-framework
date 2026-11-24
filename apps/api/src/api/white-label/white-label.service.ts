@@ -8,11 +8,11 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { extname } from 'path';
 import slugify from 'slugify';
 import { DataSource, IsNull, Not, Repository } from 'typeorm';
@@ -163,12 +163,24 @@ export class WhiteLabelService {
     }
   }
 
-  async findAll(query: PaginateQuery): Promise<Paginated<WhiteLabelResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<WhiteLabelResDto>> {
     const queryBuilder =
       this.whiteLabelRepository.createQueryBuilder('white_label');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.partial('name'),
+        AllowedFilter.partial('slug'),
+        AllowedFilter.exact('target'),
+        AllowedFilter.exact('isActive'),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            '(white_label.name ILIKE :search OR white_label.slug ILIKE :search OR white_label.description ILIKE :search OR white_label.brandName ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts([
         'id',
         'name',
         'slug',
@@ -176,23 +188,15 @@ export class WhiteLabelService {
         'isActive',
         'createdAt',
         'updatedAt',
-      ],
-      searchableColumns: ['name', 'slug', 'description', 'brandName'],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        name: [FilterOperator.ILIKE],
-        slug: [FilterOperator.ILIKE],
-        target: [FilterOperator.EQ, FilterOperator.IN],
-        isActive: [FilterOperator.EQ],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-        updatedAt: [FilterOperator.GTE, FilterOperator.LTE],
-      },
-    });
+      ])
+      .defaultSort('-createdAt')
+      .paginate();
 
-    return {
-      ...result,
-      data: result.data.map((item) => this.toDto(item)),
-    } as Paginated<WhiteLabelResDto>;
+    return new Paginated(
+      result.data.map((item) => this.toDto(item)),
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<WhiteLabelResDto> {

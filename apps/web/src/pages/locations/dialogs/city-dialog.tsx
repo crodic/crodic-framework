@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { RestQueryBuilder } from '@repo/query-builder'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import http from '@/lib/http'
-import { PaginateQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
@@ -162,11 +162,11 @@ export function CityDialog({
                           : undefined
                       }
                       fetchOptions={async (search, page) => {
-                        const builder = new PaginateQueryBuilder()
+                        const builder = new RestQueryBuilder()
                           .page(page)
                           .limit(15)
-                          .search(search)
-                          .sortBy('name', 'ASC')
+                          .sortBy('name', 'asc')
+                        if (search) builder.filter('name', search)
                         const res = await http.get('/countries', {
                           params: builder.build(),
                         })
@@ -236,12 +236,12 @@ export function CityDialog({
                         if (!selectedCountryId) {
                           return { data: [], hasMore: false }
                         }
-                        const builder = new PaginateQueryBuilder()
+                        const builder = new RestQueryBuilder()
                           .page(page)
                           .limit(15)
-                          .search(search)
-                          .sortBy('name', 'ASC')
-                          .eq('countryId', selectedCountryId)
+                          .sortBy('name', 'asc')
+                          .filter('countryId', selectedCountryId)
+                        if (search) builder.filter('name', search)
 
                         const res = await http.get('/states', {
                           params: builder.build(),

@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -55,15 +55,19 @@ export function PageCronJobsOverview() {
     [handleOpenDetail]
   )
 
-  const buildQuery: ResourceQueryBuilderFn<typeof cronJobLogFilterParsers> =
-    useCallback((builder, filter) => {
+  const buildQuery: RestResourceQueryBuilderFn<typeof cronJobLogFilterParsers> =
+    useCallback((builder, filter, search) => {
       builder
-        .ilike('jobKey', filter.jobKey)
-        .in('status', filter.status || [])
-        .in('triggerType', filter.triggerType || [])
+        .filter('jobKey', filter.jobKey)
+        .filter('status', filter.status || [])
+        .filter('triggerType', filter.triggerType || [])
+
+      if (search) {
+        builder.filter('search', search)
+      }
     }, [])
 
-  const { table, isFetching: isLogsFetching } = useResourceTable<
+  const { table, isFetching: isLogsFetching } = useRestResourceTable<
     CronJobLogSchema,
     typeof cronJobLogFilterParsers
   >({

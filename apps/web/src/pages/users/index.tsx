@@ -3,12 +3,11 @@ import { PlusIcon } from 'lucide-react'
 import { parseAsArrayOf, parseAsInteger, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { normalizeDate } from '@/lib/utils'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -43,22 +42,25 @@ export function PageUserOverview() {
 
   const columns = useMemo(() => getUsersTableColumns(), [])
 
-  const buildQuery: ResourceQueryBuilderFn<typeof userFilterParsers> =
-    useCallback((builder, filter) => {
-      const createdFrom = normalizeDate(filter.createdAt?.[0])
-      const createdTo = normalizeDate(filter.createdAt?.[1])
+  const buildQuery: RestResourceQueryBuilderFn<typeof userFilterParsers> =
+    useCallback((builder, filter, search) => {
       builder
-        .btw('createdAt', createdFrom, createdTo)
-        .ilike('email', filter.email)
-        .ilike('fullName', filter.fullName)
-        .eq('id', filter.id)
+        .filter('email', filter.email)
+        .filter('fullName', filter.fullName)
+        .filter('id', filter.id)
 
-      if (filter.status) {
-        builder.eq('status', filter.status)
+      if (filter.status === 'deleted') {
+        builder.filterTrashed('only')
+      } else if (filter.status === 'active') {
+        builder.filterTrashed('without')
+      }
+
+      if (search) {
+        builder.filter('search', search)
       }
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     UserSchema,
     typeof userFilterParsers
   >({

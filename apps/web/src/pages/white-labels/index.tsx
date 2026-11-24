@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router'
 import { useAuthStore } from '@/stores/auth-store'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -37,7 +37,7 @@ export function PageWhiteLabelOverview() {
 
   const columns = useMemo(() => defaultColumns, [])
 
-  const buildQuery: ResourceQueryBuilderFn<typeof whiteLabelFilterParsers> =
+  const buildQuery: RestResourceQueryBuilderFn<typeof whiteLabelFilterParsers> =
     useCallback((builder, filter) => {
       let isActiveValue: boolean | undefined
       if (typeof filter.isActive === 'boolean') {
@@ -49,13 +49,13 @@ export function PageWhiteLabelOverview() {
       }
 
       builder
-        .ilike('name', filter.name)
-        .ilike('slug', filter.slug)
-        .eq('target', filter.target)
-        .eq('isActive', isActiveValue)
+        .filter('name', filter.name)
+        .filter('slug', filter.slug)
+        .filter('target', filter.target)
+        .filter('isActive', isActiveValue)
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     WhiteLabelSchema,
     typeof whiteLabelFilterParsers
   >({

@@ -15,11 +15,11 @@ import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import { ClsService } from 'nestjs-cls';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { DataSource, EntityManager, In, LessThan, Repository } from 'typeorm';
 import { ACCOUNT_RESTORE_GRACE_PERIOD_MS } from '../../common/constants/app.constant';
 import { UserFollowEntity } from '../social/entities/user-follow.entity';
@@ -75,51 +75,42 @@ export class UserService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findAllUser(query: PaginateQuery): Promise<Paginated<UserResDto>> {
+  async findAllUser(query: QueryParams): Promise<Paginated<UserResDto>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.cosplayerProfile', 'cosplayerProfile')
       .withDeleted();
 
-    const isTrashedOnly =
-      query.filter?.trashed === '$eq:only' ||
-      query.filter?.deleted === '$eq:true' ||
-      query.filter?.trashed === 'only' ||
-      query.filter?.deleted === 'true' ||
-      query.filter?.status === 'deleted' ||
-      query.filter?.status === '$eq:deleted';
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.partial('email'),
+        AllowedFilter.partial('username'),
+        AllowedFilter.exact('id'),
+        AllowedFilter.trashed(),
+        AllowedFilter.callback('fullName', (qb, value) => {
+          qb.andWhere(
+            "CONCAT(COALESCE(user.firstName, ''), ' ', COALESCE(user.lastName, '')) ILIKE :fullName",
+            { fullName: `%${value}%` },
+          );
+        }),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            "(user.email ILIKE :search OR user.username ILIKE :search OR CONCAT(COALESCE(user.firstName, ''), ' ', COALESCE(user.lastName, '')) ILIKE :search)",
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'email', 'createdAt', 'updatedAt'])
+      .defaultSort('-id')
+      .paginate();
 
-    const isActiveOnly =
-      query.filter?.status === 'active' ||
-      query.filter?.status === '$eq:active' ||
-      query.filter?.trashed === 'none' ||
-      query.filter?.trashed === '$eq:none';
-
-    if (isTrashedOnly) {
-      queryBuilder.andWhere('user.deleted_at IS NOT NULL');
-    } else if (isActiveOnly) {
-      queryBuilder.andWhere('user.deleted_at IS NULL');
-    }
-
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      searchableColumns: ['email', 'id', 'fullName', 'username'],
-      defaultSortBy: [['id', 'DESC']],
-      relations: ['cosplayerProfile'],
-      filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-        fullName: [FilterOperator.ILIKE],
-        email: [FilterOperator.ILIKE],
-        username: [FilterOperator.ILIKE],
-        id: [FilterOperator.EQ],
-      },
-    });
-
-    return {
-      ...result,
-      data: plainToInstance(UserResDto, result.data, {
+    return new Paginated(
+      plainToInstance(UserResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<UserResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async create(dto: CreateUserReqDto): Promise<UserResDto> {

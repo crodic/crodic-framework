@@ -8,11 +8,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
 import { CmsPageResDto } from './dto/cms-page.res.dto';
 import { CreateCmsPageReqDto } from './dto/create-cms-page.req.dto';
@@ -31,28 +31,26 @@ export class CmsPageService {
     private readonly dataSource?: DataSource,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<CmsPageResDto>> {
-    const queryBuilder = this.cmsPageRepository.createQueryBuilder('cmsPage');
+  async findAll(query: QueryParams): Promise<Paginated<CmsPageResDto>> {
+    const queryBuilder = this.cmsPageRepository
+      .createQueryBuilder('cmsPage')
+      .leftJoinAndSelect('cmsPage.translations', 'translations');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'status', 'createdAt', 'updatedAt'],
-      searchableColumns: [
-        'translations.title',
-        'translations.slug',
-        'translations.seoTitle',
-        'translations.seoDescription',
-      ],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        status: [FilterOperator.EQ],
-      },
-      relations: ['translations'],
-    });
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.exact('status'),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            '(translations.title ILIKE :search OR translations.slug ILIKE :search OR translations.seoTitle ILIKE :search OR translations.seoDescription ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'status', 'createdAt', 'updatedAt'])
+      .defaultSort('-id')
+      .paginate();
 
-    return {
-      ...result,
-      data: this.toDtos(result.data),
-    } as Paginated<CmsPageResDto>;
+    return new Paginated(this.toDtos(result.data), result.meta, result.links);
   }
 
   async findOne(id: AutoIncrementID): Promise<CmsPageResDto> {

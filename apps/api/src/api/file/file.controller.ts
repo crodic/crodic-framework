@@ -33,12 +33,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  FilterOperator,
-  Paginate,
-  Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+import { Paginated, QueryParams } from '../../common/query-builder';
 import {
   FILE_UPLOAD_CHUNK_SIZE,
   FILE_UPLOAD_MAX_SIZE,
@@ -91,9 +86,9 @@ export class FileController {
   @ApiAuth({
     type: FileResDto,
     summary: 'Get paginated files',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'public_id',
         'original_name',
@@ -107,32 +102,25 @@ export class FileController {
         'createdAt',
         'updatedAt',
       ],
-      searchableColumns: [
+      defaultSort: '-createdAt',
+      filters: [
         'public_id',
         'original_name',
         'folder',
         'disk',
         'visibility',
         'mime',
+        'resource_type',
+        'status',
+        'is_starred',
+        'createdAt',
       ],
-      defaultSortBy: [['createdAt', 'DESC']],
-      filterableColumns: {
-        public_id: [FilterOperator.EQ],
-        original_name: [FilterOperator.ILIKE],
-        folder: [FilterOperator.EQ, FilterOperator.ILIKE],
-        disk: [FilterOperator.EQ, FilterOperator.IN],
-        visibility: [FilterOperator.EQ, FilterOperator.IN],
-        mime: [FilterOperator.ILIKE],
-        resource_type: [FilterOperator.EQ, FilterOperator.IN],
-        status: [FilterOperator.EQ, FilterOperator.IN],
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-      },
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.File),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<FileResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<FileResDto>> {
     return this.fileService.findAll(query);
   }
 

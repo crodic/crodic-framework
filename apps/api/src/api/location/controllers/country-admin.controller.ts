@@ -13,15 +13,11 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import {
-  FilterOperator,
-  Paginate,
-  Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+import { Paginated, QueryParams } from '../../../common/query-builder';
 import {
   CreateCountryReqDto,
   UpdateCountryReqDto,
@@ -40,9 +36,9 @@ export class CountryAdminController {
   @ApiAuth({
     type: CountryResDto,
     summary: 'Get paginated list of countries',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'name',
         'iso2',
@@ -53,18 +49,14 @@ export class CountryAdminController {
         'createdAt',
         'updatedAt',
       ],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        regionId: [FilterOperator.EQ],
-        iso2: [FilterOperator.EQ, FilterOperator.ILIKE],
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
+      defaultSort: 'name',
+      filters: ['regionId', 'iso2', 'iso3', 'name'],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Location),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<CountryResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<CountryResDto>> {
     return this.countryService.findAll(query);
   }
 

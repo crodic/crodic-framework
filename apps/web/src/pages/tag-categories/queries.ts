@@ -1,10 +1,7 @@
 import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  type ApiMetadata,
-  apiMetadataSchema,
-  type PaginateQueryParams,
-} from '@/global'
+import { type ApiMetadata, apiMetadataSchema } from '@/global'
+import type { RestQueryParams } from '@repo/query-builder'
 import http from '@/lib/http'
 import {
   tagCategorySchema,
@@ -13,7 +10,7 @@ import {
 } from './schema'
 
 export async function getTagCategories(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: TagCategorySchema[] }> {
   const response = await http.get('/tag-categories', { params })
   return apiMetadataSchema
@@ -21,7 +18,7 @@ export async function getTagCategories(
     .parse(response.data)
 }
 
-export function useDataTagCategories(params: PaginateQueryParams) {
+export function useDataTagCategories(params: RestQueryParams) {
   return useQuery({
     queryKey: ['admin-tag-categories', params],
     queryFn: () => getTagCategories(params),

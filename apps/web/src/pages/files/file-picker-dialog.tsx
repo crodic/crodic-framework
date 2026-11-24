@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
 import { useQueryClient } from '@tanstack/react-query'
+import { RestQueryBuilder } from '@repo/query-builder'
 import {
   Check,
   Folder,
@@ -15,7 +16,6 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { PaginateQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -233,19 +233,19 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
   }, [props.open, props.mode, props.value])
 
   const params = useMemo(() => {
-    const builder = new PaginateQueryBuilder()
+    const builder = new RestQueryBuilder()
       .limit(32)
-      .sortBy('createdAt', 'DESC')
+      .sortBy('createdAt', 'desc')
       .search(search)
 
     const effectiveResourceType =
       props.resourceType ?? acceptSpec?.primaryResourceType
     if (effectiveResourceType) {
-      builder.eq('resource_type', effectiveResourceType)
+      builder.filter('resource_type', effectiveResourceType)
     }
 
     if (activeFolder) {
-      builder.eq('folder', activeFolder)
+      builder.filter('folder', activeFolder)
     }
 
     return builder.build()

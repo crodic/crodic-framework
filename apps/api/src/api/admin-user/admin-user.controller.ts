@@ -14,15 +14,15 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { AdminUserService } from './admin-user.service';
 import { AdminUserResDto } from './dto/admin-user.res.dto';
 import { CreateAdminUserReqDto } from './dto/create-admin-user.req.dto';
@@ -42,24 +42,23 @@ export class AdminUserController {
     type: AdminUserResDto,
     summary: 'Find all users',
     description: 'Admin can find all users in the system with pagination',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-        email: [FilterOperator.ILIKE],
-        'roles.id': [FilterOperator.IN],
-        fullName: [FilterOperator.ILIKE],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'email', 'createdAt', 'updatedAt'],
+      defaultSort: '-id',
+      filters: [
+        'email',
+        'fullName',
+        'search',
+        AllowedFilter.exact('roles.id'),
+        AllowedFilter.trashed(),
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Admin),
   )
-  findAll(
-    @Paginate() query: PaginateQuery,
-  ): Promise<Paginated<AdminUserResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<AdminUserResDto>> {
     return this.adminUserService.findAllUser(query);
   }
 

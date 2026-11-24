@@ -3,11 +3,11 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { Not, Repository } from 'typeorm';
 import { AdminPermissionResDto } from './dto/admin-permission.res.dto';
 import { UpdatePermissionReqDto } from './dto/update-permission.req.dto';
@@ -52,31 +52,35 @@ export class AdminPermissionService implements OnModuleInit {
     });
   }
 
-  async findAll(
-    query: PaginateQuery,
-  ): Promise<Paginated<AdminPermissionResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<AdminPermissionResDto>> {
     await this.ensureSynced();
 
     const queryBuilder =
       this.permissionRepository.createQueryBuilder('permission');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'key', 'name', 'group', 'createdAt', 'updatedAt'],
-      searchableColumns: ['key', 'name', 'group', 'description'],
-      defaultSortBy: [['id', 'ASC']],
-      filterableColumns: {
-        key: [FilterOperator.ILIKE],
-        name: [FilterOperator.ILIKE],
-        group: [FilterOperator.ILIKE],
-      },
-    });
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedFilters([
+        AllowedFilter.partial('key'),
+        AllowedFilter.partial('name'),
+        AllowedFilter.partial('group'),
+        AllowedFilter.callback('search', (qb, value) => {
+          qb.andWhere(
+            '(permission.key ILIKE :search OR permission.name ILIKE :search OR permission.group ILIKE :search OR permission.description ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts(['id', 'key', 'name', 'group', 'createdAt', 'updatedAt'])
+      .defaultSort('id')
+      .paginate();
 
-    return {
-      ...result,
-      data: plainToInstance(AdminPermissionResDto, result.data, {
+    return new Paginated(
+      plainToInstance(AdminPermissionResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    } as Paginated<AdminPermissionResDto>;
+      result.meta,
+      result.links,
+    );
   }
 
   async findOne(id: AutoIncrementID): Promise<AdminPermissionResDto> {

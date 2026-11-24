@@ -3,9 +3,9 @@ import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -50,17 +50,15 @@ export function PageCosplayerApplicationsOverview() {
     [handleReview]
   )
 
-  const buildQuery: ResourceQueryBuilderFn<typeof applicationFilterParsers> =
-    useCallback((builder, filter) => {
-      if (filter.stageName) {
-        builder.ilike('stageName', filter.stageName)
-      }
-      if (filter.status) {
-        builder.eq('status', filter.status)
-      }
-    }, [])
+  const buildQuery: RestResourceQueryBuilderFn<
+    typeof applicationFilterParsers
+  > = useCallback((builder, filter) => {
+    builder
+      .filter('stageName', filter.stageName)
+      .filter('status', filter.status)
+  }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     CosplayerApplicationSchema,
     typeof applicationFilterParsers
   >({

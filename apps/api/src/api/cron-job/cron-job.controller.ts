@@ -13,15 +13,15 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { CronJobService } from './cron-job.service';
 import { CronJobResDto } from './dto/cron-job.res.dto';
 import { CronJobLogResDto } from './dto/cron-job-log.res.dto';
@@ -52,9 +52,9 @@ export class CronJobController {
     type: CronJobLogResDto,
     statusCode: 200,
     summary: 'Get paginated cron job execution logs',
-    isPaginated: true,
-    paginateOptions: {
-      sortableColumns: [
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: [
         'id',
         'startedAt',
         'finishedAt',
@@ -63,21 +63,23 @@ export class CronJobController {
         'triggerType',
         'jobKey',
       ],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        status: [FilterOperator.EQ, FilterOperator.IN],
-        jobKey: [FilterOperator.EQ, FilterOperator.IN],
-        triggerType: [FilterOperator.EQ],
-        startedAt: [FilterOperator.BTW, FilterOperator.GTE, FilterOperator.LTE],
-      },
-      searchableColumns: ['jobKey', 'jobName', 'summary', 'errorMessage'],
+      defaultSort: '-id',
+      filters: [
+        'status',
+        'jobKey',
+        'triggerType',
+        'search',
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('jobKey'),
+        AllowedFilter.exact('triggerType'),
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.CronJob),
   )
   async getLogs(
-    @Paginate() query: PaginateQuery,
+    @Query() query: QueryParams,
   ): Promise<Paginated<CronJobLogResDto>> {
     return this.cronJobService.findAllLogs(query);
   }

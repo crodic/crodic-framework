@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -31,15 +31,18 @@ export function PageCmsPageOverview() {
 
   useBreadcrumb([{ title: t('navigation.general.cmsPages', 'CMS Pages') }])
 
-  const buildQuery: ResourceQueryBuilderFn<typeof pageFilterParsers> =
-    useCallback((builder, filter) => {
-      builder
-        .ilike('title', filter.title)
-        .ilike('slug', filter.slug)
-        .eq('status', filter.status)
+  const buildQuery: RestResourceQueryBuilderFn<typeof pageFilterParsers> =
+    useCallback((builder, filter, search) => {
+      builder.filter('status', filter.status)
+
+      if (search) {
+        builder.filter('search', search)
+      } else if (filter.title || filter.slug) {
+        builder.filter('search', filter.title || filter.slug)
+      }
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     CmsPageSchema,
     typeof pageFilterParsers
   >({

@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import {
   type ApiMetadata,
   apiMetadataSchema,
-  type PaginateQueryParams,
+  type RestQueryParams,
 } from '@/global'
 import http from '@/lib/http'
 import { type ActivityLogSchema, logSchema } from './schema'
 
 async function getLogListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: ActivityLogSchema[] }> {
   const response = await http.get('/audit-logs', { params })
 
@@ -24,7 +24,7 @@ export async function apiGetLogById(id: string): Promise<ActivityLogSchema> {
   return logSchema.parse(response.data)
 }
 
-export const useDataLogOverview = (params: PaginateQueryParams) =>
+export const useDataLogOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['activity_logs', params],
     queryFn: () => getLogListing(params),

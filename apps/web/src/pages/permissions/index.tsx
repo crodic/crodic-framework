@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
@@ -30,12 +30,15 @@ export function PagePermissionOverview() {
   ])
   const columns = useMemo(() => getPermissionsTableColumns(), [])
 
-  const buildQuery: ResourceQueryBuilderFn<typeof permissionFilterParsers> =
-    useCallback((builder, filter) => {
-      builder.ilike('name', filter.name).ilike('group', filter.group)
+  const buildQuery: RestResourceQueryBuilderFn<typeof permissionFilterParsers> =
+    useCallback((builder, filter, search) => {
+      builder.filter('name', filter.name).filter('group', filter.group)
+      if (search) {
+        builder.filter('search', search)
+      }
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     PermissionSchema,
     typeof permissionFilterParsers
   >({

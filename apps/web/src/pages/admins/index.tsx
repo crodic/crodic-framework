@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
-  useResourceTable,
-  type ResourceQueryBuilderFn,
-} from '@/hooks/use-resource-table'
+  useRestResourceTable,
+  type RestResourceQueryBuilderFn,
+} from '@/hooks/use-rest-resource-table'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
@@ -38,19 +38,25 @@ export function PageAdminOverview() {
     [rolesData]
   )
 
-  const buildQuery: ResourceQueryBuilderFn<typeof adminsFilterParsers> =
-    useCallback((builder, filter) => {
+  const buildQuery: RestResourceQueryBuilderFn<typeof adminsFilterParsers> =
+    useCallback((builder, filter, search) => {
       builder
-        .ilike('email', filter.email)
-        .ilike('fullName', filter.fullName)
-        .in('roles.id', filter.role || [])
+        .filter('email', filter.email)
+        .filter('fullName', filter.fullName)
+        .filter('roles.id', filter.role || [])
 
-      if (filter.status) {
-        builder.eq('status', filter.status)
+      if (filter.status === 'deleted') {
+        builder.filterTrashed('only')
+      } else if (filter.status === 'active') {
+        builder.filterTrashed('without')
+      }
+
+      if (search) {
+        builder.filter('search', search)
       }
     }, [])
 
-  const { table, isFetching } = useResourceTable<
+  const { table, isFetching } = useRestResourceTable<
     AdminSchema,
     typeof adminsFilterParsers
   >({

@@ -20,11 +20,10 @@ import {
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import {
-  FilterOperator,
-  Paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryParams,
+} from '../../common/query-builder';
 import { CreateUserReqDto } from './dto/create-user.req.dto';
 import {
   HandleCosplayerRequestReqDto,
@@ -59,26 +58,24 @@ Features:
   • id: EQ
 
 Response includes paginated data, metadata, and navigation links.`,
-    isPaginated: true,
-    paginateOptions: {
-      searchableColumns: ['email', 'id', 'fullName', 'username'],
-      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['id', 'DESC']],
-      relations: ['cosplayerProfile'],
-      multiWordSearch: true,
-      filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-        email: [FilterOperator.ILIKE],
-        fullName: [FilterOperator.ILIKE],
-        username: [FilterOperator.ILIKE],
-        id: [FilterOperator.EQ],
-      },
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      sorts: ['id', 'email', 'createdAt', 'updatedAt'],
+      defaultSort: '-id',
+      filters: [
+        'email',
+        'fullName',
+        'username',
+        'search',
+        AllowedFilter.exact('id'),
+        AllowedFilter.trashed(),
+      ],
     },
   })
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.User),
   )
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<UserResDto>> {
+  findAll(@Query() query: QueryParams): Promise<Paginated<UserResDto>> {
     return this.userService.findAllUser(query);
   }
 

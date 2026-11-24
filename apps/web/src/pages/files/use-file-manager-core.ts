@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { RestQueryBuilder } from '@repo/query-builder'
 import {
   parseAsArrayOf,
   parseAsInteger,
@@ -17,7 +18,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
-import { PaginateQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { normalizeDate, sortParser } from '@/lib/utils'
 import { useDataTable } from '@/hooks/use-data-table'
@@ -300,36 +300,49 @@ export function useFileManagerCore() {
   const createdTo = normalizeDate(filter.createdAt?.[1])
 
   const params = useMemo(() => {
-    const builder = new PaginateQueryBuilder()
+    const builder = new RestQueryBuilder()
       .page(page)
       .limit(perPage)
-      .ilike('original_name', filter.original_name)
-      .ilike('mime', filter.mime)
-      .eq('resource_type', filter.resource_type)
-      .btw('createdAt', createdFrom, createdTo)
+      .filter('original_name', filter.original_name)
+      .filter('mime', filter.mime)
+      .filter('resource_type', filter.resource_type)
       .search(search)
+
+    if (createdFrom && createdTo) {
+      builder.filter('createdAt', `${createdFrom},${createdTo}`)
+    } else if (createdFrom) {
+      builder.filter('createdAt', createdFrom)
+    } else if (createdTo) {
+      builder.filter('createdAt', createdTo)
+    }
 
     // Handle view-specific filtering/sorting
     if (activeView === 'trash') {
-      builder.eq('status', 'trash')
+      builder.filter('status', 'trash')
     } else {
       if (filter.status && filter.status !== 'all') {
-        builder.eq('status', filter.status)
+        builder.filter('status', filter.status)
       }
 
       if (activeView === 'starred') {
-        builder.eq('is_starred', true)
+        builder.filter('is_starred', true)
       }
     }
 
     if (activeView === 'recent') {
-      builder.applySorts([{ sortBy: 'createdAt', sortDirection: 'DESC' }])
+      builder.sortBy('createdAt', 'desc')
     } else {
-      builder.applySorts(sortParser(sort))
+      const parsedSorts = sortParser(sort)
+      for (const s of parsedSorts) {
+        builder.sortBy(
+          s.sortBy,
+          s.sortDirection.toLowerCase() as 'asc' | 'desc'
+        )
+      }
     }
 
     if (activeFolder) {
-      builder.eq('folder', activeFolder)
+      builder.filter('folder', activeFolder)
     }
 
     return builder.build()

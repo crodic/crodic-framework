@@ -1,10 +1,7 @@
 import z from 'zod'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import {
-  type ApiMetadata,
-  apiMetadataSchema,
-  type PaginateQueryParams,
-} from '@/global'
+import { type ApiMetadata, apiMetadataSchema } from '@/global'
+import type { RestQueryParams } from '@repo/query-builder'
 import http from '@/lib/http'
 import {
   createFolderSchema,
@@ -37,8 +34,8 @@ const chunkUploadSessionSchema = z.object({
 
 export const fileQueryKeys = {
   all: ['files'] as const,
-  list: (params: PaginateQueryParams) => [...fileQueryKeys.all, params],
-  infiniteList: (params: PaginateQueryParams) => [
+  list: (params: RestQueryParams) => [...fileQueryKeys.all, params],
+  infiniteList: (params: RestQueryParams) => [
     ...fileQueryKeys.all,
     'infinite',
     params,
@@ -50,7 +47,7 @@ export const fileQueryKeys = {
 }
 
 export async function apiGetFileListing(
-  params: PaginateQueryParams
+  params: RestQueryParams
 ): Promise<ApiMetadata & { data: FileSchema[] }> {
   const response = await http.get('/files', { params })
 
@@ -293,7 +290,7 @@ export async function apiGetTemporaryUrl({
 }
 
 export const useDataFileOverview = (
-  params: PaginateQueryParams,
+  params: RestQueryParams,
   options?: { enabled?: boolean }
 ) =>
   useQuery({
@@ -303,7 +300,7 @@ export const useDataFileOverview = (
   })
 
 export const useInfiniteDataFileOverview = (
-  params: PaginateQueryParams,
+  params: RestQueryParams,
   options?: { enabled?: boolean }
 ) =>
   useInfiniteQuery({
@@ -338,7 +335,7 @@ export const useDataFileStarredCount = () =>
     queryKey: fileQueryKeys.starredCount(),
     queryFn: () =>
       apiGetFileListing({
-        filter: { is_starred: { $eq: true } },
+        filter: { is_starred: true },
         limit: 1,
       }),
     select: (data) => data.meta.totalItems,
@@ -349,7 +346,7 @@ export const useDataFileTrashCount = () =>
     queryKey: [...fileQueryKeys.all, 'trash-count'] as const,
     queryFn: () =>
       apiGetFileListing({
-        filter: { status: { $eq: 'trash' } },
+        filter: { status: 'trash' },
         limit: 1,
       }),
     select: (data) => data.meta.totalItems,

@@ -10,11 +10,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
+  AllowedFilter,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../common/query-builder';
 import { In, LessThan, Repository } from 'typeorm';
 import {
   CronJobLogEntity,
@@ -187,13 +187,22 @@ export class CronJobService {
   /**
    * Get paginated logs for data table view in Admin Portal.
    */
-  async findAllLogs(
-    query: PaginateQuery,
-  ): Promise<Paginated<CronJobLogResDto>> {
+  async findAllLogs(query: QueryParams): Promise<Paginated<CronJobLogResDto>> {
     const qb = this.logRepository.createQueryBuilder('log');
 
-    const result = await paginate(query, qb, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(qb, query)
+      .allowedFilters([
+        AllowedFilter.exact('status'),
+        AllowedFilter.exact('jobKey'),
+        AllowedFilter.exact('triggerType'),
+        AllowedFilter.callback('search', (builder, value) => {
+          builder.andWhere(
+            '(log.jobKey ILIKE :search OR log.jobName ILIKE :search OR log.summary ILIKE :search OR log.errorMessage ILIKE :search)',
+            { search: `%${value}%` },
+          );
+        }),
+      ])
+      .allowedSorts([
         'id',
         'startedAt',
         'finishedAt',
@@ -201,23 +210,17 @@ export class CronJobService {
         'status',
         'triggerType',
         'jobKey',
-      ],
-      searchableColumns: ['jobKey', 'jobName', 'summary', 'errorMessage'],
-      defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        status: [FilterOperator.EQ, FilterOperator.IN],
-        jobKey: [FilterOperator.EQ, FilterOperator.IN],
-        triggerType: [FilterOperator.EQ],
-        startedAt: [FilterOperator.BTW, FilterOperator.GTE, FilterOperator.LTE],
-      },
-    });
+      ])
+      .defaultSort('-id')
+      .paginate();
 
-    return {
-      ...result,
-      data: plainToInstance(CronJobLogResDto, result.data, {
+    return new Paginated(
+      plainToInstance(CronJobLogResDto, result.data, {
         excludeExtraneousValues: true,
       }),
-    };
+      result.meta,
+      result.links,
+    );
   }
 
   /**

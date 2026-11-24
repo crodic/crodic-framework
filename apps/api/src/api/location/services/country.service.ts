@@ -3,11 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import {
-  FilterOperator,
-  paginate,
   Paginated,
-  PaginateQuery,
-} from 'nestjs-paginate';
+  QueryBuilder,
+  QueryParams,
+} from '../../../common/query-builder';
 import { Repository } from 'typeorm';
 import {
   CreateCountryReqDto,
@@ -27,13 +26,13 @@ export class CountryService {
     private readonly stateRepository: Repository<StateEntity>,
   ) {}
 
-  async findAll(query: PaginateQuery): Promise<Paginated<CountryResDto>> {
+  async findAll(query: QueryParams): Promise<Paginated<CountryResDto>> {
     const queryBuilder = this.countryRepository
       .createQueryBuilder('country')
       .leftJoinAndSelect('country.region', 'region');
 
-    const result = await paginate(query, queryBuilder, {
-      sortableColumns: [
+    const result = await QueryBuilder.for(queryBuilder, query)
+      .allowedSorts([
         'id',
         'name',
         'iso2',
@@ -43,21 +42,12 @@ export class CountryService {
         'currency',
         'createdAt',
         'updatedAt',
-      ],
-      searchableColumns: ['name', 'iso2', 'iso3', 'capital', 'currency'],
-      defaultSortBy: [['name', 'ASC']],
-      filterableColumns: {
-        regionId: [FilterOperator.EQ, FilterOperator.IN],
-        iso2: [FilterOperator.EQ, FilterOperator.ILIKE, FilterOperator.IN],
-        iso3: [FilterOperator.EQ, FilterOperator.ILIKE, FilterOperator.IN],
-        name: [FilterOperator.EQ, FilterOperator.ILIKE],
-      },
-    });
+      ])
+      .defaultSort('name')
+      .allowedFilters(['regionId', 'iso2', 'iso3', 'name'])
+      .paginate();
 
-    return {
-      ...result,
-      data: this.toDtos(result.data),
-    } as Paginated<CountryResDto>;
+    return new Paginated(this.toDtos(result.data), result.meta, result.links);
   }
 
   async listAll(regionId?: AutoIncrementID): Promise<CountryResDto[]> {
