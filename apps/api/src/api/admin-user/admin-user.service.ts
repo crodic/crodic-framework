@@ -199,48 +199,9 @@ export class AdminUserService {
         AllowedFilter.exact('roles.id'),
         AllowedFilter.trashed(),
         AllowedFilter.callback('verifiedAt', (qb, value) => {
-          if (!value) return;
-          const values = Array.isArray(value)
-            ? value.map((v) => String(v).toLowerCase().trim())
-            : String(value)
-                .split(',')
-                .map((v) => v.toLowerCase().trim());
-
-          const hasVerified =
-            values.includes('verified') ||
-            values.includes('true') ||
-            values.includes('1');
-          const hasUnverified =
-            values.includes('unverified') ||
-            values.includes('false') ||
-            values.includes('0');
-
-          if (hasVerified && !hasUnverified) {
+          if (value === 'verified') {
             qb.andWhere('admin.verified_at IS NOT NULL');
-          } else if (hasUnverified && !hasVerified) {
-            qb.andWhere('admin.verified_at IS NULL');
-          }
-        }),
-        AllowedFilter.callback('verified', (qb, value) => {
-          if (!value) return;
-          const values = Array.isArray(value)
-            ? value.map((v) => String(v).toLowerCase().trim())
-            : String(value)
-                .split(',')
-                .map((v) => v.toLowerCase().trim());
-
-          const hasVerified =
-            values.includes('verified') ||
-            values.includes('true') ||
-            values.includes('1');
-          const hasUnverified =
-            values.includes('unverified') ||
-            values.includes('false') ||
-            values.includes('0');
-
-          if (hasVerified && !hasUnverified) {
-            qb.andWhere('admin.verified_at IS NOT NULL');
-          } else if (hasUnverified && !hasVerified) {
+          } else if (value === 'unverified') {
             qb.andWhere('admin.verified_at IS NULL');
           }
         }),
