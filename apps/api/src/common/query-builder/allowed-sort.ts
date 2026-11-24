@@ -94,6 +94,41 @@ export class AllowedSort<T extends ObjectLiteral = any> {
     return AllowedSort.custom(name, fn);
   }
 
+  /** @internal Resolve SQL target expression (standard column or PostgreSQL JSONB expression). */
+  getTargetExpression(alias: string): string {
+    if (this._jsonPathSegments) {
+      return buildJsonbExpression(
+        alias,
+        this.column,
+        this._jsonPathSegments,
+        this._jsonCast,
+      );
+    }
+    return this.column.includes('.') ? this.column : `${alias}.${this.column}`;
+  }
+
+  /** @internal Stable cursor parameter key for this sort. */
+  getCursorKey(): string {
+    if (this._jsonPathSegments) {
+      return `${this.column}:${this._jsonPathSegments.join('.')}`;
+    }
+    return this.column;
+  }
+
+  /** @internal Extract cursor value from an entity row for this sort. */
+  extractCursorValue(entity: any): any {
+    let current: any = entity;
+    for (const segment of this.column.split('.')) {
+      current = current?.[segment];
+    }
+    if (this._jsonPathSegments) {
+      for (const segment of this._jsonPathSegments) {
+        current = current?.[segment];
+      }
+    }
+    return current instanceof Date ? current.toISOString() : current;
+  }
+
   /**
    * Apply this sort to the query builder.
    * @param isFirst - Whether this is the first ORDER BY clause (uses orderBy vs addOrderBy)
@@ -110,16 +145,7 @@ export class AllowedSort<T extends ObjectLiteral = any> {
       return;
     }
 
-    const target = this._jsonPathSegments
-      ? buildJsonbExpression(
-          alias,
-          this.column,
-          this._jsonPathSegments,
-          this._jsonCast,
-        )
-      : this.column.includes('.')
-        ? this.column
-        : `${alias}.${this.column}`;
+    const target = this.getTargetExpression(alias);
 
     if (isFirst) {
       qb.orderBy(target, direction);

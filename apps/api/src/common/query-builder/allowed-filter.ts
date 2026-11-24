@@ -527,7 +527,7 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     qb: SelectQueryBuilder<T>,
     alias: string,
     rawValue: any,
-    paramIndex: number,
+    paramIndex: number | string,
   ): void {
     // Delegate GROUP filters directly so each member handles its own delimiter/ignore/nullable rules
     if (this.operator === FilterOperator.GROUP) {
@@ -575,7 +575,7 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
           },
         };
 
-        member.apply(recorder, alias, rawValue, paramIndex * 100 + idx);
+        member.apply(recorder, alias, rawValue, `${paramIndex}_g${idx}`);
         if (calls.length > 0) {
           recordedMembers.push(calls);
         }

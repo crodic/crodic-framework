@@ -375,21 +375,19 @@ export class QueryBuilder<T extends ObjectLiteral> {
     // Only apply cursor if all active sort columns exist in the decoded cursor parameters
     const hasAllCursorKeys =
       parsedCursor !== null &&
-      orders.every(
-        (o) =>
-          Object.prototype.hasOwnProperty.call(
-            parsedCursor.parameters,
-            o.column,
-          ) && parsedCursor.parameters[o.column] !== undefined,
-      );
+      orders.every((o) => {
+        const key = o.sort.getCursorKey();
+        return (
+          Object.prototype.hasOwnProperty.call(parsedCursor.parameters, key) &&
+          parsedCursor.parameters[key] !== undefined
+        );
+      });
     const activeCursor = hasAllCursorKeys ? parsedCursor : null;
     const isReverse = activeCursor !== null && !activeCursor.pointsToNextItems;
 
     // Apply ORDER BY (inverted when navigating backwards, matching Laravel's paginateUsingCursor)
     orders.forEach((order, idx) => {
-      const target = order.column.includes('.')
-        ? order.column
-        : `${this.alias}.${order.column}`;
+      const target = order.sort.getTargetExpression(this.alias);
       const effectiveDir: 'ASC' | 'DESC' = isReverse
         ? order.direction === 'ASC'
           ? 'DESC'
@@ -523,13 +521,14 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   private resolveCursorOrders(
     tieBreaker: string,
-  ): Array<{ column: string; direction: 'ASC' | 'DESC' }> {
+  ): Array<{ sort: AllowedSort<T>; direction: 'ASC' | 'DESC' }> {
     const sortParam = this.query[this.config.parameters.sort];
     const sortMap = new Map(this._sorts.map((s) => [s.name, s]));
     const allowedNames = Array.from(sortMap.keys());
     const parts = this.toParameterArray(sortParam);
 
-    const orders: Array<{ column: string; direction: 'ASC' | 'DESC' }> = [];
+    const orders: Array<{ sort: AllowedSort<T>; direction: 'ASC' | 'DESC' }> =
+      [];
 
     if (parts.length > 0) {
       const invalid: string[] = [];
@@ -544,7 +543,7 @@ export class QueryBuilder<T extends ObjectLiteral> {
           continue;
         }
         if (!sort.customFn) {
-          orders.push({ column: sort.column, direction });
+          orders.push({ sort, direction });
         }
       }
 
@@ -561,17 +560,20 @@ export class QueryBuilder<T extends ObjectLiteral> {
         const direction: 'ASC' | 'DESC' = isDesc ? 'DESC' : 'ASC';
         const sort = sortMap.get(name);
         orders.push({
-          column: sort && !sort.customFn ? sort.column : name,
+          sort: sort && !sort.customFn ? sort : AllowedSort.field<T>(name),
           direction,
         });
       }
     }
 
     if (orders.length === 0) {
-      orders.push({ column: tieBreaker, direction: 'DESC' });
-    } else if (!orders.some((o) => o.column === tieBreaker)) {
       orders.push({
-        column: tieBreaker,
+        sort: AllowedSort.field<T>(tieBreaker),
+        direction: 'DESC',
+      });
+    } else if (!orders.some((o) => o.sort.getCursorKey() === tieBreaker)) {
+      orders.push({
+        sort: AllowedSort.field<T>(tieBreaker),
         direction: orders[orders.length - 1].direction,
       });
     }
@@ -580,13 +582,10 @@ export class QueryBuilder<T extends ObjectLiteral> {
   }
 
   private applyCursorWhere(
-    orders: Array<{ column: string; direction: 'ASC' | 'DESC' }>,
+    orders: Array<{ sort: AllowedSort<T>; direction: 'ASC' | 'DESC' }>,
     cursorParams: Record<string, any>,
     isReverse: boolean,
   ): void {
-    const toTarget = (col: string) =>
-      col.includes('.') ? col : `${this.alias}.${col}`;
-
     if (orders.length === 1) {
       const order = orders[0];
       const effectiveDir = isReverse
@@ -595,8 +594,9 @@ export class QueryBuilder<T extends ObjectLiteral> {
           : 'ASC'
         : order.direction;
       const op = effectiveDir === 'ASC' ? '>' : '<';
-      this.qb.andWhere(`${toTarget(order.column)} ${op} :qb_c_0`, {
-        qb_c_0: cursorParams[order.column],
+      const target = order.sort.getTargetExpression(this.alias);
+      this.qb.andWhere(`${target} ${op} :qb_c_0`, {
+        qb_c_0: cursorParams[order.sort.getCursorKey()],
       });
       return;
     }
@@ -617,13 +617,15 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
           for (let j = 0; j < i; j++) {
             const eqParam = `qb_c_${i}_${j}`;
-            clauses.push(`${toTarget(orders[j].column)} = :${eqParam}`);
-            params[eqParam] = cursorParams[orders[j].column];
+            const prevTarget = orders[j].sort.getTargetExpression(this.alias);
+            clauses.push(`${prevTarget} = :${eqParam}`);
+            params[eqParam] = cursorParams[orders[j].sort.getCursorKey()];
           }
 
           const cmpParam = `qb_c_${i}_${i}`;
-          clauses.push(`${toTarget(order.column)} ${op} :${cmpParam}`);
-          params[cmpParam] = cursorParams[order.column];
+          const curTarget = order.sort.getTargetExpression(this.alias);
+          clauses.push(`${curTarget} ${op} :${cmpParam}`);
+          params[cmpParam] = cursorParams[order.sort.getCursorKey()];
 
           const expr = `(${clauses.join(' AND ')})`;
           if (i === 0) {
@@ -638,16 +640,11 @@ export class QueryBuilder<T extends ObjectLiteral> {
 
   private extractCursorParams(
     entity: T,
-    orders: Array<{ column: string; direction: 'ASC' | 'DESC' }>,
+    orders: Array<{ sort: AllowedSort<T>; direction: 'ASC' | 'DESC' }>,
   ): Record<string, any> {
     const params: Record<string, any> = {};
     for (const order of orders) {
-      let current: any = entity;
-      for (const segment of order.column.split('.')) {
-        current = current?.[segment];
-      }
-      params[order.column] =
-        current instanceof Date ? current.toISOString() : current;
+      params[order.sort.getCursorKey()] = order.sort.extractCursorValue(entity);
     }
     return params;
   }

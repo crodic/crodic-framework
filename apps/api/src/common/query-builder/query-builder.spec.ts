@@ -1046,12 +1046,12 @@ describe('Spatie-style QueryBuilder', () => {
       expect(subQb.andWhere).toHaveBeenCalledTimes(1);
       expect(subQb.orWhere).toHaveBeenCalledTimes(1);
       expect(innerQb1.andWhere).toHaveBeenCalledWith(
-        'user.name ILIKE :qb_f_name_0',
-        { qb_f_name_0: '%john%' },
+        'user.name ILIKE :qb_f_name_0_g0',
+        { qb_f_name_0_g0: '%john%' },
       );
       expect(innerQb2.andWhere).toHaveBeenCalledWith(
-        'user.email ILIKE :qb_f_email_1',
-        { qb_f_email_1: '%john%' },
+        'user.email ILIKE :qb_f_email_0_g1',
+        { qb_f_email_0_g1: '%john%' },
       );
     });
 
@@ -1100,12 +1100,12 @@ describe('Spatie-style QueryBuilder', () => {
       expect(subQb.andWhere).toHaveBeenCalledTimes(2);
       expect(subQb.orWhere).not.toHaveBeenCalled();
       expect(innerQb1.andWhere).toHaveBeenCalledWith(
-        'user.firstName ILIKE :qb_f_firstName_0',
-        { qb_f_firstName_0: '%doe%' },
+        'user.firstName ILIKE :qb_f_firstName_0_g0',
+        { qb_f_firstName_0_g0: '%doe%' },
       );
       expect(innerQb2.andWhere).toHaveBeenCalledWith(
-        'user.lastName ILIKE :qb_f_lastName_1',
-        { qb_f_lastName_1: '%doe%' },
+        'user.lastName ILIKE :qb_f_lastName_0_g1',
+        { qb_f_lastName_0_g1: '%doe%' },
       );
     });
 
@@ -1527,8 +1527,8 @@ describe('Spatie-style QueryBuilder', () => {
       const orders = (builder as any).resolveCursorOrders('id');
       orders.forEach((o: any, i: number) =>
         i === 0
-          ? qb.orderBy(`user.${o.column}`, o.direction)
-          : qb.addOrderBy(`user.${o.column}`, o.direction),
+          ? qb.orderBy(o.sort.getTargetExpression('user'), o.direction)
+          : qb.addOrderBy(o.sort.getTargetExpression('user'), o.direction),
       );
       (builder as any).applyCursorWhere(
         orders,
@@ -1685,6 +1685,78 @@ describe('Spatie-style QueryBuilder', () => {
       expect(() => AllowedSort.json('bad', 'userMeta', '')).toThrow(
         /Invalid JSONB path/,
       );
+    });
+
+    it('should NOT collide parameter names when groupOr and top-level filter share the same column', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      QueryBuilder.for(qb, {
+        filter: { q: 'GROUP_VAL', email: 'TOP_VAL' },
+      })
+        .allowedFilters([
+          AllowedFilter.groupOr('q', [
+            AllowedFilter.partial('name'),
+            AllowedFilter.partial('email'),
+          ]),
+          AllowedFilter.partial('email'),
+        ])
+        .getQueryBuilder();
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        '(("user"."name" ILIKE $1) OR ("user"."email" ILIKE $2)) AND "user"."email" ILIKE $3',
+      );
+      expect(params).toEqual(['%GROUP\\_VAL%', '%GROUP\\_VAL%', '%TOP\\_VAL%']);
+    });
+
+    it('should compile valid PostgreSQL keyset SQL when cursorPaginate is used with AllowedSort.json()', () => {
+      const qb = userRepo.createQueryBuilder('user');
+      const jsonSort = AllowedSort.json(
+        'priority',
+        'userMeta',
+        'stats.priority',
+        {
+          cast: 'numeric',
+        },
+      );
+      const cursor = new Cursor(
+        { 'userMeta:stats.priority': 42, id: '10' },
+        true,
+      ).encode();
+
+      const builder = QueryBuilder.for(qb, {
+        sort: '-priority',
+        cursor,
+        limit: 5,
+      }).allowedSorts([jsonSort]);
+
+      (builder as any).build(true);
+      const orders = (builder as any).resolveCursorOrders('id');
+      orders.forEach((o: any, i: number) =>
+        i === 0
+          ? qb.orderBy(o.sort.getTargetExpression('user'), o.direction)
+          : qb.addOrderBy(o.sort.getTargetExpression('user'), o.direction),
+      );
+      (builder as any).applyCursorWhere(
+        orders,
+        Cursor.fromEncoded(cursor)!.parameters,
+        false,
+      );
+
+      const [sql, params] = qb.getQueryAndParameters();
+      expect(sql).toContain(
+        `(("user"."user_meta" -> 'stats' ->> 'priority')::numeric < $1) OR (("user"."user_meta" -> 'stats' ->> 'priority')::numeric = $2 AND "user"."id" < $3)`,
+      );
+      expect(sql).toContain(
+        `ORDER BY ("user"."user_meta" -> 'stats' ->> 'priority')::numeric DESC, "user"."id" DESC`,
+      );
+      expect(params).toEqual([42, 42, '10']);
+
+      // Also verify extracting nested JSONB cursor value from an entity row
+      const extracted = (builder as any).extractCursorParams(
+        { id: '9', userMeta: { stats: { priority: 41 } } },
+        orders,
+      );
+      expect(extracted).toEqual({ 'userMeta:stats.priority': 41, id: '9' });
     });
   });
 });

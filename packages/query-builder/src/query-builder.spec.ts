@@ -125,4 +125,21 @@ describe("REST Query Builder", () => {
     expect(range.build().filter).toEqual({ price: [">=100", "<=500"] });
     expect(range.toQueryString()).toBe("filter[price]=%3E%3D100,%3C%3D500");
   });
+
+  it("should clear cursor when page() is called and preserve falsy scalar values (false, 0)", () => {
+    const qb = new RestQueryBuilder()
+      .cursor("eyJpZCI6IjEwMCJ9")
+      .page(2)
+      .filter("active", false)
+      .filter("count", 0)
+      .filterDynamic("score", ">=", 0);
+
+    const built = qb.build();
+    expect(built.cursor).toBeUndefined();
+    expect(built.page).toBe(2);
+    expect(built.filter).toEqual({ active: false, count: 0, score: ">=0" });
+    expect(qb.toQueryString()).toBe(
+      "filter[active]=false&filter[count]=0&filter[score]=%3E%3D0&page=2",
+    );
+  });
 });

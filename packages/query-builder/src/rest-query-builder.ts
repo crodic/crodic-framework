@@ -509,6 +509,7 @@ export class RestQueryBuilder {
   public page(page?: number): this {
     if (page && page > 0) {
       this.pageParam = page;
+      this.cursorParam = undefined;
     } else {
       this.pageParam = undefined;
     }
