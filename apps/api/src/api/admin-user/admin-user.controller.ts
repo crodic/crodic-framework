@@ -52,6 +52,8 @@ export class AdminUserController {
         'search',
         AllowedFilter.exact('roles.id'),
         AllowedFilter.trashed(),
+        AllowedFilter.callback('verifiedAt', () => {}),
+        AllowedFilter.callback('verified', () => {}),
       ],
     },
   })

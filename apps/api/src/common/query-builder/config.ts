@@ -35,6 +35,13 @@ export interface QueryBuilderConfig {
   maxLimit: number;
 
   /**
+   * Delimiter used to separate multiple values in a filter.
+   * Default: ',' matching Spatie's array_delimiter ('filter[name]=a,b').
+   * Set to null to disable delimiter splitting globally.
+   */
+  arrayDelimiter: string | null;
+
+  /**
    * If true, throws BadRequestException when client passes an unallowed
    * filter, sort, include, or field.
    * If false, silently ignores unallowed parameters.
@@ -48,6 +55,7 @@ export type QueryBuilderUserConfig = Partial<{
   defaultLimit: number;
   maxLimit: number;
   strictMode: boolean;
+  arrayDelimiter: string | null;
 }>;
 
 const DEFAULT_CONFIG: QueryBuilderConfig = {
@@ -64,6 +72,7 @@ const DEFAULT_CONFIG: QueryBuilderConfig = {
   defaultLimit: DEFAULT_PAGE_LIMIT ?? 20,
   maxLimit: 100,
   strictMode: false,
+  arrayDelimiter: ',',
 };
 
 let currentConfig: QueryBuilderConfig = {

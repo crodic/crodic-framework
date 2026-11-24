@@ -1,4 +1,5 @@
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
+import { getGlobalConfig } from './config';
 import { FilterApplyFn, FilterCallbackFn, FilterInterface } from './types';
 
 export enum FilterOperator {
@@ -315,13 +316,14 @@ export class AllowedFilter<T extends ObjectLiteral = any> {
     let value = rawValue;
 
     // Delimiter splitting for multi-select comma-separated values (e.g. "a,b" -> ["a", "b"])
-    if (
-      this._arrayValueDelimiter &&
-      typeof value === 'string' &&
-      value.includes(this._arrayValueDelimiter)
-    ) {
+    const delimiter =
+      this._arrayValueDelimiter !== undefined
+        ? this._arrayValueDelimiter
+        : getGlobalConfig().arrayDelimiter;
+
+    if (delimiter && typeof value === 'string' && value.includes(delimiter)) {
       value = value
-        .split(this._arrayValueDelimiter)
+        .split(delimiter)
         .map((s) => s.trim())
         .filter((s) => s !== '');
     }

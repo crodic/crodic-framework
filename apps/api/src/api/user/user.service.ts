@@ -87,6 +87,69 @@ export class UserService {
         AllowedFilter.partial('username'),
         AllowedFilter.exact('id'),
         AllowedFilter.trashed(),
+        AllowedFilter.callback('verifiedAt', (qb, value) => {
+          if (!value) return;
+          const values = Array.isArray(value)
+            ? value.map((v) => String(v).toLowerCase().trim())
+            : String(value)
+                .split(',')
+                .map((v) => v.toLowerCase().trim());
+
+          const hasVerified =
+            values.includes('verified') ||
+            values.includes('true') ||
+            values.includes('1');
+          const hasUnverified =
+            values.includes('unverified') ||
+            values.includes('false') ||
+            values.includes('0');
+
+          if (hasVerified && !hasUnverified) {
+            qb.andWhere('user.verified_at IS NOT NULL');
+          } else if (hasUnverified && !hasVerified) {
+            qb.andWhere('user.verified_at IS NULL');
+          }
+        }),
+        AllowedFilter.callback('verified', (qb, value) => {
+          if (!value) return;
+          const values = Array.isArray(value)
+            ? value.map((v) => String(v).toLowerCase().trim())
+            : String(value)
+                .split(',')
+                .map((v) => v.toLowerCase().trim());
+
+          const hasVerified =
+            values.includes('verified') ||
+            values.includes('true') ||
+            values.includes('1');
+          const hasUnverified =
+            values.includes('unverified') ||
+            values.includes('false') ||
+            values.includes('0');
+
+          if (hasVerified && !hasUnverified) {
+            qb.andWhere('user.verified_at IS NOT NULL');
+          } else if (hasUnverified && !hasVerified) {
+            qb.andWhere('user.verified_at IS NULL');
+          }
+        }),
+        AllowedFilter.callback('createdAt', (qb, value) => {
+          if (!value) return;
+          if (Array.isArray(value) && value.length === 2) {
+            qb.andWhere('user.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: value[0],
+              cTo: value[1],
+            });
+          } else if (typeof value === 'string' && value.includes(',')) {
+            const [from, to] = value.split(',');
+            qb.andWhere('user.created_at BETWEEN :cFrom AND :cTo', {
+              cFrom: from,
+              cTo: to,
+            });
+          } else {
+            qb.andWhere('user.created_at >= :cFrom', { cFrom: value });
+          }
+        }),
         AllowedFilter.callback('fullName', (qb, value) => {
           qb.andWhere(
             "CONCAT(COALESCE(user.firstName, ''), ' ', COALESCE(user.lastName, '')) ILIKE :fullName",

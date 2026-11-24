@@ -383,4 +383,65 @@ describe('UserService', () => {
       await expect(service.restore('1' as any)).rejects.toThrow();
     });
   });
+
+  describe('findAllUser', () => {
+    it('applies verifiedAt when unverified is requested', async () => {
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        withDeleted: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        getParameters: jest.fn().mockReturnValue({}),
+        alias: 'user',
+        expressionMap: { withDeleted: false },
+      };
+
+      (userRepositoryValue as any).createQueryBuilder = jest
+        .fn()
+        .mockReturnValue(mockQb);
+
+      const result = await service.findAllUser({
+        filter: { verifiedAt: 'unverified' },
+      });
+
+      expect(
+        (userRepositoryValue as any).createQueryBuilder,
+      ).toHaveBeenCalledWith('user');
+      expect(mockQb.withDeleted).toHaveBeenCalled();
+      expect(mockQb.andWhere).toHaveBeenCalledWith('user.verified_at IS NULL');
+      expect(result).toBeDefined();
+    });
+
+    it('applies verifiedAt when verified is requested', async () => {
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        withDeleted: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        getParameters: jest.fn().mockReturnValue({}),
+        alias: 'user',
+        expressionMap: { withDeleted: false },
+      };
+
+      (userRepositoryValue as any).createQueryBuilder = jest
+        .fn()
+        .mockReturnValue(mockQb);
+
+      await service.findAllUser({
+        filter: { verifiedAt: 'verified' },
+      });
+
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'user.verified_at IS NOT NULL',
+      );
+    });
+  });
 });

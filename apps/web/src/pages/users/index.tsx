@@ -3,6 +3,7 @@ import { PlusIcon } from 'lucide-react'
 import { parseAsArrayOf, parseAsInteger, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { normalizeDate } from '@/lib/utils'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useRestResourceTable,
@@ -25,6 +26,7 @@ const userFilterParsers = {
   [ColumnKey.fullName]: parseAsString,
   [ColumnKey.id]: parseAsString,
   [ColumnKey.status]: parseAsString,
+  [ColumnKey.verifiedAt]: parseAsString,
 } as const
 
 export function PageUserOverview() {
@@ -44,10 +46,25 @@ export function PageUserOverview() {
 
   const buildQuery: RestResourceQueryBuilderFn<typeof userFilterParsers> =
     useCallback((builder, filter, search) => {
+      const createdFrom = normalizeDate(filter.createdAt?.[0])
+      const createdTo = normalizeDate(filter.createdAt?.[1])
+
       builder
         .filter('email', filter.email)
         .filter('fullName', filter.fullName)
         .filter('id', filter.id)
+
+      if (createdFrom && createdTo) {
+        builder.filter('createdAt', `${createdFrom},${createdTo}`)
+      } else if (createdFrom) {
+        builder.filter('createdAt', createdFrom)
+      } else if (createdTo) {
+        builder.filter('createdAt', createdTo)
+      }
+
+      if (filter.verifiedAt) {
+        builder.filter('verifiedAt', filter.verifiedAt)
+      }
 
       if (filter.status === 'deleted') {
         builder.filterTrashed('only')
