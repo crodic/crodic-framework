@@ -198,6 +198,9 @@ export class TagService {
       .allowedSorts([
         'id',
         'name',
+        'category',
+        'safetyRating',
+        'status',
         'usageCount',
         'trendingScore',
         'createdAt',
@@ -395,6 +398,21 @@ export class TagService {
 
     await this.cacheService.bumpVersion();
     return { message: 'Tag deleted successfully' };
+  }
+
+  async removeMany(ids: AutoIncrementID[]): Promise<{ count: number }> {
+    let deletedCount = 0;
+    for (const id of ids) {
+      try {
+        await this.remove(id);
+        deletedCount++;
+      } catch (err) {
+        this.logger.warn(
+          `Failed to remove tag ${String(id)}: ${(err as Error).message}`,
+        );
+      }
+    }
+    return { count: deletedCount };
   }
 
   async findOneById(

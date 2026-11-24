@@ -114,6 +114,14 @@ export async function apiDeleteTag(id: string) {
   return http.delete(`/tags/${id}`)
 }
 
+export async function apiDeleteManyTags(ids: string[]) {
+  try {
+    return await http.delete('/tags', { data: { ids } })
+  } catch {
+    return Promise.all(ids.map((id) => http.delete(`/tags/${id}`)))
+  }
+}
+
 export async function apiAddTagRelation({
   sourceTagId,
   targetTagId,

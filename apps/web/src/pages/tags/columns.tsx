@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,6 +164,32 @@ export function getTagsTableColumns({
   onDelete,
 }: TagColumnsOptions): ColumnDef<TagSummary>[] {
   return [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          aria-label='Select all'
+          className='translate-y-0.5'
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          aria-label='Select row'
+          className='translate-y-0.5'
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+        />
+      ),
+      enableHiding: false,
+      enableSorting: false,
+      size: 40,
+      minSize: 40,
+    },
     {
       id: TagColumnKey.name,
       accessorFn: (row) => row.name,

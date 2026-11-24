@@ -74,6 +74,9 @@ export class TagAdminController {
       sorts: [
         'id',
         'name',
+        'category',
+        'safetyRating',
+        'status',
         'usageCount',
         'trendingScore',
         'createdAt',
@@ -163,6 +166,15 @@ export class TagAdminController {
   )
   remove(@Param('id') id: AutoIncrementID) {
     return this.tagService.remove(id);
+  }
+
+  @Delete()
+  @ApiAuth({ summary: 'Bulk soft-delete non-system tags' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Delete, AppSubjects.Tag),
+  )
+  removeMany(@Body() body: { ids: AutoIncrementID[] }) {
+    return this.tagService.removeMany(body.ids || []);
   }
 
   @Post(':id/relations')

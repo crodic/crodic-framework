@@ -305,7 +305,10 @@ export function ProfileSavedCollections({
                       {selectedCollection.updatedAt && (
                         <>
                           <span>•</span>
-                          <span className="flex items-center gap-1">
+                          <span
+                            className="flex items-center gap-1"
+                            suppressHydrationWarning
+                          >
                             <Clock className="size-3" />
                             {new Date(
                               selectedCollection.updatedAt

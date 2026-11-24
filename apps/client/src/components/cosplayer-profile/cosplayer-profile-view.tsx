@@ -51,11 +51,18 @@ export function CosplayerProfileView({
 
   const [profile, setProfile] = useState<CosplayerDetailResDto>(initialProfile);
   const [viewMode, setViewMode] = useState<"owner" | "visitor">("owner");
+  const [isMounted, setIsMounted] = useState(false);
+  const [hasSwitchedToOwnerTab, setHasSwitchedToOwnerTab] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Determine ownership dynamically: either explicitly passed or current user matches profile
   const isCurrentUserOwner =
     Boolean(isOwner) ||
     Boolean(
+      isMounted &&
       !isHydrating &&
       accessToken &&
       currentUser?.id &&
@@ -63,9 +70,14 @@ export function CosplayerProfileView({
       String(currentUser.id) === String(profile.userId)
     );
 
-  const [activeTab, setActiveTab] = useState(
-    isOwner || isCurrentUserOwner ? "following" : "albums"
-  );
+  const [activeTab, setActiveTab] = useState(isOwner ? "following" : "albums");
+
+  useEffect(() => {
+    if (isMounted && isCurrentUserOwner && !hasSwitchedToOwnerTab) {
+      setHasSwitchedToOwnerTab(true);
+      setActiveTab("following");
+    }
+  }, [isMounted, isCurrentUserOwner, hasSwitchedToOwnerTab]);
 
   useEffect(() => {
     if (initialProfile) {

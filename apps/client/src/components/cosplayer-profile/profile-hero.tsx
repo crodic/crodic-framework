@@ -70,12 +70,21 @@ export function ProfileHero({
   const isHydrating = useAuthStore((state) => state.isHydrating);
   const isAuthenticated = !isHydrating && !!accessToken;
 
-  const isOwnerView = isOwner && viewMode === "owner";
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const isOwnerView = Boolean(isOwner) && viewMode === "owner";
   const isSelf =
-    isOwner ||
-    (!!currentUser?.id &&
-      !!profile.userId &&
-      String(currentUser.id) === String(profile.userId));
+    Boolean(isOwner) ||
+    Boolean(
+      isMounted &&
+      currentUser?.id &&
+      profile.userId &&
+      String(currentUser.id) === String(profile.userId)
+    );
 
   // Check follow status with TanStack Query (no useEffect)
   const { data: followStatus = false, isLoading: isCheckingFollow } = useQuery({
@@ -296,12 +305,12 @@ export function ProfileHero({
       </div>
 
       {/* 2. Profile Details & Overlapping Avatar */}
-      <div className="relative px-2 sm:px-6 md:px-8">
-        <div className="-mt-16 mb-4 flex flex-col gap-4 sm:-mt-20 md:-mt-22 md:flex-row md:items-end md:justify-between">
+      <div className="relative px-4 sm:px-6 md:px-8">
+        <div className="-mt-12 mb-4 flex flex-col gap-4 sm:-mt-16 md:-mt-20 lg:flex-row lg:items-end lg:justify-between">
           {/* Left Column: Avatar + Details */}
-          <div className="flex flex-col items-center gap-3.5 text-center sm:gap-5 md:flex-row md:items-end md:text-left">
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5 text-center sm:flex-row sm:items-end sm:gap-5 sm:text-left">
             {/* Avatar with Camera badge for owner */}
-            <div className="group/avatar bg-background ring-primary/80 dark:ring-primary shadow-primary/20 relative size-28 shrink-0 rounded-full p-1 shadow-xl ring-4 sm:size-32 md:size-36">
+            <div className="group/avatar bg-background ring-primary/80 dark:ring-primary shadow-primary/20 relative size-24 shrink-0 rounded-full p-1 shadow-xl ring-4 sm:size-28 md:size-32 lg:size-36">
               <div className="relative size-full overflow-hidden rounded-full">
                 {profile.avatarUrl ? (
                   <Image
@@ -348,8 +357,8 @@ export function ProfileHero({
             </div>
 
             {/* Name, Handle, Badge & Stats */}
-            <div className="space-y-1 pt-1 sm:space-y-1.5 md:pt-0">
-              <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+            <div className="min-w-0 flex-1 space-y-1 pt-1 sm:space-y-1.5 md:pt-0">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <h1 className="text-foreground text-2xl font-extrabold tracking-tight sm:text-3xl">
                   {profile.displayName}
                 </h1>
@@ -371,7 +380,7 @@ export function ProfileHero({
               </div>
 
               {/* Handle & Location */}
-              <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs font-medium sm:text-sm md:justify-start">
+              <p className="text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 text-xs font-medium sm:justify-start sm:text-sm">
                 <span>{profile.handle}</span>
                 {profile.locationLabel && (
                   <>
@@ -389,7 +398,7 @@ export function ProfileHero({
               )}
 
               {/* Stats Bar */}
-              <div className="text-foreground/90 flex items-center justify-center gap-2 pt-1 text-xs font-medium sm:text-sm md:justify-start">
+              <div className="text-foreground/90 flex flex-wrap items-center justify-center gap-2 pt-1 text-xs font-medium sm:justify-start sm:text-sm">
                 <span>
                   <strong className="text-foreground font-bold">
                     {formattedFollowers}
@@ -418,7 +427,7 @@ export function ProfileHero({
           </div>
 
           {/* Right Column: Actions */}
-          <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2 sm:gap-2.5 md:mt-0 md:w-auto md:flex-nowrap">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-2.5 lg:mt-0 lg:w-auto lg:justify-end">
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
@@ -437,7 +446,7 @@ export function ProfileHero({
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-1 gap-1.5 rounded-xl px-4 font-semibold shadow-sm sm:flex-initial"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-initial gap-1.5 rounded-xl px-4 font-semibold shadow-sm"
                 >
                   <Pencil className="size-4" />
                   <span>{t("editProfile")}</span>
@@ -478,7 +487,7 @@ export function ProfileHero({
                     type="button"
                     disabled={isFollowLoading}
                     onClick={handleToggleFollow}
-                    className={`h-10 flex-1 cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all sm:flex-initial ${
+                    className={`h-10 flex-initial cursor-pointer rounded-xl px-5 font-semibold shadow-sm transition-all ${
                       isFollowing
                         ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
                         : "bg-primary text-primary-foreground hover:bg-primary/90"

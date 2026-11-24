@@ -32,7 +32,9 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getAuditLogsTableColumns, getTagsTableColumns } from './columns'
 import { MergeTagDialog } from './components/merge-tag-dialog'
+import { TagsTableActionBar } from './components/tags-table-action-bar'
 import {
+  apiDeleteManyTags,
   apiDeleteTag,
   useDataTagAuditLogs,
   useDataTagsOverview,
@@ -60,6 +62,7 @@ export function PageTagOverview() {
 
   const [activeTab, setActiveTab] = useState<'directory' | 'audit'>('directory')
   const [tagToDelete, setTagToDelete] = useState<TagSummary | null>(null)
+  const [tagsToDelete, setTagsToDelete] = useState<TagSummary[]>([])
   const [tagToMerge, setTagToMerge] = useState<TagSummary | null>(null)
 
   useBreadcrumb([{ title: t('navigation.management.tags', 'Tags Governance') }])
@@ -70,6 +73,17 @@ export function PageTagOverview() {
       toast.success(t('tags.messages.deleted', 'Tag deleted successfully'))
       queryClient.invalidateQueries({ queryKey: ['tags'] })
       setTagToDelete(null)
+    },
+    onError: restApiErrorHandler,
+  })
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (tags: TagSummary[]) =>
+      apiDeleteManyTags(tags.map((t) => t.id)),
+    onSuccess: () => {
+      toast.success(t('tags.messages.bulkDeleted', 'Tags deleted successfully'))
+      queryClient.invalidateQueries({ queryKey: ['tags'] })
+      setTagsToDelete([])
     },
     onError: restApiErrorHandler,
   })
@@ -111,6 +125,9 @@ export function PageTagOverview() {
     columns,
     allowedSorts: [
       TagColumnKey.name,
+      TagColumnKey.category,
+      TagColumnKey.safetyRating,
+      TagColumnKey.status,
       TagColumnKey.usageCount,
       TagColumnKey.trendingScore,
       TagColumnKey.updatedAt,
@@ -119,6 +136,7 @@ export function PageTagOverview() {
     queryHook: useDataTagsOverview,
     buildQuery,
     getRowId: (row) => row.id,
+    enableRowSelection: true,
   })
 
   const stats = useMemo(() => {
@@ -189,6 +207,23 @@ export function PageTagOverview() {
           if (tagToDelete) deleteMutation.mutate(tagToDelete.id)
         }}
         isLoading={deleteMutation.isPending}
+      />
+
+      <DeleteAlertDialog
+        open={tagsToDelete.length > 0}
+        onOpenChange={(open) => {
+          if (!open) setTagsToDelete([])
+        }}
+        title={t('tags.dialogs.bulkDeleteTitle', 'Delete Selected Tags')}
+        description={t(
+          'tags.dialogs.bulkDeleteDesc',
+          'Are you sure you want to delete {{count}} selected tags? Associated community artworks and pages will be decoupled.',
+          { count: tagsToDelete.length }
+        )}
+        handleDelete={() => {
+          if (tagsToDelete.length > 0) bulkDeleteMutation.mutate(tagsToDelete)
+        }}
+        isLoading={bulkDeleteMutation.isPending}
       />
 
       <MergeTagDialog
@@ -399,6 +434,13 @@ export function PageTagOverview() {
             <DataTable
               table={table}
               isFetching={isFetching}
+              actionBar={
+                <TagsTableActionBar
+                  table={table}
+                  onDelete={(tags) => setTagsToDelete(tags)}
+                  disabled={bulkDeleteMutation.isPending}
+                />
+              }
               onClickRowAction={(row) => navigate(`/tags/${row.id}/show`)}
             >
               <DataTableToolbar table={table}>

@@ -449,7 +449,7 @@ export function PageTagShow() {
           >
             <div className='grid gap-6 md:grid-cols-2'>
               {/* Translations Card */}
-              <Card className='border-border/80 shadow-2xs'>
+              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-2xs'>
                 <CardHeader className='border-b px-5 py-4'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
@@ -482,9 +482,9 @@ export function PageTagShow() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='p-5'>
+                <CardContent className='flex flex-1 flex-col justify-center p-4 sm:p-5'>
                   {!tag.translations || tag.translations.length === 0 ? (
-                    <Empty className='p-8'>
+                    <Empty className='border-0 p-2 sm:p-4 md:p-6'>
                       <EmptyHeader>
                         <EmptyMedia variant='icon'>
                           <LanguagesIcon className='size-5' />
@@ -546,7 +546,7 @@ export function PageTagShow() {
               </Card>
 
               {/* Aliases Card */}
-              <Card className='border-border/80 shadow-2xs'>
+              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-2xs'>
                 <CardHeader className='border-b px-5 py-4'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2.5'>
@@ -576,9 +576,9 @@ export function PageTagShow() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='p-5'>
+                <CardContent className='flex flex-1 flex-col justify-center p-4 sm:p-5'>
                   {!tag.aliases || tag.aliases.length === 0 ? (
-                    <Empty className='p-8'>
+                    <Empty className='border-0 p-2 sm:p-4 md:p-6'>
                       <EmptyHeader>
                         <EmptyMedia variant='icon'>
                           <Wand2Icon className='size-5' />

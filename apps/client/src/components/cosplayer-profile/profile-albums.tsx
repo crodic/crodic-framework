@@ -140,7 +140,10 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                 </h3>
                 <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                   <span className="truncate">{album.albumCategory}</span>
-                  <span className="flex shrink-0 items-center gap-1">
+                  <span
+                    className="flex shrink-0 items-center gap-1"
+                    suppressHydrationWarning
+                  >
                     <Calendar className="size-3" />
                     {album.publishedAt
                       ? new Date(album.publishedAt).toLocaleDateString()
