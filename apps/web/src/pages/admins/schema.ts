@@ -5,6 +5,7 @@ import { getAdminRoleIds } from '@/lib/admin-roles'
 import { roleSchema } from '../roles/schema'
 
 export const ColumnKey = {
+  id: 'id',
   email: 'email',
   firstName: 'firstName',
   lastName: 'lastName',
