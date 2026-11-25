@@ -296,23 +296,18 @@ export function EncyclopediaEditorPanel({
           className='flex w-full flex-col p-0 sm:max-w-md'
         >
           <SheetHeader className='border-b px-6 py-4'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
-                <HistoryIcon className='size-5' aria-hidden='true' />
-              </div>
-              <div className='min-w-0 flex-1'>
-                <SheetTitle className='text-base font-semibold'>
-                  {t('tags.encyclopedia.revisions', 'Revision History')}
-                </SheetTitle>
-                <SheetDescription className='text-xs'>
-                  {t('tags.encyclopedia.revisionsDesc', {
-                    name: tag.name,
-                    locale: currentLocaleLabel,
-                    count: revisionsCount,
-                    defaultValue: `#${tag.name} • ${currentLocaleLabel} edition (${revisionsCount} records)`,
-                  })}
-                </SheetDescription>
-              </div>
+            <div>
+              <SheetTitle className='text-base font-semibold'>
+                {t('tags.encyclopedia.revisions', 'Revision History')}
+              </SheetTitle>
+              <SheetDescription className='text-xs'>
+                {t('tags.encyclopedia.revisionsDesc', {
+                  name: tag.name,
+                  locale: currentLocaleLabel,
+                  count: revisionsCount,
+                  defaultValue: `#${tag.name} • ${currentLocaleLabel} edition (${revisionsCount} records)`,
+                })}
+              </SheetDescription>
             </div>
           </SheetHeader>
 
@@ -425,7 +420,7 @@ export function EncyclopediaEditorPanel({
                         </div>
 
                         {rev.changeNote && (
-                          <p className='border-primary/60 bg-muted/40 text-foreground/90 mt-2 rounded-lg border-l-2 px-2.5 py-1.5 text-[11px] leading-relaxed italic'>
+                          <p className='border-border/60 bg-muted/40 text-foreground/90 mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] leading-relaxed italic'>
                             &ldquo;{rev.changeNote}&rdquo;
                           </p>
                         )}
@@ -682,11 +677,10 @@ export function EncyclopediaEditorPanel({
                                 )
                               )
                             }
-                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                            className='bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer rounded-md px-2 py-0.5 text-[11px] transition-colors'
                           >
                             + Initial
                           </button>
-                          <span className='text-muted-foreground/40'>•</span>
                           <button
                             type='button'
                             onClick={() =>
@@ -694,11 +688,10 @@ export function EncyclopediaEditorPanel({
                                 'Expanded character lore & background'
                               )
                             }
-                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                            className='bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer rounded-md px-2 py-0.5 text-[11px] transition-colors'
                           >
                             + Lore
                           </button>
-                          <span className='text-muted-foreground/40'>•</span>
                           <button
                             type='button'
                             onClick={() =>
@@ -706,7 +699,7 @@ export function EncyclopediaEditorPanel({
                                 'Fixed typos and clarified phrasing'
                               )
                             }
-                            className='text-muted-foreground hover:text-primary cursor-pointer text-[11px] hover:underline'
+                            className='bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer rounded-md px-2 py-0.5 text-[11px] transition-colors'
                           >
                             + Typos
                           </button>

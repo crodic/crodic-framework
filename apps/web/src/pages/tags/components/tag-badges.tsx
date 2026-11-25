@@ -23,27 +23,13 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import type { TagCategory, TagSafetyRating, TagStatus } from '../schema'
 
-export const TAG_CATEGORY_GRADIENTS: Record<TagCategory, string> = {
-  general:
-    'from-sky-500/15 via-blue-500/5 to-transparent dark:from-sky-950/40 dark:via-blue-950/20 dark:to-transparent',
-  copyright:
-    'from-violet-500/15 via-purple-500/5 to-transparent dark:from-violet-950/40 dark:via-purple-950/20 dark:to-transparent',
-  character:
-    'from-emerald-500/15 via-teal-500/5 to-transparent dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-transparent',
-  artist:
-    'from-amber-500/15 via-orange-500/5 to-transparent dark:from-amber-950/40 dark:via-orange-950/20 dark:to-transparent',
-  meta: 'from-indigo-500/15 via-blue-500/5 to-transparent dark:from-indigo-950/40 dark:via-blue-950/20 dark:to-transparent',
-  system:
-    'from-rose-500/15 via-pink-500/5 to-transparent dark:from-rose-950/40 dark:via-pink-950/20 dark:to-transparent',
-}
-
 export const TAG_CATEGORY_ACCENTS: Record<TagCategory, string> = {
-  general: 'text-sky-600 dark:text-sky-400',
-  copyright: 'text-violet-600 dark:text-violet-400',
-  character: 'text-emerald-600 dark:text-emerald-400',
-  artist: 'text-amber-600 dark:text-amber-400',
-  meta: 'text-indigo-600 dark:text-indigo-400',
-  system: 'text-rose-600 dark:text-rose-400',
+  general: 'text-sky-700 dark:text-sky-300',
+  copyright: 'text-violet-700 dark:text-violet-300',
+  character: 'text-emerald-700 dark:text-emerald-300',
+  artist: 'text-amber-750 dark:text-amber-300',
+  meta: 'text-indigo-700 dark:text-indigo-300',
+  system: 'text-rose-700 dark:text-rose-300',
 }
 
 export const CATEGORY_ICONS: Record<
@@ -199,7 +185,7 @@ export function TagCategoryBadge({
     <Badge
       variant='outline'
       className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors',
         style.badge,
         className
       )}
@@ -234,7 +220,7 @@ export function TagSafetyBadge({
     <Badge
       variant='outline'
       className={cn(
-        'inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors',
+        'inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors',
         config.style,
         className
       )}
@@ -266,7 +252,7 @@ export function TagStatusBadge({
     <Badge
       variant='outline'
       className={cn(
-        'inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors',
+        'inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors',
         config.style,
         className
       )}
@@ -325,7 +311,7 @@ export function AuditActionBadge({
     <Badge
       variant='outline'
       className={cn(
-        'inline-flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider whitespace-nowrap uppercase shadow-2xs',
+        'inline-flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider whitespace-nowrap uppercase',
         style,
         className
       )}
@@ -368,7 +354,7 @@ export function TagNodeChip({
   return (
     <div
       className={cn(
-        'group/chip inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs whitespace-nowrap shadow-2xs transition-all hover:shadow-xs',
+        'group/chip inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs whitespace-nowrap transition-colors',
         style.chip,
         onClick && 'cursor-pointer',
         className
@@ -380,7 +366,7 @@ export function TagNodeChip({
         disabled={!onClick}
         className={cn(
           'focus-visible:ring-ring inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full text-left focus-visible:ring-1 focus-visible:outline-none',
-          onClick && 'hover:opacity-90 active:scale-[0.98]'
+          onClick && 'hover:opacity-90'
         )}
       >
         <span
@@ -403,7 +389,7 @@ export function TagNodeChip({
         )}
         {isOfficial && (
           <BadgeCheckIcon
-            className='text-primary drop-shadow-2xs size-3.5 shrink-0'
+            className='text-primary size-3.5 shrink-0'
             aria-hidden='true'
           />
         )}
@@ -416,7 +402,7 @@ export function TagNodeChip({
         {typeof usageCount === 'number' && (
           <span
             className={cn(
-              'ml-1 inline-flex items-center rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums shadow-2xs',
+              'ml-1 inline-flex items-center rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums',
               style.counter
             )}
             title={t('tags.show.usesTooltip', {
@@ -452,9 +438,7 @@ export function TagNodeChip({
 
 export function getTagCategoryDesignToken(category: TagCategory) {
   const style = CATEGORY_STYLES[category] ?? CATEGORY_STYLES.general
-  const gradient =
-    TAG_CATEGORY_GRADIENTS[category] ?? TAG_CATEGORY_GRADIENTS.general
   const accent = TAG_CATEGORY_ACCENTS[category] ?? TAG_CATEGORY_ACCENTS.general
   const Icon = CATEGORY_ICONS[category] ?? HashIcon
-  return { ...style, gradient, accent, Icon }
+  return { ...style, accent, Icon }
 }

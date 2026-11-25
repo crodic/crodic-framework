@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  ArrowDownIcon,
   ArrowRightIcon,
   BadgeCheckIcon,
   CheckIcon,
-  GitBranchIcon,
   Link2Icon,
   Loader2Icon,
   PlusIcon,
@@ -44,11 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  CATEGORY_ICONS,
-  TagCategoryBadge,
-  TagNodeChip,
-} from '../components/tag-badges'
+import { TagCategoryBadge, TagNodeChip } from '../components/tag-badges'
 import {
   apiAddTagRelation,
   apiRemoveTagRelation,
@@ -166,7 +160,6 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
   }
 
   const candidates = suggestions.filter((item) => item.id !== tag.id)
-  const CurrentIcon = CATEGORY_ICONS[tag.category] || GitBranchIcon
 
   return (
     <>
@@ -219,30 +212,20 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
         <DialogContent className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl md:max-w-2xl'>
           {/* Header Bar */}
           <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
-                  <GitBranchIcon className='size-5' aria-hidden='true' />
-                </div>
-                <div>
-                  <DialogTitle className='text-foreground text-base font-bold'>
-                    {t(
-                      'tags.hierarchy.modalTitle',
-                      'Link Semantic Tag Relation'
-                    )}
-                  </DialogTitle>
-                  <p className='text-muted-foreground text-xs'>
-                    {t('tags.hierarchy.modalDesc', {
-                      name: tag.name,
-                      defaultValue: `Configure hierarchy and relations for #${tag.name}`,
-                    })}
-                  </p>
-                </div>
-              </div>
+            <div>
+              <DialogTitle className='text-foreground text-base font-bold'>
+                {t('tags.hierarchy.modalTitle', 'Link Semantic Tag Relation')}
+              </DialogTitle>
+              <p className='text-muted-foreground text-xs'>
+                {t('tags.hierarchy.modalDesc', {
+                  name: tag.name,
+                  defaultValue: `Configure hierarchy and relations for #${tag.name}`,
+                })}
+              </p>
             </div>
 
             {/* Segmented Pill Direction Selector */}
-            <div className='bg-muted/60 border-border/40 mt-3 grid grid-cols-2 gap-1.5 rounded-xl border p-1 sm:mt-4 sm:flex sm:items-center'>
+            <div className='bg-muted/60 border-border/40 mt-3 grid grid-cols-2 gap-1 rounded-lg border p-1 sm:mt-4 sm:flex sm:items-center'>
               <button
                 type='button'
                 onClick={() => setDirection('parent')}
@@ -486,450 +469,376 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
       {/* Semantic DAG Hierarchy Flow Canvas */}
       <div className='space-y-6'>
         {/* Header Action Bar */}
-        <div className='border-border/80 bg-card flex flex-col gap-3.5 rounded-2xl border p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-5'>
-          <div className='flex items-center gap-3'>
-            <div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl'>
-              <GitBranchIcon className='size-5' aria-hidden='true' />
-            </div>
-            <div>
+        <div className='border-border/80 bg-card flex flex-col gap-3.5 rounded-2xl border p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-5'>
+          <div className='space-y-0.5'>
+            <div className='flex items-center gap-2'>
               <h2 className='text-foreground text-base font-semibold'>
                 {t('tags.hierarchy.dagTitle', 'Semantic DAG Hierarchy')}
               </h2>
-              <p className='text-muted-foreground text-xs'>
-                {t(
-                  'tags.hierarchy.dagDesc',
-                  'Model parent-child, sibling, associative, and disambiguation relationships.'
-                )}
-              </p>
+              <Badge
+                variant='secondary'
+                className='font-mono text-xs tabular-nums'
+              >
+                {parents.length +
+                  children.length +
+                  related.length +
+                  disambiguations.length}
+              </Badge>
             </div>
+            <p className='text-muted-foreground text-xs'>
+              {t(
+                'tags.hierarchy.dagDesc',
+                'Model parent-child, sibling, associative, and disambiguation relationships.'
+              )}
+            </p>
           </div>
 
           <div className='flex w-full items-center gap-2 sm:w-auto'>
             <Button
               type='button'
               onClick={() => openDialog('child')}
-              className='h-9 w-full cursor-pointer gap-2 text-xs font-semibold shadow-2xs sm:w-auto'
+              className='h-9 w-full cursor-pointer gap-2 text-xs font-semibold shadow-xs sm:w-auto'
             >
               <PlusIcon className='size-4' aria-hidden='true' />
               <span>
-                {t('tags.hierarchy.setupRelationBtn', 'Set Up Tag Relations')}
+                {t('tags.hierarchy.setupRelationBtn', 'Link New Relation')}
               </span>
             </Button>
           </div>
         </div>
 
-        {/* Tier 1: Parents (Thẻ Cha) */}
-        <Card className='border-border/80 shadow-xs'>
-          <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='space-y-0.5'>
-              <div className='flex items-center gap-2'>
-                <CardTitle className='text-sm font-semibold'>
-                  {t('tags.hierarchy.parents', 'Parent Tags')}
-                </CardTitle>
-                <Badge
+        {/* 2-Column Structured Hierarchy Matrix */}
+        <div className='grid gap-6 lg:grid-cols-2'>
+          {/* Column 1: Vertical Taxonomy Tree (Parents & Children) */}
+          <div className='space-y-6'>
+            {/* Parents (Thẻ Cha) */}
+            <Card className='border-border/80 shadow-xs'>
+              <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-0.5'>
+                  <div className='flex items-center gap-2'>
+                    <CardTitle className='text-sm font-semibold'>
+                      {t('tags.hierarchy.parents', 'Parent Tags')}
+                    </CardTitle>
+                    <Badge
+                      variant='outline'
+                      className='font-mono text-xs tabular-nums'
+                    >
+                      {parents.length}
+                    </Badge>
+                  </div>
+                  <CardDescription className='text-xs'>
+                    {t(
+                      'tags.hierarchy.parentsDesc',
+                      'Broader concepts encompassing this tag in hierarchy queries.'
+                    )}
+                  </CardDescription>
+                </div>
+                <Button
+                  type='button'
                   variant='outline'
-                  className='font-mono text-xs tabular-nums'
+                  size='sm'
+                  onClick={() => openDialog('parent')}
+                  className='h-8 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
                 >
-                  {parents.length}
-                </Badge>
-              </div>
-              <CardDescription className='text-xs'>
-                {t(
-                  'tags.hierarchy.parentsDesc',
-                  'Broader concepts encompassing this tag in hierarchy queries.'
+                  <PlusIcon className='size-3.5' aria-hidden='true' />
+                  <span>{t('tags.hierarchy.addParentBtn', 'Add Parent')}</span>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {parents.length === 0 ? (
+                  <p className='text-muted-foreground py-2 text-xs italic'>
+                    {t(
+                      'tags.hierarchy.rootNode',
+                      'Root taxonomy node — no parent tags linked.'
+                    )}
+                  </p>
+                ) : (
+                  <div className='flex flex-wrap gap-2'>
+                    {parents.map((parent) => (
+                      <TagNodeChip
+                        key={parent.id}
+                        name={parent.name}
+                        translatedName={parent.translatedName}
+                        category={parent.category}
+                        isOfficial={parent.isOfficial}
+                        usageCount={parent.usageCount}
+                        onClick={() => navigate(`/tags/${parent.id}/show`)}
+                        onUnlink={() =>
+                          setPendingUnlink({
+                            sourceTagId: parent.id,
+                            targetTagId: tag.id,
+                            relationType: 'hierarchy',
+                            label: `#${parent.name} → #${tag.name}`,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
                 )}
-              </CardDescription>
-            </div>
-            <Button
-              type='button'
-              variant='outline'
-              size='sm'
-              onClick={() => openDialog('parent')}
-              className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
-            >
-              <PlusIcon className='size-3.5' aria-hidden='true' />
-              <span>{t('tags.hierarchy.addParentBtn', 'Add Parent Tag')}</span>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {parents.length === 0 ? (
-              <p className='text-muted-foreground py-2 text-xs italic'>
-                {t(
-                  'tags.hierarchy.rootNode',
-                  'Root taxonomy node — no parent tags linked.'
-                )}
-              </p>
-            ) : (
-              <div className='flex flex-wrap gap-2.5'>
-                {parents.map((parent) => (
-                  <TagNodeChip
-                    key={parent.id}
-                    name={parent.name}
-                    translatedName={parent.translatedName}
-                    category={parent.category}
-                    isOfficial={parent.isOfficial}
-                    usageCount={parent.usageCount}
-                    onClick={() => navigate(`/tags/${parent.id}/show`)}
-                    onUnlink={() =>
-                      setPendingUnlink({
-                        sourceTagId: parent.id,
-                        targetTagId: tag.id,
-                        relationType: 'hierarchy',
-                        label: `#${parent.name} → #${tag.name}`,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Visual Connector: Parents -> Current Node */}
-        <div
-          className='flex items-center justify-center gap-2 px-1'
-          aria-hidden='true'
-        >
-          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
-          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-center font-mono text-[10px] font-medium sm:text-[11px]'>
-            <ArrowDownIcon className='text-primary size-3.5 shrink-0' />
-            {t(
-              'tags.hierarchy.inheritanceConnector',
-              'Taxonomy Inheritance (Is-A / Parent)'
-            )}
-          </span>
-          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
-        </div>
-
-        {/* Tier 2: Current Node & Siblings */}
-        <div className='grid gap-6 md:grid-cols-2'>
-          {/* Current Node Highlight Card */}
-          <Card className='border-primary/50 bg-primary/5 ring-primary/20 relative shadow-xs ring-1'>
-            <CardHeader className='pb-3'>
-              <div className='flex items-center justify-between'>
-                <span className='text-primary inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase'>
-                  <span className='bg-primary size-2 animate-pulse rounded-full' />
-                  {t('tags.hierarchy.currentNode', 'Current Focus Tag')}
-                </span>
-                <Badge
+            {/* Children (Thẻ Con) */}
+            <Card className='border-border/80 shadow-xs'>
+              <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-0.5'>
+                  <div className='flex items-center gap-2'>
+                    <CardTitle className='text-sm font-semibold'>
+                      {t('tags.hierarchy.children', 'Child Sub-Tags')}
+                    </CardTitle>
+                    <Badge
+                      variant='outline'
+                      className='font-mono text-xs tabular-nums'
+                    >
+                      {children.length}
+                    </Badge>
+                  </div>
+                  <CardDescription className='text-xs'>
+                    {t(
+                      'tags.hierarchy.childrenDesc',
+                      'Specific sub-tags automatically included when expanding search.'
+                    )}
+                  </CardDescription>
+                </div>
+                <Button
+                  type='button'
                   variant='outline'
-                  className='bg-background/80 font-mono text-[11px]'
+                  size='sm'
+                  onClick={() => openDialog('child')}
+                  className='h-8 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
                 >
-                  {t('tags.hierarchy.taxonomyFocus', 'Taxonomy Focus')}
-                </Badge>
-              </div>
-              <CardTitle className='flex flex-wrap items-center gap-2.5 text-xl font-bold'>
-                <CurrentIcon
-                  className='text-primary size-5 shrink-0'
-                  aria-hidden='true'
-                />
-                <span>#{tag.name}</span>
-                {tag.isOfficial && (
-                  <BadgeCheckIcon
-                    className='text-primary size-4.5 shrink-0'
-                    aria-hidden='true'
-                  />
+                  <PlusIcon className='size-3.5' aria-hidden='true' />
+                  <span>{t('tags.hierarchy.addChildBtn', 'Add Child')}</span>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {children.length === 0 ? (
+                  <p className='text-muted-foreground py-2 text-xs italic'>
+                    {t(
+                      'tags.hierarchy.leafNode',
+                      'Leaf tag — no child sub-tags attached.'
+                    )}
+                  </p>
+                ) : (
+                  <div className='flex flex-wrap gap-2'>
+                    {children.map((child) => (
+                      <TagNodeChip
+                        key={child.id}
+                        name={child.name}
+                        translatedName={child.translatedName}
+                        category={child.category}
+                        isOfficial={child.isOfficial}
+                        usageCount={child.usageCount}
+                        onClick={() => navigate(`/tags/${child.id}/show`)}
+                        onUnlink={() =>
+                          setPendingUnlink({
+                            sourceTagId: tag.id,
+                            targetTagId: child.id,
+                            relationType: 'hierarchy',
+                            label: `#${tag.name} → #${child.name}`,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
                 )}
-                <TagCategoryBadge category={tag.category} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='text-muted-foreground space-y-1.5 text-xs'>
-              <div className='flex items-center gap-2'>
-                <span>Slug:</span>
-                <code className='text-foreground bg-background/60 rounded border px-1.5 py-0.5 font-mono font-semibold'>
-                  /{tag.slug}
-                </code>
-              </div>
-              <div className='flex items-center gap-2'>
-                <span>{t('tags.hierarchy.usageLabel', 'Usage:')}</span>
-                <span className='text-foreground font-mono font-semibold tabular-nums'>
-                  {tag.usageCount.toLocaleString()}
-                </span>
-                <span>{t('tags.show.uses', 'uses')}</span>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Siblings (Thẻ Cùng Cấp) */}
-          <Card className='border-border/80 shadow-xs'>
-            <CardHeader className='pb-3'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                  <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.siblings', 'Sibling Tags')}
-                  </CardTitle>
-                  <Badge
-                    variant='outline'
-                    className='font-mono text-xs tabular-nums'
-                  >
-                    {siblings.length}
-                  </Badge>
-                </div>
-              </div>
-              <CardDescription className='text-xs'>
-                {t(
-                  'tags.hierarchy.siblingsDesc',
-                  'Tags sharing common parent concepts in the graph.'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {siblings.length === 0 ? (
-                <p className='text-muted-foreground py-2 text-xs italic'>
-                  {t(
-                    'tags.hierarchy.noSiblings',
-                    'No sibling tags found under shared parent tags.'
-                  )}
-                </p>
-              ) : (
-                <div className='flex flex-wrap gap-2'>
-                  {siblings.map((sibling) => (
-                    <TagNodeChip
-                      key={sibling.id}
-                      name={sibling.name}
-                      translatedName={sibling.translatedName}
-                      category={sibling.category}
-                      usageCount={sibling.usageCount}
-                      onClick={() => navigate(`/tags/${sibling.id}/show`)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Visual Connector: Current Node -> Children */}
-        <div
-          className='flex items-center justify-center gap-2 px-1'
-          aria-hidden='true'
-        >
-          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
-          <span className='text-muted-foreground bg-muted/60 border-border/60 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-center font-mono text-[10px] font-medium sm:text-[11px]'>
-            <ArrowDownIcon className='size-3.5 shrink-0 text-emerald-500' />
-            {t(
-              'tags.hierarchy.specializationConnector',
-              'Sub-concept Specialization (Sub-types / Children)'
+            {/* Siblings Context */}
+            {siblings.length > 0 && (
+              <Card className='border-border/80 shadow-xs'>
+                <CardHeader className='pb-3'>
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-2'>
+                      <CardTitle className='text-sm font-semibold'>
+                        {t('tags.hierarchy.siblings', 'Sibling Tags')}
+                      </CardTitle>
+                      <Badge
+                        variant='outline'
+                        className='font-mono text-xs tabular-nums'
+                      >
+                        {siblings.length}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardDescription className='text-xs'>
+                    {t(
+                      'tags.hierarchy.siblingsDesc',
+                      'Tags sharing common parent concepts in the graph.'
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className='flex flex-wrap gap-2'>
+                    {siblings.map((sibling) => (
+                      <TagNodeChip
+                        key={sibling.id}
+                        name={sibling.name}
+                        translatedName={sibling.translatedName}
+                        category={sibling.category}
+                        usageCount={sibling.usageCount}
+                        onClick={() => navigate(`/tags/${sibling.id}/show`)}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </span>
-          <div className='bg-border h-px max-w-xs min-w-3 flex-1' />
-        </div>
+          </div>
 
-        {/* Tier 3: Children (Thẻ Con) */}
-        <Card className='border-border/80 shadow-xs'>
-          <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='space-y-0.5'>
-              <div className='flex items-center gap-2'>
-                <CardTitle className='text-sm font-semibold'>
-                  {t('tags.hierarchy.children', 'Child Sub-Tags')}
-                </CardTitle>
-                <Badge
+          {/* Column 2: Associative & Disambiguation Relations */}
+          <div className='space-y-6'>
+            {/* Related Tags */}
+            <Card className='border-border/80 shadow-xs'>
+              <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-0.5'>
+                  <div className='flex items-center gap-2'>
+                    <Link2Icon
+                      className='text-primary size-4'
+                      aria-hidden='true'
+                    />
+                    <CardTitle className='text-sm font-semibold'>
+                      {t('tags.hierarchy.related', 'Related Tags')}
+                    </CardTitle>
+                    <Badge
+                      variant='outline'
+                      className='font-mono text-xs tabular-nums'
+                    >
+                      {related.length}
+                    </Badge>
+                  </div>
+                  <CardDescription className='text-xs'>
+                    {t(
+                      'tags.hierarchy.relatedDesc',
+                      'Peer associative semantic relationships between related concepts.'
+                    )}
+                  </CardDescription>
+                </div>
+                <Button
+                  type='button'
                   variant='outline'
-                  className='font-mono text-xs tabular-nums'
+                  size='sm'
+                  onClick={() => openDialog('related')}
+                  className='h-8 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
                 >
-                  {children.length}
-                </Badge>
-              </div>
-              <CardDescription className='text-xs'>
-                {t(
-                  'tags.hierarchy.childrenDesc',
-                  'Specific sub-tags automatically included when expanding search.'
+                  <PlusIcon className='size-3.5' aria-hidden='true' />
+                  <span>
+                    {t('tags.hierarchy.addRelatedBtn', 'Add Related')}
+                  </span>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {related.length === 0 ? (
+                  <p className='text-muted-foreground py-2 text-xs italic'>
+                    {t(
+                      'tags.hierarchy.noRelated',
+                      'No associative related links established.'
+                    )}
+                  </p>
+                ) : (
+                  <div className='flex flex-wrap gap-2'>
+                    {related.map((rel) => (
+                      <TagNodeChip
+                        key={rel.id}
+                        name={rel.name}
+                        translatedName={rel.translatedName}
+                        category={rel.category}
+                        usageCount={rel.usageCount}
+                        onClick={() => navigate(`/tags/${rel.id}/show`)}
+                        onUnlink={() =>
+                          setPendingUnlink({
+                            sourceTagId: tag.id,
+                            targetTagId: rel.id,
+                            relationType: 'related',
+                            label: `#${tag.name} ↔ #${rel.name}`,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
                 )}
-              </CardDescription>
-            </div>
-            <Button
-              type='button'
-              variant='outline'
-              size='sm'
-              onClick={() => openDialog('child')}
-              className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
-            >
-              <PlusIcon className='size-3.5' aria-hidden='true' />
-              <span>{t('tags.hierarchy.addChildBtn', 'Add Child Tag')}</span>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {children.length === 0 ? (
-              <p className='text-muted-foreground py-2 text-xs italic'>
-                {t(
-                  'tags.hierarchy.leafNode',
-                  'Leaf tag — no child sub-tags attached.'
+              </CardContent>
+            </Card>
+
+            {/* Disambiguation Tags */}
+            <Card className='border-border/80 shadow-xs'>
+              <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-0.5'>
+                  <div className='flex items-center gap-2'>
+                    <SplitIcon
+                      className='size-4 text-amber-500'
+                      aria-hidden='true'
+                    />
+                    <CardTitle className='text-sm font-semibold'>
+                      {t(
+                        'tags.hierarchy.disambiguations',
+                        'Disambiguation Tags'
+                      )}
+                    </CardTitle>
+                    <Badge
+                      variant='outline'
+                      className='font-mono text-xs tabular-nums'
+                    >
+                      {disambiguations.length}
+                    </Badge>
+                  </div>
+                  <CardDescription className='text-xs'>
+                    {t(
+                      'tags.hierarchy.disambiguationsDesc',
+                      'Tags with similar phrasing but different semantic contexts.'
+                    )}
+                  </CardDescription>
+                </div>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => openDialog('disambiguation')}
+                  className='h-8 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
+                >
+                  <PlusIcon className='size-3.5' aria-hidden='true' />
+                  <span>
+                    {t(
+                      'tags.hierarchy.addDisambiguationBtn',
+                      'Add Disambiguation'
+                    )}
+                  </span>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {disambiguations.length === 0 ? (
+                  <p className='text-muted-foreground py-2 text-xs italic'>
+                    {t(
+                      'tags.hierarchy.noDisambiguations',
+                      'No disambiguation notices required.'
+                    )}
+                  </p>
+                ) : (
+                  <div className='flex flex-wrap gap-2'>
+                    {disambiguations.map((dis) => (
+                      <TagNodeChip
+                        key={dis.id}
+                        name={dis.name}
+                        translatedName={dis.translatedName}
+                        category={dis.category}
+                        usageCount={dis.usageCount}
+                        onClick={() => navigate(`/tags/${dis.id}/show`)}
+                        onUnlink={() =>
+                          setPendingUnlink({
+                            sourceTagId: tag.id,
+                            targetTagId: dis.id,
+                            relationType: 'disambiguation',
+                            label: `#${tag.name} ≠ #${dis.name}`,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
                 )}
-              </p>
-            ) : (
-              <div className='flex flex-wrap gap-2.5'>
-                {children.map((child) => (
-                  <TagNodeChip
-                    key={child.id}
-                    name={child.name}
-                    translatedName={child.translatedName}
-                    category={child.category}
-                    isOfficial={child.isOfficial}
-                    usageCount={child.usageCount}
-                    onClick={() => navigate(`/tags/${child.id}/show`)}
-                    onUnlink={() =>
-                      setPendingUnlink({
-                        sourceTagId: tag.id,
-                        targetTagId: child.id,
-                        relationType: 'hierarchy',
-                        label: `#${tag.name} → #${child.name}`,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Tier 4: Associative & Disambiguation Relations */}
-        <div className='grid gap-6 md:grid-cols-2'>
-          {/* Related Tags */}
-          <Card className='border-border/80 shadow-xs'>
-            <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='space-y-0.5'>
-                <div className='flex items-center gap-2'>
-                  <Link2Icon
-                    className='text-primary size-4'
-                    aria-hidden='true'
-                  />
-                  <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.related', 'Related Tags')}
-                  </CardTitle>
-                  <Badge
-                    variant='outline'
-                    className='font-mono text-xs tabular-nums'
-                  >
-                    {related.length}
-                  </Badge>
-                </div>
-                <CardDescription className='text-xs'>
-                  {t(
-                    'tags.hierarchy.relatedDesc',
-                    'Peer associative semantic relationships between related concepts.'
-                  )}
-                </CardDescription>
-              </div>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={() => openDialog('related')}
-                className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
-              >
-                <PlusIcon className='size-3.5' aria-hidden='true' />
-                <span>
-                  {t('tags.hierarchy.addRelatedBtn', 'Add Related Link')}
-                </span>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {related.length === 0 ? (
-                <p className='text-muted-foreground py-2 text-xs italic'>
-                  {t(
-                    'tags.hierarchy.noRelated',
-                    'No associative related links established.'
-                  )}
-                </p>
-              ) : (
-                <div className='flex flex-wrap gap-2.5'>
-                  {related.map((rel) => (
-                    <TagNodeChip
-                      key={rel.id}
-                      name={rel.name}
-                      translatedName={rel.translatedName}
-                      category={rel.category}
-                      usageCount={rel.usageCount}
-                      onClick={() => navigate(`/tags/${rel.id}/show`)}
-                      onUnlink={() =>
-                        setPendingUnlink({
-                          sourceTagId: tag.id,
-                          targetTagId: rel.id,
-                          relationType: 'related',
-                          label: `#${tag.name} ↔ #${rel.name}`,
-                        })
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Disambiguation Tags */}
-          <Card className='border-border/80 shadow-xs'>
-            <CardHeader className='flex flex-col gap-2.5 pb-3 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='space-y-0.5'>
-                <div className='flex items-center gap-2'>
-                  <SplitIcon
-                    className='size-4 text-amber-500'
-                    aria-hidden='true'
-                  />
-                  <CardTitle className='text-sm font-semibold'>
-                    {t('tags.hierarchy.disambiguations', 'Disambiguation Tags')}
-                  </CardTitle>
-                  <Badge
-                    variant='outline'
-                    className='font-mono text-xs tabular-nums'
-                  >
-                    {disambiguations.length}
-                  </Badge>
-                </div>
-                <CardDescription className='text-xs'>
-                  {t(
-                    'tags.hierarchy.disambiguationsDesc',
-                    'Tags with similar phrasing but different semantic contexts.'
-                  )}
-                </CardDescription>
-              </div>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={() => openDialog('disambiguation')}
-                className='text-primary hover:text-primary hover:bg-primary/10 h-8 w-full cursor-pointer gap-1.5 text-xs shadow-2xs sm:w-auto'
-              >
-                <PlusIcon className='size-3.5' aria-hidden='true' />
-                <span>
-                  {t(
-                    'tags.hierarchy.addDisambiguationBtn',
-                    'Add Disambiguation'
-                  )}
-                </span>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {disambiguations.length === 0 ? (
-                <p className='text-muted-foreground py-2 text-xs italic'>
-                  {t(
-                    'tags.hierarchy.noDisambiguations',
-                    'No disambiguation notices required.'
-                  )}
-                </p>
-              ) : (
-                <div className='flex flex-wrap gap-2.5'>
-                  {disambiguations.map((dis) => (
-                    <TagNodeChip
-                      key={dis.id}
-                      name={dis.name}
-                      translatedName={dis.translatedName}
-                      category={dis.category}
-                      usageCount={dis.usageCount}
-                      onClick={() => navigate(`/tags/${dis.id}/show`)}
-                      onUnlink={() =>
-                        setPendingUnlink({
-                          sourceTagId: tag.id,
-                          targetTagId: dis.id,
-                          relationType: 'disambiguation',
-                          label: `#${tag.name} ≠ #${dis.name}`,
-                        })
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </>

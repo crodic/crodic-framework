@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { BookMarked, Plus, Tags } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useRestResourceTable,
@@ -28,15 +29,19 @@ const categoryFilterParsers = {
 
 export function PageTagCategoriesOverview() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] =
     useState<TagCategorySchema | null>(null)
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   useBreadcrumb([
-    { title: t('navigation.management.tags', 'Quản trị Thẻ') },
     {
-      title: t('navigation.management.tagCategories', 'Danh mục Thẻ'),
+      title: t('navigation.management.tags', 'Tags Governance'),
+      href: '/tags',
+    },
+    {
+      title: t('navigation.management.tagCategories', 'Tag Categories'),
     },
   ])
 
@@ -100,12 +105,48 @@ export function PageTagCategoriesOverview() {
   return (
     <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
       <PageHeader
-        title={t('navigation.management.tagCategories', 'Danh mục Thẻ')}
+        title={t('navigation.management.tagCategories', 'Tag Categories')}
+        description={t(
+          'tagCategories.description',
+          'Define top-level semantic classifications, icons, and theme accents for tags.'
+        )}
         actions={
-          <Button onClick={handleCreate} className='gap-2 shadow-xs'>
-            <Plus className='size-4' />
-            <span>{t('tagCategories.actions.add', 'Thêm danh mục')}</span>
-          </Button>
+          <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => navigate('/tags')}
+              className='w-full cursor-pointer gap-2 sm:w-auto'
+            >
+              <Tags
+                className='text-muted-foreground size-4'
+                aria-hidden='true'
+              />
+              <span>{t('navigation.management.tags', 'Tags Governance')}</span>
+            </Button>
+            <Button
+              variant='outline'
+              onClick={() => navigate('/tag-encyclopedias')}
+              className='w-full cursor-pointer gap-2 sm:w-auto'
+            >
+              <BookMarked
+                className='text-muted-foreground size-4'
+                aria-hidden='true'
+              />
+              <span>
+                {t(
+                  'navigation.management.tagEncyclopedias',
+                  'Tag Encyclopedia'
+                )}
+              </span>
+            </Button>
+            <Button
+              onClick={handleCreate}
+              className='gap-2 shadow-xs sm:w-auto'
+            >
+              <Plus className='size-4' />
+              <span>{t('tagCategories.actions.add', 'Thêm danh mục')}</span>
+            </Button>
+          </div>
         }
       />
 

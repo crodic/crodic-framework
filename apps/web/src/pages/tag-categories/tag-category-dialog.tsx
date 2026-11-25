@@ -347,7 +347,7 @@ export function TagCategoryDialog({
                   <div className='space-y-2.5'>
                     <div className='flex items-center gap-2.5'>
                       <div
-                        className='size-9 shrink-0 rounded-lg border shadow-xs'
+                        className='size-9 shrink-0 rounded-lg border'
                         style={{ backgroundColor: field.value || '#3b82f6' }}
                       />
                       <FormControl>
@@ -364,7 +364,7 @@ export function TagCategoryDialog({
                           key={color}
                           type='button'
                           onClick={() => field.onChange(color)}
-                          className={`size-6 cursor-pointer rounded-md border transition-transform hover:scale-110 ${
+                          className={`hover:ring-muted-foreground/30 size-6 cursor-pointer rounded-md border transition-all hover:ring-2 ${
                             field.value?.toLowerCase() === color.toLowerCase()
                               ? 'ring-primary ring-2 ring-offset-1'
                               : ''

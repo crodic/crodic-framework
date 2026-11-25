@@ -78,9 +78,9 @@ export function getTagCategoriesColumns({
         const cat = row.original
         return (
           <div
-            className='flex size-9 items-center justify-center rounded-xl shadow-xs'
+            className='border-border/40 flex size-8 items-center justify-center rounded-lg border'
             style={{
-              backgroundColor: `${cat.color || '#3b82f6'}20`,
+              backgroundColor: `${cat.color || '#3b82f6'}15`,
               color: cat.color || '#3b82f6',
             }}
           >
@@ -175,7 +175,7 @@ export function getTagCategoriesColumns({
         />
       ),
       cell: ({ row }) => (
-        <span className='text-muted-foreground font-mono text-xs'>
+        <span className='text-muted-foreground font-mono text-xs tabular-nums'>
           {row.original.sortOrder}
         </span>
       ),
@@ -188,7 +188,7 @@ export function getTagCategoriesColumns({
       cell: ({ row }) => {
         const count = row.original.tagCount ?? 0
         return (
-          <Badge variant='secondary' className='font-mono text-xs'>
+          <Badge variant='secondary' className='font-mono text-xs tabular-nums'>
             {t('tagCategories.tagUnit', {
               count,
               defaultValue: `${count} thẻ`,

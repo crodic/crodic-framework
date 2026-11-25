@@ -6,17 +6,12 @@ import {
   BadgeCheckIcon,
   CheckIcon,
   CopyIcon,
-  EyeIcon,
   GlobeIcon,
-  HashIcon,
-  LanguagesIcon,
   Loader2Icon,
   LockIcon,
   PlusIcon,
   RefreshCwIcon,
   SaveIcon,
-  ShieldCheckIcon,
-  Wand2Icon,
   XIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -53,7 +48,6 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { FormFieldHelp } from './components/form-field-help'
 import {
-  TagCategoryBadge,
   TagNodeChip,
   TagSafetyBadge,
   TagStatusBadge,
@@ -243,141 +237,107 @@ export function TagForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className='flex flex-1 flex-col gap-6'
       >
-        {/* Sticky Header Action Bar */}
-        <div className='bg-card/95 border-border/80 sticky top-0 z-30 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='flex items-start gap-3 sm:items-center'>
-              <Button
-                type='button'
-                variant='outline'
-                size='icon'
-                onClick={() => navigate(-1)}
-                className='mt-0.5 size-9 shrink-0 cursor-pointer shadow-2xs sm:mt-0'
-                aria-label={t('buttons.back', 'Back')}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              </Button>
+        {/* Clean Sticky Header Bar */}
+        <div className='bg-background/95 border-border/70 sticky top-0 z-30 flex flex-col gap-3 border-b pb-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex items-start gap-3 sm:items-center'>
+            <Button
+              type='button'
+              variant='outline'
+              size='icon'
+              onClick={() => navigate(-1)}
+              className='size-8 shrink-0 cursor-pointer'
+              aria-label={t('buttons.back', 'Back')}
+            >
+              <ArrowLeftIcon className='size-4' aria-hidden='true' />
+            </Button>
 
-              <div className='space-y-0.5'>
-                <div className='flex flex-wrap items-center gap-2.5'>
-                  <h1 className='text-foreground text-xl font-bold tracking-tight sm:text-2xl'>
-                    {initialData
-                      ? `#${watchedName || initialData.name}`
-                      : t('tags.form.createTitle', 'Create Canonical Tag')}
-                  </h1>
-                  <TagStatusBadge status={watchedStatus} />
-                  <TagCategoryBadge category={watchedCategory} />
-                </div>
-                <p className='text-muted-foreground text-xs'>
+            <div className='space-y-1'>
+              <div className='flex flex-wrap items-center gap-2.5'>
+                <h1 className='text-foreground text-lg font-bold tracking-tight sm:text-xl'>
                   {initialData
-                    ? t(
-                        'tags.form.editSubtitle',
-                        'Configure canonical identity, multilingual localizations, and aliases.'
-                      )
-                    : t(
-                        'tags.form.createSubtitle',
-                        'Register a new canonical tag into the platform taxonomy.'
-                      )}
-                </p>
+                    ? `#${watchedName || initialData.name}`
+                    : t('tags.form.createTitle', 'Create Canonical Tag')}
+                </h1>
+                <TagNodeChip
+                  name={watchedName?.trim() || 'preview'}
+                  translatedName={activeTranslation}
+                  category={watchedCategory}
+                  isOfficial={watchedIsOfficial}
+                  isSystem={watchedIsSystem}
+                  usageCount={initialData?.usageCount ?? 0}
+                />
+                <TagSafetyBadge safetyRating={watchedSafety} />
+                <TagStatusBadge status={watchedStatus} />
               </div>
-            </div>
-
-            <div className='flex w-full items-center justify-end gap-2 sm:w-auto'>
-              <Button
-                type='button'
-                variant='ghost'
-                onClick={() => navigate(-1)}
-                disabled={isSubmitting}
-                className='w-full cursor-pointer text-xs sm:w-auto'
-              >
-                {t('buttons.cancel', 'Cancel')}
-              </Button>
-              <Button
-                type='submit'
-                disabled={isSubmitting}
-                className='w-full cursor-pointer gap-2 shadow-xs sm:w-auto'
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2Icon
-                      className='size-4 animate-spin'
-                      aria-hidden='true'
-                    />
-                    <span>{t('buttons.saving', 'Saving...')}</span>
-                  </>
-                ) : (
-                  <>
-                    <SaveIcon className='size-4' aria-hidden='true' />
-                    <span>
-                      {initialData
-                        ? t('buttons.saveChanges', 'Save Changes')
-                        : t('buttons.createTag', 'Create Tag')}
-                    </span>
-                  </>
-                )}
-              </Button>
+              <p className='text-muted-foreground text-xs'>
+                {initialData
+                  ? t(
+                      'tags.form.editSubtitle',
+                      'Configure canonical identity, multilingual localizations, and aliases.'
+                    )
+                  : t(
+                      'tags.form.createSubtitle',
+                      'Register a new canonical tag into the platform taxonomy.'
+                    )}
+              </p>
             </div>
           </div>
+
+          <div className='flex items-center justify-end gap-2'>
+            <Button
+              type='button'
+              variant='ghost'
+              size='sm'
+              onClick={() => navigate(-1)}
+              disabled={isSubmitting}
+              className='cursor-pointer text-xs'
+            >
+              {t('buttons.cancel', 'Cancel')}
+            </Button>
+            <Button
+              type='submit'
+              size='sm'
+              disabled={isSubmitting}
+              className='cursor-pointer gap-2 shadow-xs'
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2Icon
+                    className='size-4 animate-spin'
+                    aria-hidden='true'
+                  />
+                  <span>{t('buttons.saving', 'Saving...')}</span>
+                </>
+              ) : (
+                <>
+                  <SaveIcon className='size-4' aria-hidden='true' />
+                  <span>
+                    {initialData
+                      ? t('buttons.saveChanges', 'Save Changes')
+                      : t('buttons.createTag', 'Create Tag')}
+                  </span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-
-        {/* Live Taxonomy Preview Strip */}
-        <Card className='border-border/70 bg-muted/20 relative overflow-hidden shadow-2xs'>
-          <CardContent className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg'>
-                <EyeIcon className='size-4' aria-hidden='true' />
-              </div>
-              <div>
-                <p className='text-foreground text-xs font-semibold'>
-                  {t('tags.form.previewBadge', 'Live Taxonomy Preview')}
-                </p>
-                <p className='text-muted-foreground text-[11px]'>
-                  {t(
-                    'tags.form.previewDesc',
-                    'Real-time preview of badge styling, category accent, and localization chip.'
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* Visual Chip Representation */}
-            <div className='flex flex-wrap items-center gap-2.5'>
-              <TagNodeChip
-                name={watchedName?.trim() || 'example-tag'}
-                translatedName={activeTranslation}
-                category={watchedCategory}
-                isOfficial={watchedIsOfficial}
-                isSystem={watchedIsSystem}
-                usageCount={initialData?.usageCount ?? 0}
-              />
-              <TagSafetyBadge safetyRating={watchedSafety} />
-            </div>
-          </CardContent>
-        </Card>
 
         {/* 2-Column Responsive Workspace Grid */}
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
           {/* Main Column (8 Cols): Canonical Identity + Multilingual Studio */}
           <div className='space-y-6 lg:col-span-8'>
             {/* Card 1: Core Canonical Identity */}
-            <Card className='border-border/80 shadow-2xs'>
-              <CardHeader className='border-b px-5 py-4 sm:px-6'>
-                <div className='flex items-center gap-2.5'>
-                  <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-                    <HashIcon className='size-4.5' aria-hidden='true' />
-                  </div>
-                  <div>
-                    <CardTitle className='text-base font-semibold'>
-                      {t('tags.form.canonicalSection', 'Canonical Identity')}
-                    </CardTitle>
-                    <CardDescription className='text-xs'>
-                      {t(
-                        'tags.form.canonicalDesc',
-                        'Define the primary canonical tag name, category, safety rating, and governance flags.'
-                      )}
-                    </CardDescription>
-                  </div>
-                </div>
+            <Card className='border-border/80 shadow-xs'>
+              <CardHeader className='border-b px-5 py-4'>
+                <CardTitle className='text-base font-semibold'>
+                  {t('tags.form.canonicalSection', 'Canonical Identity')}
+                </CardTitle>
+                <CardDescription className='text-xs'>
+                  {t(
+                    'tags.form.canonicalDesc',
+                    'Define the primary canonical tag name, category, safety rating, and governance flags.'
+                  )}
+                </CardDescription>
               </CardHeader>
 
               <CardContent className='space-y-5 p-5 sm:p-6'>
@@ -732,90 +692,65 @@ export function TagForm({
             </Card>
 
             {/* Card 2: Multilingual Translations Studio */}
-            <Card className='border-border/80 shadow-2xs'>
+            <Card className='border-border/80 shadow-xs'>
               <CardHeader className='border-b px-5 py-4 sm:px-6'>
-                <div className='flex items-center gap-2.5'>
-                  <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-                    <LanguagesIcon className='size-4.5' aria-hidden='true' />
-                  </div>
-                  <div>
-                    <CardTitle className='text-base font-semibold'>
-                      {t(
-                        'tags.form.translationsSection',
-                        'Multilingual Translations'
-                      )}
-                    </CardTitle>
-                    <CardDescription className='text-xs'>
-                      {t(
-                        'tags.form.translationsDesc',
-                        'Provide localized display names and concise hover summaries across supported languages.'
-                      )}
-                    </CardDescription>
-                  </div>
-                </div>
+                <CardTitle className='text-base font-semibold'>
+                  {t(
+                    'tags.form.translationsSection',
+                    'Multilingual Translations'
+                  )}
+                </CardTitle>
+                <CardDescription className='text-xs'>
+                  {t(
+                    'tags.form.translationsDesc',
+                    'Provide localized display names and concise hover summaries across supported languages.'
+                  )}
+                </CardDescription>
               </CardHeader>
 
               <CardContent className='space-y-5 p-5 sm:p-6'>
                 {/* Language Selection Tabs Bar */}
-                <div className='border-border/70 bg-muted/30 flex flex-col gap-2.5 rounded-xl border p-2 sm:flex-row sm:items-center sm:justify-between'>
-                  <div className='flex items-center gap-2 pl-1'>
-                    <GlobeIcon
-                      className='text-primary size-4 shrink-0'
-                      aria-hidden='true'
-                    />
-                    <span className='text-foreground text-xs font-semibold'>
-                      {t('tags.form.selectLocale', 'Language:')}
-                    </span>
-                  </div>
+                <div className='flex flex-wrap items-center gap-1.5 border-b pb-3'>
+                  {TAG_LOCALES.map((localeItem, idx) => {
+                    const currentName =
+                      watchedTranslations?.[idx]?.translatedName?.trim() ?? ''
+                    const currentSummary =
+                      watchedTranslations?.[idx]?.shortSummary?.trim() ?? ''
+                    const isConfigured = Boolean(currentName || currentSummary)
+                    const isActive = activeLocale === localeItem.value
 
-                  <div className='flex w-full [scrollbar-width:none] items-center gap-1.5 overflow-x-auto py-0.5 sm:w-auto'>
-                    {TAG_LOCALES.map((localeItem, idx) => {
-                      const currentName =
-                        watchedTranslations?.[idx]?.translatedName?.trim() ?? ''
-                      const currentSummary =
-                        watchedTranslations?.[idx]?.shortSummary?.trim() ?? ''
-                      const isConfigured = Boolean(
-                        currentName || currentSummary
-                      )
-                      const isActive = activeLocale === localeItem.value
-
-                      return (
-                        <button
-                          key={localeItem.value}
-                          type='button'
-                          onClick={() => setActiveLocale(localeItem.value)}
-                          className={cn(
-                            'inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all select-none',
-                            isActive
-                              ? 'bg-background text-foreground ring-border font-semibold shadow-xs ring-1'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-                          )}
-                        >
+                    return (
+                      <button
+                        key={localeItem.value}
+                        type='button'
+                        onClick={() => setActiveLocale(localeItem.value)}
+                        className={cn(
+                          'inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors select-none',
+                          isActive
+                            ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <span>{localeItem.label}</span>
+                        {isConfigured && (
                           <span
                             className={cn(
-                              'size-1.5 shrink-0 rounded-full',
-                              isConfigured
-                                ? 'bg-emerald-500'
-                                : 'bg-muted-foreground/40'
+                              'text-[10px] font-bold',
+                              isActive
+                                ? 'text-primary-foreground'
+                                : 'text-emerald-600 dark:text-emerald-400'
                             )}
-                            aria-hidden='true'
-                          />
-                          <span className='font-medium whitespace-nowrap'>
-                            {localeItem.label}
+                          >
+                            ✓
                           </span>
-                          {isConfigured && (
-                            <span className='font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400'>
-                              ✓
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
 
                 {activeLocaleIndex >= 0 && (
-                  <div className='space-y-5'>
+                  <div className='space-y-4'>
                     {/* Field 1: Translated Name */}
                     <FormField
                       control={form.control}
@@ -919,19 +854,10 @@ export function TagForm({
           {/* Side Column (4 Cols): Governance Flags & Orthographic Aliases */}
           <div className='space-y-6 lg:col-span-4'>
             {/* Card 3: Governance & Security Flags */}
-            <Card className='border-border/80 shadow-2xs'>
+            <Card className='border-border/80 shadow-xs'>
               <CardHeader className='border-b px-5 py-4'>
-                <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
-                  <ShieldCheckIcon
-                    className='text-primary size-4'
-                    aria-hidden='true'
-                  />
-                  <span>
-                    {t(
-                      'tags.form.governanceSection',
-                      'Governance & Protection'
-                    )}
-                  </span>
+                <CardTitle className='text-sm font-semibold'>
+                  {t('tags.form.governanceSection', 'Governance & Protection')}
                 </CardTitle>
                 <CardDescription className='text-xs'>
                   {t(
@@ -948,9 +874,9 @@ export function TagForm({
                   render={({ field }) => (
                     <FormItem
                       className={cn(
-                        'flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs transition-all',
+                        'flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors',
                         field.value
-                          ? 'border-primary/50 bg-primary/5 ring-primary/20 ring-1'
+                          ? 'border-primary/40 bg-primary/5'
                           : 'border-border/70 bg-card hover:border-border'
                       )}
                     >
@@ -987,9 +913,9 @@ export function TagForm({
                   render={({ field }) => (
                     <FormItem
                       className={cn(
-                        'flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs transition-all',
+                        'flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors',
                         field.value
-                          ? 'border-amber-500/50 bg-amber-500/5 ring-1 ring-amber-500/20'
+                          ? 'border-amber-500/40 bg-amber-500/5'
                           : 'border-border/70 bg-card hover:border-border'
                       )}
                     >
@@ -1022,18 +948,12 @@ export function TagForm({
               </CardContent>
             </Card>
 
-            {/* Card 4: Orthographic Aliases (表記揺れ) */}
-            <Card className='border-border/80 shadow-2xs'>
+            {/* Card 4: Orthographic Aliases */}
+            <Card className='border-border/80 shadow-xs'>
               <CardHeader className='border-b px-5 py-4'>
                 <div className='flex items-center justify-between'>
-                  <CardTitle className='flex items-center gap-2 text-sm font-semibold'>
-                    <Wand2Icon
-                      className='text-primary size-4'
-                      aria-hidden='true'
-                    />
-                    <span>
-                      {t('tags.form.aliasesSection', 'Orthographic Aliases')}
-                    </span>
+                  <CardTitle className='text-sm font-semibold'>
+                    {t('tags.form.aliasesSection', 'Orthographic Aliases')}
                   </CardTitle>
                   <Badge
                     variant='outline'
@@ -1108,10 +1028,10 @@ export function TagForm({
 
                 {/* Active Aliases Chip Area */}
                 {aliasFields.length === 0 ? (
-                  <div className='border-border/70 text-muted-foreground rounded-xl border border-dashed p-5 text-center text-xs'>
+                  <div className='border-border/70 text-muted-foreground rounded-xl border border-dashed p-4 text-center text-xs'>
                     {t(
                       'tags.form.noAliases',
-                      'No orthographic aliases configured yet. Add abbreviations (e.g. "FGO"), romanizations, or common typos so search and autocomplete resolve directly to this tag.'
+                      'No orthographic aliases configured yet.'
                     )}
                   </div>
                 ) : (
@@ -1122,7 +1042,7 @@ export function TagForm({
                         <Badge
                           key={aliasField.id}
                           variant='secondary'
-                          className='group border-border/70 bg-card hover:border-foreground/30 flex items-center gap-1.5 rounded-lg border py-1 pr-1.5 pl-2 text-xs font-normal shadow-2xs transition-colors'
+                          className='border-border/70 bg-card hover:border-foreground/30 flex items-center gap-1.5 rounded-lg border py-1 pr-1.5 pl-2 text-xs font-normal transition-colors'
                         >
                           <span className='text-foreground text-[11px] font-semibold'>
                             {val?.aliasName || `Alias #${idx + 1}`}

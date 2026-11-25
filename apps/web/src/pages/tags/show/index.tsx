@@ -316,7 +316,7 @@ export function PageTagShow() {
 
           {/* Bottom Row: Executive Metrics Strip */}
           <div className='grid grid-cols-2 gap-3 pt-5 sm:grid-cols-4'>
-            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
+            <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <TagIcon className='text-primary size-3.5' aria-hidden='true' />
                 <span>{t('tags.table.usageCount', 'Usage Count')}</span>
@@ -326,7 +326,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
+            <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <FlameIcon
                   className='size-3.5 text-amber-500'
@@ -339,7 +339,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
+            <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <GitBranchIcon
                   className='size-3.5 text-sky-500'
@@ -352,7 +352,7 @@ export function PageTagShow() {
               </p>
             </div>
 
-            <div className='bg-muted/30 border-border/60 rounded-xl border p-3 shadow-2xs'>
+            <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <BookMarkedIcon
                   className='size-3.5 text-violet-500'
@@ -449,30 +449,22 @@ export function PageTagShow() {
           >
             <div className='grid gap-6 md:grid-cols-2'>
               {/* Translations Card */}
-              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-2xs'>
+              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
                 <CardHeader className='border-b px-5 py-4'>
                   <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-2.5'>
-                      <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-                        <LanguagesIcon
-                          className='size-4.5'
-                          aria-hidden='true'
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className='text-base font-semibold'>
-                          {t(
-                            'tags.form.translationsSection',
-                            'Multilingual Translations'
-                          )}
-                        </CardTitle>
-                        <CardDescription className='text-xs'>
-                          {t(
-                            'tags.show.translationsDesc',
-                            'Localized names and short summaries served in autocomplete and hover previews.'
-                          )}
-                        </CardDescription>
-                      </div>
+                    <div>
+                      <CardTitle className='text-base font-semibold'>
+                        {t(
+                          'tags.form.translationsSection',
+                          'Multilingual Translations'
+                        )}
+                      </CardTitle>
+                      <CardDescription className='text-xs'>
+                        {t(
+                          'tags.show.translationsDesc',
+                          'Localized names and short summaries served in autocomplete and hover previews.'
+                        )}
+                      </CardDescription>
                     </div>
                     <Badge
                       variant='outline'
@@ -508,7 +500,7 @@ export function PageTagShow() {
                       {tag.translations.map((tr: TagTranslation) => (
                         <div
                           key={tr.id}
-                          className='border-border/70 bg-card hover:border-border rounded-xl border p-3.5 shadow-2xs transition-all'
+                          className='border-border/70 bg-card hover:border-border rounded-xl border p-3.5 transition-colors'
                         >
                           <div className='border-border/50 flex items-center justify-between border-b pb-2.5'>
                             <div className='flex items-center gap-2'>
@@ -546,27 +538,19 @@ export function PageTagShow() {
               </Card>
 
               {/* Aliases Card */}
-              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-2xs'>
+              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
                 <CardHeader className='border-b px-5 py-4'>
                   <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-2.5'>
-                      <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
-                        <Wand2Icon className='size-4.5' aria-hidden='true' />
-                      </div>
-                      <div>
-                        <CardTitle className='text-base font-semibold'>
-                          {t(
-                            'tags.form.aliasesSection',
-                            'Orthographic Aliases'
-                          )}
-                        </CardTitle>
-                        <CardDescription className='text-xs'>
-                          {t(
-                            'tags.show.aliasesDesc',
-                            'Keywords that automatically resolve and 301-redirect to this canonical tag.'
-                          )}
-                        </CardDescription>
-                      </div>
+                    <div>
+                      <CardTitle className='text-base font-semibold'>
+                        {t('tags.form.aliasesSection', 'Orthographic Aliases')}
+                      </CardTitle>
+                      <CardDescription className='text-xs'>
+                        {t(
+                          'tags.show.aliasesDesc',
+                          'Keywords that automatically resolve and 301-redirect to this canonical tag.'
+                        )}
+                      </CardDescription>
                     </div>
                     <Badge
                       variant='outline'
@@ -602,7 +586,7 @@ export function PageTagShow() {
                       {tag.aliases.map((al: TagAlias) => (
                         <div
                           key={al.id}
-                          className='group border-border/70 bg-card hover:border-foreground/30 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs shadow-2xs transition-all'
+                          className='group border-border/70 bg-card hover:border-foreground/30 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors'
                         >
                           <span className='text-foreground text-xs font-bold'>
                             {al.aliasName}

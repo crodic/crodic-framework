@@ -2,10 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ActivityIcon,
-  BadgeCheckIcon,
   BookMarkedIcon,
-  FlameIcon,
-  LockIcon,
+  FolderTreeIcon,
   PlusIcon,
   TagsIcon,
 } from 'lucide-react'
@@ -21,8 +19,6 @@ import {
 } from '@/hooks/use-rest-resource-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DataTable } from '@/components/data-table/data-table'
@@ -139,15 +135,7 @@ export function PageTagOverview() {
     enableRowSelection: true,
   })
 
-  const stats = useMemo(() => {
-    const totalTags = meta?.totalItems ?? data.length
-    const officialCount = data.filter((t) => t.isOfficial).length
-    const systemCount = data.filter((t) => t.isSystem).length
-    const totalUsage = data.reduce((acc, t) => acc + (t.usageCount || 0), 0)
-    const officialRatio =
-      totalTags > 0 ? ((officialCount / totalTags) * 100).toFixed(0) : '0'
-    return { totalTags, officialCount, systemCount, totalUsage, officialRatio }
-  }, [meta?.totalItems, data])
+  const totalTagsCount = meta?.totalItems ?? data.length
 
   const auditColumns = useMemo(
     () =>
@@ -234,28 +222,35 @@ export function PageTagOverview() {
         sourceTag={tagToMerge}
       />
 
-      <Main className='flex flex-1 flex-col gap-6'>
-        {/* Executive Page Header with Action Center */}
+      <Main className='flex flex-1 flex-col gap-5'>
         <PageHeader
           title={t('tags.overview.title', 'Tags Governance')}
           description={t(
             'tags.overview.description',
             'Manage canonical tags, multilingual translations, orthographic aliases, DAG hierarchy, and community moderation.'
           )}
-          badges={
-            <Badge variant='outline' className='font-mono text-xs'>
-              v2.0 Taxonomy
-            </Badge>
-          }
           actions={
-            <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2.5'>
+            <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2'>
+              <Button
+                variant='outline'
+                onClick={() => navigate('/tag-categories')}
+                className='w-full cursor-pointer gap-2 sm:w-auto'
+              >
+                <FolderTreeIcon
+                  className='text-muted-foreground size-4'
+                  aria-hidden='true'
+                />
+                <span>
+                  {t('navigation.management.tagCategories', 'Tag Categories')}
+                </span>
+              </Button>
               <Button
                 variant='outline'
                 onClick={() => navigate('/tag-encyclopedias')}
-                className='hover:border-primary/50 w-full cursor-pointer gap-2 shadow-2xs sm:w-auto'
+                className='w-full cursor-pointer gap-2 sm:w-auto'
               >
                 <BookMarkedIcon
-                  className='text-primary size-4'
+                  className='text-muted-foreground size-4'
                   aria-hidden='true'
                 />
                 <span>
@@ -276,119 +271,6 @@ export function PageTagOverview() {
           }
         />
 
-        {/* Executive KPI Summary Grid with Clean Solid Admin Styling */}
-        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4'>
-          {/* Card 1: Total Tags */}
-          <Card className='group border-border/70 bg-card hover:border-primary/40 relative overflow-hidden shadow-xs transition-all hover:shadow-sm'>
-            <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
-              <div className='bg-primary/10 text-primary border-primary/20 shrink-0 rounded-xl border p-2.5 shadow-2xs'>
-                <TagsIcon className='size-5' aria-hidden='true' />
-              </div>
-              <div className='min-w-0 flex-1 space-y-1'>
-                <div className='flex items-center justify-between'>
-                  <p className='text-muted-foreground truncate text-xs font-medium'>
-                    {t('tags.kpi.totalTags', 'Total Canonical Tags')}
-                  </p>
-                </div>
-                {isFetching && !data.length ? (
-                  <Skeleton className='h-7 w-20' />
-                ) : (
-                  <p className='text-foreground font-mono text-2xl font-bold tracking-tight tabular-nums'>
-                    {stats.totalTags.toLocaleString()}
-                  </p>
-                )}
-                <p className='text-muted-foreground truncate text-[11px]'>
-                  {t('tags.kpi.totalTagsDesc', 'Taxonomy root & leaf nodes')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 2: Official Verified */}
-          <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-emerald-500/40 hover:shadow-sm'>
-            <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
-              <div className='shrink-0 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-emerald-600 shadow-2xs dark:text-emerald-400'>
-                <BadgeCheckIcon className='size-5' aria-hidden='true' />
-              </div>
-              <div className='min-w-0 flex-1 space-y-1'>
-                <div className='flex items-center justify-between'>
-                  <p className='text-muted-foreground truncate text-xs font-medium'>
-                    {t('tags.kpi.officialTags', 'Official Curated')}
-                  </p>
-                  <Badge
-                    variant='outline'
-                    className='border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0 font-mono text-[10px] text-emerald-600 dark:text-emerald-400'
-                  >
-                    {stats.officialRatio}%
-                  </Badge>
-                </div>
-                {isFetching && !data.length ? (
-                  <Skeleton className='h-7 w-16' />
-                ) : (
-                  <p className='text-foreground font-mono text-2xl font-bold tracking-tight tabular-nums'>
-                    {stats.officialCount.toLocaleString()}
-                  </p>
-                )}
-                <p className='text-muted-foreground truncate text-[11px]'>
-                  {t('tags.kpi.officialDesc', 'Moderator verified tags')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 3: System Protected */}
-          <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-amber-500/40 hover:shadow-sm'>
-            <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
-              <div className='shrink-0 rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-amber-600 shadow-2xs dark:text-amber-400'>
-                <LockIcon className='size-5' aria-hidden='true' />
-              </div>
-              <div className='min-w-0 flex-1 space-y-1'>
-                <div className='flex items-center justify-between'>
-                  <p className='text-muted-foreground truncate text-xs font-medium'>
-                    {t('tags.kpi.systemProtected', 'System Protected')}
-                  </p>
-                </div>
-                {isFetching && !data.length ? (
-                  <Skeleton className='h-7 w-16' />
-                ) : (
-                  <p className='text-foreground font-mono text-2xl font-bold tracking-tight tabular-nums'>
-                    {stats.systemCount.toLocaleString()}
-                  </p>
-                )}
-                <p className='text-muted-foreground truncate text-[11px]'>
-                  {t('tags.kpi.systemDesc', 'Core platform tags')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 4: Taxonomy Usage */}
-          <Card className='group border-border/70 bg-card relative overflow-hidden shadow-xs transition-all hover:border-orange-500/40 hover:shadow-sm'>
-            <CardContent className='flex items-center gap-4 p-4 sm:p-5'>
-              <div className='shrink-0 rounded-xl border border-orange-500/20 bg-orange-500/10 p-2.5 text-orange-600 shadow-2xs dark:text-orange-400'>
-                <FlameIcon className='size-5' aria-hidden='true' />
-              </div>
-              <div className='min-w-0 flex-1 space-y-1'>
-                <div className='flex items-center justify-between'>
-                  <p className='text-muted-foreground truncate text-xs font-medium'>
-                    {t('tags.kpi.totalUsage', 'Taxonomy Usage')}
-                  </p>
-                </div>
-                {isFetching && !data.length ? (
-                  <Skeleton className='h-7 w-20' />
-                ) : (
-                  <p className='text-foreground font-mono text-2xl font-bold tracking-tight tabular-nums'>
-                    {stats.totalUsage.toLocaleString()}
-                  </p>
-                )}
-                <p className='text-muted-foreground truncate text-[11px]'>
-                  {t('tags.kpi.usageDesc', 'Total entity assignments')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Studio Workspace Tabs */}
         <Tabs
           value={activeTab}
@@ -407,7 +289,7 @@ export function PageTagOverview() {
                   variant='secondary'
                   className='ml-0.5 h-4.5 px-1.5 font-mono text-[10px] tabular-nums'
                 >
-                  {stats.totalTags.toLocaleString()}
+                  {totalTagsCount.toLocaleString()}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value='audit' className='gap-2 text-xs sm:text-sm'>
