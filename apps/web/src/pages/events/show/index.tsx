@@ -186,12 +186,12 @@ export function PageEventShow() {
               </div>
             </div>
 
-            <div className='flex flex-wrap items-center gap-2 sm:shrink-0'>
+            <div className='grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end'>
               <Button
                 variant='outline'
                 size='sm'
                 asChild
-                className='cursor-pointer gap-1.5 text-xs'
+                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
               >
                 <a
                   href={`${clientUrl}/events/${event.slug}`}
@@ -207,7 +207,7 @@ export function PageEventShow() {
                 variant='outline'
                 size='sm'
                 onClick={() => setIsStatusOpen(true)}
-                className='cursor-pointer gap-1.5 text-xs'
+                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
               >
                 <SlidersHorizontalIcon
                   className='size-3.5'
@@ -219,17 +219,17 @@ export function PageEventShow() {
               <Button
                 size='sm'
                 onClick={() => navigate(`/events/${event.id}/edit`)}
-                className='cursor-pointer gap-1.5 text-xs'
+                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
               >
                 <EditIcon className='size-3.5' aria-hidden='true' />
                 <span>{t('buttons.edit', 'Chỉnh sửa')}</span>
               </Button>
 
               <Button
-                variant='ghost'
+                variant='destructive'
                 size='sm'
                 onClick={() => setIsDeleteOpen(true)}
-                className='text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer gap-1.5 text-xs'
+                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
               >
                 <TrashIcon className='size-3.5' aria-hidden='true' />
                 <span>{t('buttons.delete', 'Xóa')}</span>
