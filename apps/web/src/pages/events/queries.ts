@@ -9,6 +9,15 @@ import {
   type EventStatus,
 } from './schema'
 
+function normalizeEventPayload(data: Partial<EventFormValues>) {
+  return {
+    ...data,
+    organizerName: data.organizerName?.trim() || undefined,
+    bannerImageUrl: data.bannerImageUrl?.trim() || undefined,
+    endAt: data.endAt?.trim() || undefined,
+  }
+}
+
 export async function apiGetAdminEvents(params: RestQueryParams) {
   const response = await http.get('/admin/events', { params })
   return parsePaginatedResponse(eventSchema, response.data, params)
@@ -19,8 +28,11 @@ export async function apiGetAdminEventById(id: string): Promise<Event> {
   return eventSchema.parse(response.data)
 }
 
-export async function apiCreateAdminEvent(data: EventFormValues) {
-  return await http.post('/admin/events', data)
+export async function apiCreateAdminEvent(
+  data: EventFormValues
+): Promise<Event> {
+  const response = await http.post('/admin/events', normalizeEventPayload(data))
+  return eventSchema.parse(response.data)
 }
 
 export async function apiUpdateAdminEvent({
@@ -29,8 +41,12 @@ export async function apiUpdateAdminEvent({
 }: {
   id: string
   data: Partial<EventFormValues>
-}) {
-  return await http.put(`/admin/events/${id}`, data)
+}): Promise<Event> {
+  const response = await http.put(
+    `/admin/events/${id}`,
+    normalizeEventPayload(data)
+  )
+  return eventSchema.parse(response.data)
 }
 
 export async function apiUpdateAdminEventStatus({
@@ -59,4 +75,11 @@ export const useDataAdminEventsOverview = (params: RestQueryParams) =>
   useQuery({
     queryKey: ['admin-events', params],
     queryFn: () => apiGetAdminEvents(params),
+  })
+
+export const useDataAdminEventById = (id: string) =>
+  useQuery({
+    queryKey: ['admin-event', id],
+    queryFn: () => apiGetAdminEventById(id),
+    enabled: Boolean(id),
   })

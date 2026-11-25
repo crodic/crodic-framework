@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/common/user-avatar";
 import { useTranslations } from "next-intl";
 import type { EventSummaryResDto } from "@/services/events";
-import { motion } from "@/components/ui/motion-primitives";
+import { canApplyToEvent, getEventLifecycleLabel } from "./events-types";
 
 export interface EventCardProps {
   event: EventSummaryResDto;
@@ -19,15 +19,13 @@ export interface EventCardProps {
 export function EventCard({ event, onApply }: EventCardProps) {
   const t = useTranslations("Events");
   const eventLink = `/events/${event.slug || event.id}`;
+  const isRecruitingOpen = canApplyToEvent(event);
+  const hasVerifiedParticipant = Boolean(
+    event.participants?.some((p) => p.isVerified)
+  );
 
   return (
-    <motion.article
-      whileHover={{
-        y: -3,
-        transition: { duration: 0.2, ease: "easeOut" },
-      }}
-      className="group border-border/70 hover:border-border bg-card relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-colors duration-200 sm:flex-col sm:p-3"
-    >
+    <article className="group border-border/80 hover:border-primary/40 bg-card relative flex flex-row overflow-hidden rounded-2xl border p-2.5 transition-colors duration-200 sm:flex-col sm:p-3">
       {/* 1. Poster Image (Links to Intercepting Route) */}
       <Link
         href={eventLink}
@@ -44,7 +42,7 @@ export function EventCard({ event, onApply }: EventCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
 
         {/* Top-Right Date Badge */}
-        <div className="absolute top-2 right-2 flex flex-col items-center justify-center rounded-lg border border-white/10 bg-black/85 px-1.5 py-0.5 text-white shadow-md backdrop-blur-xs sm:px-2 sm:py-1">
+        <div className="absolute top-2 right-2 flex flex-col items-center justify-center rounded-lg border border-white/15 bg-black/85 px-1.5 py-0.5 text-white tabular-nums sm:px-2 sm:py-1">
           <span className="text-xs leading-none font-extrabold sm:text-sm">
             {event.dayLabel}
           </span>
@@ -54,7 +52,7 @@ export function EventCard({ event, onApply }: EventCardProps) {
         </div>
 
         {/* Bottom-Right Location Badge (Desktop image overlay) */}
-        <div className="absolute right-2 bottom-2 hidden rounded-md border border-white/15 bg-black/75 px-2 py-0.5 text-[11px] font-semibold text-white/95 backdrop-blur-xs sm:inline-flex">
+        <div className="absolute right-2 bottom-2 hidden rounded-md border border-white/15 bg-black/75 px-2 py-0.5 text-[11px] font-semibold text-white/95 sm:inline-flex">
           {event.locationLabel}
         </div>
       </Link>
@@ -62,9 +60,11 @@ export function EventCard({ event, onApply }: EventCardProps) {
       {/* 2. Content Info */}
       <div className="flex flex-1 flex-col justify-between pl-3 sm:pt-3 sm:pl-0">
         <div>
-          {/* Location for Mobile */}
-          <div className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase sm:hidden">
-            {event.locationLabel}
+          {/* Location & Status for Mobile */}
+          <div className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-wide uppercase sm:hidden">
+            <span>{event.locationLabel}</span>
+            <span>•</span>
+            <span>{getEventLifecycleLabel(t, event.status)}</span>
           </div>
 
           {/* Participants Avatar Cluster */}
@@ -89,12 +89,14 @@ export function EventCard({ event, onApply }: EventCardProps) {
                   </div>
                 ))}
               </div>
-              <span
-                className="inline-flex size-4 items-center justify-center rounded-full bg-blue-500 text-white shadow-2xs"
-                title={t("verified")}
-              >
-                <Check className="size-2.5 stroke-[3]" />
-              </span>
+              {hasVerifiedParticipant && (
+                <span
+                  className="bg-primary text-primary-foreground inline-flex size-4 items-center justify-center rounded-full"
+                  title={t("verified")}
+                >
+                  <Check className="size-2.5 stroke-[3]" aria-hidden="true" />
+                </span>
+              )}
             </div>
           )}
 
@@ -107,6 +109,10 @@ export function EventCard({ event, onApply }: EventCardProps) {
               {event.title}
             </h3>
           </Link>
+
+          <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs tabular-nums">
+            {event.dateString}
+          </p>
         </div>
 
         {/* 3. Action Buttons */}
@@ -115,23 +121,27 @@ export function EventCard({ event, onApply }: EventCardProps) {
             asChild
             variant="outline"
             size="sm"
-            className="border-border/80 hover:bg-muted/70 h-8 cursor-pointer rounded-xl px-2 text-[11px] font-medium sm:text-xs"
+            className={`border-border/80 hover:bg-muted/70 h-8 cursor-pointer rounded-xl px-2 text-[11px] font-medium sm:text-xs ${
+              isRecruitingOpen ? "" : "col-span-2"
+            }`}
           >
             <Link href={eventLink} scroll={false}>
               {t("viewDetails")}
             </Link>
           </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => onApply(event)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-2 text-[11px] font-semibold shadow-2xs transition-transform active:scale-95 sm:text-xs"
-          >
-            {t("applyNow")}
-          </Button>
+          {isRecruitingOpen && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onApply(event)}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-2 text-[11px] font-semibold transition-colors sm:text-xs"
+            >
+              {t("applyNow")}
+            </Button>
+          )}
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

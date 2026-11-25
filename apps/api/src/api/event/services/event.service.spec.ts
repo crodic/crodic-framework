@@ -163,6 +163,59 @@ describe('EventService', () => {
     service = module.get<EventService>(EventService);
   });
 
+  describe('findAll', () => {
+    it('excludes draft events when publicOnly is true and enriches participants', async () => {
+      const mockEvent = {
+        id: id('1'),
+        slug: 'spring-fes',
+        title: 'Spring Festival',
+        locationLabel: 'TP.HCM',
+        venue: 'SECC',
+        imageUrl: 'https://example.com/poster.jpg',
+        description: 'Spring cosplay festival',
+        status: EEventStatus.UPCOMING,
+        startAt: new Date('2026-04-10T09:00:00Z'),
+        isRecruiting: true,
+        isFeaturedFestival: true,
+        categories: ['Festival'],
+        participantsCount: 1,
+        interestedCount: 5,
+        applicationsCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const qb = {
+        alias: 'event',
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[mockEvent], 1]),
+      };
+      eventRepo.createQueryBuilder.mockReturnValue(qb);
+      participantRepo.find.mockResolvedValue([
+        {
+          id: id('10'),
+          eventId: id('1'),
+          userId: id('100'),
+          roleLabel: 'Guest',
+          sortOrder: 0,
+        },
+      ]);
+
+      const res = await service.findAll({}, undefined, { publicOnly: true });
+
+      expect(qb.andWhere).toHaveBeenCalledWith('event.status != :draftStatus', {
+        draftStatus: EEventStatus.DRAFT,
+      });
+      expect(res.data).toHaveLength(1);
+      expect(res.data[0].description).toBe('Spring cosplay festival');
+      expect(res.data[0].participants).toHaveLength(1);
+      expect(res.data[0].participants?.[0].name).toBe('KIRIKO');
+    });
+  });
+
   describe('findBySlug', () => {
     it('returns event detail with schedule and participants', async () => {
       eventRepo.findOne.mockResolvedValue({
@@ -200,6 +253,18 @@ describe('EventService', () => {
       eventRepo.findOne.mockResolvedValue(null);
 
       await expect(service.findBySlug('unknown')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('throws NotFoundException when event is draft', async () => {
+      eventRepo.findOne.mockResolvedValue({
+        id: id('2'),
+        slug: 'draft-fest',
+        status: EEventStatus.DRAFT,
+      });
+
+      await expect(service.findBySlug('draft-fest')).rejects.toThrow(
         NotFoundException,
       );
     });

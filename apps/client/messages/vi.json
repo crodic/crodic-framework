@@ -969,6 +969,12 @@
       "rules": "Quy định & Lưu ý sự kiện",
       "rulesDesc": "Vui lòng tuân thủ quy tắc ứng xử văn minh, kiểm tra an toàn đạo cụ (không mang vũ khí sắc nhọn) và bảo quản tư trang cá nhân."
     },
+    "lifecycle": {
+      "upcoming": "Sắp diễn ra",
+      "ongoing": "Đang diễn ra",
+      "completed": "Đã kết thúc",
+      "cancelled": "Đã hủy"
+    },
     "metaTitle": "Sự kiện & Festival | Kosume",
     "metaDescription": "Khám phá các sự kiện, lễ hội Anime & Cosplay hàng đầu tại Việt Nam. Đăng ký tham gia gian hàng, khách mời và giao lưu cùng cộng đồng.",
     "eventMetaSuffix": "Sự kiện Cosplay",

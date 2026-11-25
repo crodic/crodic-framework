@@ -969,6 +969,12 @@
       "rules": "Event Rules & Safety",
       "rulesDesc": "Please follow code of conduct, observe prop safety regulations (no sharp or metal weapons), and safeguard personal belongings."
     },
+    "lifecycle": {
+      "upcoming": "Upcoming",
+      "ongoing": "Ongoing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
     "metaTitle": "Events & Festivals | Kosume",
     "metaDescription": "Explore top anime and cosplay events, festivals, guest lineups, and community meetups.",
     "eventMetaSuffix": "Cosplay Event",

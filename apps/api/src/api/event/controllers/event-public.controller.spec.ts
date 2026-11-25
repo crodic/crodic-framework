@@ -31,9 +31,11 @@ describe('EventPublicController', () => {
     controller = module.get<EventPublicController>(EventPublicController);
   });
 
-  it('findAll delegates to service', async () => {
+  it('findAll delegates to service with publicOnly option', async () => {
     await controller.findAll({}, id('100'));
-    expect(service.findAll).toHaveBeenCalledWith({}, id('100'));
+    expect(service.findAll).toHaveBeenCalledWith({}, id('100'), {
+      publicOnly: true,
+    });
   });
 
   it('findBySlug delegates to service', async () => {

@@ -34,10 +34,13 @@ describe('Event Zod Schemas', () => {
       locationLabel: 'TP.HCM',
       venue: 'SECC Q.7, TP.HCM',
       imageUrl: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857',
+      bannerImageUrl: '',
       description: 'Lễ hội anime cosplay hoành tráng nhất năm',
       status: 'upcoming',
       isFeaturedFestival: true,
       isRecruiting: true,
+      categories: ['Festival', 'Cosplay Contest'],
+      schedule: [{ time: '09:00', activity: 'Đón khách & check-in' }],
     })
 
     expect(valid.success).toBe(true)

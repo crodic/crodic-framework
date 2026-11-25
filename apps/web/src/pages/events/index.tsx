@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CalendarDays, PlusIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
@@ -18,7 +19,6 @@ import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getEventsTableColumns } from './columns'
-import { EventFormDialog } from './components/event-form-dialog'
 import { EventStatusDialog } from './components/event-status-dialog'
 import { apiDeleteAdminEvent, useDataAdminEventsOverview } from './queries'
 import { EventColumnKey, type Event } from './schema'
@@ -31,10 +31,10 @@ const eventFilterParsers = {
 
 export function PageEventsOverview() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isStatusOpen, setIsStatusOpen] = useState(false)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null)
 
   useBreadcrumb([
@@ -52,6 +52,20 @@ export function PageEventsOverview() {
     onError: restApiErrorHandler,
   })
 
+  const handleOpenView = useCallback(
+    (event: Event) => {
+      navigate(`/events/${event.id}/show`)
+    },
+    [navigate]
+  )
+
+  const handleOpenEdit = useCallback(
+    (event: Event) => {
+      navigate(`/events/${event.id}/edit`)
+    },
+    [navigate]
+  )
+
   const handleOpenStatus = useCallback((event: Event) => {
     setSelectedEvent(event)
     setIsStatusOpen(true)
@@ -64,10 +78,12 @@ export function PageEventsOverview() {
   const columns = useMemo(
     () =>
       getEventsTableColumns({
+        onView: handleOpenView,
+        onEdit: handleOpenEdit,
         onStatusChange: handleOpenStatus,
         onDelete: handleOpenDelete,
       }),
-    [handleOpenStatus, handleOpenDelete]
+    [handleOpenView, handleOpenEdit, handleOpenStatus, handleOpenDelete]
   )
 
   const buildQuery: RestResourceQueryBuilderFn<typeof eventFilterParsers> =
@@ -104,26 +120,30 @@ export function PageEventsOverview() {
   return (
     <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
       <PageHeader
-        title={
-          <div className='flex items-center gap-2'>
-            <CalendarDays className='text-primary size-6' />
-            <span>
-              {t(
-                'navigation.kosume.events',
-                'Quản lý sự kiện & Cosplay Festival'
-              )}
-            </span>
-          </div>
-        }
+        title={t(
+          'navigation.kosume.events',
+          'Quản lý sự kiện & Cosplay Festival'
+        )}
+        description={t(
+          'events.overview.description',
+          'Quản lý lễ hội cosplay, lịch trình hoạt động, tuyển chọn khách mời và trạng thái công khai.'
+        )}
         actions={
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <PlusIcon className='mr-1.5 size-4' />
+          <Button
+            onClick={() => navigate('/events/create')}
+            className='cursor-pointer'
+          >
+            <PlusIcon className='mr-1.5 size-4' aria-hidden='true' />
             {t('events.actions.create', 'Tạo sự kiện mới')}
           </Button>
         }
       />
 
-      <DataTable table={table} isFetching={isFetching}>
+      <DataTable
+        table={table}
+        isFetching={isFetching}
+        onClickRowAction={(row) => navigate(`/events/${row.id}/show`)}
+      >
         <DataTableToolbar table={table}>
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
@@ -134,8 +154,6 @@ export function PageEventsOverview() {
         onOpenChange={setIsStatusOpen}
         event={selectedEvent}
       />
-
-      <EventFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 
       {eventToDelete && (
         <DeleteAlertDialog

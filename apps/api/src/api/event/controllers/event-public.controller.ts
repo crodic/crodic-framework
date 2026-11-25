@@ -38,7 +38,9 @@ export class EventPublicController {
     @Query() query: QueryParams,
     @CurrentUser('id') currentUserId?: AutoIncrementID,
   ) {
-    return this.eventService.findAll(query, currentUserId);
+    return this.eventService.findAll(query, currentUserId, {
+      publicOnly: true,
+    });
   }
 
   @Get(':slug')

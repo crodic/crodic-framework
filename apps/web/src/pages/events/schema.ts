@@ -24,6 +24,24 @@ export const eventStatusEnum = z.enum([
 ])
 export type EventStatus = z.infer<typeof eventStatusEnum>
 
+export const eventScheduleItemSchema = z.object({
+  time: z.string().min(1, 'Vui lòng nhập thời gian'),
+  activity: z.string().min(1, 'Vui lòng nhập nội dung hoạt động'),
+})
+export type EventScheduleItem = z.infer<typeof eventScheduleItemSchema>
+
+export const eventParticipantSchema = z.object({
+  id: z.string(),
+  eventId: z.string().optional(),
+  userId: z.string(),
+  name: z.string(),
+  avatarUrl: z.string().nullish(),
+  isVerified: z.boolean().default(false),
+  roleLabel: z.string().nullish(),
+  sortOrder: z.number().default(0),
+})
+export type EventParticipant = z.infer<typeof eventParticipantSchema>
+
 export const eventSchema = z.object({
   id: z.string(),
   slug: z.string(),
@@ -44,7 +62,10 @@ export const eventSchema = z.object({
   ticketPriceAmount: z.number().nullish(),
   isRecruiting: z.boolean().default(false),
   isFeaturedFestival: z.boolean().default(false),
-  status: z.enum(['draft', 'upcoming', 'ongoing', 'completed', 'cancelled']),
+  status: eventStatusEnum,
+  categories: z.array(z.string()).default([]),
+  schedule: z.array(eventScheduleItemSchema).default([]),
+  participants: z.array(eventParticipantSchema).default([]),
   participantsCount: z.number().default(0),
   interestedCount: z.number().default(0),
   applicationsCount: z.number().default(0),
@@ -64,11 +85,18 @@ export const eventFormSchema = z.object({
   imageUrl: z
     .string()
     .url('Ảnh đại diện sự kiện phải là URL hợp lệ (bắt đầu bằng https://...)'),
+  bannerImageUrl: z
+    .string()
+    .url('Ảnh bìa banner phải là URL hợp lệ (bắt đầu bằng https://...)')
+    .optional()
+    .or(z.literal('')),
   description: z.string().min(5, 'Mô tả sự kiện là bắt buộc'),
   ticketPriceAmount: z.number().min(0).optional(),
-  status: z.enum(['draft', 'upcoming', 'ongoing', 'completed', 'cancelled']),
+  status: eventStatusEnum,
   isFeaturedFestival: z.boolean(),
   isRecruiting: z.boolean(),
+  categories: z.array(z.string()),
+  schedule: z.array(eventScheduleItemSchema),
 })
 
 export type EventFormValues = z.infer<typeof eventFormSchema>

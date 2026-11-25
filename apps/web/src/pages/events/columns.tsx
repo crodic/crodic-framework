@@ -2,26 +2,43 @@ import type { ColumnDef } from '@tanstack/react-table'
 import i18n from '@/i18n'
 import {
   CalendarDays,
-  CheckCircle2,
-  Clock,
+  EditIcon,
+  EyeIcon,
+  FileText,
   Heart,
   MapPin,
-  Star,
-  UserCheck,
+  MoreHorizontal,
+  SlidersHorizontalIcon,
+  Trash2Icon,
   Users,
-  XCircle,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  EventFeaturedBadge,
+  EventRecruitingBadge,
+  EventStatusBadge,
+} from './components/event-badges'
 import { EventColumnKey, type Event } from './schema'
 
 interface GetEventColumnsProps {
+  onView: (event: Event) => void
+  onEdit: (event: Event) => void
   onStatusChange: (event: Event) => void
   onDelete: (event: Event) => void
 }
 
 export function getEventsTableColumns({
+  onView,
+  onEdit,
   onStatusChange,
   onDelete,
 }: GetEventColumnsProps): ColumnDef<Event>[] {
@@ -33,9 +50,11 @@ export function getEventsTableColumns({
         <DataTableColumnHeader column={column} label='ID' />
       ),
       cell: ({ row }) => (
-        <span className='font-mono text-xs'>#{row.original.id}</span>
+        <span className='text-muted-foreground font-mono text-xs tabular-nums'>
+          #{row.original.id}
+        </span>
       ),
-      size: 50,
+      size: 60,
       enableSorting: false,
     },
     {
@@ -52,7 +71,7 @@ export function getEventsTableColumns({
           <img
             src={row.original.imageUrl}
             alt={row.original.title}
-            className='size-11 shrink-0 rounded-md border object-cover'
+            className='border-border/60 size-11 shrink-0 rounded-md border object-cover'
             onError={(e) => {
               ;(e.target as HTMLElement).style.display = 'none'
             }}
@@ -62,20 +81,26 @@ export function getEventsTableColumns({
               <span className='line-clamp-1 text-sm font-semibold'>
                 {row.original.title}
               </span>
-              {row.original.isFeaturedFestival && (
-                <Badge className='bg-primary/15 text-primary border-primary/20 h-4 shrink-0 px-1 py-0 text-[10px]'>
-                  <Star className='mr-0.5 size-2.5' />
-                  Festival
-                </Badge>
-              )}
+              <EventFeaturedBadge
+                isFeatured={row.original.isFeaturedFestival}
+                className='h-4 shrink-0 px-1.5 py-0 text-[10px]'
+              />
             </div>
             <div className='text-muted-foreground mt-0.5 flex items-center gap-1 truncate text-xs'>
-              <MapPin className='size-3 shrink-0' />
+              <MapPin className='size-3 shrink-0' aria-hidden='true' />
               <span className='truncate'>{row.original.venue}</span>
             </div>
           </div>
         </div>
       ),
+      meta: {
+        label: i18n.t('events.columns.title', 'Tên sự kiện'),
+        placeholder: i18n.t(
+          'events.search.titlePlaceholder',
+          'Tìm theo tên sự kiện...'
+        ),
+        variant: 'text',
+      },
       enableColumnFilter: true,
       enableSorting: false,
     },
@@ -86,9 +111,12 @@ export function getEventsTableColumns({
         <DataTableColumnHeader column={column} label='Thời gian diễn ra' />
       ),
       cell: ({ row }) => (
-        <div className='text-muted-foreground flex items-center gap-1.5 text-xs'>
-          <CalendarDays className='text-primary size-3.5 shrink-0' />
-          <span>{row.original.dateString}</span>
+        <div className='text-muted-foreground flex items-center gap-1.5 text-xs tabular-nums'>
+          <CalendarDays
+            className='text-muted-foreground size-3.5 shrink-0'
+            aria-hidden='true'
+          />
+          <span className='whitespace-nowrap'>{row.original.dateString}</span>
         </div>
       ),
       enableSorting: false,
@@ -100,7 +128,7 @@ export function getEventsTableColumns({
         <DataTableColumnHeader column={column} label='Khu vực' />
       ),
       cell: ({ row }) => (
-        <Badge variant='outline' className='text-xs'>
+        <Badge variant='outline' className='text-xs font-normal'>
           {row.original.locationLabel}
         </Badge>
       ),
@@ -112,48 +140,7 @@ export function getEventsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} label='Trạng thái' />
       ),
-      cell: ({ row }) => {
-        const status = row.original.status
-        if (status === 'upcoming') {
-          return (
-            <Badge className='gap-1 border-blue-500/20 bg-blue-500/15 text-xs text-blue-700 dark:text-blue-300'>
-              <Clock className='size-3' />
-              Sắp diễn ra
-            </Badge>
-          )
-        }
-        if (status === 'ongoing') {
-          return (
-            <Badge
-              variant='outline-success'
-              className='animate-pulse gap-1 text-xs'
-            >
-              <CheckCircle2 className='size-3' />
-              Đang diễn ra
-            </Badge>
-          )
-        }
-        if (status === 'completed') {
-          return (
-            <Badge variant='outline' className='text-muted-foreground text-xs'>
-              Đã kết thúc
-            </Badge>
-          )
-        }
-        if (status === 'cancelled') {
-          return (
-            <Badge variant='destructive' className='gap-1 text-xs'>
-              <XCircle className='size-3' />
-              Đã hủy
-            </Badge>
-          )
-        }
-        return (
-          <Badge variant='secondary' className='text-xs'>
-            {i18n.t('events.status.draft', 'Bản nháp')}
-          </Badge>
-        )
-      },
+      cell: ({ row }) => <EventStatusBadge status={row.original.status} />,
       meta: {
         variant: 'select',
         label: i18n.t('events.columns.status', 'Trạng thái'),
@@ -204,17 +191,9 @@ export function getEventsTableColumns({
           label={i18n.t('events.columns.recruiting', 'Đăng ký Guest')}
         />
       ),
-      cell: ({ row }) =>
-        row.original.isRecruiting ? (
-          <Badge variant='outline-success' className='gap-1 text-xs'>
-            <UserCheck className='size-3' />
-            {i18n.t('events.recruiting.open', 'Mở đăng ký')}
-          </Badge>
-        ) : (
-          <span className='text-muted-foreground text-xs'>
-            {i18n.t('events.recruiting.closed', 'Đóng')}
-          </span>
-        ),
+      cell: ({ row }) => (
+        <EventRecruitingBadge isRecruiting={row.original.isRecruiting} />
+      ),
       enableSorting: false,
     },
     {
@@ -222,21 +201,31 @@ export function getEventsTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          label={i18n.t('events.columns.engagement', 'Quan tâm / Tham gia')}
+          label={i18n.t(
+            'events.columns.engagement',
+            'Quan tâm / Tham gia / Đơn'
+          )}
         />
       ),
       cell: ({ row }) => (
-        <div className='flex items-center gap-3 text-xs'>
+        <div className='flex items-center gap-3 font-mono text-xs tabular-nums'>
           <span
             className='text-muted-foreground flex items-center gap-1'
             title='Lượt quan tâm'
           >
-            <Heart className='size-3 text-rose-500' />
-            {row.original.interestedCount}
+            <Heart className='size-3 text-rose-500' aria-hidden='true' />
+            {row.original.interestedCount.toLocaleString()}
           </span>
           <span className='flex items-center gap-1' title='Số người tham gia'>
-            <Users className='text-primary size-3' />
-            {row.original.participantsCount}
+            <Users className='text-primary size-3' aria-hidden='true' />
+            {row.original.participantsCount.toLocaleString()}
+          </span>
+          <span
+            className='text-muted-foreground flex items-center gap-1'
+            title='Đơn ứng tuyển'
+          >
+            <FileText className='size-3' aria-hidden='true' />
+            {row.original.applicationsCount.toLocaleString()}
           </span>
         </div>
       ),
@@ -245,27 +234,55 @@ export function getEventsTableColumns({
     {
       id: 'actions',
       header: () => null,
-      cell: ({ row }) => (
-        <div className='flex items-center gap-1'>
-          <Button
-            size='sm'
-            variant='outline'
-            className='h-7 text-xs'
-            onClick={() => onStatusChange(row.original)}
+      cell: ({ row }) => {
+        const event = row.original
+        return (
+          <div
+            className='flex items-center justify-end'
+            onClick={(e) => e.stopPropagation()}
           >
-            {i18n.t('events.actions.status', 'Trạng thái')}
-          </Button>
-          <Button
-            size='sm'
-            variant='ghost'
-            className='text-destructive hover:bg-destructive/10 h-7 text-xs'
-            onClick={() => onDelete(row.original)}
-          >
-            {i18n.t('events.actions.delete', 'Xóa')}
-          </Button>
-        </div>
-      ),
-      size: 130,
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='text-muted-foreground hover:text-foreground size-8 cursor-pointer'
+                >
+                  <MoreHorizontal className='size-4' />
+                  <span className='sr-only'>
+                    {i18n.t('events.actions.menu', 'Thao tác')}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-44'>
+                <DropdownMenuItem onClick={() => onView(event)}>
+                  <EyeIcon className='mr-2 size-3.5' />
+                  <span>{i18n.t('events.actions.view', 'Xem chi tiết')}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(event)}>
+                  <EditIcon className='mr-2 size-3.5' />
+                  <span>{i18n.t('events.actions.edit', 'Chỉnh sửa')}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(event)}>
+                  <SlidersHorizontalIcon className='mr-2 size-3.5' />
+                  <span>
+                    {i18n.t('events.actions.status', 'Đổi trạng thái')}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(event)}
+                  className='text-destructive focus:text-destructive'
+                >
+                  <Trash2Icon className='mr-2 size-3.5' />
+                  <span>{i18n.t('events.actions.delete', 'Xóa')}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )
+      },
+      size: 56,
       enableSorting: false,
     },
   ]

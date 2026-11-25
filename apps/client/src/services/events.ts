@@ -29,11 +29,13 @@ export interface EventSummaryResDto {
   venue: string;
   imageUrl: string;
   bannerImageUrl?: string | null;
+  description?: string;
   ticketPriceLabel?: string | null;
   ticketPriceAmount?: number | null;
   isRecruiting: boolean;
   isFeaturedFestival: boolean;
   categories: string[];
+  schedule?: { time: string; activity: string }[];
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
   participantsCount: number;
   interestedCount: number;
@@ -52,12 +54,13 @@ export interface EventDetailResDto extends EventSummaryResDto {
 }
 
 export interface EventApplicationPayload {
-  roleType: string;
+  fullName: string;
   stageName: string;
-  contactInfo: string;
+  category: string;
+  phone: string;
+  characterPlanned: string;
   portfolioUrl?: string;
-  experience: string;
-  message?: string;
+  notes?: string;
 }
 
 export const getEvents = async (

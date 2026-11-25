@@ -231,6 +231,21 @@ const PageEventsOverview = lazy(() =>
     default: m.PageEventsOverview,
   }))
 )
+const PageEventCreate = lazy(() =>
+  import('@/pages/events/create').then((m) => ({
+    default: m.PageEventCreate,
+  }))
+)
+const PageEventEdit = lazy(() =>
+  import('@/pages/events/edit').then((m) => ({
+    default: m.PageEventEdit,
+  }))
+)
+const PageEventShow = lazy(() =>
+  import('@/pages/events/show').then((m) => ({
+    default: m.PageEventShow,
+  }))
+)
 const PageSpotlightBannersOverview = lazy(() =>
   import('@/pages/spotlight-banners').then((m) => ({
     default: m.PageSpotlightBannersOverview,
@@ -677,11 +692,40 @@ const appRoutes: RouteObject[] = [
       },
       {
         path: '/events',
-        element: (
-          <RouteAuthorize action='read' subject='EVENT'>
-            <PageEventsOverview />
-          </RouteAuthorize>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <RouteAuthorize action='read' subject='EVENT'>
+                <PageEventsOverview />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: 'create',
+            element: (
+              <RouteAuthorize action='create' subject='EVENT'>
+                <PageEventCreate />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: ':id/edit',
+            element: (
+              <RouteAuthorize action='update' subject='EVENT'>
+                <PageEventEdit />
+              </RouteAuthorize>
+            ),
+          },
+          {
+            path: ':id/show',
+            element: (
+              <RouteAuthorize action='read' subject='EVENT'>
+                <PageEventShow />
+              </RouteAuthorize>
+            ),
+          },
+        ],
       },
       {
         path: '/spotlight-banners',

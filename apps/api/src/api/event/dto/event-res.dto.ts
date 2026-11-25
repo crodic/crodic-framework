@@ -131,6 +131,14 @@ export class EventSummaryResDto {
   @ApiPropertyOptional({ example: false })
   isParticipatingByCurrentUser?: boolean;
 
+  @ApiPropertyOptional({
+    example: 'Lễ hội cosplay mùa đông quy mô lớn nhất năm...',
+  })
+  description?: string;
+
+  @ApiPropertyOptional({ type: () => [EventParticipantResDto] })
+  participants?: EventParticipantResDto[];
+
   @ApiProperty()
   createdAt!: Date;
 
@@ -139,8 +147,7 @@ export class EventSummaryResDto {
 }
 
 export class EventDetailResDto extends EventSummaryResDto {
-  @ApiProperty({ example: 'Lễ hội cosplay mùa đông quy mô lớn nhất năm...' })
-  description!: string;
+  declare description: string;
 
   @ApiProperty({
     type: 'array',
@@ -148,8 +155,7 @@ export class EventDetailResDto extends EventSummaryResDto {
   })
   schedule!: any[];
 
-  @ApiProperty({ type: () => [EventParticipantResDto] })
-  participants!: EventParticipantResDto[];
+  declare participants: EventParticipantResDto[];
 }
 
 export class EventApplicationResDto {

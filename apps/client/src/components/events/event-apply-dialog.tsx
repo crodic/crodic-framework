@@ -79,18 +79,24 @@ export function EventApplyDialog({
     mutationFn: async (values: ApplyEventFormValues) => {
       if (!event?.id) throw new Error("Event ID missing");
       return applyEvent(event.id, {
-        roleType: values.category,
-        stageName: values.stageName,
-        contactInfo: values.phone,
-        portfolioUrl: values.portfolioUrl,
-        experience: values.characterPlanned,
-        message: values.notes,
+        fullName: values.fullName.trim(),
+        stageName: values.stageName.trim(),
+        category: values.category,
+        phone: values.phone.trim(),
+        characterPlanned: values.characterPlanned.trim(),
+        portfolioUrl: values.portfolioUrl?.trim() || undefined,
+        notes: values.notes?.trim() || undefined,
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["public-events"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-upcoming-events"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
       if (event?.id) {
         queryClient.invalidateQueries({ queryKey: ["event", event.id] });
+      }
+      if (event?.slug) {
+        queryClient.invalidateQueries({ queryKey: ["event", event.slug] });
       }
       toast.success(tApply("successTitle"), {
         description: tApply("successDesc"),

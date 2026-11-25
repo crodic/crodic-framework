@@ -63,8 +63,15 @@ export class EventService {
   async findAll(
     query: QueryParams,
     currentUserId?: AutoIncrementID,
+    options?: { publicOnly?: boolean },
   ): Promise<Paginated<EventSummaryResDto>> {
     const baseQb = this.eventRepo.createQueryBuilder('event');
+
+    if (options?.publicOnly) {
+      baseQb.andWhere('event.status != :draftStatus', {
+        draftStatus: EEventStatus.DRAFT,
+      });
+    }
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -109,18 +116,39 @@ export class EventService {
     const eventIds = paginated.data.map((e) => e.id);
     let interestedSet = new Set<string>();
     let participatingSet = new Set<string>();
+    const participantsMap = new Map<string, EventParticipantResDto[]>();
 
-    if (currentUserId && eventIds.length > 0) {
-      const [interests, participants] = await Promise.all([
-        this.interestRepo.find({
-          where: { userId: currentUserId, eventId: In(eventIds) },
-        }),
-        this.participantRepo.find({
-          where: { userId: currentUserId, eventId: In(eventIds) },
-        }),
-      ]);
+    if (eventIds.length > 0) {
+      const [interests, userParticipants, allEventParticipants] =
+        await Promise.all([
+          currentUserId
+            ? this.interestRepo.find({
+                where: { userId: currentUserId, eventId: In(eventIds) },
+              })
+            : Promise.resolve([]),
+          currentUserId
+            ? this.participantRepo.find({
+                where: { userId: currentUserId, eventId: In(eventIds) },
+              })
+            : Promise.resolve([]),
+          this.participantRepo.find({
+            where: { eventId: In(eventIds) },
+            order: { sortOrder: 'ASC', id: 'ASC' },
+          }),
+        ]);
+
       interestedSet = new Set(interests.map((i) => String(i.eventId)));
-      participatingSet = new Set(participants.map((p) => String(p.eventId)));
+      participatingSet = new Set(
+        userParticipants.map((p) => String(p.eventId)),
+      );
+
+      const enriched = await this.enrichParticipants(allEventParticipants);
+      for (const p of enriched) {
+        const key = String(p.eventId);
+        const bucket = participantsMap.get(key) ?? [];
+        bucket.push(p);
+        participantsMap.set(key, bucket);
+      }
     }
 
     const mapped = paginated.data.map((event) =>
@@ -128,6 +156,7 @@ export class EventService {
         event,
         interestedSet.has(String(event.id)),
         participatingSet.has(String(event.id)),
+        participantsMap.get(String(event.id)) ?? [],
       ),
     );
 
@@ -142,7 +171,7 @@ export class EventService {
     currentUserId?: AutoIncrementID,
   ): Promise<EventDetailResDto> {
     const event = await this.eventRepo.findOne({ where: { slug } });
-    if (!event) {
+    if (!event || event.status === EEventStatus.DRAFT) {
       throw new NotFoundException(`Event "${slug}" not found`);
     }
 
@@ -571,6 +600,7 @@ export class EventService {
     e: EventEntity,
     isInterested = false,
     isParticipating = false,
+    participants?: EventParticipantResDto[],
   ): EventSummaryResDto {
     const dateInfo = this.formatDateLabels(e.startAt, e.endAt);
     return {
@@ -590,6 +620,7 @@ export class EventService {
       venue: e.venue,
       imageUrl: e.imageUrl,
       bannerImageUrl: e.bannerImageUrl ?? null,
+      description: e.description,
       ticketPriceLabel: this.formatTicketPriceLabel(e.ticketPriceAmount),
       ticketPriceAmount: e.ticketPriceAmount ?? null,
       isRecruiting: e.isRecruiting,
@@ -599,6 +630,7 @@ export class EventService {
       participantsCount: Number(e.participantsCount || 0),
       interestedCount: Number(e.interestedCount || 0),
       applicationsCount: Number(e.applicationsCount || 0),
+      participants: participants ?? [],
       isInterestedByCurrentUser: isInterested,
       isParticipatingByCurrentUser: isParticipating,
       createdAt: e.createdAt,
@@ -613,7 +645,7 @@ export class EventService {
     isParticipating = false,
   ): EventDetailResDto {
     return {
-      ...this.toSummaryDto(e, isInterested, isParticipating),
+      ...this.toSummaryDto(e, isInterested, isParticipating, participants),
       description: e.description,
       schedule: e.schedule || [],
       participants,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -47,10 +47,21 @@ export function EventStatusDialog({
     event?.isRecruiting ?? false
   )
 
+  useEffect(() => {
+    if (event) {
+      setStatus(event.status)
+      setIsFeaturedFestival(event.isFeaturedFestival)
+      setIsRecruiting(event.isRecruiting)
+    }
+  }, [event])
+
   const updateStatusMutation = useMutation({
     mutationFn: apiUpdateAdminEventStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })
+      if (event?.id) {
+        queryClient.invalidateQueries({ queryKey: ['admin-event', event.id] })
+      }
       toast.success(
         t(
           'events.messages.statusUpdated',
