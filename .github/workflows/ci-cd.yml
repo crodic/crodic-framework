@@ -27,18 +27,7 @@ permissions:
 jobs:
   api:
     name: API quality and build
-    runs-on: self-hosted
-
-    env:
-      DATABASE_HOST: localhost
-      DATABASE_PORT: 5433
-      DATABASE_NAME: boilerplate_test
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: postgres
-      REDIS_HOST: localhost
-      REDIS_PORT: 6380
-      MAIL_HOST: localhost
-      MAIL_PORT: 1026
+    runs-on: ubuntu-latest
 
     services:
       postgres:
@@ -48,7 +37,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
-          - 5433:5432
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d boilerplate_test"
           --health-interval 10s
@@ -57,7 +46,7 @@ jobs:
       redis:
         image: redis:7-alpine
         ports:
-          - 6380:6379
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -66,7 +55,7 @@ jobs:
       mailpit:
         image: axllent/mailpit:latest
         ports:
-          - 1026:1025
+          - 1025:1025
 
     steps:
       - name: Checkout
@@ -101,7 +90,7 @@ jobs:
 
   web:
     name: Web quality and build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -150,7 +139,7 @@ jobs:
 
   client:
     name: Client quality and build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
