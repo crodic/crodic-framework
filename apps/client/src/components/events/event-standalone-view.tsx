@@ -313,13 +313,13 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
         {/* RIGHT COLUMN: Sticky Registration & Venue Card (4 cols) */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:col-span-4">
           {/* Card 1: Registration & Tickets */}
-          <div className="border-primary/40 bg-card/90 shadow-primary/5 space-y-5 rounded-3xl border p-6 shadow-xl backdrop-blur-xl">
+          <div className="border-border/80 bg-card space-y-5 rounded-2xl border p-6 shadow-xs">
             <div className="space-y-1">
               <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 {tDetail("ticketPrice")}
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-primary text-2xl font-black sm:text-3xl">
+                <span className="text-primary text-2xl font-black tabular-nums sm:text-3xl">
                   {event.ticketPriceLabel || tDetail("freeTicket")}
                 </span>
               </div>
@@ -349,7 +349,7 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                   type="button"
                   onClick={handleApplyClick}
                   disabled={isHydrating}
-                  className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl text-sm font-bold shadow-lg transition-transform active:scale-95 disabled:opacity-50"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl text-sm font-bold shadow-xs transition-colors disabled:opacity-50"
                 >
                   <Send className="mr-2 size-4" />
                   <span>{isHydrating ? "..." : tDetail("applyBtn")}</span>

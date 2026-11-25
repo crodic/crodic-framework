@@ -148,7 +148,7 @@ export function RankingTable({ items }: RankingTableProps) {
                   {/* Rank & Trend */}
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5 font-black">
-                      <span className="text-foreground text-sm">
+                      <span className="text-foreground text-sm tabular-nums">
                         #{item.rank}
                       </span>
                       {renderTrendIcon(item.trend)}
@@ -238,7 +238,7 @@ export function RankingTable({ items }: RankingTableProps) {
 
                   {/* Likes count */}
                   <TableCell className="text-center font-bold">
-                    <span className="text-foreground text-xs sm:text-sm">
+                    <span className="text-foreground text-xs tabular-nums sm:text-sm">
                       {formattedLikes}
                     </span>
                   </TableCell>
@@ -247,7 +247,7 @@ export function RankingTable({ items }: RankingTableProps) {
                   <TableCell className="text-center">
                     <div className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-400">
                       <Star className="size-3" />
-                      <span>{item.score}</span>
+                      <span className="tabular-nums">{item.score}</span>
                     </div>
                   </TableCell>
 
@@ -312,7 +312,7 @@ export function RankingTable({ items }: RankingTableProps) {
               {/* Left: Rank & Avatar */}
               <div className="flex items-center gap-2.5">
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-foreground text-xs font-extrabold">
+                  <span className="text-foreground text-xs font-extrabold tabular-nums">
                     #{item.rank}
                   </span>
                   {renderTrendIcon(item.trend)}
@@ -350,7 +350,7 @@ export function RankingTable({ items }: RankingTableProps) {
                   <div className="flex items-center gap-1 text-[10px]">
                     <span className="text-muted-foreground">{item.handle}</span>
                     <span className="text-muted-foreground">•</span>
-                    <span className="text-foreground font-semibold">
+                    <span className="text-foreground font-semibold tabular-nums">
                       {formattedLikes}
                     </span>
                   </div>

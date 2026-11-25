@@ -69,11 +69,11 @@ export function UpcomingEventsWidget() {
                 className="group flex items-center gap-3 overflow-hidden"
               >
                 {/* Event Badge / Thumbnail */}
-                <div className="relative flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-center shadow-xs">
-                  <span className="text-xs font-black text-white">
+                <div className="border-border/80 bg-muted/60 group-hover:border-primary/40 relative flex size-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-colors">
+                  <span className="text-foreground text-xs font-black tabular-nums">
                     {event.dayLabel}
                   </span>
-                  <span className="text-[8px] font-bold text-white/80 uppercase">
+                  <span className="text-muted-foreground text-[8px] font-bold uppercase">
                     {event.monthLabel}
                   </span>
                 </div>

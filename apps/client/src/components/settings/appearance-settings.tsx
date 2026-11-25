@@ -46,11 +46,11 @@ export function AppearanceSettings() {
               className={cn(
                 "group bg-card hover:border-primary/50 relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 text-center transition-all",
                 mounted && theme === "light"
-                  ? "border-primary ring-primary/30 shadow-primary/10 shadow-md ring-2"
+                  ? "border-primary ring-primary/20 ring-2"
                   : "border-border/60 opacity-80 hover:opacity-100"
               )}
             >
-              <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 transition-transform group-hover:scale-110">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 transition-colors">
                 <Sun className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">
@@ -70,11 +70,11 @@ export function AppearanceSettings() {
               className={cn(
                 "group bg-card hover:border-primary/50 relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 text-center transition-all",
                 mounted && theme === "dark"
-                  ? "border-primary ring-primary/30 shadow-primary/10 shadow-md ring-2"
+                  ? "border-primary ring-primary/20 ring-2"
                   : "border-border/60 opacity-80 hover:opacity-100"
               )}
             >
-              <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110">
+              <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl transition-colors">
                 <Moon className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">
@@ -94,11 +94,11 @@ export function AppearanceSettings() {
               className={cn(
                 "group bg-card hover:border-primary/50 relative col-span-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 text-center transition-all sm:col-span-1",
                 mounted && theme === "system"
-                  ? "border-primary ring-primary/30 shadow-primary/10 shadow-md ring-2"
+                  ? "border-primary ring-primary/20 ring-2"
                   : "border-border/60 opacity-80 hover:opacity-100"
               )}
             >
-              <div className="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110">
+              <div className="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-xl transition-colors">
                 <Monitor className="size-5" />
               </div>
               <span className="text-foreground text-xs font-bold">

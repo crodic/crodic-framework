@@ -252,7 +252,7 @@ export function EventDetailDialog({
                     onOpenChange(false);
                     onApply(event);
                   }}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-colors"
                 >
                   <Send className="mr-1.5 size-3.5" />
                   <span>{tDetail("applyBtn")}</span>

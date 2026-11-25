@@ -60,7 +60,7 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
   const previewImage = cosplayer.coverUrl || cosplayer.avatarUrl;
 
   return (
-    <div className="group border-border/70 bg-card/60 hover:border-primary/50 hover:bg-card/80 hover:shadow-primary/5 flex flex-col justify-between rounded-2xl border p-4 backdrop-blur-sm transition-all duration-300 hover:shadow-md">
+    <div className="group border-border/70 bg-card/60 hover:border-border hover:bg-card/90 flex flex-col justify-between rounded-2xl border p-4 transition-colors">
       {/* Card Header: Avatar + Info + Follow Button */}
       <div className="flex items-center justify-between gap-2.5">
         <Link
@@ -94,7 +94,7 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
                 />
               )}
             </div>
-            <p className="text-muted-foreground truncate text-xs">
+            <p className="text-muted-foreground truncate text-xs tabular-nums">
               {t("followers", { count: cosplayer.followersCount })}
             </p>
           </div>
@@ -107,10 +107,10 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
             size="sm"
             onClick={handleToggleFollow}
             className={cn(
-              "h-7 shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium transition-all",
+              "h-7 shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium transition-colors",
               following
                 ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
-                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-2xs"
+                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
             )}
           >
             {following ? (

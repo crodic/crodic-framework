@@ -194,7 +194,7 @@ export function ProfileSavedCollections({
             <div
               key={col.id}
               onClick={() => setSelectedCollection(col)}
-              className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/10 relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border backdrop-blur-md transition-all duration-300 hover:shadow-xl"
+              className="group border-border/70 bg-card hover:border-border relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border shadow-xs transition-colors"
             >
               {/* Mosaic Banner or Clean Placeholder */}
               <div className="bg-muted relative aspect-[16/11] w-full overflow-hidden">

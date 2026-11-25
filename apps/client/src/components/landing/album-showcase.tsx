@@ -4,7 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
 import { AlbumCard } from "./album-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,14 +42,10 @@ export function AlbumShowcase({ initialAlbums }: AlbumShowcaseProps) {
         {/* Section Heading */}
         <ScrollReveal className="mb-10 flex flex-col justify-between gap-4 sm:mb-12 sm:flex-row sm:items-end">
           <div>
-            <div className="border-primary/30 bg-primary/10 text-primary mb-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase">
-              <Sparkles className="size-3.5" />
-              <span>{t("badge")}</span>
-            </div>
-            <h2 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
+            <h2 className="text-foreground text-3xl font-black tracking-tight text-balance sm:text-4xl">
               {t("title")}
             </h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl text-sm sm:text-base">
+            <p className="text-muted-foreground mt-2 max-w-2xl text-sm text-pretty sm:text-base">
               {t("subtitle")}
             </p>
           </div>

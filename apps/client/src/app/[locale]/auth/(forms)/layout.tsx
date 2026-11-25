@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { cn, decodeToken } from "@/lib/utils";
-import { Award, Briefcase, Camera, Star, Users } from "lucide-react";
+import { Award, Briefcase, Camera } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { WhiteLabelLogo } from "@/lib/white-label";
@@ -40,20 +40,12 @@ export default async function AuthLayout({
         <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white lg:flex xl:p-14 dark:bg-[#07090e]">
           {/* Backdrop Visual Artwork */}
           <div
-            className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity blur-[1px] filter transition-opacity duration-700"
+            className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity filter transition-opacity duration-700"
             style={{ backgroundImage: "url('/landing/art-acheron.jpg')" }}
           />
 
-          {/* Deep Dark & Purple Gradient Mask */}
+          {/* Deep Dark Vignette Mask */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#07090e] via-[#07090e]/85 to-[#07090e]/70" />
-
-          {/* Ambient Glows */}
-          <div className="pointer-events-none absolute -top-40 -left-40 size-[32rem] rounded-full bg-purple-600/25 blur-3xl" />
-          <div className="pointer-events-none absolute top-1/2 -right-40 size-[28rem] -translate-y-1/2 rounded-full bg-indigo-600/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-40 left-1/4 size-[24rem] rounded-full bg-pink-600/15 blur-3xl" />
-
-          {/* Subtle Cyberpunk Grid */}
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_75%_75%_at_50%_50%,#000_60%,transparent_100%)] bg-[size:4rem_4rem]" />
 
           {/* Top Branding Bar */}
           <div className="relative z-10 flex items-center justify-between">
@@ -69,20 +61,16 @@ export default async function AuthLayout({
               />
             </Link>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3.5 py-1 text-xs font-medium text-purple-300 backdrop-blur-md">
-              <span className="size-1.5 animate-pulse rounded-full bg-purple-400" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
               <span>{t("operational")}</span>
             </div>
           </div>
 
           {/* Middle: Value Proposition & Feature Highlights */}
           <div className="relative z-10 my-auto space-y-8 py-8 xl:py-12">
-            <div className="max-w-xl space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/15 px-3 py-1 text-xs font-semibold tracking-wider text-purple-300 uppercase">
-                <Star className="size-3.5 fill-purple-400 text-purple-400" />
-                <span>{t("welcome")}</span>
-              </div>
-              <h1 className="bg-gradient-to-br from-white via-slate-100 to-purple-200 bg-clip-text text-3xl font-extrabold tracking-tight text-balance text-transparent xl:text-4xl">
+            <div className="max-w-xl space-y-3">
+              <h1 className="text-3xl font-extrabold tracking-tight text-balance text-white xl:text-4xl">
                 {t("tagline")}
               </h1>
               <p className="text-sm leading-relaxed text-pretty text-slate-300 xl:text-base">
@@ -92,8 +80,8 @@ export default async function AuthLayout({
 
             {/* Feature Highlight Cards */}
             <div className="grid max-w-lg gap-3.5">
-              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-md transition-colors hover:border-purple-500/30 hover:bg-white/[0.07]">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
+              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/20 hover:bg-white/[0.06]">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <Camera className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -106,8 +94,8 @@ export default async function AuthLayout({
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-md transition-colors hover:border-purple-500/30 hover:bg-white/[0.07]">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pink-500/20 text-pink-300">
+              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/20 hover:bg-white/[0.06]">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <Briefcase className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -120,8 +108,8 @@ export default async function AuthLayout({
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-md transition-colors hover:border-purple-500/30 hover:bg-white/[0.07]">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300">
+              <div className="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/20 hover:bg-white/[0.06]">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
                   <Award className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -160,8 +148,9 @@ export default async function AuthLayout({
                 />
               </div>
               <div className="text-xs text-slate-400">
-                <span className="font-semibold text-white">50.000+</span>{" "}
-                {t("creatorsJoined")}
+                <span className="font-semibold text-white tabular-nums">
+                  {t("creatorsJoined", { count: "50,000+" })}
+                </span>
               </div>
             </div>
           </div>
@@ -170,7 +159,7 @@ export default async function AuthLayout({
           <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
-                <span className="size-1.5 rounded-full bg-purple-400" />
+                <span className="size-1.5 rounded-full bg-emerald-400" />
                 {t("statUptime")}
               </span>
               <span>•</span>
@@ -188,10 +177,6 @@ export default async function AuthLayout({
 
         {/* Right Side - Form */}
         <div className="relative flex w-full max-w-full min-w-0 items-center justify-center overflow-x-hidden p-3 sm:p-6 lg:p-8">
-          {/* Subtle background glow on right form side */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/4 right-1/4 size-80 rounded-full bg-purple-600/10 blur-3xl" />
-          </div>
           <div className="relative z-10 w-full max-w-full min-w-0">
             {children}
           </div>

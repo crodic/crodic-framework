@@ -263,7 +263,7 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
                     size="sm"
                     onClick={handleApplyClick}
                     disabled={isHydrating}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-md transition-transform active:scale-95 disabled:opacity-50"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                   >
                     <Send className="mr-1.5 size-3.5" />
                     <span>{isHydrating ? "..." : tDetail("applyBtn")}</span>

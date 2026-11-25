@@ -153,7 +153,7 @@ export function AppHeader() {
             trigger={
               <Button
                 size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-all hover:scale-[1.02] sm:px-4 sm:text-sm md:inline-flex"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-colors sm:px-4 sm:text-sm md:inline-flex"
               >
                 <Plus className="size-4 shrink-0" />
                 <span>{t("postAlbum")}</span>
@@ -275,7 +275,7 @@ export function AppHeader() {
             <Button
               size="sm"
               asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs sm:px-4 sm:text-sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs transition-colors sm:px-4 sm:text-sm"
             >
               <Link href="/auth/sign-up">{t("signUp")}</Link>
             </Button>

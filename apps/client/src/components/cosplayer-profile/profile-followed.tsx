@@ -77,7 +77,7 @@ export function ProfileFollowed({ initialFollowed }: ProfileFollowedProps) {
           return (
             <div
               key={user.id}
-              className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/10 relative flex flex-col justify-between overflow-hidden rounded-3xl border p-5 backdrop-blur-md transition-all duration-300 hover:shadow-xl"
+              className="group border-border/70 bg-card hover:border-border relative flex flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs transition-colors"
             >
               <div className="flex items-center gap-3.5">
                 <Link

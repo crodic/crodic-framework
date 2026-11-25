@@ -139,7 +139,7 @@ export function LandingNavbar() {
           <Button
             asChild
             size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-full px-5 font-medium shadow-sm transition-all hover:scale-[1.02]"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-full px-5 font-medium shadow-2xs transition-colors"
           >
             <a href={getAppExternalUrl("/auth/sign-up")}>{t("signUp")}</a>
           </Button>
@@ -201,7 +201,7 @@ export function LandingNavbar() {
                 </Button>
                 <Button
                   asChild
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 w-full rounded-full shadow-md"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-full shadow-2xs transition-colors"
                 >
                   <a
                     href={getAppExternalUrl("/auth/sign-up")}

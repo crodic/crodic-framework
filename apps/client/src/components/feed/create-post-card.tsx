@@ -66,7 +66,7 @@ export function CreatePostCard() {
             onClick={() => handleAction("photoset")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
-            <ImageIcon className="size-4 shrink-0 text-purple-400" />
+            <ImageIcon className="text-primary size-4 shrink-0" />
             <span className="hidden sm:inline">{t("photoAlbum")}</span>
           </button>
 
@@ -75,7 +75,7 @@ export function CreatePostCard() {
             onClick={() => handleAction("video")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
-            <Video className="size-4 shrink-0 text-pink-400" />
+            <Video className="size-4 shrink-0 text-rose-500" />
             <span className="hidden sm:inline">{t("videoReel")}</span>
           </button>
 
@@ -84,7 +84,7 @@ export function CreatePostCard() {
             onClick={() => handleAction("photoset")}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
-            <Tag className="size-4 shrink-0 text-indigo-400" />
+            <Tag className="size-4 shrink-0 text-amber-500" />
             <span className="hidden sm:inline">{t("tagCosplayer")}</span>
           </button>
         </div>
@@ -93,7 +93,7 @@ export function CreatePostCard() {
         <Button
           size="sm"
           onClick={() => handleAction("photoset")}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 h-8.5 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02]"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 h-8.5 cursor-pointer rounded-xl px-5 text-xs font-semibold shadow-xs transition-colors"
         >
           <Send className="mr-1 size-3.5" />
           {t("postBtn")}

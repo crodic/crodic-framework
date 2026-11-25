@@ -13,20 +13,14 @@ export function CtaBanner() {
     <section className="py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          {/* Glow callout card container */}
-          <div className="border-primary/50 from-primary/15 via-card/70 to-card/95 relative overflow-hidden rounded-3xl border bg-gradient-to-b p-8 text-center shadow-[0_0_60px_-15px_var(--color-primary)] backdrop-blur-md sm:p-14 lg:p-16">
-            {/* Ambient lighting ball */}
-            <div
-              className="bg-primary/25 pointer-events-none absolute -top-24 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full blur-[90px]"
-              aria-hidden="true"
-            />
-
+          {/* Callout card container */}
+          <div className="border-border/80 bg-card relative overflow-hidden rounded-3xl border p-8 text-center shadow-xs sm:p-14 lg:p-16">
             <div className="relative z-10 mx-auto max-w-2xl">
-              <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight sm:text-3xl lg:text-4xl">
+              <h2 className="text-foreground text-2xl leading-tight font-black tracking-tight text-balance sm:text-3xl lg:text-4xl">
                 {t("title")}
               </h2>
 
-              <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed sm:mt-4 sm:text-base">
+              <p className="text-muted-foreground mt-3.5 text-sm leading-relaxed text-pretty sm:mt-4 sm:text-base">
                 {t("subtitle")}
               </p>
 
@@ -35,7 +29,7 @@ export function CtaBanner() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-12 cursor-pointer rounded-lg px-8 text-sm font-semibold shadow-xl transition-all hover:scale-[1.02] sm:text-base"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 cursor-pointer rounded-lg px-8 text-sm font-semibold shadow-xs transition-colors sm:text-base"
                 >
                   <Link href="/auth/sign-up">{t("joinNow")}</Link>
                 </Button>
@@ -44,7 +38,7 @@ export function CtaBanner() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-border/80 bg-background/50 hover:bg-muted text-foreground h-12 cursor-pointer rounded-lg px-8 text-sm font-medium transition-all hover:scale-[1.02] sm:text-base"
+                  className="border-border bg-background hover:bg-muted text-foreground h-12 cursor-pointer rounded-lg px-8 text-sm font-medium transition-colors sm:text-base"
                 >
                   <a href="#albums">{t("viewWorks")}</a>
                 </Button>

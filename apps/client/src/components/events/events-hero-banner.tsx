@@ -53,7 +53,7 @@ export function EventsHeroBanner({
 
           {/* Bottom Title, details and CTA */}
           <div className="max-w-xl space-y-2 sm:space-y-3">
-            <h1 className="text-foreground text-xl font-extrabold tracking-tight drop-shadow-md sm:text-2xl md:text-3xl lg:text-4xl">
+            <h1 className="text-foreground text-xl font-extrabold tracking-tight text-balance sm:text-2xl md:text-3xl lg:text-4xl">
               {current.title}
             </h1>
 
@@ -73,7 +73,7 @@ export function EventsHeroBanner({
             <div className="pt-1">
               <Button
                 onClick={() => onRegisterClick(current)}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-9 w-full cursor-pointer rounded-xl px-5 text-xs font-bold shadow-lg transition-all hover:scale-[1.02] sm:h-11 sm:w-auto sm:px-7 sm:text-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-full cursor-pointer rounded-xl px-5 text-xs font-bold shadow-xs transition-colors sm:h-11 sm:w-auto sm:px-7 sm:text-sm"
               >
                 <Ticket className="mr-1.5 size-4" />
                 <span>{t("applyNow")}</span>

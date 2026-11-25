@@ -29,7 +29,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
   return (
     <Link
       href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
-      className="group border-border/60 bg-muted/20 hover:border-primary/80 hover:shadow-primary/25 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-500 hover:shadow-2xl sm:aspect-[9/13]"
+      className="group border-border/70 bg-muted/20 hover:border-primary/50 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-300 hover:shadow-lg sm:aspect-[9/13]"
     >
       {/* Background artwork cover */}
       <Image
@@ -56,9 +56,13 @@ export function AlbumCard({ album }: AlbumCardProps) {
         <div>
           <button
             type="button"
-            onClick={toggleLike}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleLike();
+            }}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur-md transition-all",
+              "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur-md transition-colors",
               isLiked
                 ? "border-rose-500/50 bg-rose-500/20 text-rose-300"
                 : "bg-background/60 border-border/40 text-foreground hover:bg-background/80"
@@ -69,13 +73,13 @@ export function AlbumCard({ album }: AlbumCardProps) {
           >
             <Heart
               className={cn(
-                "size-3.5 transition-transform group-hover:scale-110",
+                "size-3.5",
                 isLiked
                   ? "fill-rose-500 text-rose-500"
                   : "fill-rose-500/80 text-rose-500"
               )}
             />
-            <span>{likes.toLocaleString()}</span>
+            <span className="tabular-nums">{likes.toLocaleString()}</span>
           </button>
         </div>
 

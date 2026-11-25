@@ -81,7 +81,7 @@ export function NotificationItemCard({
         "group relative flex flex-col gap-4 rounded-2xl border p-4 transition-all duration-200 sm:flex-row sm:items-start sm:p-5",
         notification.isRead
           ? "border-border/60 bg-card/40 hover:border-border/90 hover:bg-card/70"
-          : "border-primary/40 bg-primary/[0.04] shadow-primary/5 hover:border-primary/60 hover:bg-primary/[0.07] shadow-xs"
+          : "border-primary/30 bg-primary/[0.03] hover:border-primary/50 hover:bg-primary/[0.05] shadow-xs"
       )}
     >
       {/* Left Avatar / Icon indicator */}

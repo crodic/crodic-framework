@@ -80,12 +80,12 @@ function WorkCard({
         ease: [0.21, 0.47, 0.32, 0.98],
       }}
       whileHover={{
-        y: -6,
-        transition: { type: "spring", stiffness: 350, damping: 25 },
+        y: -3,
+        transition: { duration: 0.2, ease: "easeOut" },
       }}
       className="h-full"
     >
-      <Card className="group border-border/70 bg-card/60 hover:border-primary/50 hover:shadow-primary/10 flex h-full flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 backdrop-blur-sm transition-shadow duration-300 hover:shadow-xl">
+      <Card className="group border-border/70 bg-card hover:border-border flex h-full flex-col justify-between gap-0 overflow-hidden rounded-2xl p-0 shadow-xs transition-colors duration-200">
         {/* Top Image Showcase */}
         <Link
           href={`/posts/${postSlugOrId}`}

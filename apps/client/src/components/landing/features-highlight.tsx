@@ -103,16 +103,11 @@ export function FeaturesHighlight() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Heading with ScrollReveal */}
         <ScrollReveal className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-          <div className="border-primary/30 bg-primary/10 text-primary mb-3.5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-semibold tracking-wide uppercase">
-            <span className="bg-primary size-1.5 rounded-full" />
-            {t("badge")}
-          </div>
-
-          <h2 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+          <h2 className="text-foreground text-3xl font-black tracking-tight text-balance sm:text-4xl lg:text-5xl">
             {t("title")}
           </h2>
 
-          <p className="text-muted-foreground mt-4 text-base leading-relaxed sm:text-lg">
+          <p className="text-muted-foreground mt-4 text-base leading-relaxed text-pretty sm:text-lg">
             {t("subtitle")}
           </p>
         </ScrollReveal>
@@ -129,26 +124,20 @@ export function FeaturesHighlight() {
               >
                 <Link
                   href={feature.href}
-                  className="group border-primary/20 bg-card/40 hover:border-primary/60 hover:bg-card/75 hover:shadow-primary/10 relative flex h-full flex-col justify-between rounded-2xl border p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7"
+                  className="group border-border/70 bg-card/50 hover:border-border hover:bg-card/80 relative flex h-full flex-col justify-between rounded-2xl border p-6 transition-colors sm:p-7"
                 >
-                  {/* Subtle top glow highlight */}
-                  <div
-                    className="from-primary/15 via-primary/5 pointer-events-none absolute inset-x-0 top-0 h-28 rounded-t-2xl bg-gradient-to-b to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
-
                   <div className="relative">
                     {/* Top Row: Icon + Badge + Arrow */}
                     <div className="mb-5 flex items-center justify-between">
-                      <div className="border-primary/25 bg-primary/10 group-hover:bg-primary/20 inline-flex size-11 items-center justify-center rounded-xl border shadow-xs transition-colors">
+                      <div className="border-border/60 bg-muted/50 group-hover:bg-primary/10 group-hover:border-primary/30 inline-flex size-11 items-center justify-center rounded-xl border transition-colors">
                         {getFeatureIcon(feature.iconName)}
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="border-border/60 bg-muted/60 text-muted-foreground group-hover:border-primary/30 group-hover:text-primary rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors">
+                        <span className="border-border/60 bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-0.5 text-xs font-medium">
                           {t(keys.badge)}
                         </span>
-                        <div className="text-muted-foreground group-hover:text-primary flex size-7 items-center justify-center rounded-full opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100">
+                        <div className="text-muted-foreground group-hover:text-foreground flex size-7 items-center justify-center rounded-full opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100">
                           <ArrowUpRight className="size-4" />
                         </div>
                       </div>
@@ -160,16 +149,10 @@ export function FeaturesHighlight() {
                     </h3>
 
                     {/* Description */}
-                    <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
+                    <p className="text-muted-foreground mt-3 text-sm leading-relaxed text-pretty">
                       {t(keys.desc)}
                     </p>
                   </div>
-
-                  {/* Bottom animated accent bar */}
-                  <div
-                    className="bg-primary/30 group-hover:bg-primary mt-6 h-0.5 w-10 rounded-full transition-all duration-300 group-hover:w-20"
-                    aria-hidden="true"
-                  />
                 </Link>
               </ScrollReveal>
             );

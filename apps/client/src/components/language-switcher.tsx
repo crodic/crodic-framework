@@ -99,7 +99,7 @@ export function LanguageSwitcher({
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold shadow-xs transition-all select-none",
                 isSelected
-                  ? "bg-primary text-primary-foreground shadow-primary/20 ring-primary/30 ring-2"
+                  ? "bg-primary text-primary-foreground ring-primary/30 shadow-2xs ring-2"
                   : "border-border/70 bg-card hover:bg-muted text-muted-foreground hover:text-foreground border opacity-80 hover:opacity-100",
                 isPending && "pointer-events-none opacity-60"
               )}

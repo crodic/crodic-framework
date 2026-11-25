@@ -120,13 +120,10 @@ export function NotificationsView() {
   return (
     <div className="space-y-6">
       {/* 1. Header Banner & Action Bar */}
-      <div className="border-border/70 bg-card/60 relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md sm:p-8">
-        <div className="bg-primary/15 pointer-events-none absolute -top-24 -right-24 size-72 rounded-full blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-violet-600/10 blur-3xl" />
-
+      <div className="border-border/70 bg-card relative overflow-hidden rounded-2xl border p-6 shadow-xs sm:p-8">
         <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
           <div className="flex items-start gap-4">
-            <div className="bg-primary/15 border-primary/30 text-primary flex size-12 shrink-0 items-center justify-center rounded-2xl border shadow-xs sm:size-14">
+            <div className="bg-primary/10 border-primary/20 text-primary flex size-12 shrink-0 items-center justify-center rounded-xl border sm:size-14">
               <Bell className="size-6 sm:size-7" />
             </div>
 
@@ -136,7 +133,7 @@ export function NotificationsView() {
                   {t("title")}
                 </h1>
                 {unreadCount > 0 && (
-                  <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold">
+                  <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold tabular-nums">
                     {t("newCount", { count: String(unreadCount) })}
                   </span>
                 )}

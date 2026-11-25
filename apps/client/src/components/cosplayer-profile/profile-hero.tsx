@@ -310,7 +310,7 @@ export function ProfileHero({
           {/* Left Column: Avatar + Details */}
           <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5 text-center sm:flex-row sm:items-end sm:gap-5 sm:text-left">
             {/* Avatar with Camera badge for owner */}
-            <div className="group/avatar bg-background ring-primary/80 dark:ring-primary shadow-primary/20 relative size-24 shrink-0 rounded-full p-1 shadow-xl ring-4 sm:size-28 md:size-32 lg:size-36">
+            <div className="group/avatar bg-background ring-border relative size-24 shrink-0 rounded-full p-1 shadow-md ring-2 sm:size-28 md:size-32 lg:size-36">
               <div className="relative size-full overflow-hidden rounded-full">
                 {profile.avatarUrl ? (
                   <Image

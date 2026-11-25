@@ -23,10 +23,10 @@ export function EventCard({ event, onApply }: EventCardProps) {
   return (
     <motion.article
       whileHover={{
-        y: -5,
-        transition: { type: "spring", stiffness: 350, damping: 25 },
+        y: -3,
+        transition: { duration: 0.2, ease: "easeOut" },
       }}
-      className="group border-border/70 hover:border-primary/50 bg-card hover:shadow-primary/5 relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-colors duration-300 hover:shadow-lg sm:flex-col sm:p-3"
+      className="group border-border/70 hover:border-border bg-card relative flex flex-row overflow-hidden rounded-2xl border p-2.5 shadow-xs transition-colors duration-200 sm:flex-col sm:p-3"
     >
       {/* 1. Poster Image (Links to Intercepting Route) */}
       <Link

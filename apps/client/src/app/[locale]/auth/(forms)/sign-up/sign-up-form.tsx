@@ -352,7 +352,7 @@ export default function SignUpForm() {
                       className={cn(
                         "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "cosplayer"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
+                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
@@ -400,7 +400,7 @@ export default function SignUpForm() {
                       className={cn(
                         "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "photographer"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
+                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >
@@ -448,7 +448,7 @@ export default function SignUpForm() {
                       className={cn(
                         "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
                         selectedRole === "fan"
-                          ? "border-primary bg-primary/5 ring-primary/20 shadow-primary/10 shadow-md ring-2"
+                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
                           : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
                       )}
                     >

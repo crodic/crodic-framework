@@ -53,7 +53,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
       >
         <Link
           href={`/posts/${postSlugOrId}`}
-          className="bg-muted border-border/70 group-hover:border-primary/50 group-hover:shadow-primary/10 relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-colors duration-300 group-hover:shadow-lg"
+          className="bg-muted border-border/70 group-hover:border-border relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-colors duration-200"
         >
           <Image
             src={item.coverImageUrl}
@@ -143,7 +143,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
                 isLiked ? "fill-rose-500 text-rose-500" : "text-rose-500"
               )}
             />
-            <span>{formattedLikes}</span>
+            <span className="tabular-nums">{formattedLikes}</span>
           </motion.button>
 
           <motion.button

@@ -64,12 +64,6 @@ export function SpotlightBanner() {
             key={slide.id || index}
             className="relative flex min-h-[210px] flex-col justify-between p-0 sm:min-h-[230px]"
           >
-            {/* Ambient glow behind artwork */}
-            <div
-              className="pointer-events-none absolute top-1/2 -right-6 z-0 h-[150%] w-[65%] -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.22)_0%,rgba(99,102,241,0.06)_45%,transparent_70%)] select-none"
-              aria-hidden="true"
-            />
-
             {/* Character Artwork */}
             <div
               className="pointer-events-none absolute top-0 right-0 bottom-0 z-0 w-[58%] overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.15)_15%,rgba(0,0,0,0.7)_40%,black_70%)] select-none [-webkit-mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.15)_15%,rgba(0,0,0,0.7)_40%,black_70%)] sm:w-[56%] md:w-[60%] lg:w-[62%]"
@@ -114,7 +108,7 @@ export function SpotlightBanner() {
                 <Button
                   asChild
                   size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-9 cursor-pointer rounded-lg px-4 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02] sm:px-5 sm:text-sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-lg px-4 text-xs font-semibold shadow-xs transition-colors sm:px-5 sm:text-sm"
                 >
                   <Link href={slide.portfolioHref || "/cosplayer"}>
                     {t("viewPortfolio")}

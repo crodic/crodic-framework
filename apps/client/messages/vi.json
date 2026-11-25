@@ -451,7 +451,7 @@
       "statUptime": "50K+ Cosplayers",
       "statLatency": "10K+ Bộ ảnh",
       "statScale": "100+ Lễ hội ACG",
-      "creatorsJoined": "cosplayers & creators đã tham gia",
+      "creatorsJoined": "{count} cosplayers & creators đã tham gia",
       "copyright": "© {year} Nền tảng Kosume."
     },
     "login": {

@@ -45,12 +45,9 @@ export function HeroBanner() {
         {/* Main Hero Content Area */}
         <div className="flex min-h-[420px] flex-col justify-center sm:min-h-[460px] lg:min-h-[500px]">
           <ScrollReveal className="max-w-xl py-6 text-left sm:py-10 lg:max-w-2xl">
-            <h1 className="text-foreground text-4xl leading-[1.14] font-black tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="text-foreground text-4xl leading-[1.14] font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
               {t("titleLead")} <br />
-              <span className="text-primary drop-shadow-[0_0_35px_var(--color-primary)]">
-                Cosplay
-              </span>{" "}
-              {t("titleTrail")}
+              <span className="text-primary">Cosplay</span> {t("titleTrail")}
             </h1>
 
             <p className="text-muted-foreground mt-5 max-w-lg text-sm leading-relaxed sm:mt-6 sm:text-base lg:text-lg">
@@ -62,7 +59,7 @@ export function HeroBanner() {
               <Button
                 asChild
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30 h-11 cursor-pointer rounded-lg px-6 text-sm font-semibold shadow-lg transition-all hover:scale-[1.02] sm:h-12 sm:px-7 sm:text-base"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 cursor-pointer rounded-lg px-6 text-sm font-semibold shadow-xs transition-colors sm:h-12 sm:px-7 sm:text-base"
               >
                 <a href="#albums">{t("exploreNow")}</a>
               </Button>
@@ -71,7 +68,7 @@ export function HeroBanner() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-border/80 bg-card/60 hover:bg-muted text-foreground h-11 cursor-pointer rounded-lg px-6 text-sm font-medium backdrop-blur-sm transition-all hover:scale-[1.02] sm:h-12 sm:px-7 sm:text-base"
+                className="border-border bg-card/60 hover:bg-muted text-foreground h-11 cursor-pointer rounded-lg px-6 text-sm font-medium backdrop-blur-sm transition-colors sm:h-12 sm:px-7 sm:text-base"
               >
                 <Link href="/auth/sign-up">{t("signUp")}</Link>
               </Button>
@@ -80,7 +77,7 @@ export function HeroBanner() {
                 asChild
                 size="lg"
                 variant="ghost"
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-11 cursor-pointer rounded-lg px-4 text-sm font-medium transition-all sm:h-12"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-11 cursor-pointer rounded-lg px-4 text-sm font-medium transition-colors sm:h-12"
               >
                 <Link href="/tags">{t("viewTags")}</Link>
               </Button>
@@ -96,7 +93,7 @@ export function HeroBanner() {
           <div className="mx-auto grid max-w-2xl grid-cols-3 gap-4 text-center sm:max-w-3xl sm:gap-8">
             {HERO_STATS.map((stat) => (
               <div key={stat.key} className="flex flex-col items-center">
-                <span className="text-foreground text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
+                <span className="text-foreground text-2xl font-black tracking-tight tabular-nums sm:text-3xl lg:text-4xl">
                   {stat.value}
                 </span>
                 <span className="text-muted-foreground mt-1 text-xs font-medium sm:text-sm">

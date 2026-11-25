@@ -94,8 +94,8 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 ease: [0.21, 0.47, 0.32, 0.98],
               }}
               whileHover={{
-                y: isGold ? -12 : -8,
-                transition: { type: "spring", stiffness: 350, damping: 25 },
+                y: -4,
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
               className={cn(
                 "relative flex flex-col items-center justify-between rounded-2xl border p-2.5 transition-shadow sm:rounded-3xl sm:p-5 md:p-6",
@@ -104,26 +104,14 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 styles.elevation
               )}
             >
-              {/* Gold tier sparkling aura */}
-              {isGold && (
-                <div
-                  className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-amber-400/20 via-amber-300/10 to-transparent opacity-75 blur-xs sm:rounded-3xl"
-                  aria-hidden="true"
-                />
-              )}
-
               {/* Top Medal Badge */}
               <div className="absolute top-2.5 right-2.5 flex items-center gap-1 font-black sm:top-4 sm:right-4">
                 <MedalIcon
-                  className={cn(
-                    "size-4 sm:size-5",
-                    styles.badgeColor,
-                    isGold && "animate-bounce"
-                  )}
+                  className={cn("size-4 sm:size-5", styles.badgeColor)}
                 />
                 <span
                   className={cn(
-                    "text-xs font-extrabold sm:text-base",
+                    "text-xs font-extrabold tabular-nums sm:text-base",
                     styles.badgeColor
                   )}
                 >
@@ -191,7 +179,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
               {/* Stats Bar */}
               <div className="border-border/40 mt-3 flex w-full items-center justify-around border-t pt-2.5 text-center sm:mt-4 sm:pt-3">
                 <div>
-                  <span className="text-foreground block text-xs font-black sm:text-sm md:text-base">
+                  <span className="text-foreground block text-xs font-black tabular-nums sm:text-sm md:text-base">
                     {formattedLikes}
                   </span>
                   <span className="text-muted-foreground block text-[9px] tracking-wider uppercase sm:text-[10px]">
@@ -200,7 +188,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 </div>
                 <div className="bg-border/60 h-6 w-px" />
                 <div>
-                  <span className="text-foreground block text-xs font-black sm:text-sm md:text-base">
+                  <span className="text-foreground block text-xs font-black tabular-nums sm:text-sm md:text-base">
                     {formattedFollowers}
                   </span>
                   <span className="text-muted-foreground block text-[9px] tracking-wider uppercase sm:text-[10px]">
@@ -216,7 +204,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                 className={cn(
                   "mt-3 h-7 w-full cursor-pointer rounded-full text-[10px] font-bold shadow-xs sm:mt-4 sm:h-8 sm:text-xs",
                   isGold
-                    ? "bg-amber-400 text-amber-950 shadow-amber-400/20 hover:bg-amber-300"
+                    ? "bg-amber-400 text-amber-950 transition-colors hover:bg-amber-300"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border/80 border"
                 )}
               >

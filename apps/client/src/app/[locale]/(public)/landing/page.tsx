@@ -150,7 +150,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
   };
 
   return (
-    <div className="bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground flex min-h-screen flex-col">
+    <div className="bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground flex min-h-dvh flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

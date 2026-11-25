@@ -428,7 +428,7 @@ export function CreateAlbumForm({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 h-11 w-full cursor-pointer rounded-xl font-semibold shadow-lg transition-all hover:scale-[1.01]"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl font-semibold shadow-xs transition-colors"
           >
             {isSubmitting ? (
               <>

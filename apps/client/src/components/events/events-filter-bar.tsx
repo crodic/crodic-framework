@@ -37,7 +37,7 @@ export function EventsFilterBar({
               className={cn(
                 "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all sm:text-sm",
                 isSelected
-                  ? "bg-primary text-primary-foreground shadow-primary/25 scale-[1.02] shadow-sm"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/50 border"
               )}
             >

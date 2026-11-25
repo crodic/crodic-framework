@@ -114,16 +114,11 @@ export function TagDirectoryView() {
 
         {/* Hero Content */}
         <div className="relative z-10 space-y-4">
-          <div className="border-primary/25 bg-primary/15 text-primary inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-semibold backdrop-blur-md">
-            <Tags className="size-3.5" />
-            <span>Folksonomy & Community Wiki</span>
-          </div>
-
           <div className="mx-auto max-w-2xl space-y-2">
-            <h1 className="text-foreground text-2xl font-black tracking-tight drop-shadow-xs sm:text-4xl">
+            <h1 className="text-foreground text-2xl font-black tracking-tight text-balance sm:text-4xl">
               {t("title")}
             </h1>
-            <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
+            <p className="text-muted-foreground text-xs leading-relaxed text-pretty sm:text-sm">
               {t("subtitle")}
             </p>
           </div>
