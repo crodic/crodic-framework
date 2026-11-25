@@ -25,7 +25,7 @@ COPY apps/client/package.json ./apps/client/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
-  pnpm install --frozen-lockfile --network-concurrency=4 --fetch-timeout=120000
+  pnpm install --filter api... --frozen-lockfile --network-concurrency=4 --fetch-timeout=120000
 
 FROM deps AS development
 ENV NODE_ENV=development
