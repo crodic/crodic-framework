@@ -16,6 +16,11 @@ on:
         required: false
         default: false
         type: boolean
+      rebuild_all:
+        description: "Force rebuild all Docker images (api, web, client)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -184,12 +189,19 @@ jobs:
           set -e
           cd /var/www/crodic-framework
           git checkout main
+          PREV_SHA="$(git rev-parse HEAD 2>/dev/null || echo '')"
           git pull origin main
           chmod +x scripts/deploy.sh
 
-          DEPLOY_FLAGS=""
+          DEPLOY_FLAGS="--skip-pull"
+          if [ -n "$PREV_SHA" ]; then
+            DEPLOY_FLAGS="$DEPLOY_FLAGS --changed-from $PREV_SHA"
+          fi
           if [ "${{ inputs.skip_migration }}" = "true" ]; then
-            DEPLOY_FLAGS="--skip-migration"
+            DEPLOY_FLAGS="$DEPLOY_FLAGS --skip-migration"
+          fi
+          if [ "${{ inputs.rebuild_all }}" = "true" ]; then
+            DEPLOY_FLAGS="$DEPLOY_FLAGS --all"
           fi
 
           ./scripts/deploy.sh $DEPLOY_FLAGS
