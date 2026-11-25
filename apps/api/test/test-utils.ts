@@ -71,28 +71,45 @@ export async function createTestApp(): Promise<INestApplication> {
 }
 
 /**
- * Truncates all tables in the test database with RESTART IDENTITY CASCADE,
- * providing a completely clean/fresh state in milliseconds.
+ * Truncates only non-empty tables in the test database with RESTART IDENTITY CASCADE,
+ * preventing unnecessary fsync overhead across dozens of empty tables.
  */
 export async function cleanDatabase(dataSource: DataSource): Promise<void> {
   if (!dataSource.isInitialized) {
     await dataSource.initialize();
   }
 
+  // Allow any queued setImmediate audit log persistence to settle before truncation
+  await new Promise((resolve) => setImmediate(resolve));
+
   const queryRunner = dataSource.createQueryRunner();
   await queryRunner.connect();
 
   try {
-    const tables: Array<{ tablename: string }> = await queryRunner.query(
-      `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT IN ('migrations', 'typeorm_metadata');`,
-    );
+    await queryRunner.query(`
+      DO $$
+      DECLARE
+        tbl TEXT;
+        has_data BOOLEAN;
+        targets TEXT[] := ARRAY[]::TEXT[];
+      BEGIN
+        FOR tbl IN
+          SELECT tablename
+          FROM pg_tables
+          WHERE schemaname = 'public'
+            AND tablename NOT IN ('migrations', 'typeorm_metadata')
+        LOOP
+          EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I LIMIT 1)', tbl) INTO has_data;
+          IF has_data THEN
+            targets := array_append(targets, format('%I', tbl));
+          END IF;
+        END LOOP;
 
-    if (tables.length > 0) {
-      const tableList = tables.map((t) => `"${t.tablename}"`).join(', ');
-      await queryRunner.query(
-        `TRUNCATE TABLE ${tableList} RESTART IDENTITY CASCADE;`,
-      );
-    }
+        IF array_length(targets, 1) > 0 THEN
+          EXECUTE 'TRUNCATE TABLE ' || array_to_string(targets, ', ') || ' RESTART IDENTITY CASCADE';
+        END IF;
+      END $$;
+    `);
   } finally {
     await queryRunner.release();
   }

@@ -3,9 +3,10 @@ import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from './naming-strategies/snake-naming.strategy';
 
-dotenv.config();
 if (process.env.NODE_ENV === 'test') {
-  dotenv.config({ path: '.env.testing', override: true });
+  dotenv.config({ path: '.env.testing', override: false });
+} else {
+  dotenv.config();
 }
 
 const isSslEnabled = process.env.DATABASE_SSL_ENABLED === 'true';
