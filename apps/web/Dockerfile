@@ -6,7 +6,6 @@ WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 ENV HUSKY=0
-ENV pnpm_config_store_dir="/pnpm/store"
 
 RUN npm install -g pnpm@11.25.0
 
@@ -22,8 +21,8 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY apps/client/package.json ./apps/client/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
-RUN --mount=type=cache,id=pnpm-store-v2,target=/pnpm/store,sharing=locked \
-  pnpm install --filter web... --frozen-lockfile --network-concurrency=4 --fetch-timeout=120000
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+  pnpm install --frozen-lockfile
 
 FROM deps AS builder
 ENV NODE_ENV=production

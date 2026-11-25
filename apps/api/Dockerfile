@@ -6,7 +6,6 @@ WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 ENV HUSKY=0
-ENV pnpm_config_store_dir="/pnpm/store"
 
 RUN apk add --no-cache libc6-compat dumb-init \
   && npm install -g pnpm@11.25.0
@@ -24,8 +23,8 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY apps/client/package.json ./apps/client/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
-RUN --mount=type=cache,id=pnpm-store-v2,target=/pnpm/store,sharing=locked \
-  pnpm install --filter api... --frozen-lockfile --network-concurrency=4 --fetch-timeout=120000
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+  pnpm install --frozen-lockfile
 
 FROM deps AS development
 ENV NODE_ENV=development
@@ -43,8 +42,7 @@ ENV NODE_ENV=production
 COPY packages ./packages
 COPY apps/api ./apps/api
 
-RUN --mount=type=cache,id=pnpm-store-v2,target=/pnpm/store,sharing=locked \
-  pnpm --filter api build \
+RUN pnpm --filter api build \
   && pnpm --filter api deploy --prod --legacy /prod/api \
   && mkdir -p /prod/api/public /prod/api/dist/database \
   && cp -r apps/api/dist /prod/api/dist \
