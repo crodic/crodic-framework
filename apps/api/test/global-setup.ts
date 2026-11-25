@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Force load .env.testing before anything else
+// Force load .env.testing before anything else, but allow existing process.env overrides
 dotenv.config({
   path: path.resolve(__dirname, '../.env.testing'),
-  override: true,
+  override: false,
 });
 process.env.NODE_ENV = 'test';
 
