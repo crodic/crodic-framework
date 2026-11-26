@@ -41,7 +41,7 @@ export function MobileSearchDialog({
   const locale = useLocale();
   const t = useTranslations("Explore");
   const tCommon = useTranslations("Common");
-  const tNav = useTranslations("Navigation");
+  const tNav = useTranslations("Navigation") as any;
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query.trim(), 250);
 

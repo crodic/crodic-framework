@@ -66,7 +66,7 @@ export function CosplayerApplicationDialog({
   isEmailVerified = true,
   initialStageName = "",
 }: CosplayerApplicationDialogProps) {
-  const t = useTranslations("CosplayerApplication");
+  const t = useTranslations("CosplayerApplication") as any;
   const queryClient = useQueryClient();
   const [isReapplying, setIsReapplying] = useState(false);
 

@@ -19,18 +19,20 @@ import { WhiteLabelLogo } from "@/lib/white-label";
 import { getAppExternalUrl } from "@/lib/subdomain";
 
 export function LandingNavbar() {
-  const t = useTranslations("Landing.nav");
+  const t = useTranslations("Landing.nav") as any;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navKeys: Record<
     string,
-    "explore" | "tags" | "community" | "events" | "ranking"
+    "explore" | "tags" | "community" | "events" | "ranking" | "about" | "faq"
   > = {
     explore: "explore",
     tags: "tags",
     community: "community",
     events: "events",
     ranking: "ranking",
+    about: "about",
+    faq: "faq",
   };
 
   const renderDesktopNavLink = (link: (typeof LANDING_NAV_LINKS)[number]) => {

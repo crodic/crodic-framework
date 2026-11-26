@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/empty";
 
 export function ListError({ onRetry }: { onRetry: () => void }) {
-  const t = useTranslations("Common");
+  const t = useTranslations("Common") as any;
 
   return (
     <Empty className="border-border gap-4 rounded-xl border">

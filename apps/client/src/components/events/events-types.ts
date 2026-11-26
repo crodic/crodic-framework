@@ -17,7 +17,7 @@ export interface EventFilterTag {
  * Returns the localized display label for an event lifecycle status.
  */
 export function getEventLifecycleLabel(
-  t: ReturnType<typeof useTranslations<"Events">>,
+  t: any,
   status: EventSummaryResDto["status"]
 ): string {
   switch (status) {

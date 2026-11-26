@@ -50,6 +50,8 @@
       "community": "Cosplayers",
       "events": "Sự kiện",
       "ranking": "Bảng xếp hạng",
+      "about": "Về Kosume",
+      "faq": "Hỏi đáp",
       "signIn": "Đăng nhập",
       "signUp": "Tham gia ngay",
       "homeAria": "Kosume Trang chủ",
@@ -122,6 +124,91 @@
       "like": "Thích",
       "likeAlbumAria": "Thích album {name}"
     },
+    "founder": {
+      "badge": "Tâm Huyết & Sứ Mệnh",
+      "title": "Vì sao chúng tôi tạo nên Kosume?",
+      "subtitle": "Một thánh địa số tôn vinh từng khoảnh khắc hóa thân và bảo vệ quyền tác giả cho cộng đồng cosplay.",
+      "letterGreeting": "Gửi những người bạn chung niềm đam mê hóa thân,",
+      "letterParagraph1": "Khi ngắm nhìn những bộ ảnh cosplay kỳ công, chúng tôi luôn trăn trở: Tại sao những tác phẩm nghệ thuật tiêu tốn hàng tháng trời chuẩn bị trang phục, trang điểm và bấm máy lại bị nén mờ căm trên mạng xã hội đại trà, rồi nhanh chóng trôi dạt vào quên lãng chỉ sau vài giờ? Tại sao công sức của cả một ekip — từ cosplayer, photographer đến props maker — lại thường xuyên bị cắt xén watermark và đánh cắp bản quyền?",
+      "letterParagraph2": "Đó là lý do Kosume ra đời. Chúng tôi không định vị mình là một mạng xã hội hời hợt, mà là một ngôi nhà nghệ thuật trang trọng: nơi từng bức ảnh được lưu trữ ở độ phân giải gốc nguyên bản, từng nhân vật được định danh chính xác theo cây phả hệ bách khoa, và từng lễ hội fes trở thành cầu nối gắn kết những tâm hồn đồng điệu. Nơi đây thuộc về các bạn — những người đang thổi hồn vào từng nhân vật.",
+      "authorRole": "Founder & Lead Architect, Kosume",
+      "motto": "Tôn vinh đam mê, bảo tồn từng khoảnh khắc nghệ thuật",
+      "values": {
+        "protection": {
+          "title": "Bảo Vệ Quyền Tác Giả",
+          "desc": "Cơ chế gắn thẻ tác giả (*), khóa bản quyền và phân loại an toàn nghiêm ngặt."
+        },
+        "quality": {
+          "title": "Độ Nét Gốc Nguyên Bản",
+          "desc": "Lưu trữ hình ảnh chất lượng cao không nén vỡ hạt, tối ưu từng khung hình."
+        },
+        "encyclopedia": {
+          "title": "Bách Khoa Mở Đa Tầng",
+          "desc": "Cây phả hệ phân cấp từ Series, Nhân vật đến từng phiên bản trang phục."
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "Tiếng Nói Cộng Đồng",
+      "title": "Người thật, trải nghiệm thật trên Kosume",
+      "subtitle": "Lắng nghe chia sẻ thực tế từ các Cosplayer, Nhiếp ảnh gia và Đơn vị tổ chức sự kiện tại Việt Nam.",
+      "items": {
+        "meiko": {
+          "name": "Minh Thảo (Meiko)",
+          "role": "Cosplayer & Creator",
+          "location": "TP. Hồ Chí Minh",
+          "tag": "6 năm kinh nghiệm",
+          "quote": "Trước đây mỗi mùa fes về, ảnh đăng lên Facebook bị nén vỡ hạt và trôi mất chỉ sau 2 ngày. Với Kosume, portfolio của mình được hiển thị sắc nét như triển lãm nghệ thuật. Fan dễ dàng tìm kiếm đúng bộ ảnh Genshin hay Honkai mình hóa thân qua cây phả hệ tag cực kỳ chính xác!"
+        },
+        "kuroki": {
+          "name": "Hoàng Long (Kuroki Studio)",
+          "role": "Photographer Chuyên Fes",
+          "location": "Hà Nội",
+          "tag": "50+ Fes tham gia",
+          "quote": "Là photographer, nỗi sợ lớn nhất là bị cắt xén watermark và reup không ghi nguồn. Kosume là nền tảng đầu tiên có cơ chế thẻ tác giả (*) và khóa bản quyền rõ ràng. Việc trả ảnh cho cosplayer vừa chuyên nghiệp vừa bảo vệ công sức anh em cầm máy."
+        },
+        "quynhanh": {
+          "name": "Quỳnh Anh",
+          "role": "Cosplay Event Coordinator",
+          "location": "Đà Nẵng",
+          "tag": "Ban tổ chức Fes",
+          "quote": "Kênh sự kiện của Kosume giúp ban tổ chức tiếp cận chuẩn xác tệp bạn trẻ đam mê cosplay. Tính năng tra cứu fes, xem danh sách cosplayer khách mời và đăng ký tham gia giúp các sự kiện của chúng mình đông vui hơn rất nhiều."
+        }
+      }
+    },
+    "faq": {
+      "badge": "Giải Đáp Thắc Mắc",
+      "title": "Câu hỏi thường gặp về Kosume",
+      "subtitle": "Mọi điều bạn cần biết về nền tảng, cơ chế bảo vệ bản quyền và cách tham gia.",
+      "q1": {
+        "question": "Kosume khác biệt như thế nào so với Facebook hay Instagram?",
+        "answer": "Kosume được thiết kế chuyên biệt cho văn hóa cosplay: giữ nguyên độ phân giải ảnh gốc (không nén mờ), phân loại theo Cây phả hệ nhân vật (Series -> Nhân vật -> Trang phục), liên kết đồng thời quyền tác giả của Cosplayer và Photographer, cùng lịch trình sự kiện fes chuyên biệt không bị thuật toán bóp tương tác."
+      },
+      "q2": {
+        "question": "Hệ thống Bách khoa Thẻ (Tag Encyclopedia) và Cây phả hệ nhân vật là gì?",
+        "answer": "Đây là cơ sở dữ liệu mở do cộng đồng cùng đóng góp, cấu trúc đa tầng từ Series (Anime/Manga/Game) đến từng nhân vật cụ thể và các biến thể trang phục (Original, Maid, Giáp,...). Nhờ đó, người xem có thể lọc ra mọi bộ ảnh về nhân vật mình yêu thích trong tích tắc."
+      },
+      "q3": {
+        "question": "Bản quyền tác phẩm và hình ảnh của tôi được bảo vệ như thế nào?",
+        "answer": "Kosume áp dụng cơ chế bảo vệ bản quyền đa tầng: Thẻ tác giả xác thực (*), quyền khóa tải xuống chống sao chép trái phép, và hệ thống phân loại mức độ an toàn (Safety Ratings: SFW, Suggestive, NSFW) đảm bảo môi trường nghệ thuật lành mạnh, tôn trọng sáng tạo."
+      },
+      "q4": {
+        "question": "Tôi có phải trả phí để tạo Portfolio và tham gia Kosume không?",
+        "answer": "Hoàn toàn miễn phí! Bất kỳ cosplayer, photographer hay fan hâm mộ nào cũng có thể đăng ký tài khoản, tải lên album lên tới 20 ảnh HD mỗi bộ, bình luận tương tác và kết nối cộng đồng mà không mất bất kỳ khoản phí nào."
+      },
+      "q5": {
+        "question": "Làm thế nào để Ban tổ chức đăng lịch Lễ hội / Fes lên Kosume?",
+        "answer": "Ban tổ chức có thể vào mục Sự kiện để tạo hồ sơ festival, cập nhật địa điểm, thời gian, danh sách cosplayer khách mời và theo dõi số lượng người đăng ký tham dự hoàn toàn trực quan."
+      },
+      "q6": {
+        "question": "Tôi có thể liên hệ hoặc đóng góp ý kiến cho Kosume qua đâu?",
+        "answer": "Bạn có thể gửi email trực tiếp tới alice01422@gmail.com, hoặc nhắn tin qua Fanpage Facebook Kosume và trang X @alice01422. Chúng tôi luôn trân trọng và lắng nghe mọi góp ý từ cộng đồng!"
+      },
+      "contactPrompt": {
+        "title": "Bạn vẫn còn thắc mắc cần giải đáp?",
+        "desc": "Đội ngũ Kosume luôn sẵn sàng hỗ trợ và phản hồi trong vòng 24 giờ."
+      }
+    },
     "cta": {
       "title": "Bạn đã sẵn sàng tham gia cộng đồng Kosume?",
       "subtitle": "Vũ kịch mở ngàn kích thích thị giác. Nơi từng khung hình là một tuyệt tác nghệ thuật.",
@@ -131,8 +218,11 @@
     "footer": {
       "description": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
       "tagline": "Nơi kết nối tình yêu cosplay và nghệ thuật hóa thân.",
+      "foundedBy": "Sáng lập và phát triển bởi",
       "exploreTitle": "Khám phá",
       "companyTitle": "Chính sách & Điều khoản",
+      "contactTitle": "Liên hệ & Cộng đồng",
+      "contactSubtitle": "Kết nối cùng đội ngũ phát triển và cộng đồng Kosume:",
       "links": {
         "about": "Về chúng tôi",
         "features": "Tính năng nổi bật",

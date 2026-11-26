@@ -37,7 +37,7 @@ import { toast } from "sonner";
 
 export function AppHeader() {
   const router = useRouter();
-  const t = useTranslations("Navigation");
+  const t = useTranslations("Navigation") as any;
   const [searchQuery, setSearchQuery] = useState("");
 
   // Authentication State
@@ -64,7 +64,7 @@ export function AppHeader() {
   const initials =
     displayName
       .split(" ")
-      .map((w) => w[0])
+      .map((w: string) => w[0])
       .filter(Boolean)
       .slice(0, 2)
       .join("")
