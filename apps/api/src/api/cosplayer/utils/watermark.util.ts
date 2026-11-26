@@ -39,8 +39,10 @@ async function getLogoBase64(): Promise<string | null> {
   logoLoadAttempted = true;
 
   const candidatePaths = [
+    path.resolve(process.cwd(), 'seo-assets/favicon.png'),
     path.resolve(process.cwd(), 'public/logo.png'),
     path.resolve(process.cwd(), 'apps/api/public/logo.png'),
+    path.resolve(__dirname, '../../../../seo-assets/favicon.png'),
     path.resolve(__dirname, '../../../../public/logo.png'),
     path.resolve(__dirname, '../../../public/logo.png'),
     path.resolve(__dirname, '../../public/logo.png'),
@@ -50,7 +52,7 @@ async function getLogoBase64(): Promise<string | null> {
     try {
       if (fs.existsSync(candidate)) {
         const buf = await sharp(candidate)
-          .resize(80, 80, { fit: 'contain' })
+          .resize(200, 200, { fit: 'contain' })
           .png()
           .toBuffer();
         cachedLogoBase64 = buf.toString('base64');
@@ -82,15 +84,16 @@ export async function applyKosumeWatermark(
     const height = meta.height;
 
     // Responsive scaling factor based on 1200px baseline
-    const scale = Math.max(0.55, Math.min(width / 1200, 2.2));
-    const h = Math.round(44 * scale);
-    const r = Math.round(22 * scale);
-    const iconSize = Math.round(28 * scale);
-    const padX = Math.round(14 * scale);
-    const iconGap = Math.round(8 * scale);
+    const scale = Math.max(0.6, Math.min(width / 1200, 2.2));
+    const h = Math.round(48 * scale);
+    const r = Math.round(h / 2);
+    const iconSize = Math.round(36 * scale);
+    const padLeft = Math.round(7 * scale);
+    const iconGap = Math.round(9 * scale);
+    const padRight = Math.round(16 * scale);
     const margin = Math.round(24 * scale);
-    const fontBrand = Math.round(15 * scale);
-    const fontAuthor = Math.round(13 * scale);
+    const fontBrand = Math.round(15.5 * scale);
+    const fontAuthor = Math.round(13.5 * scale);
 
     let author = (options.authorName || 'Creator').trim();
     if (author.startsWith('@')) {
@@ -101,40 +104,45 @@ export async function applyKosumeWatermark(
     }
 
     const brand = options.brandText || 'Kosume';
-    const authorText = `• @${author}`;
+    const authorText = `@${author}`;
 
-    // Estimated width for proportional pill sizing
-    const brandWidth = brand.length * (fontBrand * 0.65);
-    const authorWidth = authorText.length * (fontAuthor * 0.62);
-    const contentWidth =
-      padX * 2 + iconSize + iconGap + brandWidth + 6 + authorWidth;
+    // Estimated widths for proportional pill sizing
+    const brandWidth = Math.round(brand.length * (fontBrand * 0.72));
+    const authorWidth = Math.round(authorText.length * (fontAuthor * 0.62));
+    const dividerGap = Math.round(10 * scale);
+
+    const brandX = padLeft + iconSize + iconGap;
+    const dividerX = brandX + brandWidth + dividerGap;
+    const authorX = dividerX + dividerGap;
+    const contentWidth = authorX + authorWidth + padRight;
     const badgeWidth = Math.min(
       Math.round(contentWidth),
       Math.round(width * 0.9),
     );
 
-    const brandX = padX + iconSize + iconGap;
-    const authorX = brandX + brandWidth + 6;
     const textY = Math.round(h * 0.62);
     const iconY = Math.round((h - iconSize) / 2);
+    const divY1 = Math.round(h * 0.28);
+    const divY2 = Math.round(h * 0.72);
 
     const logoBase64 = await getLogoBase64();
     const logoElement = logoBase64
-      ? `<image href="data:image/png;base64,${logoBase64}" x="${padX}" y="${iconY}" width="${iconSize}" height="${iconSize}" />`
-      : `<circle cx="${padX + iconSize / 2}" cy="${h / 2}" r="${iconSize / 2}" fill="#ec4899" />`;
+      ? `<image href="data:image/png;base64,${logoBase64}" x="${padLeft}" y="${iconY}" width="${iconSize}" height="${iconSize}" />`
+      : `<circle cx="${padLeft + iconSize / 2}" cy="${h / 2}" r="${iconSize / 2}" fill="#ec4899" />`;
 
     const svg = `
     <svg width="${badgeWidth}" height="${h}" viewBox="0 0 ${badgeWidth} ${h}" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <filter id="badgeShadow" x="-15%" y="-15%" width="130%" height="140%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.6"/>
+        <filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.65"/>
         </filter>
       </defs>
       <g filter="url(#badgeShadow)">
-        <rect x="1" y="1" width="${badgeWidth - 2}" height="${h - 2}" rx="${r}" ry="${r}" fill="rgba(15, 17, 23, 0.72)" stroke="rgba(255, 255, 255, 0.22)" stroke-width="1.2" />
+        <rect x="1" y="1" width="${badgeWidth - 2}" height="${h - 2}" rx="${r}" ry="${r}" fill="rgba(15, 17, 23, 0.76)" stroke="rgba(255, 255, 255, 0.22)" stroke-width="1.2" />
         ${logoElement}
-        <text x="${brandX}" y="${textY}" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="${fontBrand}" font-weight="bold" fill="#ffffff">${escapeXml(brand)}</text>
-        <text x="${authorX}" y="${textY}" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="${fontAuthor}" font-weight="500" fill="rgba(255, 255, 255, 0.78)">${escapeXml(authorText)}</text>
+        <text x="${brandX}" y="${textY}" font-family="'Noto Sans', 'DejaVu Sans', 'Liberation Sans', sans-serif" font-size="${fontBrand}" font-weight="700" fill="#ffffff" letter-spacing="0.3">${escapeXml(brand)}</text>
+        <line x1="${dividerX}" y1="${divY1}" x2="${dividerX}" y2="${divY2}" stroke="rgba(255, 255, 255, 0.28)" stroke-width="1.2" stroke-linecap="round" />
+        <text x="${authorX}" y="${textY}" font-family="'Noto Sans', 'DejaVu Sans', 'Liberation Sans', sans-serif" font-size="${fontAuthor}" font-weight="500" fill="rgba(255, 255, 255, 0.85)">${escapeXml(authorText)}</text>
       </g>
     </svg>
     `;
