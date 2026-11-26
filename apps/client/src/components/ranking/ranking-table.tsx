@@ -97,7 +97,7 @@ export function RankingTable({ items }: RankingTableProps) {
   };
 
   return (
-    <div className="border-border/70 bg-card overflow-hidden rounded-2xl border shadow-xs sm:rounded-3xl">
+    <div className="border-border bg-card overflow-hidden rounded-xl border">
       {/* ===== DESKTOP TABLE (Visible on >= md) ===== */}
       <div className="hidden md:block">
         <Table>
@@ -307,7 +307,7 @@ export function RankingTable({ items }: RankingTableProps) {
           return (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-3 p-3.5"
+              className="flex items-center justify-between gap-3 p-3"
             >
               {/* Left: Rank & Avatar */}
               <div className="flex items-center gap-2.5">
@@ -366,7 +366,7 @@ export function RankingTable({ items }: RankingTableProps) {
                       size="icon"
                       variant={isFollowing ? "secondary" : "outline"}
                       onClick={() => handleToggleFollow(item)}
-                      className="size-8 cursor-pointer rounded-xl"
+                      className="size-9 rounded-lg"
                       title={
                         isFollowing ? tTable("following") : tTable("follow")
                       }
@@ -382,7 +382,7 @@ export function RankingTable({ items }: RankingTableProps) {
                 <Button
                   asChild
                   size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 cursor-pointer rounded-xl px-2.5 text-xs font-bold"
+                  className="h-9 rounded-lg px-2.5 text-xs font-medium"
                 >
                   <Link href={item.portfolioHref}>
                     {tTable("viewPortfolio")}

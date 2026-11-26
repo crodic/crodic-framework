@@ -19,9 +19,9 @@ import {
   Pencil,
   Plus,
   Settings,
-  Sparkles,
   Award,
   Share2,
+  UserRoundPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -255,7 +255,7 @@ export function ProfileHero({
       )}
 
       {/* 1. Panoramic Cover Banner */}
-      <div className="group/cover bg-muted/40 border-border/40 relative h-44 w-full overflow-hidden rounded-2xl border shadow-sm sm:h-56 sm:rounded-3xl md:h-72 lg:h-80">
+      <div className="group/cover bg-muted relative h-44 w-full overflow-hidden rounded-2xl sm:h-56 md:h-72 lg:h-80">
         {profile.coverUrl ? (
           <Image
             src={profile.coverUrl}
@@ -266,7 +266,7 @@ export function ProfileHero({
             className="object-cover object-center"
           />
         ) : (
-          <div className="from-primary/20 via-muted to-muted/60 size-full bg-gradient-to-r" />
+          <div className="bg-muted size-full" />
         )}
         <div className="from-background/90 to-background/20 absolute inset-0 bg-gradient-to-t via-transparent" />
 
@@ -310,7 +310,7 @@ export function ProfileHero({
           {/* Left Column: Avatar + Details */}
           <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5 text-center sm:flex-row sm:items-end sm:gap-5 sm:text-left">
             {/* Avatar with Camera badge for owner */}
-            <div className="group/avatar bg-background ring-border relative size-24 shrink-0 rounded-full p-1 shadow-md ring-2 sm:size-28 md:size-32 lg:size-36">
+            <div className="group/avatar bg-background relative size-24 shrink-0 rounded-full p-1 sm:size-28 md:size-32">
               <div className="relative size-full overflow-hidden rounded-full">
                 {profile.avatarUrl ? (
                   <Image
@@ -359,7 +359,7 @@ export function ProfileHero({
             {/* Name, Handle, Badge & Stats */}
             <div className="min-w-0 flex-1 space-y-1 pt-1 sm:space-y-1.5 md:pt-0">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                <h1 className="text-foreground text-2xl font-extrabold tracking-tight sm:text-3xl">
+                <h1 className="page-title wrap-anywhere">
                   {profile.displayName}
                 </h1>
                 {profile.isVerified && (
@@ -427,7 +427,7 @@ export function ProfileHero({
           </div>
 
           {/* Right Column: Actions */}
-          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-2.5 lg:mt-0 lg:w-auto lg:justify-end">
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-1 sm:justify-start sm:gap-2.5 lg:mt-0 lg:w-auto lg:justify-end">
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
@@ -436,9 +436,9 @@ export function ProfileHero({
                     type="button"
                     variant="outline"
                     onClick={() => setIsApplicationDialogOpen(true)}
-                    className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-3.5 text-xs font-semibold"
+                    className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-2.5 text-xs font-semibold sm:px-3.5"
                   >
-                    <Sparkles className="size-3.5" />
+                    <UserRoundPlus className="size-3.5" />
                     <span>{tCos("applyCosplayer")}</span>
                   </Button>
                 )}
@@ -446,7 +446,7 @@ export function ProfileHero({
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-initial gap-1.5 rounded-xl px-4 font-semibold shadow-sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-initial gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-sm sm:px-4"
                 >
                   <Pencil className="size-4" />
                   <span>{t("editProfile")}</span>
@@ -457,7 +457,7 @@ export function ProfileHero({
                     type="button"
                     variant="outline"
                     onClick={onToggleViewMode}
-                    className="border-border/80 hover:bg-accent h-10 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-medium"
+                    className="border-border/80 hover:bg-accent hidden h-10 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-medium sm:inline-flex"
                     title={t("viewModeVisitor")}
                   >
                     <Eye className="size-4" />
@@ -471,7 +471,7 @@ export function ProfileHero({
                   asChild
                   variant="outline"
                   size="icon"
-                  className="border-border/80 size-10 shrink-0 rounded-xl"
+                  className="border-border/80 hidden size-10 shrink-0 rounded-xl sm:inline-flex"
                   aria-label={t("settingsAria")}
                 >
                   <Link href="/settings">
@@ -569,6 +569,27 @@ export function ProfileHero({
                   <Share2 className="mr-2 size-4" />
                   {t("shareProfile")}
                 </DropdownMenuItem>
+                {isOwnerView && (
+                  <>
+                    <DropdownMenuSeparator className="sm:hidden" />
+                    {onToggleViewMode && (
+                      <DropdownMenuItem
+                        onClick={onToggleViewMode}
+                        className="cursor-pointer sm:hidden"
+                      >
+                        <Eye className="mr-2 size-4" />
+                        {t("viewModeVisitor")}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => router.push("/settings")}
+                      className="cursor-pointer sm:hidden"
+                    >
+                      <Settings className="mr-2 size-4" />
+                      {t("settingsAria")}
+                    </DropdownMenuItem>
+                  </>
+                )}
                 {profile.facebookUrl && (
                   <DropdownMenuItem
                     onClick={() => window.open(profile.facebookUrl!, "_blank")}

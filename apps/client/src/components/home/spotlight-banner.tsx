@@ -56,7 +56,7 @@ export function SpotlightBanner() {
     <Carousel
       setApi={setApi}
       opts={{ loop: true }}
-      className="border-border/70 from-card via-card/95 to-card/60 group relative w-full overflow-hidden rounded-2xl border bg-gradient-to-r via-35% shadow-sm select-none"
+      className="border-border bg-card group relative w-full overflow-hidden rounded-2xl border"
     >
       <CarouselContent className="m-0">
         {slides.map((slide, index) => (
@@ -82,15 +82,9 @@ export function SpotlightBanner() {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex max-w-sm flex-col justify-center space-y-2 p-5 sm:max-w-md sm:p-7 lg:max-w-lg">
-              <span className="text-muted-foreground/90 text-[11px] font-semibold tracking-wide sm:text-xs">
-                {slide.badge}
-              </span>
-
+            <div className="relative z-10 flex max-w-sm flex-col justify-center space-y-2 p-4 sm:max-w-md sm:p-6 lg:max-w-lg">
               <div className="flex items-center gap-2">
-                <h2 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-                  {slide.name}
-                </h2>
+                <h2 className="page-title">{slide.name}</h2>
                 {slide.isVerified && (
                   <BadgeCheck
                     className="size-5 shrink-0 fill-sky-400/20 text-sky-400 sm:size-6"
@@ -99,17 +93,13 @@ export function SpotlightBanner() {
                 )}
               </div>
 
-              <p className="text-muted-foreground text-xs leading-relaxed font-normal sm:text-sm">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {slide.tagline}
               </p>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2.5 pt-2 sm:gap-3 sm:pt-3">
-                <Button
-                  asChild
-                  size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-lg px-4 text-xs font-semibold shadow-xs transition-colors sm:px-5 sm:text-sm"
-                >
+                <Button asChild size="sm" className="h-10 rounded-lg px-4">
                   <Link href={slide.portfolioHref || "/cosplayer"}>
                     {t("viewPortfolio")}
                   </Link>

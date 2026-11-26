@@ -38,7 +38,8 @@
     "portfolio": "Portfolio của tôi",
     "messages": "Tin nhắn",
     "notifications": "Thông báo",
-    "search": "Tìm kiếm"
+    "search": "Tìm kiếm",
+    "clearSearch": "Xóa tìm kiếm"
   },
   "Landing": {
     "metaTitle": "Kosume - Nơi Đam Mê Cosplay Tỏa Sáng",
@@ -58,7 +59,7 @@
     "hero": {
       "titleLead": "Nơi Đam Mê",
       "titleTrail": "Tỏa Sáng",
-      "subtitle": "Nền tảng mạng xã hội và Portfolio chất lượng cao, nơi các cosplayer chuyên nghiệp phô diễn tác phẩm và fan dễ dàng tìm kiếm waifu/fandom yêu thích.",
+      "subtitle": "Đăng album cosplay, theo dõi các nhà sáng tạo và tìm bộ ảnh về nhân vật bạn yêu thích.",
       "exploreNow": "Khám phá ngay",
       "signUp": "Đăng ký thành viên",
       "viewTags": "Khám phá Bách khoa",
@@ -70,8 +71,8 @@
     },
     "features": {
       "badge": "Hệ sinh thái sáng tạo",
-      "title": "Tính năng đột phá dành cho Cosplayer & Fandom",
-      "subtitle": "Mọi công cụ bạn cần để tôn vinh nghệ thuật hóa thân, kết nối cộng đồng và bảo vệ bản quyền tác phẩm.",
+      "title": "Công cụ cho cộng đồng cosplay",
+      "subtitle": "Tạo portfolio, tra cứu nhân vật và tìm sự kiện cosplay.",
       "items": {
         "portfolio": {
           "badge": "Creator Studio",
@@ -108,15 +109,15 @@
     "cosplayers": {
       "badge": "Cộng đồng tài năng",
       "title": "Cosplayer Nổi Bật Tuần Này",
-      "subtitle": "Gặp gỡ và theo dõi những gương mặt hóa thân ấn tượng nhất tuần này.",
+      "subtitle": "Xem portfolio và theo dõi những cosplayer bạn yêu thích.",
       "viewAll": "Xem tất cả Cosplayer",
       "follow": "Theo dõi",
       "following": "Đã theo dõi"
     },
     "albums": {
       "badge": "Tác phẩm thịnh hành",
-      "title": "Khám Phá Album Mới Nhất",
-      "subtitle": "Đắm chìm trong những bộ ảnh cosplay được dàn dựng công phu và nghệ thuật nhất.",
+      "title": "Album cosplay mới nhất",
+      "subtitle": "Xem các bộ ảnh mới từ cộng đồng.",
       "viewAll": "Khám phá thêm tác phẩm",
       "like": "Thích",
       "likeAlbumAria": "Thích album {name}"
@@ -440,7 +441,7 @@
     "layout": {
       "welcome": "Chào mừng đến với Kosume",
       "tagline": "Không gian sáng tạo & Cộng đồng Cosplay Chuyên nghiệp",
-      "description": "Kết nối hàng chục nghìn Cosplayers, Photographers, Prop-crafters và người hâm mộ Anime/Game trên toàn quốc.",
+      "description": "Chia sẻ album cosplay và theo dõi cosplayer, nhiếp ảnh gia, người làm đạo cụ.",
       "operational": "Hệ thống hoạt động 99.9%",
       "feature1Title": "Hồ sơ & Visual Portfolio",
       "feature1Desc": "Quản lý visual shoots, character tags và showcase album chuẩn độ phân giải cao.",
@@ -605,7 +606,7 @@
     "trendingTitle": "Tag Xu hướng",
     "directoryTitle": "Danh mục Tag Chuẩn",
     "searchResultsTitle": "Kết quả Nội dung theo Tag",
-    "searchPlaceholder": "Tìm kiếm tag, nhân vật, tác phẩm hoặc tên viết tắt...",
+    "searchPlaceholder": "Tìm tag, nhân vật hoặc tác phẩm",
     "noTagsFound": "Không tìm thấy tag phù hợp",
     "noTagsFoundDesc": "Hãy thử tìm kiếm với tên nhân vật hoặc tác phẩm khác.",
     "noContentFound": "Không tìm thấy nội dung phù hợp với các thẻ đã chọn.",
@@ -1163,7 +1164,7 @@
     "works": "Tác phẩm",
     "cosplayers": "Cosplayers",
     "characters": "Nhân vật",
-    "popularSearches": "Tìm kiếm phổ biến",
+    "popularSearches": "Gợi ý tìm kiếm",
     "recentSearches": "Tìm kiếm gần đây",
     "clearRecent": "Xóa lịch sử",
     "noRecentSearches": "Chưa có tìm kiếm gần đây",
@@ -1221,7 +1222,7 @@
     "followError": "Có lỗi xảy ra khi cập nhật theo dõi.",
     "verifiedBadge": "Đã xác minh",
     "bookBtn": "Đặt lịch Cosplay",
-    "applyCosplayer": "Đăng ký Cosplayer",
+    "applyCosplayer": "Đăng ký",
     "roleRequestSuccess": "Đã gửi yêu cầu nâng cấp vai trò Cosplayer đến Admin phê duyệt!",
     "roleRequestError": "Không thể gửi yêu cầu",
     "editDialog": {
@@ -1349,6 +1350,8 @@
   "Common": {
     "loading": "Đang tải...",
     "error": "Có lỗi xảy ra. Vui lòng thử lại!",
+    "loadError": "Không tải được nội dung",
+    "retry": "Thử lại",
     "empty": "Chưa có dữ liệu",
     "search": "Tìm kiếm",
     "filter": "Bộ lọc",

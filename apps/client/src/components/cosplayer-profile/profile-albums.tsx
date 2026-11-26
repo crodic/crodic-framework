@@ -79,7 +79,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
               className="group flex cursor-pointer flex-col space-y-2 rounded-2xl transition-all duration-300"
             >
               {/* Cover Image Container */}
-              <div className="bg-muted/40 border-border/50 group-hover:border-primary/50 relative aspect-[4/5] w-full overflow-hidden rounded-2xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-3xl">
+              <div className="bg-muted relative aspect-[4/5] w-full overflow-hidden rounded-xl">
                 {/* Video Badge */}
                 {(album.postType === "video" || Boolean(album.videoUrl)) && (
                   <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">

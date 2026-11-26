@@ -126,7 +126,7 @@ export function AppSidebar() {
 
           return (
             <SidebarGroup key={group.titleKey} className="p-0">
-              <SidebarGroupLabel className="text-sidebar-foreground/50 px-2 text-[11px] font-semibold tracking-wider uppercase">
+              <SidebarGroupLabel className="text-muted-foreground px-2 text-xs font-medium">
                 {groupTitle}
               </SidebarGroupLabel>
               <SidebarGroupContent className="pt-1">
@@ -146,9 +146,13 @@ export function AppSidebar() {
                           asChild
                           isActive={isCurrent}
                           tooltip={itemLabel}
-                          className="data-[active=true]:bg-primary/15 data-[active=true]:text-primary data-[active=true]:hover:bg-primary/20 h-9 cursor-pointer rounded-xl px-2.5 text-xs font-medium transition-colors data-[active=true]:font-semibold"
+                          className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:hover:bg-primary/15 h-10 cursor-pointer rounded-lg px-2.5 text-sm font-medium transition-colors data-[active=true]:font-semibold"
                         >
-                          <Link href={item.href} onClick={handleLinkClick}>
+                          <Link
+                            href={item.href}
+                            aria-current={isCurrent ? "page" : undefined}
+                            onClick={handleLinkClick}
+                          >
                             {getNavIcon(item.icon)}
                             <span className="truncate group-data-[collapsible=icon]:hidden">
                               {itemLabel}

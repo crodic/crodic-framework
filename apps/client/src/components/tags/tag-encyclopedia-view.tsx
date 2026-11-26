@@ -46,7 +46,7 @@ export function TagEncyclopediaView({
     return (
       <Card className="border-border/70 shadow-2xs">
         <CardContent className="flex flex-col items-center justify-center space-y-4 p-8 text-center sm:p-12">
-          <div className="bg-primary/10 text-primary flex size-14 items-center justify-center rounded-2xl">
+          <div className="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-lg">
             <BookOpen className="size-7" />
           </div>
           <div className="max-w-md space-y-1.5">
@@ -93,7 +93,7 @@ export function TagEncyclopediaView({
 
       {/* 2. Opening Definition Callout Box */}
       {wiki.summary && (
-        <div className="border-border/80 bg-muted/30 relative overflow-hidden rounded-2xl border p-5 shadow-2xs sm:p-6">
+        <div className="bg-muted rounded-xl p-4 sm:p-5">
           <div className="flex items-start gap-3.5">
             <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-xl">
               <Sparkles className="size-4" />
@@ -115,7 +115,7 @@ export function TagEncyclopediaView({
         <Card className="border-border/80 shadow-2xs">
           <CardContent className="p-5 sm:p-7">
             <div
-              className="prose prose-sm dark:prose-invert text-foreground/90 [&_h2]:border-border/50 [&_a]:text-primary max-w-none leading-relaxed font-normal [&_a]:underline [&_h1]:text-lg [&_h1]:font-bold [&_h2]:mt-6 [&_h2]:border-b [&_h2]:pb-1.5 [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-semibold [&_li]:text-xs [&_p]:text-xs [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5"
+              className="prose prose-sm dark:prose-invert text-foreground/90 [&_h2]:border-border/50 [&_a]:text-primary max-w-[70ch] leading-relaxed font-normal [&_a]:underline [&_h1]:text-lg [&_h1]:font-bold [&_h2]:mt-6 [&_h2]:border-b [&_h2]:pb-1.5 [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-semibold [&_li]:text-sm [&_p]:text-sm [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5"
               dangerouslySetInnerHTML={{ __html: wiki.body }}
             />
           </CardContent>
@@ -123,7 +123,7 @@ export function TagEncyclopediaView({
       ) : null}
 
       {/* 4. Article Governance & Revision Footer */}
-      <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-2xl border p-4 text-xs shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-border flex flex-col gap-3 border-t py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="text-muted-foreground flex flex-wrap items-center gap-3">
           {/* Revision tag */}
           <div className="flex items-center gap-1.5 font-mono">

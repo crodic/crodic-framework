@@ -193,10 +193,7 @@ export function SeriesAutocomplete({
               setHighlightedIndex(-1);
             }}
             onKeyDown={handleKeyDown}
-            className={cn(
-              "border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm",
-              className
-            )}
+            className={cn("h-10", className)}
           />
         </div>
       </PopoverAnchor>
@@ -206,13 +203,13 @@ export function SeriesAutocomplete({
         sideOffset={6}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
-        className="border-border bg-popover/95 text-popover-foreground z-50 w-[var(--radix-popover-anchor-width)] min-w-[280px] p-1.5 shadow-xl backdrop-blur-md"
+        className="z-50 w-(--radix-popover-anchor-width) max-w-(--radix-popover-content-available-width) p-1.5"
       >
         <div ref={listRef} className="max-h-64 space-y-1 overflow-y-auto">
           {/* Group 1: User's previously used series */}
           {ownSeries.length > 0 && (
             <div>
-              <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold tracking-wider uppercase">
+              <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-xs font-medium">
                 <Sparkles className="size-3 text-amber-500" />
                 <span>
                   {locale === "vi" ? "Series bạn từng làm" : "From your series"}
@@ -279,7 +276,7 @@ export function SeriesAutocomplete({
                 ownSeries.length > 0 ? "border-border/40 border-t pt-1" : ""
               }
             >
-              <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold tracking-wider uppercase">
+              <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-xs font-medium">
                 <BookOpen className="size-3 text-sky-500" />
                 <span>
                   {locale === "vi" ? "Từ điển Series" : "Series Encyclopedia"}

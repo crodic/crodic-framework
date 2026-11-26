@@ -8,7 +8,7 @@ export default function SettingsLayout({
 }) {
   return (
     <Layout showRightRail={false}>
-      <div className="mx-auto w-full max-w-5xl space-y-6 py-2">{children}</div>
+      <div className="mx-auto w-full max-w-5xl">{children}</div>
     </Layout>
   );
 }

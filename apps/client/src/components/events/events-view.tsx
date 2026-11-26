@@ -1,8 +1,18 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ListError } from "@/components/common/list-error";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import type { EventSummaryResDto } from "@/services/events";
@@ -22,6 +32,8 @@ import { toast } from "sonner";
 
 export function EventsView() {
   const t = useTranslations("Events");
+  const tNav = useTranslations("Navigation");
+  const tCommon = useTranslations("Common");
   const [selectedTagId, setSelectedTagId] = useState<string>("all");
   const [applyEvent, setApplyEvent] = useState<EventSummaryResDto | null>(null);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
@@ -30,7 +42,12 @@ export function EventsView() {
   const isHydrating = useAuthStore((state) => state.isHydrating);
   const router = useRouter();
 
-  const { data: eventsResponse, isLoading } = useQuery({
+  const {
+    data: eventsResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getEvents({ limit: 50 }),
   });
@@ -69,6 +86,7 @@ export function EventsView() {
 
   return (
     <div className="space-y-6">
+      <h1 className="page-title">{tNav("events")}</h1>
       {/* 1. Hero Festival Banner Carousel */}
       {featuredFestivals.length > 0 && (
         <section aria-label={t("spotlightBadge")}>
@@ -90,11 +108,22 @@ export function EventsView() {
       {/* 3. Events Grid */}
       <section aria-label={t("title")}>
         {isLoading ? (
-          <div className="flex min-h-[300px] items-center justify-center">
-            <Loader2 className="text-primary size-8 animate-spin" />
+          <div
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            role="status"
+          >
+            <span className="sr-only">{tCommon("loading")}</span>
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton
+                key={index}
+                className="h-28 rounded-xl motion-reduce:animate-none sm:h-52"
+              />
+            ))}
           </div>
+        ) : isError && !eventsResponse ? (
+          <ListError onRetry={() => void refetch()} />
         ) : filteredEvents.length > 0 ? (
-          <StaggerContainer className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredEvents.map((event) => (
               <StaggerItem key={event.id}>
                 <EventCard event={event} onApply={handleApply} />
@@ -102,25 +131,25 @@ export function EventsView() {
             ))}
           </StaggerContainer>
         ) : (
-          <div className="border-border/80 bg-card/50 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
-            <div className="bg-muted/80 text-muted-foreground flex size-12 items-center justify-center rounded-xl">
-              <Calendar className="size-6" aria-hidden="true" />
-            </div>
-            <h3 className="text-foreground mt-4 text-base font-bold">
-              {t("emptyTitle")}
-            </h3>
-            <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-              {t("emptyDesc")}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedTagId("all")}
-              className="mt-4 cursor-pointer rounded-xl"
-            >
-              {t("viewAllBtn")}
-            </Button>
-          </div>
+          <Empty className="border-border gap-4 rounded-xl border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Calendar aria-hidden="true" />
+              </EmptyMedia>
+              <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+              <EmptyDescription>{t("emptyDesc")}</EmptyDescription>
+            </EmptyHeader>
+            {selectedTagId !== "all" && (
+              <EmptyContent>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedTagId("all")}
+                >
+                  {t("viewAllBtn")}
+                </Button>
+              </EmptyContent>
+            )}
+          </Empty>
         )}
       </section>
 

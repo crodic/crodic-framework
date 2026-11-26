@@ -94,8 +94,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.97 0.014 254.604);
+  --primary: oklch(0.7 0.162 264.376);
+  --primary-foreground: oklch(0.18 0.035 264.376);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
@@ -132,6 +132,66 @@
   }
 }
 
+::view-transition-old(.tk-theme),
+::view-transition-new(.tk-theme) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(.tk-theme-circle-reveal),
+::view-transition-old(.tk-theme-gif-chika) {
+  animation: none;
+}
+
+::view-transition-new(.tk-theme-circle-reveal) {
+  animation: tk-theme-circle-reveal var(--tk-theme-duration, 1000ms)
+    var(--tk-theme-easing, ease-in-out) both;
+}
+
+@keyframes tk-theme-circle-reveal {
+  from {
+    clip-path: circle(0 at var(--tk-x) var(--tk-y));
+  }
+  to {
+    clip-path: circle(var(--tk-r) at var(--tk-x) var(--tk-y));
+  }
+}
+
+::view-transition-new(.tk-theme-gif-chika) {
+  mask-image: url("/theme/chika.gif");
+  mask-repeat: no-repeat;
+  mask-position: var(--tk-x) var(--tk-y);
+  mask-size: 0;
+  animation: tk-theme-gif-chika var(--tk-theme-duration, 1700ms)
+    var(--tk-theme-easing, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes tk-theme-gif-chika {
+  0% {
+    mask-size: 0;
+    mask-position: var(--tk-x) var(--tk-y);
+  }
+  10%,
+  90% {
+    mask-size: 50vmax;
+    mask-position: calc(var(--tk-x) - 50vmax / 2)
+      calc(var(--tk-y) - 50vmax * 1.2604 / 2);
+  }
+  100% {
+    mask-size: 2000vmax;
+    mask-position: calc(var(--tk-x) - 2000vmax / 2)
+      calc(var(--tk-y) - 2000vmax * 1.2604 / 2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(.tk-theme),
+  ::view-transition-old(.tk-theme),
+  ::view-transition-new(.tk-theme) {
+    animation: none !important;
+    mask-image: none;
+  }
+}
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -140,6 +200,18 @@
     width: 0;
     height: 0;
   }
+}
+
+@utility filter-button {
+  @apply border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none;
+
+  &[aria-pressed="true"] {
+    @apply border-primary/25 bg-primary/10 text-primary dark:text-foreground;
+  }
+}
+
+@utility page-title {
+  @apply text-foreground text-2xl font-semibold tracking-tight text-balance sm:text-3xl;
 }
 
 @utility scrollbar-none {

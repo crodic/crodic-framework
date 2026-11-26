@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Video, Upload, X, Image as ImageIcon, Film } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 export interface VideoUploadSectionProps {
   videoFile: File | null;
@@ -23,6 +24,7 @@ export function VideoUploadSection({
   onCustomCoverFileChange,
 }: VideoUploadSectionProps) {
   const t = useTranslations("Studio");
+  const tFiles = useTranslations("FileUpload");
   const videoInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -112,7 +114,8 @@ export function VideoUploadSection({
       />
 
       {!videoFile ? (
-        <div
+        <button
+          type="button"
           onDragOver={(e) => {
             e.preventDefault();
             setIsDragging(true);
@@ -125,31 +128,25 @@ export function VideoUploadSection({
             if (file) handleVideoSelect(file);
           }}
           onClick={() => videoInputRef.current?.click()}
-          className={`border-border/70 hover:border-primary/60 bg-muted/20 hover:bg-muted/30 flex min-h-[280px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all ${
-            isDragging ? "border-primary bg-primary/5" : ""
-          }`}
+          className={cn(
+            "border-border hover:border-primary/60 hover:bg-muted/50 focus-visible:ring-ring flex min-h-52 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-center transition-colors focus-visible:ring-2 sm:p-6",
+            isDragging && "border-primary bg-primary/5"
+          )}
         >
-          <div className="bg-primary/10 text-primary mb-3 flex size-14 items-center justify-center rounded-full shadow-inner">
-            <Film className="size-7" />
-          </div>
-          <h3 className="text-foreground text-sm font-bold sm:text-base">
+          <Film aria-hidden="true" className="text-muted-foreground size-6" />
+          <span className="text-foreground text-sm font-medium">
             {t("videoDropzone")}
-          </h3>
-          <p className="text-muted-foreground mt-1 text-xs">
+          </span>
+          <span className="text-muted-foreground text-sm">
             {t("videoLimitHint")}
-          </p>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="mt-4 rounded-xl text-xs font-semibold"
-          >
-            <Upload className="mr-1.5 size-3.5" />
+          </span>
+          <span className="text-primary mt-1 inline-flex items-center gap-2 text-sm font-medium">
+            <Upload aria-hidden="true" className="size-4" />
             {t("videoUploadLabel")}
-          </Button>
-        </div>
+          </span>
+        </button>
       ) : (
-        <div className="border-border/60 bg-card/60 space-y-4 rounded-2xl border p-4 shadow-sm">
+        <div className="space-y-4">
           {/* Video Preview */}
           <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
             {videoPreviewUrl && (
@@ -164,12 +161,12 @@ export function VideoUploadSection({
           </div>
 
           {/* Video Metadata & Actions */}
-          <div className="border-border/50 flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+          <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b pb-4">
             <div className="max-w-[70%] min-w-0">
-              <p className="text-foreground truncate text-xs font-bold sm:text-sm">
+              <p className="text-foreground truncate text-sm font-semibold">
                 {videoFile.name}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {formatFileSize(videoFile.size)} • {videoFile.type || "Video"}
               </p>
             </div>
@@ -179,19 +176,20 @@ export function VideoUploadSection({
                 variant="outline"
                 size="sm"
                 onClick={() => videoInputRef.current?.click()}
-                className="h-8 rounded-lg text-xs"
+                className="h-9"
               >
                 {t("changeVideo")}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => {
                   onVideoFileChange(null);
                   onCustomCoverFileChange(null);
                 }}
-                className="text-destructive hover:bg-destructive/10 h-8 rounded-lg px-2 text-xs"
+                className="text-destructive hover:bg-destructive/10 size-9"
+                aria-label={tFiles("removeFile")}
               >
                 <X className="size-4" />
               </Button>
@@ -200,12 +198,12 @@ export function VideoUploadSection({
 
           {/* Custom Cover Thumbnail Section */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-foreground text-xs font-semibold">
+                <p className="text-foreground text-sm font-semibold">
                   {t("customCoverLabel")}
                 </p>
-                <p className="text-muted-foreground text-[11px]">
+                <p className="text-muted-foreground text-xs">
                   {t("customCoverHint")}
                 </p>
               </div>
@@ -215,20 +213,20 @@ export function VideoUploadSection({
                   variant="outline"
                   size="sm"
                   onClick={() => coverInputRef.current?.click()}
-                  className="h-7 rounded-lg text-[11px]"
+                  className="h-9"
                 >
-                  <ImageIcon className="mr-1 size-3" />
+                  <ImageIcon className="size-4" />
                   {t("uploadCustomCover")}
                 </Button>
               ) : null}
             </div>
 
             {customCoverFile && coverPreviewUrl && (
-              <div className="border-border/60 bg-muted/30 flex items-center gap-3 rounded-xl border p-2">
+              <div className="bg-muted/40 flex items-center gap-3 rounded-xl p-2">
                 <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-black">
                   <img
                     src={coverPreviewUrl}
-                    alt="Custom cover preview"
+                    alt=""
                     className="size-full object-cover"
                   />
                 </div>
@@ -236,7 +234,7 @@ export function VideoUploadSection({
                   <p className="text-foreground truncate text-xs font-medium">
                     {customCoverFile.name}
                   </p>
-                  <p className="text-muted-foreground text-[11px]">
+                  <p className="text-muted-foreground text-xs">
                     {formatFileSize(customCoverFile.size)}
                   </p>
                 </div>
@@ -245,7 +243,8 @@ export function VideoUploadSection({
                   variant="ghost"
                   size="sm"
                   onClick={() => onCustomCoverFileChange(null)}
-                  className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                  className="text-destructive hover:bg-destructive/10 size-9"
+                  aria-label={t("removeCustomCover")}
                 >
                   <X className="size-3.5" />
                 </Button>

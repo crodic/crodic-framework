@@ -260,13 +260,13 @@ export function CreateAlbumForm({
               name="title"
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
-                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                  <FormLabel className="text-foreground text-sm font-medium">
                     {t("titleLabel")}
                   </FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t("titlePlaceholder")}
-                      className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 rounded-xl text-xs sm:text-sm"
+                      className="h-10"
                       {...field}
                     />
                   </FormControl>
@@ -281,7 +281,7 @@ export function CreateAlbumForm({
               name="character"
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
-                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                  <FormLabel className="text-foreground text-sm font-medium">
                     {t("characterLabel")}
                   </FormLabel>
                   <FormControl>
@@ -311,7 +311,7 @@ export function CreateAlbumForm({
               name="fandom"
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
-                  <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                  <FormLabel className="text-foreground text-sm font-medium">
                     {t("seriesLabel")}
                   </FormLabel>
                   <FormControl>
@@ -333,7 +333,7 @@ export function CreateAlbumForm({
             name="tags"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                <FormLabel className="text-foreground text-sm font-medium">
                   {t("tagCharacter")}
                 </FormLabel>
                 <FormControl>
@@ -355,14 +355,14 @@ export function CreateAlbumForm({
             name="description"
             render={({ field }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-foreground text-xs font-semibold sm:text-sm">
+                <FormLabel className="text-foreground text-sm font-medium">
                   {t("descLabel")}
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={3}
                     placeholder={t("descPlaceholder")}
-                    className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 resize-none rounded-xl text-xs sm:text-sm"
+                    className="resize-y"
                     {...field}
                   />
                 </FormControl>
@@ -372,17 +372,17 @@ export function CreateAlbumForm({
           />
 
           {/* Settings Switches */}
-          <div className="border-border/50 bg-background/30 grid grid-cols-1 gap-3 rounded-xl border p-3 sm:grid-cols-2 sm:gap-4 sm:p-4">
+          <div className="border-border grid gap-4 border-t pt-4 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="isPublic"
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between gap-3 space-y-0">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium sm:text-sm">
+                    <FormLabel className="text-foreground cursor-pointer text-sm font-medium">
                       {t("visibility.public")}
                     </FormLabel>
-                    <FormDescription className="text-muted-foreground text-[11px]">
+                    <FormDescription className="text-muted-foreground text-xs">
                       {t("visibilityLabel")}
                     </FormDescription>
                   </div>
@@ -400,12 +400,12 @@ export function CreateAlbumForm({
               control={form.control}
               name="enableWatermark"
               render={({ field }) => (
-                <FormItem className="border-border/40 flex items-center justify-between gap-3 space-y-0 pt-2 sm:border-t-0 sm:pt-0">
+                <FormItem className="flex items-center justify-between gap-3 space-y-0">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-foreground cursor-pointer text-xs font-medium sm:text-sm">
+                    <FormLabel className="text-foreground cursor-pointer text-sm font-medium">
                       {t("watermark")}
                     </FormLabel>
-                    <FormDescription className="text-muted-foreground text-[11px]">
+                    <FormDescription className="text-muted-foreground text-xs">
                       {t("watermarkDesc")}
                     </FormDescription>
                   </div>
@@ -423,21 +423,17 @@ export function CreateAlbumForm({
 
         {/* Submit button */}
         <div
-          className={`pt-2 ${isMobile ? "bg-background/95 sticky bottom-0 pb-2 backdrop-blur-sm" : ""}`}
+          className={`pt-2 ${isMobile ? "bg-background sticky bottom-0 pb-2" : ""}`}
         >
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer rounded-xl font-semibold shadow-xs transition-colors"
-          >
+          <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
                 {t("submitting")}
               </>
             ) : (
               <>
-                <Upload className="mr-2 size-4" />
+                <Upload className="size-4" />
                 {t("submitBtn")}
               </>
             )}

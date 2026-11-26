@@ -10,7 +10,7 @@ export function AppRightRail() {
   const tCommon = useTranslations("Common");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* 1. Cosplayer gợi ý với 1-click Follow */}
       <SuggestedCosplayersWidget />
 
@@ -21,7 +21,7 @@ export function AppRightRail() {
       <TrendingTagsWidget />
 
       {/* Mini Footer */}
-      <div className="text-muted-foreground/60 px-2 text-[11px] leading-relaxed">
+      <div className="text-muted-foreground px-1 text-xs leading-relaxed">
         <p>{tCommon("copyright", { year: "2026" })}</p>
       </div>
     </div>

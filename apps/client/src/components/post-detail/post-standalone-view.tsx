@@ -380,7 +380,7 @@ export function PostStandaloneView({
         {/* ========================================================= */}
         <div className="min-w-0 space-y-6">
           {/* 1. Header Card: Top Options, Title, Author Info */}
-          <div className="border-border/60 bg-card/70 space-y-4 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+          <div className="border-border bg-card space-y-4 rounded-xl border p-4 sm:p-5">
             {/* Top Bar: Collection Badge & 3-Dots Menu */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -456,9 +456,7 @@ export function PostStandaloneView({
             </div>
 
             {/* Post Title */}
-            <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-2xl">
-              {post.title}
-            </h1>
+            <h1 className="page-title">{post.title}</h1>
 
             {/* Author Profile Bar */}
             <div className="border-border/40 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
@@ -530,7 +528,7 @@ export function PostStandaloneView({
 
           {/* 2. Horizontal Thumbnail Strip (Multi-Photo Selector) */}
           {photos.length > 1 && !isVideo && (
-            <div className="border-border/60 bg-card/60 rounded-2xl border p-2.5 shadow-sm backdrop-blur-md">
+            <div className="border-border bg-card rounded-xl border p-3">
               <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
                 {photos.map((photo, index) => {
                   const isActive = index === activePhotoIndex;
@@ -563,7 +561,7 @@ export function PostStandaloneView({
           )}
 
           {/* 3. Main Artwork Stage (Single Active Photo, NO SCROLL VIEW) */}
-          <div className="border-border/60 relative flex max-h-[82vh] min-h-[380px] w-full items-center justify-center overflow-hidden rounded-2xl border bg-zinc-950/90 shadow-2xl sm:rounded-3xl">
+          <div className="relative flex max-h-[82vh] min-h-64 w-full items-center justify-center overflow-hidden rounded-2xl bg-zinc-950 sm:min-h-96">
             {isVideo ? (
               <video
                 src={
@@ -600,7 +598,7 @@ export function PostStandaloneView({
 
           {/* 4. Photo Navigation Bar beneath Image (< > buttons & collection counter) */}
           {photos.length > 1 && !isVideo && (
-            <div className="border-border/60 bg-card/70 flex items-center justify-between rounded-2xl border px-3 py-2 shadow-sm backdrop-blur-md sm:px-4">
+            <div className="border-border bg-card flex items-center justify-between rounded-xl border px-3 py-2 sm:px-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -639,7 +637,7 @@ export function PostStandaloneView({
           )}
 
           {/* 5. Caption & Metadata Card */}
-          <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+          <div className="border-border bg-card space-y-3 rounded-xl border p-4 sm:p-5">
             {/* Caption */}
             {post.caption && (
               <p className="text-foreground/90 text-xs leading-relaxed break-words whitespace-pre-wrap sm:text-sm">
@@ -665,7 +663,7 @@ export function PostStandaloneView({
           </div>
 
           {/* 6. Reactions & Engagement Toolbar */}
-          <div className="border-border/60 bg-card/70 flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-3 shadow-sm backdrop-blur-md sm:p-4">
+          <div className="border-border bg-card flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 sm:p-4">
             {/* Counts metrics */}
             <div className="text-muted-foreground flex items-center gap-3.5 text-xs">
               <span className="flex items-center gap-1.5">
@@ -695,7 +693,7 @@ export function PostStandaloneView({
                 variant={isLiked ? "default" : "outline"}
                 onClick={toggleLike}
                 className={cn(
-                  "h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all",
+                  "h-9 gap-2 rounded-lg px-3 text-sm font-medium transition-all",
                   isLiked
                     ? "bg-rose-500 text-white hover:bg-rose-600"
                     : "hover:border-rose-500/40 hover:text-rose-500"
@@ -713,7 +711,7 @@ export function PostStandaloneView({
                 onClick={handleToggleSave}
                 disabled={toggleSaveMutation.isPending}
                 className={cn(
-                  "h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold transition-all",
+                  "h-9 gap-2 rounded-lg px-3 text-sm font-medium transition-all",
                   isSaved
                     ? "bg-amber-500 text-white hover:bg-amber-600"
                     : "hover:border-amber-500/40 hover:text-amber-500"
@@ -731,7 +729,7 @@ export function PostStandaloneView({
                 size="sm"
                 variant="outline"
                 onClick={handleShare}
-                className="h-8.5 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold"
+                className="h-9 gap-2 rounded-lg px-3 text-sm font-medium"
               >
                 <Share2 className="size-3.5" />
                 <span className="hidden sm:inline">{tPost("share")}</span>
@@ -752,7 +750,7 @@ export function PostStandaloneView({
         {/* ========================================================= */}
         <aside className="space-y-6 xl:sticky xl:top-4 xl:self-start">
           {/* Box 1: Thông Tin Tác Giả */}
-          <div className="border-border/60 bg-card/70 space-y-4 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+          <div className="border-border bg-card space-y-4 rounded-xl border p-4 sm:p-5">
             <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
               {tPost("authorInfo")}
             </h3>
@@ -849,7 +847,7 @@ export function PostStandaloneView({
 
           {/* Box 2: Thêm nhiều tác phẩm cùng tác giả */}
           {authorPosts.length > 0 && (
-            <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md">
+            <div className="border-border bg-card space-y-3 rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
                   {tPost("moreFromAuthor")}
@@ -908,7 +906,7 @@ export function PostStandaloneView({
 
           {/* Box 3: Người Dùng Đề Cử */}
           {suggestedCosplayers.length > 0 && (
-            <div className="border-border/60 bg-card/70 space-y-3.5 rounded-2xl border p-4 shadow-sm backdrop-blur-md">
+            <div className="border-border bg-card space-y-3 rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-foreground text-muted-foreground text-xs font-bold tracking-wider uppercase">
                   {tPost("suggestedCosplayers")}

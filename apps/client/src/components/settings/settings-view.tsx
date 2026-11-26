@@ -54,111 +54,60 @@ export function SettingsView() {
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={handleBack}
-            className="text-muted-foreground hover:text-foreground h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs"
+            aria-label={t("back")}
+            className="size-10"
           >
-            <ArrowLeft className="size-4" />
-            <span className="font-semibold">{t("back")}</span>
+            <ArrowLeft aria-hidden="true" />
           </Button>
-
-          <h1 className="text-foreground text-xl font-extrabold tracking-tight sm:text-2xl">
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
             {t("title")}
           </h1>
         </div>
 
-        {/* Quick link to Profile */}
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="border-border/70 hidden h-9 gap-1.5 rounded-xl text-xs sm:flex"
-        >
+        <Button asChild variant="outline" className="h-10">
           <Link href="/profile">
-            <User className="text-primary size-3.5" />
-            <span>{tNav("profile")}</span>
+            <User aria-hidden="true" />
+            {tNav("profile")}
           </Link>
         </Button>
-      </div>
+      </header>
 
-      {/* Main Settings Layout: 2 Columns on Desktop, Stacked / Tabs on Mobile */}
-      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
-        {/* Left Sub-nav (Desktop) / Horizontal Tabs (Mobile) */}
-        <div className="md:col-span-4 lg:col-span-3">
-          {/* Mobile horizontal pill navigation */}
-          <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-2 md:hidden">
-            {SETTINGS_NAV.map((item) => {
-              const isActive = activeSection === item.id;
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveSection(item.id)}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/60 border"
-                  )}
-                >
-                  <Icon className="size-3.5" />
-                  <span>{t(`nav.${item.labelKey}`)}</span>
-                </button>
-              );
-            })}
-          </div>
+      <div className="grid items-start gap-6 md:grid-cols-[12rem_minmax(0,1fr)] lg:gap-8">
+        <nav
+          aria-label={t("title")}
+          className="border-border flex flex-wrap gap-1 border-b pb-3 md:flex-col md:border-b-0 md:pb-0"
+        >
+          {SETTINGS_NAV.map(({ id, labelKey, icon: Icon }) => {
+            const isActive = activeSection === id;
 
-          {/* Desktop Left Sub-nav Card */}
-          <div className="border-border/70 bg-card/60 hidden space-y-1 rounded-2xl border p-2 shadow-xs md:block">
-            <Link
-              href="/profile"
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors"
-            >
-              <User className="text-primary size-4" />
-              <span>{tNav("profile")}</span>
-            </Link>
+            return (
+              <Button
+                key={id}
+                type="button"
+                variant={isActive ? "secondary" : "ghost"}
+                aria-pressed={isActive}
+                onClick={() => setActiveSection(id)}
+                className={cn(
+                  "h-10 justify-start",
+                  !isActive && "text-muted-foreground"
+                )}
+              >
+                <Icon aria-hidden="true" />
+                {t(`nav.${labelKey}`)}
+              </Button>
+            );
+          })}
+        </nav>
 
-            <div className="bg-border/50 mx-2 my-1 h-px" />
-
-            {SETTINGS_NAV.map((item) => {
-              const isActive = activeSection === item.id;
-              const Icon = item.icon;
-
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveSection(item.id)}
-                  className={cn(
-                    "flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-xs font-semibold transition-all",
-                    isActive
-                      ? "bg-primary/15 text-primary border-primary/25 border font-bold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border border-transparent"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "size-4",
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    )}
-                  />
-                  <span>{t(`nav.${item.labelKey}`)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Content Panel */}
-        <div className="md:col-span-8 lg:col-span-9">
+        <div className="min-w-0">
           {activeSection === "security" && <SecuritySettings />}
           {activeSection === "appearance" && <AppearanceSettings />}
           {activeSection === "notifications" && <NotificationsSettings />}

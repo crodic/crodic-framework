@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Check, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 
+import { useThemeTransition } from "@/components/transitions/theme-transition";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,13 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export function ModeToggle({ className }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { mounted, theme, setTheme } = useThemeTransition();
   const t = useTranslations("Theme");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <DropdownMenu modal={false}>
@@ -32,14 +26,14 @@ export function ModeToggle({ className }: { className?: string }) {
           aria-label={t("toggleTheme")}
           className={cn("size-9 shrink-0", className)}
         >
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 motion-safe:transition-transform dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 motion-safe:transition-transform dark:scale-100 dark:rotate-0" />
           <span className="sr-only">{t("toggleTheme")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => setTheme("light")}
+          onSelect={() => setTheme("light")}
           className="cursor-pointer"
         >
           <span>{t("light")}</span>
@@ -48,7 +42,7 @@ export function ModeToggle({ className }: { className?: string }) {
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("dark")}
+          onSelect={() => setTheme("dark")}
           className="cursor-pointer"
         >
           <span>{t("dark")}</span>
@@ -57,7 +51,7 @@ export function ModeToggle({ className }: { className?: string }) {
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("system")}
+          onSelect={() => setTheme("system")}
           className="cursor-pointer"
         >
           <span>{t("system")}</span>

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { RankingTimeFilter } from "./ranking-types";
 
@@ -28,28 +27,18 @@ export function RankingFilterBar({
   const t = useTranslations("Ranking.filter");
 
   return (
-    <div className="relative w-full">
-      <div className="flex [scrollbar-width:none] scrollbar-none items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] sm:pb-0">
-        {FILTER_TABS.map((tab) => {
-          const isSelected = selectedFilter === tab.id;
-
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onSelectFilter(tab.id)}
-              className={cn(
-                "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold transition-all sm:text-sm",
-                isSelected
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/50 border"
-              )}
-            >
-              {t(tab.labelKey)}
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex flex-wrap gap-2">
+      {FILTER_TABS.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          onClick={() => onSelectFilter(tab.id)}
+          aria-pressed={selectedFilter === tab.id}
+          className="filter-button"
+        >
+          {t(tab.labelKey)}
+        </button>
+      ))}
     </div>
   );
 }

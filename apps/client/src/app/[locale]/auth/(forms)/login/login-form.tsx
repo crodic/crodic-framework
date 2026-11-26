@@ -17,14 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleIcon } from "@/components/icons/google-icon";
-import { WhiteLabelLogo } from "@/lib/white-label";
+import { AuthFormPanel } from "../auth-form-panel";
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoginResponseData } from "@/types/apis";
@@ -193,24 +192,17 @@ export default function LoginForm() {
   const isRestoring = restoreMutation.isPending;
 
   return (
-    <div className="mx-auto flex w-full max-w-md min-w-0 flex-col justify-center py-2 sm:py-6">
-      {/* Mobile Brand Logo */}
-      <div className="mb-4 flex justify-center lg:hidden">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <WhiteLabelLogo className="h-10 w-auto object-contain" />
-        </Link>
-      </div>
-
-      <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
-        <CardHeader className="flex w-full min-w-0 flex-col items-stretch space-y-2 px-4 sm:px-8">
-          <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+    <AuthFormPanel>
+      <Card className="w-full min-w-0 gap-6 rounded-2xl py-6 shadow-none sm:py-8">
+        <CardHeader className="sm:px-8">
+          <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
             {t("title")}
-          </CardTitle>
-          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
+          </h1>
+          <CardDescription className="leading-relaxed">
             {t("description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="w-full min-w-0 px-4 sm:px-8">
+        <CardContent className="min-w-0 sm:px-8">
           {deletedAccountEmail && (
             <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200">
               <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
@@ -260,10 +252,7 @@ export default function LoginForm() {
             </Alert>
           )}
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4.5 sm:space-y-5"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -278,7 +267,7 @@ export default function LoginForm() {
                         placeholder={t("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isSubmitting}
-                        className="h-10 sm:h-10.5"
+                        className="h-11"
                         {...field}
                       />
                     </FormControl>
@@ -291,13 +280,13 @@ export default function LoginForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem className="relative">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                       <FormLabel className="text-sm font-medium">
                         {t("password")}
                       </FormLabel>
                       <Link
                         href="/auth/forgot-password"
-                        className="text-muted-foreground hover:text-primary text-xs font-medium transition-colors sm:text-sm"
+                        className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
                       >
                         {t("forgotPassword")}
                       </Link>
@@ -307,7 +296,7 @@ export default function LoginForm() {
                         placeholder={t("passwordPlaceholder")}
                         autoComplete="current-password"
                         disabled={isSubmitting}
-                        className="h-10 sm:h-10.5"
+                        className="h-11"
                         {...field}
                       />
                     </FormControl>
@@ -318,7 +307,7 @@ export default function LoginForm() {
 
               <Button
                 type="submit"
-                className="mt-2 h-10 w-full cursor-pointer gap-2 rounded-xl font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
+                className="h-11 w-full"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -331,34 +320,25 @@ export default function LoginForm() {
                 )}
               </Button>
 
-              <div className="relative my-3 sm:my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="border-border/70 w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card text-muted-foreground px-2">
-                    {t("noAccount") ? "Or" : "Or continue with"}
-                  </span>
-                </div>
-              </div>
+              <hr className="border-border" />
 
               <Button
                 type="button"
-                className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
+                className="h-11 w-full shadow-none"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => {
                   window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/google`;
                 }}
               >
-                <GoogleIcon className="size-4.5 shrink-0" />
+                <GoogleIcon className="size-4 shrink-0" />
                 <span>{t("continueGoogle")}</span>
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex w-full min-w-0 justify-center px-4 pt-2 sm:px-8 sm:pt-3">
-          <p className="text-muted-foreground text-center text-xs sm:text-sm">
+        <CardFooter className="justify-center sm:px-8">
+          <p className="text-muted-foreground text-center text-sm">
             {t("noAccount")}{" "}
             <Link
               href="/auth/sign-up"
@@ -369,6 +349,6 @@ export default function LoginForm() {
           </p>
         </CardFooter>
       </Card>
-    </div>
+    </AuthFormPanel>
   );
 }

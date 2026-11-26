@@ -27,7 +27,6 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -40,7 +39,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Select,
@@ -50,7 +48,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GoogleIcon } from "@/components/icons/google-icon";
-import { WhiteLabelLogo } from "@/lib/white-label";
+import { AuthFormPanel } from "../auth-form-panel";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PROFILE_QUERY_KEY } from "@/hooks/use-profile";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -293,23 +291,30 @@ export default function SignUpForm() {
   const progressPercent = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl min-w-0 flex-col justify-center py-2 sm:py-6">
-      {/* Mobile Brand Logo */}
-      <div className="mb-4 flex justify-center lg:hidden">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <WhiteLabelLogo className="h-10 w-auto object-contain" />
-        </Link>
-      </div>
+    <AuthFormPanel className="max-w-xl">
+      <Card className="w-full min-w-0 gap-6 rounded-2xl py-6 shadow-none sm:py-8">
+        <CardHeader className="sm:px-8">
+          <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+            {step === 1
+              ? tOnboard("step1.title")
+              : step === 2
+                ? tOnboard("step2.creatorTitle")
+                : t("title")}
+          </h1>
+          <CardDescription className="leading-relaxed">
+            {step === 1
+              ? tOnboard("step1.subtitle")
+              : step === 2
+                ? tOnboard("step2.subtitle")
+                : t("description")}
+          </CardDescription>
 
-      <Card className="border-border/70 bg-card/95 w-full max-w-full min-w-0 gap-5 overflow-hidden rounded-2xl py-6 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-8">
-        <CardHeader className="flex w-full min-w-0 flex-col items-stretch space-y-3 px-4 sm:px-8">
-          {/* Progress Indicator */}
-          <div className="w-full space-y-1.5">
-            <div className="text-muted-foreground flex w-full items-center justify-between text-xs font-semibold tracking-wider uppercase">
-              <span>
+          <div className="mt-2 space-y-2">
+            <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs font-medium">
+              <span id="sign-up-progress-label">
                 {t("step")} {step} / 3
               </span>
-              <span className="text-primary font-bold">
+              <span className="text-foreground font-medium">
                 {step === 1
                   ? t("stepRole")
                   : step === 2
@@ -317,213 +322,92 @@ export default function SignUpForm() {
                     : t("stepAccount")}
               </span>
             </div>
-            <Progress value={progressPercent} className="h-1.5 w-full" />
+            <Progress
+              value={progressPercent}
+              aria-labelledby="sign-up-progress-label"
+              className="h-1.5 w-full"
+            />
           </div>
-
-          <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {step === 1
-              ? tOnboard("step1.title")
-              : step === 2
-                ? tOnboard("step2.creatorTitle")
-                : t("title")}
-          </CardTitle>
-          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
-            {step === 1
-              ? tOnboard("step1.subtitle")
-              : step === 2
-                ? tOnboard("step2.subtitle")
-                : t("description")}
-          </CardDescription>
         </CardHeader>
 
-        <CardContent className="w-full min-w-0 px-4 sm:px-8">
+        <CardContent className="min-w-0 sm:px-8">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 sm:space-y-5"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* STEP 1: ROLE SELECTION */}
               {step === 1 && (
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-3">
-                    {/* Option 1: Cosplayer */}
-                    <div
-                      onClick={() => form.setValue("role", "cosplayer")}
-                      className={cn(
-                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
-                        selectedRole === "cosplayer"
-                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                          : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                      )}
-                    >
-                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
-                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                          <Palette className="size-5" />
-                        </div>
-                        <div className="min-w-0 space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
-                              {tOnboard("step1.roles.cosplayer.title")}
-                            </h2>
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 text-[10px] tracking-wider uppercase"
-                            >
-                              {tOnboard("step1.roles.cosplayer.badge")}
-                            </Badge>
-                          </div>
-                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                            {tOnboard("step1.roles.cosplayer.description")}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 pl-1">
-                        <div
+                  <div className="grid gap-3">
+                    {(
+                      [
+                        { role: "cosplayer", icon: Palette },
+                        { role: "photographer", icon: Camera },
+                        { role: "fan", icon: Heart },
+                      ] as const
+                    ).map(({ role, icon: Icon }) => (
+                      <button
+                        key={role}
+                        type="button"
+                        aria-pressed={selectedRole === role}
+                        onClick={() => form.setValue("role", role)}
+                        className={cn(
+                          "focus-visible:ring-ring flex w-full cursor-pointer items-center gap-3 rounded-xl border p-4 text-start transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+                          selectedRole === role
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:bg-muted/50"
+                        )}
+                      >
+                        <Icon
+                          className="text-primary size-5 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0 flex-1 space-y-1">
+                          <span className="block text-sm font-semibold">
+                            {tOnboard(`step1.roles.${role}.title`)}
+                          </span>
+                          <span className="text-muted-foreground block text-sm leading-relaxed">
+                            {tOnboard(`step1.roles.${role}.description`)}
+                          </span>
+                        </span>
+                        <span
                           className={cn(
-                            "flex size-5 items-center justify-center rounded-full border transition-all",
-                            selectedRole === "cosplayer"
+                            "flex size-5 shrink-0 items-center justify-center rounded-full border",
+                            selectedRole === role
                               ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border/80 bg-background/50"
+                              : "border-border"
                           )}
+                          aria-hidden="true"
                         >
-                          {selectedRole === "cosplayer" && (
-                            <Check className="size-3 stroke-[3]" />
+                          {selectedRole === role && (
+                            <Check className="size-3" />
                           )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Option 2: Photographer */}
-                    <div
-                      onClick={() => form.setValue("role", "photographer")}
-                      className={cn(
-                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
-                        selectedRole === "photographer"
-                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                          : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                      )}
-                    >
-                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
-                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                          <Camera className="size-5" />
-                        </div>
-                        <div className="min-w-0 space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
-                              {tOnboard("step1.roles.photographer.title")}
-                            </h2>
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 text-[10px] tracking-wider uppercase"
-                            >
-                              {tOnboard("step1.roles.photographer.badge")}
-                            </Badge>
-                          </div>
-                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                            {tOnboard("step1.roles.photographer.description")}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 pl-1">
-                        <div
-                          className={cn(
-                            "flex size-5 items-center justify-center rounded-full border transition-all",
-                            selectedRole === "photographer"
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border/80 bg-background/50"
-                          )}
-                        >
-                          {selectedRole === "photographer" && (
-                            <Check className="size-3 stroke-[3]" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Option 3: Fan / Enthusiast */}
-                    <div
-                      onClick={() => form.setValue("role", "fan")}
-                      className={cn(
-                        "group relative flex cursor-pointer items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 select-none sm:p-4",
-                        selectedRole === "fan"
-                          ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                          : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                      )}
-                    >
-                      <div className="flex min-w-0 items-center gap-3.5 pr-2">
-                        <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                          <Heart className="size-5" />
-                        </div>
-                        <div className="min-w-0 space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <h2 className="text-foreground truncate text-sm font-bold sm:text-base">
-                              {tOnboard("step1.roles.fan.title")}
-                            </h2>
-                            <Badge
-                              variant="secondary"
-                              className="shrink-0 text-[10px] tracking-wider uppercase"
-                            >
-                              {tOnboard("step1.roles.fan.badge")}
-                            </Badge>
-                          </div>
-                          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                            {tOnboard("step1.roles.fan.description")}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 pl-1">
-                        <div
-                          className={cn(
-                            "flex size-5 items-center justify-center rounded-full border transition-all",
-                            selectedRole === "fan"
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border/80 bg-background/50"
-                          )}
-                        >
-                          {selectedRole === "fan" && (
-                            <Check className="size-3 stroke-[3]" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </button>
+                    ))}
                   </div>
 
                   <div className="flex justify-end pt-2">
                     <Button
                       type="button"
                       onClick={handleNextFromStep1}
-                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
+                      className="h-11 px-5"
                     >
                       <span>{t("nextStep")}</span>
                       <ArrowRight className="size-4" />
                     </Button>
                   </div>
 
-                  {/* Or continue with Google right on Step 1 */}
-                  <div className="pt-1">
-                    <div className="relative my-3">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="border-border/70 w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card text-muted-foreground px-2">
-                          {t("orContinueWith")}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="space-y-4">
+                    <hr className="border-border" />
 
                     <Button
                       type="button"
                       variant="outline"
-                      className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
+                      className="h-11 w-full shadow-none"
                       onClick={() => {
                         window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/google`;
                       }}
                     >
-                      <GoogleIcon className="size-4.5 shrink-0" />
+                      <GoogleIcon className="size-4 shrink-0" />
                       <span>{t("continueGoogle")}</span>
                     </Button>
                   </div>
@@ -548,7 +432,7 @@ export default function SignUpForm() {
                               placeholder={tOnboard(
                                 "step2.fields.displayNamePlaceholder"
                               )}
-                              className="h-10 rounded-xl text-sm sm:h-10.5"
+                              className="h-11"
                               {...field}
                             />
                           </FormControl>
@@ -571,7 +455,7 @@ export default function SignUpForm() {
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-10 w-full rounded-xl text-sm sm:h-10.5">
+                              <SelectTrigger className="h-11 w-full">
                                 <SelectValue
                                   placeholder={tOnboard(
                                     "step2.fields.locationPlaceholder"
@@ -767,7 +651,7 @@ export default function SignUpForm() {
                       type="button"
                       variant="outline"
                       onClick={() => setStep(1)}
-                      className="border-border/80 bg-background/50 hover:bg-muted/50 h-10 cursor-pointer gap-2 rounded-xl px-5 text-sm font-medium transition-all sm:h-11"
+                      className="h-11 px-4 shadow-none"
                     >
                       <ArrowLeft className="size-4" />
                       <span>{t("backStep")}</span>
@@ -775,7 +659,7 @@ export default function SignUpForm() {
                     <Button
                       type="button"
                       onClick={handleNextFromStep2}
-                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
+                      className="h-11 px-5"
                     >
                       <span>{t("nextStep")}</span>
                       <ArrowRight className="size-4" />
@@ -802,7 +686,7 @@ export default function SignUpForm() {
                               placeholder={t("firstNamePlaceholder")}
                               autoComplete="given-name"
                               disabled={isSubmitting}
-                              className="h-10 rounded-xl text-sm sm:h-10.5"
+                              className="h-11"
                               {...field}
                             />
                           </FormControl>
@@ -823,7 +707,7 @@ export default function SignUpForm() {
                               placeholder={t("lastNamePlaceholder")}
                               autoComplete="family-name"
                               disabled={isSubmitting}
-                              className="h-10 rounded-xl text-sm sm:h-10.5"
+                              className="h-11"
                               {...field}
                             />
                           </FormControl>
@@ -848,7 +732,7 @@ export default function SignUpForm() {
                             placeholder={t("emailPlaceholder")}
                             autoComplete="email"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl text-sm sm:h-10.5"
+                            className="h-11"
                             {...field}
                           />
                         </FormControl>
@@ -871,7 +755,7 @@ export default function SignUpForm() {
                             placeholder="••••••••"
                             autoComplete="new-password"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl text-sm sm:h-10.5"
+                            className="h-11"
                             {...field}
                           />
                         </FormControl>
@@ -894,7 +778,7 @@ export default function SignUpForm() {
                             placeholder="••••••••"
                             autoComplete="new-password"
                             disabled={isSubmitting}
-                            className="h-10 rounded-xl text-sm sm:h-10.5"
+                            className="h-11"
                             {...field}
                           />
                         </FormControl>
@@ -910,7 +794,7 @@ export default function SignUpForm() {
                       variant="outline"
                       onClick={() => setStep(2)}
                       disabled={isSubmitting}
-                      className="border-border/80 bg-background/50 hover:bg-muted/50 h-10 cursor-pointer gap-2 rounded-xl px-5 text-sm font-medium transition-all sm:h-11"
+                      className="h-11 px-4 shadow-none"
                     >
                       <ArrowLeft className="size-4" />
                       <span>{t("backStep")}</span>
@@ -918,7 +802,7 @@ export default function SignUpForm() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="h-10 cursor-pointer gap-2 rounded-xl px-6 text-sm font-semibold shadow-md shadow-purple-500/20 transition-all sm:h-11 sm:text-base"
+                      className="h-11 px-5"
                     >
                       {isSubmitting ? (
                         <>
@@ -931,27 +815,18 @@ export default function SignUpForm() {
                     </Button>
                   </div>
 
-                  <div className="relative my-3">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="border-border/70 w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card text-muted-foreground px-2">
-                        {t("orContinueWith")}
-                      </span>
-                    </div>
-                  </div>
+                  <hr className="border-border" />
 
                   <Button
                     type="button"
-                    className="hover:bg-accent/80 h-10 w-full cursor-pointer gap-2.5 rounded-xl font-medium transition-all sm:h-11"
+                    className="h-11 w-full shadow-none"
                     variant="outline"
                     disabled={isSubmitting}
                     onClick={() => {
                       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/auth/social/google`;
                     }}
                   >
-                    <GoogleIcon className="size-4.5 shrink-0" />
+                    <GoogleIcon className="size-4 shrink-0" />
                     <span>{t("continueGoogle")}</span>
                   </Button>
                 </div>
@@ -960,8 +835,8 @@ export default function SignUpForm() {
           </Form>
         </CardContent>
 
-        <CardFooter className="flex w-full min-w-0 justify-center px-4 pt-2 sm:px-8 sm:pt-3">
-          <p className="text-muted-foreground text-center text-xs sm:text-sm">
+        <CardFooter className="justify-center sm:px-8">
+          <p className="text-muted-foreground text-center text-sm">
             {t("alreadyHaveAccount")}{" "}
             <Link
               href="/auth/login"
@@ -972,6 +847,6 @@ export default function SignUpForm() {
           </p>
         </CardFooter>
       </Card>
-    </div>
+    </AuthFormPanel>
   );
 }

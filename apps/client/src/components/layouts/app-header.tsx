@@ -91,21 +91,22 @@ export function AppHeader() {
   };
 
   return (
-    <header className="border-border/60 bg-background/85 sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b px-4 backdrop-blur-md sm:px-6">
+    <header className="border-border bg-background sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between gap-2 border-b px-4 sm:gap-4 sm:px-6">
       {/* Left Area: Unified Sidebar Trigger (same PanelLeft icon on mobile & desktop) + Mobile Logo or Desktop Search */}
-      <div className="flex max-w-xl flex-1 items-center gap-2 sm:gap-3">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted/60 -ml-1 size-8 shrink-0 cursor-pointer rounded-lg" />
+      <div className="flex max-w-xl min-w-0 flex-1 items-center gap-1 sm:gap-3">
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted -ml-2 size-10 shrink-0 cursor-pointer rounded-lg" />
 
         {/* Mobile Brand Logo (hidden on desktop where AppSidebar is visible) */}
         <Link
           href="/"
-          className="flex cursor-pointer items-center gap-1.5 text-base font-black tracking-tight select-none md:hidden"
+          className="flex min-w-0 cursor-pointer items-center overflow-hidden text-base font-semibold tracking-tight md:hidden"
         >
           <WhiteLabelLogo
             width={160}
             height={40}
-            className="h-9 w-auto object-contain"
-            textClassName="text-lg"
+            className="h-8 w-auto max-w-full object-contain"
+            textClassName="truncate text-base"
+            showEmblemOnFallback={false}
           />
         </Link>
 
@@ -120,13 +121,15 @@ export function AppHeader() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="border-border/70 bg-card/60 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-9 w-full rounded-xl pr-8 pl-9 text-xs transition-colors sm:text-sm"
+            aria-label={t("search")}
+            className="h-10 w-full rounded-lg pr-10 pl-9 [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-full p-0.5"
+              aria-label={t("clearSearch")}
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute top-1/2 right-1 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-md focus-visible:ring-2"
             >
               <X className="size-3" />
             </button>
@@ -135,13 +138,13 @@ export function AppHeader() {
       </div>
 
       {/* Right Area: Actions + User Profile or Guest Auth */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {/* Mobile Search Button (visible only on mobile) */}
         <Button
           variant="outline"
           size="icon"
           onClick={() => setMobileSearchOpen(true)}
-          className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground size-8.5 cursor-pointer rounded-lg sm:size-9 md:hidden"
+          className="text-muted-foreground size-10 rounded-lg md:hidden"
           aria-label={t("search")}
         >
           <Search className="size-4" />
@@ -166,13 +169,13 @@ export function AppHeader() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher />
           <div className="hidden md:block">
-            <ModeToggle className="border-border/70 bg-card/60 size-9 rounded-lg" />
+            <ModeToggle className="size-10 rounded-lg" />
           </div>
         </div>
 
         {isHydrating ? (
           // Hydrating Skeleton
-          <div className="bg-muted/60 h-9 w-24 animate-pulse rounded-lg" />
+          <div className="bg-muted h-10 w-16 rounded-lg motion-safe:animate-pulse sm:w-24" />
         ) : isAuthenticated ? (
           <>
             {/* Notification Bell - Both Mobile & Desktop (Direct link to /notifications) */}
@@ -180,7 +183,7 @@ export function AppHeader() {
               variant="outline"
               size="icon"
               asChild
-              className="border-border/70 bg-card/60 text-muted-foreground hover:text-foreground relative size-8.5 cursor-pointer rounded-lg sm:size-9"
+              className="text-muted-foreground relative size-10 rounded-lg"
               aria-label={t("notifications")}
             >
               <Link href="/notifications">
@@ -197,7 +200,7 @@ export function AppHeader() {
                 <Button
                   variant="ghost"
                   aria-label={displayName}
-                  className="border-border/70 bg-card/60 hover:bg-muted flex size-8.5 cursor-pointer items-center justify-center rounded-lg border p-0 has-[>svg]:p-0 sm:size-9 md:size-auto md:h-9 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
+                  className="border-border bg-background size-10 rounded-lg border p-0 has-[>svg]:p-0 md:size-auto md:h-10 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
                 >
                   <Avatar className="border-primary/30 size-7 rounded-md border">
                     <AvatarImage
@@ -268,14 +271,14 @@ export function AppHeader() {
               variant="ghost"
               size="sm"
               asChild
-              className="text-muted-foreground hover:text-foreground h-9 cursor-pointer rounded-lg text-xs font-semibold sm:text-sm"
+              className="text-muted-foreground hidden h-10 rounded-lg sm:inline-flex"
             >
               <Link href="/auth/login">{t("signIn")}</Link>
             </Button>
             <Button
               size="sm"
               asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 cursor-pointer rounded-lg px-3.5 text-xs font-semibold shadow-xs transition-colors sm:px-4 sm:text-sm"
+              className="h-10 rounded-lg px-3 text-xs sm:px-4 sm:text-sm"
             >
               <Link href="/auth/sign-up">{t("signUp")}</Link>
             </Button>

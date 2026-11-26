@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { Compass, Loader2, LogIn, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ListError } from "@/components/common/list-error";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { CreatePostCard } from "./create-post-card";
@@ -17,7 +18,12 @@ export function FeedView() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
-  const { data: postsResponse, isLoading } = useQuery({
+  const {
+    data: postsResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["following-feed-posts", isAuthenticated],
     queryFn: () => getFollowingFeed({ limit: 30 }),
     enabled: !isHydrating && isAuthenticated,
@@ -55,6 +61,8 @@ export function FeedView() {
         <div className="flex min-h-[300px] items-center justify-center">
           <Loader2 className="text-primary size-8 animate-spin" />
         </div>
+      ) : isError && !postsResponse ? (
+        <ListError onRetry={() => void refetch()} />
       ) : posts.length > 0 ? (
         <div className="space-y-4 sm:space-y-5">
           {posts.map((post) => (
@@ -62,8 +70,8 @@ export function FeedView() {
           ))}
         </div>
       ) : (
-        <div className="border-border/70 bg-card/50 flex flex-col items-center justify-center rounded-2xl border border-dashed p-8 py-16 text-center">
-          <div className="bg-muted/80 text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
+        <div className="border-border flex flex-col items-center justify-center rounded-xl border px-4 py-10 text-center sm:py-12">
+          <div className="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-lg">
             {!isAuthenticated ? (
               <LogIn className="size-7" />
             ) : (
@@ -75,7 +83,7 @@ export function FeedView() {
               ? t("emptyFeedGuestTitle") || "Sign in to view your feed"
               : t("emptyFeedAuthTitle") || "Your feed is waiting for you"}
           </h3>
-          <p className="text-muted-foreground mt-1.5 max-w-sm text-xs leading-relaxed">
+          <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-relaxed">
             {!isAuthenticated
               ? t("emptyFeedGuestDesc") ||
                 "Log in to follow creators and see their latest albums and photosets here."

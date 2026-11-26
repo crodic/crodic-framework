@@ -5,7 +5,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
     "allowArbitraryExtensions": true,
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "react/canary"],
     "paths": {
       "@/*": ["./src/*"]
     }

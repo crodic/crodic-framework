@@ -54,15 +54,14 @@ export function UpcomingEventsWidget() {
   if (!events || events.length === 0) return null;
 
   return (
-    <div className="border-border/80 bg-card rounded-2xl border p-4">
-      <div className="mb-3.5 flex items-center justify-between">
-        <h3 className="text-foreground text-sm font-bold sm:text-base">
+    <div className="border-border bg-card rounded-xl border p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="text-foreground text-base font-semibold">
           {t("upcomingEvents")}
         </h3>
-        <span className="text-muted-foreground text-xs">{t("latest")}</span>
       </div>
 
-      <div className="space-y-3">
+      <div className="divide-border divide-y">
         {events.map((event) => {
           const isInterested =
             interestMap[event.id] ?? event.isInterestedByCurrentUser ?? false;
@@ -70,31 +69,31 @@ export function UpcomingEventsWidget() {
           return (
             <div
               key={event.id}
-              className="border-border/70 bg-muted/20 hover:border-primary/40 flex items-center justify-between gap-3 rounded-xl border p-2.5 transition-colors"
+              className="flex items-center justify-between gap-3 py-3 last:pb-0"
             >
               <Link
                 href={`/events/${event.slug || event.id}`}
-                className="group flex items-center gap-3 overflow-hidden"
+                className="group flex min-w-0 items-center gap-3"
               >
                 {/* Event Date Badge */}
-                <div className="border-border/80 bg-muted/60 group-hover:border-primary/40 relative flex size-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-colors">
-                  <span className="text-foreground text-xs font-black tabular-nums">
+                <div className="bg-muted flex size-11 shrink-0 flex-col items-center justify-center rounded-lg text-center">
+                  <span className="text-foreground text-sm font-semibold tabular-nums">
                     {event.dayLabel}
                   </span>
-                  <span className="text-muted-foreground text-[8px] font-bold uppercase">
+                  <span className="text-muted-foreground px-0.5 text-center text-[10px] leading-none">
                     {event.monthLabel}
                   </span>
                 </div>
 
-                <div className="truncate">
-                  <h4 className="text-foreground group-hover:text-primary truncate text-xs font-bold transition-colors sm:text-sm">
+                <div className="min-w-0">
+                  <h4 className="text-foreground group-hover:text-primary line-clamp-2 text-sm font-semibold transition-colors">
                     {event.title}
                   </h4>
-                  <p className="text-muted-foreground flex items-center gap-1 text-[11px] tabular-nums">
+                  <p className="text-muted-foreground flex items-center gap-1 text-xs tabular-nums">
                     <Calendar className="size-3 shrink-0" aria-hidden="true" />
                     <span className="truncate">{event.dateString}</span>
                   </p>
-                  <p className="text-muted-foreground/80 flex items-center gap-1 text-[10px]">
+                  <p className="text-muted-foreground flex items-center gap-1 text-xs">
                     <MapPin className="size-2.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">{event.locationLabel}</span>
                   </p>
@@ -105,7 +104,8 @@ export function UpcomingEventsWidget() {
               <button
                 type="button"
                 onClick={() => handleToggleInterest(event.id, event.title)}
-                className={`shrink-0 cursor-pointer rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                aria-pressed={isInterested}
+                className={`min-h-8 shrink-0 cursor-pointer rounded-lg border px-2.5 text-xs font-medium transition-colors ${
                   isInterested
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border/80 bg-background hover:bg-muted text-muted-foreground hover:text-foreground"

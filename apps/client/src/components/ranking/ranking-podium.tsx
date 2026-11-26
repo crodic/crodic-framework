@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { LeaderboardItemResDto } from "@/services/ranking";
-import { motion } from "motion/react";
 
 export interface RankingPodiumProps {
   podiumItems: LeaderboardItemResDto[];
@@ -23,53 +22,45 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
   const displayOrder: Array<{
     item?: LeaderboardItemResDto;
     tier: "gold" | "silver" | "bronze";
-    delay: number;
   }> = [
-    { item: rank2, tier: "silver", delay: 0.1 },
-    { item: rank1, tier: "gold", delay: 0.25 },
-    { item: rank3, tier: "bronze", delay: 0.18 },
+    { item: rank1, tier: "gold" },
+    { item: rank2, tier: "silver" },
+    { item: rank3, tier: "bronze" },
   ];
 
   const getTierStyles = (tier: "gold" | "silver" | "bronze") => {
     switch (tier) {
       case "gold":
         return {
-          cardBorder: "border-amber-400/90 shadow-xl shadow-amber-500/15",
-          bgGradient:
-            "bg-gradient-to-b from-amber-500/20 via-card/95 to-card border-2",
-          avatarRing: "ring-3 ring-amber-400 shadow-lg shadow-amber-400/30",
-          badgeColor: "text-amber-400",
+          cardBorder: "border-amber-500/50",
+          avatarRing: "ring-2 ring-amber-500/60",
+          badgeColor: "text-amber-800 dark:text-amber-300",
           medalNumber: "1",
           medalIcon: Trophy,
-          elevation: "sm:-translate-y-4 z-10",
         };
       case "silver":
         return {
-          cardBorder: "border-slate-400/50 shadow-md",
-          bgGradient: "bg-gradient-to-b from-slate-400/15 via-card/95 to-card",
-          avatarRing: "ring-2 ring-slate-300",
-          badgeColor: "text-slate-300",
+          cardBorder: "border-border",
+          avatarRing: "ring-2 ring-border",
+          badgeColor: "text-muted-foreground",
           medalNumber: "2",
           medalIcon: Medal,
-          elevation: "z-0",
         };
       case "bronze":
         return {
-          cardBorder: "border-amber-700/50 shadow-md",
-          bgGradient: "bg-gradient-to-b from-amber-700/15 via-card/95 to-card",
-          avatarRing: "ring-2 ring-amber-700",
-          badgeColor: "text-amber-600",
+          cardBorder: "border-border",
+          avatarRing: "ring-2 ring-border",
+          badgeColor: "text-amber-800 dark:text-amber-400",
           medalNumber: "3",
           medalIcon: Award,
-          elevation: "z-0",
         };
     }
   };
 
   return (
     <div className="relative w-full">
-      <div className="grid grid-cols-3 items-end gap-2 sm:gap-4 md:gap-6">
-        {displayOrder.map(({ item, tier, delay }) => {
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        {displayOrder.map(({ item, tier }) => {
           if (!item) return null;
           const styles = getTierStyles(tier);
           const MedalIcon = styles.medalIcon;
@@ -84,24 +75,11 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
               : String(item.followersCount);
 
           return (
-            <motion.div
+            <article
               key={item.id}
-              initial={{ opacity: 0, y: isGold ? 50 : 35, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.55,
-                delay,
-                ease: [0.21, 0.47, 0.32, 0.98],
-              }}
-              whileHover={{
-                y: -4,
-                transition: { duration: 0.2, ease: "easeOut" },
-              }}
               className={cn(
-                "relative flex flex-col items-center justify-between rounded-2xl border p-2.5 transition-shadow sm:rounded-3xl sm:p-5 md:p-6",
-                styles.cardBorder,
-                styles.bgGradient,
-                styles.elevation
+                "bg-card relative flex min-w-0 flex-col items-center rounded-xl border p-4",
+                styles.cardBorder
               )}
             >
               {/* Top Medal Badge */}
@@ -158,11 +136,11 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
               <div className="mt-2.5 w-full text-center sm:mt-3">
                 <Link
                   href={item.portfolioHref}
-                  className="hover:text-primary block truncate text-xs font-extrabold tracking-tight transition-colors sm:text-base md:text-lg"
+                  className="hover:text-primary block truncate text-base font-semibold tracking-tight transition-colors"
                 >
                   {item.displayName}
                 </Link>
-                <p className="text-muted-foreground truncate text-[10px] sm:text-xs">
+                <p className="text-muted-foreground truncate text-xs">
                   {item.handle}
                 </p>
               </div>
@@ -182,7 +160,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                   <span className="text-foreground block text-xs font-black tabular-nums sm:text-sm md:text-base">
                     {formattedLikes}
                   </span>
-                  <span className="text-muted-foreground block text-[9px] tracking-wider uppercase sm:text-[10px]">
+                  <span className="text-muted-foreground block text-xs">
                     {t("likes")}
                   </span>
                 </div>
@@ -191,7 +169,7 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
                   <span className="text-foreground block text-xs font-black tabular-nums sm:text-sm md:text-base">
                     {formattedFollowers}
                   </span>
-                  <span className="text-muted-foreground block text-[9px] tracking-wider uppercase sm:text-[10px]">
+                  <span className="text-muted-foreground block text-xs">
                     {t("followers")}
                   </span>
                 </div>
@@ -200,17 +178,16 @@ export function RankingPodium({ podiumItems }: RankingPodiumProps) {
               {/* View Portfolio Button */}
               <Button
                 asChild
+                variant={isGold ? "default" : "outline"}
                 size="sm"
                 className={cn(
-                  "mt-3 h-7 w-full cursor-pointer rounded-full text-[10px] font-bold shadow-xs sm:mt-4 sm:h-8 sm:text-xs",
-                  isGold
-                    ? "bg-amber-400 text-amber-950 transition-colors hover:bg-amber-300"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border/80 border"
+                  "mt-4 h-9 w-full rounded-lg px-2 text-xs font-medium",
+                  isGold ? "bg-amber-400 text-amber-950 hover:bg-amber-300" : ""
                 )}
               >
                 <Link href={item.portfolioHref}>{t("viewPortfolio")}</Link>
               </Button>
-            </motion.div>
+            </article>
           );
         })}
       </div>

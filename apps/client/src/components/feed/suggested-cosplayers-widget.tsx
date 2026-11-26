@@ -79,8 +79,8 @@ export function SuggestedCosplayersWidget() {
 
   if (isHydrating || isLoading) {
     return (
-      <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
-        <div className="mb-3.5 flex items-center justify-between">
+      <div className="border-border bg-card rounded-xl border p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div className="bg-muted h-4 w-36 animate-pulse rounded-md" />
           <div className="bg-muted h-3 w-12 animate-pulse rounded-md" />
         </div>
@@ -107,14 +107,14 @@ export function SuggestedCosplayersWidget() {
 
   if (!visibleCosplayers || visibleCosplayers.length === 0) {
     return (
-      <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
-        <div className="mb-3.5 flex items-center justify-between">
-          <h3 className="text-foreground text-sm font-bold sm:text-base">
+      <div className="border-border bg-card rounded-xl border p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-foreground text-base font-semibold">
             {t("suggestedCosplayers")}
           </h3>
           <Link
             href="/explore"
-            className="text-primary text-xs font-medium hover:underline"
+            className="text-primary shrink-0 text-sm font-medium underline-offset-4 hover:underline"
           >
             {t("viewAll")}
           </Link>
@@ -136,14 +136,14 @@ export function SuggestedCosplayersWidget() {
   }
 
   return (
-    <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
-      <div className="mb-3.5 flex items-center justify-between">
-        <h3 className="text-foreground text-sm font-bold sm:text-base">
+    <div className="border-border bg-card rounded-xl border p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-foreground text-base font-semibold">
           {t("suggestedCosplayers")}
         </h3>
         <Link
           href="/explore"
-          className="text-primary text-xs font-medium hover:underline"
+          className="text-primary shrink-0 text-sm font-medium underline-offset-4 hover:underline"
         >
           {t("viewAll")}
         </Link>
@@ -189,7 +189,7 @@ export function SuggestedCosplayersWidget() {
                       </span>
                     )}
                   </div>
-                  <p className="text-muted-foreground truncate text-[11px]">
+                  <p className="text-muted-foreground truncate text-xs">
                     {item.handle}
                   </p>
                 </div>

@@ -26,88 +26,69 @@ export function AlbumCard({ album }: AlbumCardProps) {
     postSlugOrId: album.slug || album.id,
   });
 
+  const title = album.characterName || album.title;
+  const authorName = album.author?.displayName;
+
   return (
-    <Link
-      href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
-      className="group border-border/70 bg-muted/20 hover:border-primary/50 relative flex aspect-[3/4] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl border p-4 transition-all duration-300 hover:shadow-lg sm:aspect-[9/13]"
-    >
-      {/* Background artwork cover */}
-      <Image
-        src={album.coverImageUrl || "/placeholder-avatar.png"}
-        alt={`${album.characterName || album.title} cosplay album`}
-        fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        className="object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
-      />
-
-      {/* Dark gradient overlay for contrast and atmospheric feel */}
+    <article className="group relative isolate flex aspect-[3/4] items-end overflow-hidden rounded-2xl bg-neutral-800 p-4 text-white sm:aspect-[9/13]">
+      {album.coverImageUrl && (
+        <Image
+          src={album.coverImageUrl}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover object-center"
+        />
+      )}
       <div
-        className="from-background via-background/30 pointer-events-none absolute inset-0 bg-gradient-to-t to-transparent opacity-85 transition-opacity group-hover:opacity-90"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 ring-inset"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent"
         aria-hidden="true"
       />
 
-      {/* Content at bottom */}
-      <div className="relative z-10 flex flex-col gap-2.5">
-        {/* Heart / Like pill */}
-        <div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleLike();
-            }}
-            className={cn(
-              "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur-md transition-colors",
-              isLiked
-                ? "border-rose-500/50 bg-rose-500/20 text-rose-300"
-                : "bg-background/60 border-border/40 text-foreground hover:bg-background/80"
-            )}
-            aria-label={t("likeAlbumAria", {
-              name: album.characterName || album.title,
-            })}
-          >
-            <Heart
-              className={cn(
-                "size-3.5",
-                isLiked
-                  ? "fill-rose-500 text-rose-500"
-                  : "fill-rose-500/80 text-rose-500"
+      <div className="flex w-full items-center gap-3">
+        <Link
+          href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
+          className="z-10 flex min-w-0 flex-1 items-center gap-2 rounded-md text-sm font-semibold underline-offset-4 after:absolute after:inset-0 hover:underline focus-visible:outline-none focus-visible:after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-inset"
+        >
+          {authorName && (
+            <span className="relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-700 text-xs">
+              {album.author?.avatarUrl ? (
+                <Image
+                  src={album.author.avatarUrl}
+                  alt={authorName}
+                  fill
+                  sizes="28px"
+                  className="object-cover"
+                />
+              ) : (
+                <span title={authorName} aria-label={authorName}>
+                  {authorName.slice(0, 1).toUpperCase()}
+                </span>
               )}
-            />
-            <span className="tabular-nums">{likes.toLocaleString()}</span>
-          </button>
-        </div>
+            </span>
+          )}
+          <span className="truncate">{title}</span>
+        </Link>
 
-        {/* Character / Author Row */}
-        <div className="flex items-center gap-2">
-          {/* Avatar */}
-          <div className="border-primary/40 bg-muted relative size-6 shrink-0 overflow-hidden rounded-full border">
-            {album.author?.avatarUrl ? (
-              <Image
-                src={album.author.avatarUrl}
-                alt={album.author.displayName || "Author"}
-                fill
-                sizes="24px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="bg-primary/20 text-primary flex size-full items-center justify-center text-[10px] font-bold">
-                {(album.author?.displayName || "C").slice(0, 1).toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Character Name / Title */}
-          <span className="text-foreground group-hover:text-primary truncate text-sm font-bold tracking-wide transition-colors">
-            {album.characterName || album.title}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={toggleLike}
+          className={cn(
+            "relative z-10 inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-white",
+            isLiked
+              ? "bg-rose-900 text-white hover:bg-rose-800"
+              : "bg-black/70 text-white hover:bg-black"
+          )}
+          aria-label={t("likeAlbumAria", { name: title })}
+          aria-pressed={isLiked}
+        >
+          <Heart
+            className={cn("size-4", isLiked && "fill-current")}
+            aria-hidden="true"
+          />
+          <span>{likes.toLocaleString()}</span>
+        </button>
       </div>
-    </Link>
+    </article>
   );
 }

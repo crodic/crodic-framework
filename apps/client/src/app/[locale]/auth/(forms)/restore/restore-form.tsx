@@ -16,7 +16,6 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -27,7 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
-import { WhiteLabelLogo } from "@/lib/white-label";
+import { AuthFormPanel } from "../auth-form-panel";
 import { createRestoreFormSchema, type RestoreFormValues } from "./schema";
 
 export default function RestoreForm() {
@@ -72,32 +71,22 @@ export default function RestoreForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-md lg:px-4">
-      {/* Mobile Brand Logo */}
-      <div className="mb-6 flex justify-center lg:hidden">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <WhiteLabelLogo className="h-10 w-auto object-contain" />
-        </Link>
-      </div>
-
-      <Card className="border-border/70 bg-card/90 w-full gap-6 rounded-2xl py-8 shadow-2xl shadow-purple-950/20 backdrop-blur-xl sm:py-10">
-        <CardHeader className="space-y-2 px-6 sm:px-8">
+    <AuthFormPanel>
+      <Card className="w-full min-w-0 gap-6 rounded-2xl py-6 shadow-none sm:py-8">
+        <CardHeader className="sm:px-8">
           <div className="flex items-center gap-2">
             <RotateCcw className="text-primary size-5" />
-            <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
               {t("title")}
-            </CardTitle>
+            </h1>
           </div>
-          <CardDescription className="text-muted-foreground text-sm leading-relaxed">
+          <CardDescription className="leading-relaxed">
             {t("description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 sm:px-8">
+        <CardContent className="min-w-0 sm:px-8">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 sm:space-y-4.5"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="password"
@@ -111,7 +100,7 @@ export default function RestoreForm() {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={!token || isSubmitting}
-                        className="h-10 sm:h-10.5"
+                        className="h-11"
                         {...field}
                       />
                     </FormControl>
@@ -132,7 +121,7 @@ export default function RestoreForm() {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         disabled={!token || isSubmitting}
-                        className="h-10 sm:h-10.5"
+                        className="h-11"
                         {...field}
                       />
                     </FormControl>
@@ -145,7 +134,7 @@ export default function RestoreForm() {
               ) : null}
               <Button
                 type="submit"
-                className="mt-2 h-10.5 w-full cursor-pointer gap-2 font-medium shadow-sm transition-all hover:shadow-md sm:h-11"
+                className="h-11 w-full"
                 disabled={!token || isSubmitting}
               >
                 {isSubmitting ? (
@@ -160,15 +149,15 @@ export default function RestoreForm() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center px-6 pt-2 sm:px-8 sm:pt-3">
+        <CardFooter className="justify-center sm:px-8">
           <Link
             href="/auth/login"
-            className="text-primary text-xs font-medium underline-offset-4 hover:underline sm:text-sm"
+            className="text-primary text-sm font-medium underline-offset-4 hover:underline"
           >
             {t("backToSignIn")}
           </Link>
         </CardFooter>
       </Card>
-    </div>
+    </AuthFormPanel>
   );
 }

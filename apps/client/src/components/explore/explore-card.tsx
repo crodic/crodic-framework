@@ -53,7 +53,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
       >
         <Link
           href={`/posts/${postSlugOrId}`}
-          className="bg-muted border-border/70 group-hover:border-border relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border shadow-xs transition-colors duration-200"
+          className="bg-muted relative block aspect-[3/4] w-full overflow-hidden rounded-xl"
         >
           <Image
             src={item.coverImageUrl}
@@ -64,11 +64,10 @@ export function ExploreCard({ item }: ExploreCardProps) {
           />
 
           {/* Subtle hover gradient overlay */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
           {/* Top-Left Video Short Badge */}
           {(item.postType === "video" || Boolean(item.videoUrl)) && (
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full border border-white/20 bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs backdrop-blur-md select-none">
+            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-md bg-black/75 px-2 py-1 text-xs font-medium text-white">
               <Video className="size-3 text-pink-400" />
               <span>Video</span>
             </div>
@@ -78,7 +77,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
           {(item.tagNamesCache?.[0] ||
             item.characterName ||
             item.fandomName) && (
-            <span className="absolute top-2 right-2 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md select-none">
+            <span className="absolute top-2 right-2 rounded-md bg-black/75 px-2 py-1 text-xs font-medium text-white">
               #
               {item.tagNamesCache?.[0] || item.characterName || item.fandomName}
             </span>
@@ -88,7 +87,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
 
       {/* Line 1: Character / Post Title */}
       <Link href={`/posts/${postSlugOrId}`} className="block">
-        <h3 className="text-foreground group-hover:text-primary mt-2 truncate text-sm font-bold transition-colors">
+        <h3 className="text-foreground group-hover:text-primary mt-2 line-clamp-2 text-sm font-semibold transition-colors">
           {item.title}
         </h3>
       </Link>
@@ -116,7 +115,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
               </div>
             )}
           </div>
-          <span className="text-muted-foreground group-hover/author:text-primary max-w-[85px] truncate text-xs font-medium transition-colors sm:max-w-[110px]">
+          <span className="text-muted-foreground group-hover/author:text-primary truncate text-xs font-medium transition-colors">
             {item.author.displayName}
           </span>
           {item.author.isVerified && (
@@ -134,7 +133,7 @@ export function ExploreCard({ item }: ExploreCardProps) {
             onClick={toggleLike}
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.85 }}
-            className="text-muted-foreground inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium transition-colors select-none hover:text-rose-400"
+            className="text-muted-foreground inline-flex min-h-8 min-w-8 cursor-pointer items-center justify-center gap-1 rounded-md text-xs font-medium transition-colors select-none hover:text-rose-400"
             aria-label={t("likeArtwork", { title: item.title })}
           >
             <Heart

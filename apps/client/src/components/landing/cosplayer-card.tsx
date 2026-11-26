@@ -60,19 +60,19 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
   const previewImage = cosplayer.coverUrl || cosplayer.avatarUrl;
 
   return (
-    <div className="group border-border/70 bg-card/60 hover:border-border hover:bg-card/90 flex flex-col justify-between rounded-2xl border p-4 transition-colors">
+    <article className="group border-border bg-card relative flex h-full flex-col gap-4 rounded-2xl border p-4">
       {/* Card Header: Avatar + Info + Follow Button */}
-      <div className="flex items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-3">
         <Link
           href={`/cosplayer/${cosplayer.slug || cosplayer.id}`}
-          className="flex min-w-0 items-center gap-2.5"
+          className="focus-visible:after:ring-ring flex min-w-0 items-center gap-3 after:absolute after:inset-0 after:z-10 after:rounded-2xl focus-visible:outline-none focus-visible:after:ring-2"
         >
           {/* Avatar with subtle ring */}
-          <Avatar className="border-border/80 size-10 shrink-0 border">
+          <Avatar className="size-10 shrink-0">
             {cosplayer.avatarUrl && (
               <AvatarImage
                 src={cosplayer.avatarUrl}
-                alt={cosplayer.displayName}
+                alt=""
                 className="object-cover"
               />
             )}
@@ -84,12 +84,12 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
           {/* Name & Followers */}
           <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <span className="text-foreground group-hover:text-primary truncate text-sm font-bold transition-colors">
+              <span className="text-foreground truncate text-sm font-semibold underline-offset-4 group-hover:underline">
                 {cosplayer.displayName}
               </span>
               {cosplayer.isVerified && (
                 <BadgeCheck
-                  className="size-3.5 shrink-0 fill-sky-400/20 text-sky-400"
+                  className="text-primary size-4 shrink-0"
                   aria-label={t("verifiedBadge")}
                 />
               )}
@@ -107,10 +107,10 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
             size="sm"
             onClick={handleToggleFollow}
             className={cn(
-              "h-7 shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium transition-colors",
+              "relative z-20 h-9 shrink-0 rounded-lg px-3 text-xs transition-colors",
               following
                 ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border border"
-                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
             )}
           >
             {following ? (
@@ -128,45 +128,38 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
         )}
       </div>
 
-      {/* Card Body: Cover Image or Specialties Preview */}
-      <Link
-        href={`/cosplayer/${cosplayer.slug || cosplayer.id}`}
-        className="mt-3.5 block"
-      >
-        <div className="border-border/40 bg-muted/40 relative aspect-[16/9] w-full overflow-hidden rounded-xl border">
-          {previewImage ? (
-            <Image
-              src={previewImage}
-              alt={cosplayer.displayName}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover object-center transition-opacity duration-300 group-hover:opacity-95"
-            />
-          ) : (
-            <div className="from-primary/10 to-muted flex size-full items-center justify-center bg-gradient-to-br">
-              <span className="text-primary/40 text-2xl font-black">
-                {initials}
-              </span>
-            </div>
-          )}
-          <div className="from-background/90 via-background/20 absolute inset-0 bg-gradient-to-t to-transparent" />
-          <div className="absolute right-2 bottom-2 left-2 flex flex-wrap gap-1">
-            {cosplayer.roleBadge && (
-              <span className="border-border/40 bg-background/85 text-foreground rounded-md border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-xs">
-                {cosplayer.roleBadge}
-              </span>
-            )}
-            {cosplayer.specialties?.slice(0, 2).map((s) => (
-              <span
-                key={s}
-                className="border-primary/20 bg-primary/20 text-primary rounded-md border px-1.5 py-0.5 text-[10px] font-medium backdrop-blur-xs"
-              >
-                {s}
-              </span>
-            ))}
+      <div className="bg-muted relative aspect-video overflow-hidden rounded-xl">
+        {previewImage ? (
+          <Image
+            src={previewImage}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover object-center"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <span className="text-muted-foreground text-2xl font-semibold">
+              {initials}
+            </span>
           </div>
+        )}
+        <div className="absolute right-2 bottom-2 left-2 flex flex-wrap gap-1">
+          {cosplayer.roleBadge && (
+            <span className="bg-background text-foreground rounded-md px-2 py-1 text-xs font-medium">
+              {cosplayer.roleBadge}
+            </span>
+          )}
+          {cosplayer.specialties?.slice(0, 2).map((s) => (
+            <span
+              key={s}
+              className="bg-background text-foreground rounded-md px-2 py-1 text-xs"
+            >
+              {s}
+            </span>
+          ))}
         </div>
-      </Link>
-    </div>
+      </div>
+    </article>
   );
 }

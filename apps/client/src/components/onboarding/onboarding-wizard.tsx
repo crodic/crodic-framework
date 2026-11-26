@@ -13,7 +13,6 @@ import { useAuthStore } from "@/store/use-auth-store";
 import {
   ArrowLeft,
   ArrowRight,
-  BadgeCheck,
   Camera,
   Check,
   CheckCircle2,
@@ -71,6 +70,12 @@ import {
 import { cn } from "@/lib/utils";
 
 type OnboardingRole = "cosplayer" | "photographer" | "fan";
+
+const ROLES = [
+  { value: "cosplayer", icon: Palette },
+  { value: "photographer", icon: Camera },
+  { value: "fan", icon: Heart },
+] as const;
 
 const CITY_KEYS = [
   "hcm",
@@ -367,7 +372,7 @@ export function OnboardingWizard() {
   return (
     <div className="bg-background flex min-h-dvh flex-col">
       {/* Top Bar */}
-      <header className="border-border/60 bg-background/80 sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 backdrop-blur-md sm:px-8">
+      <header className="border-border bg-background sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <WhiteLabelLogo
             className="h-8 w-auto object-contain"
@@ -389,15 +394,15 @@ export function OnboardingWizard() {
       </header>
 
       {/* Main Wizard Area */}
-      <main className="flex flex-1 items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-2xl space-y-6 sm:space-y-8">
+      <main className="flex flex-1 items-start justify-center p-4 sm:p-6 lg:py-10">
+        <div className="w-full max-w-2xl space-y-6">
           {/* Progress Indicator */}
           <div className="space-y-2">
-            <div className="text-muted-foreground flex items-center justify-between text-xs font-semibold tracking-wider uppercase">
+            <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 text-sm">
               <span>
                 {t("stepProgress", { current: String(step), total: "3" })}
               </span>
-              <span className="text-primary font-bold">
+              <span className="text-foreground font-medium">
                 {step === 1
                   ? t("steps.role")
                   : step === 2
@@ -405,145 +410,70 @@ export function OnboardingWizard() {
                     : t("steps.ready")}
               </span>
             </div>
-            <Progress value={progressPercent} className="h-1.5" />
+            <Progress
+              value={progressPercent}
+              aria-label={t("stepProgress", {
+                current: String(step),
+                total: "3",
+              })}
+              className="h-1.5"
+            />
           </div>
 
           {/* STEP 1: ROLE SELECTION */}
           {step === 1 && (
-            <Card className="border-border/70 bg-card/90 rounded-2xl shadow-xl backdrop-blur-xl sm:rounded-3xl">
-              <CardContent className="space-y-6 p-6 sm:p-8">
-                <div className="space-y-2 text-center sm:text-left">
-                  <h1 className="text-foreground text-2xl font-black tracking-tight sm:text-3xl">
+            <Card className="rounded-2xl py-0 shadow-none">
+              <CardContent className="space-y-6 p-4 sm:p-6">
+                <div className="space-y-2">
+                  <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
                     {t("step1.title")}
                   </h1>
-                  <p className="text-muted-foreground text-sm leading-relaxed sm:text-base">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {t("step1.subtitle")}
                   </p>
                 </div>
 
-                {/* 3 Role Options */}
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {/* Option 1: Cosplayer / Creator */}
-                  <div
-                    onClick={() => setSelectedRole("cosplayer")}
-                    className={cn(
-                      "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-5 transition-all duration-200",
-                      selectedRole === "cosplayer"
-                        ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                        : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                    )}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                          <Palette className="size-5" />
-                        </div>
-                        {selectedRole === "cosplayer" && (
-                          <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                            <Check className="size-3 stroke-[3]" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <Badge
-                          variant="secondary"
-                          className="mb-1 text-[10px] tracking-wider uppercase"
-                        >
-                          {t("step1.roles.cosplayer.badge")}
-                        </Badge>
-                        <h2 className="text-foreground text-base font-bold">
-                          {t("step1.roles.cosplayer.title")}
-                        </h2>
-                      </div>
-                      <p className="text-muted-foreground text-xs leading-relaxed">
-                        {t("step1.roles.cosplayer.description")}
-                      </p>
-                    </div>
-                  </div>
+                <fieldset className="divide-border border-border divide-y border-y">
+                  <legend className="sr-only">{t("step1.title")}</legend>
+                  {ROLES.map(({ value, icon: Icon }) => {
+                    const isSelected = selectedRole === value;
 
-                  {/* Option 2: Photographer / Studio / MUA */}
-                  <div
-                    onClick={() => setSelectedRole("photographer")}
-                    className={cn(
-                      "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-5 transition-all duration-200",
-                      selectedRole === "photographer"
-                        ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                        : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                    )}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                          <Camera className="size-5" />
-                        </div>
-                        {selectedRole === "photographer" && (
-                          <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                            <Check className="size-3 stroke-[3]" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <Badge
-                          variant="secondary"
-                          className="mb-1 text-[10px] tracking-wider uppercase"
-                        >
-                          {t("step1.roles.photographer.badge")}
-                        </Badge>
-                        <h2 className="text-foreground text-base font-bold">
-                          {t("step1.roles.photographer.title")}
-                        </h2>
-                      </div>
-                      <p className="text-muted-foreground text-xs leading-relaxed">
-                        {t("step1.roles.photographer.description")}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Option 3: Cosplay Fan / Enthusiast */}
-                  <div
-                    onClick={() => setSelectedRole("fan")}
-                    className={cn(
-                      "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-5 transition-all duration-200",
-                      selectedRole === "fan"
-                        ? "border-primary bg-primary/[0.04] ring-primary/20 ring-2"
-                        : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-muted/40"
-                    )}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="bg-primary/15 text-primary flex size-10 items-center justify-center rounded-xl">
-                          <Heart className="size-5" />
-                        </div>
-                        {selectedRole === "fan" && (
-                          <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                            <Check className="size-3 stroke-[3]" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <Badge
-                          variant="secondary"
-                          className="mb-1 text-[10px] tracking-wider uppercase"
-                        >
-                          {t("step1.roles.fan.badge")}
-                        </Badge>
-                        <h2 className="text-foreground text-base font-bold">
-                          {t("step1.roles.fan.title")}
-                        </h2>
-                      </div>
-                      <p className="text-muted-foreground text-xs leading-relaxed">
-                        {t("step1.roles.fan.description")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                    return (
+                      <label
+                        key={value}
+                        className="hover:bg-muted/50 grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-2 py-4 transition-colors sm:px-3"
+                      >
+                        <Icon
+                          aria-hidden="true"
+                          className="text-muted-foreground mt-0.5 size-5"
+                        />
+                        <span className="space-y-1">
+                          <span className="text-foreground block text-sm font-semibold">
+                            {t(`step1.roles.${value}.title`)}
+                          </span>
+                          <span className="text-muted-foreground block text-sm leading-relaxed">
+                            {t(`step1.roles.${value}.description`)}
+                          </span>
+                        </span>
+                        <input
+                          type="radio"
+                          name="onboarding-role"
+                          value={value}
+                          checked={isSelected}
+                          onChange={() => setSelectedRole(value)}
+                          className="accent-primary focus-visible:ring-ring mt-1 size-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2"
+                        />
+                      </label>
+                    );
+                  })}
+                </fieldset>
 
                 {/* Continue Action */}
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end">
                   <Button
                     size="lg"
                     onClick={handleNextFromStep1}
-                    className="gap-2 rounded-xl px-6 font-semibold shadow-md shadow-purple-500/20"
+                    className="h-10"
                   >
                     <span>{t("step1.continueBtn")}</span>
                     <ArrowRight className="size-4" />
@@ -555,10 +485,10 @@ export function OnboardingWizard() {
 
           {/* STEP 2: PROFILE DETAILS (React Hook Form + Zod + System Tag Integration) */}
           {step === 2 && (
-            <Card className="border-border/70 bg-card/90 rounded-2xl shadow-xl backdrop-blur-xl sm:rounded-3xl">
-              <CardContent className="space-y-6 p-6 sm:p-8">
+            <Card className="rounded-2xl py-0 shadow-none">
+              <CardContent className="space-y-6 p-4 sm:p-6">
                 <div className="space-y-2">
-                  <h1 className="text-foreground text-2xl font-black tracking-tight sm:text-3xl">
+                  <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
                     {selectedRole === "fan"
                       ? t("step2.fanTitle")
                       : t("step2.creatorTitle")}
@@ -588,7 +518,7 @@ export function OnboardingWizard() {
                               placeholder={t(
                                 "step2.fields.displayNamePlaceholder"
                               )}
-                              className="rounded-xl"
+                              className="h-10"
                               {...field}
                             />
                           </FormControl>
@@ -607,26 +537,30 @@ export function OnboardingWizard() {
                             {t("step2.fields.handle")}{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2 text-sm font-bold">
-                                @
-                              </span>
+                          <div className="relative">
+                            <span
+                              aria-hidden="true"
+                              className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-sm"
+                            >
+                              @
+                            </span>
+                            <FormControl>
                               <Input
-                                value={field.value}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9_-]/g, "");
-                                  field.onChange(val);
-                                }}
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    e.target.value
+                                      .toLowerCase()
+                                      .replace(/[^a-z0-9_-]/g, "")
+                                  )
+                                }
                                 placeholder={t(
                                   "step2.fields.handlePlaceholder"
                                 )}
-                                className="rounded-xl pl-8"
+                                className="h-10 ps-8"
                               />
-                            </div>
-                          </FormControl>
+                            </FormControl>
+                          </div>
                           <FormDescription className="text-xs">
                             {t("step2.fields.handlePreview")}{" "}
                             <span className="text-primary font-mono font-medium">
@@ -654,7 +588,7 @@ export function OnboardingWizard() {
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-full rounded-xl">
+                              <SelectTrigger className="w-full data-[size=default]:h-10">
                                 <SelectValue
                                   placeholder={t(
                                     "step2.fields.locationPlaceholder"
@@ -707,13 +641,14 @@ export function OnboardingWizard() {
                                 <button
                                   key={spec.key}
                                   type="button"
+                                  aria-pressed={isSelected}
                                   onClick={() =>
                                     handleToggleSpecialty(spec.key)
                                   }
                                   className={cn(
-                                    "inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 select-none",
+                                    "focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 select-none focus-visible:ring-2",
                                     isSelected
-                                      ? "bg-primary text-primary-foreground ring-primary/30 shadow-xs ring-2 shadow-purple-500/25"
+                                      ? "bg-primary text-primary-foreground"
                                       : "border-border/80 bg-muted/60 text-muted-foreground hover:border-primary/40 hover:text-foreground border"
                                   )}
                                 >
@@ -750,9 +685,9 @@ export function OnboardingWizard() {
                                         handleToggleSpecialty(tag.name)
                                       }
                                       className={cn(
-                                        "inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium transition-all select-none",
+                                        "focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium transition-all select-none focus-visible:ring-2",
                                         isSelected
-                                          ? "bg-primary text-primary-foreground shadow-xs"
+                                          ? "bg-primary text-primary-foreground"
                                           : "border-border/60 bg-background/70 text-muted-foreground hover:border-primary/40 hover:text-foreground border"
                                       )}
                                     >
@@ -795,7 +730,7 @@ export function OnboardingWizard() {
                                 placeholder={t(
                                   "step2.fields.tagSearchPlaceholder"
                                 )}
-                                className="bg-background/50 border-border/70 h-9 rounded-xl pr-24 pl-9 text-xs"
+                                className="h-10 ps-9 pe-24 text-sm"
                               />
                               {trimmedTagInput && (
                                 <Button
@@ -815,7 +750,7 @@ export function OnboardingWizard() {
 
                             {/* Autocomplete Dropdown */}
                             {isTagSearchOpen && trimmedTagInput.length > 0 && (
-                              <div className="border-border/80 bg-popover/95 absolute top-full left-0 z-50 mt-1.5 max-h-52 w-full overflow-y-auto rounded-2xl border p-1.5 shadow-2xl backdrop-blur-md">
+                              <div className="bg-popover absolute start-0 top-full z-50 mt-2 max-h-52 w-full overflow-y-auto rounded-xl border p-1.5 shadow-md">
                                 <button
                                   type="button"
                                   onMouseDown={(e) => {
@@ -951,13 +886,13 @@ export function OnboardingWizard() {
                     />
 
                     {/* Form Navigation Actions */}
-                    <div className="flex items-center justify-between pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={handleBackToStep1}
                         disabled={isSubmitting}
-                        className="gap-2 rounded-xl"
+                        className="h-10"
                       >
                         <ArrowLeft className="size-4" />
                         <span>{t("step2.backBtn")}</span>
@@ -966,7 +901,7 @@ export function OnboardingWizard() {
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="gap-2 rounded-xl px-6 font-semibold shadow-md shadow-purple-500/20"
+                        className="h-10"
                       >
                         {isSubmitting ? (
                           <>
@@ -989,15 +924,15 @@ export function OnboardingWizard() {
 
           {/* STEP 3: READY / CELEBRATION */}
           {step === 3 && (
-            <Card className="border-border/70 bg-card/90 rounded-2xl shadow-xl backdrop-blur-xl sm:rounded-3xl">
-              <CardContent className="space-y-8 p-6 text-center sm:p-10">
+            <Card className="rounded-2xl py-0 shadow-none">
+              <CardContent className="space-y-6 p-4 text-center sm:p-6">
                 {/* Clean celebration icon */}
-                <div className="mx-auto flex size-20 items-center justify-center rounded-3xl bg-emerald-500/15 text-emerald-500 shadow-lg shadow-emerald-500/10">
-                  <CheckCircle2 className="size-10 stroke-[2.2]" />
+                <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="size-6" />
                 </div>
 
                 <div className="space-y-2">
-                  <h1 className="text-foreground text-2xl font-black tracking-tight sm:text-3xl">
+                  <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
                     {t("step3.title")}
                   </h1>
                   <p className="text-muted-foreground mx-auto max-w-md text-sm leading-relaxed sm:text-base">
@@ -1006,9 +941,9 @@ export function OnboardingWizard() {
                 </div>
 
                 {/* Summary Profile Preview Card */}
-                <div className="border-border/80 bg-background/60 mx-auto max-w-md space-y-4 rounded-2xl border p-5 text-left">
-                  <div className="flex items-center gap-3.5">
-                    <div className="bg-primary/20 text-primary flex size-12 items-center justify-center rounded-2xl font-bold">
+                <div className="border-border mx-auto max-w-md space-y-3 border-y px-2 py-4 text-start">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-lg">
                       <User className="size-6" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -1016,9 +951,8 @@ export function OnboardingWizard() {
                         <span className="text-foreground truncate font-bold">
                           {currentDisplayName}
                         </span>
-                        <BadgeCheck className="text-primary size-4 shrink-0" />
                       </div>
-                      <p className="text-muted-foreground truncate font-mono text-xs">
+                      <p className="text-muted-foreground truncate text-sm">
                         @{currentHandle}
                       </p>
                     </div>
@@ -1056,11 +990,11 @@ export function OnboardingWizard() {
                 {/* Role Request Notice */}
                 {(selectedRole === "cosplayer" ||
                   selectedRole === "photographer") && (
-                  <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-left">
-                    <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                  <div className="rounded-xl bg-amber-500/10 p-4 text-start">
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
                       {t("step3.pendingRoleTitle")}
                     </p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">
+                    <p className="text-muted-foreground mt-1 text-sm">
                       {t("step3.pendingRoleDesc")}
                     </p>
                   </div>
@@ -1071,7 +1005,7 @@ export function OnboardingWizard() {
                   <Button
                     size="lg"
                     onClick={() => handleFinish("/explore")}
-                    className="gap-2 rounded-xl px-7 font-bold shadow-md shadow-purple-500/25"
+                    className="h-10"
                   >
                     <Compass className="size-4" />
                     <span>{t("step3.exploreBtn")}</span>
@@ -1081,7 +1015,7 @@ export function OnboardingWizard() {
                     variant="outline"
                     size="lg"
                     onClick={() => handleFinish("/profile")}
-                    className="rounded-xl px-6 font-semibold"
+                    className="h-10"
                   >
                     {t("step3.profileBtn")}
                   </Button>

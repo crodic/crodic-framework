@@ -110,14 +110,12 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
       </nav>
 
       {/* 2. Tag Hero Header Section */}
-      <div className="border-border/70 bg-card relative overflow-hidden rounded-3xl border p-5 shadow-xs sm:p-8">
+      <div className="border-border bg-card relative rounded-xl border p-4 sm:p-6">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {/* Title & Badges */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-foreground text-2xl font-black tracking-tight sm:text-3xl">
-                #{tag.name}
-              </h1>
+              <h1 className="page-title wrap-anywhere">#{tag.name}</h1>
 
               {tag.isOfficial && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/25 bg-sky-500/10 px-2.5 py-0.5 text-xs font-semibold text-sky-600 dark:text-sky-400">

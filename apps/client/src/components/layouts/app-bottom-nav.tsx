@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Link, usePathname } from "@/i18n/navigation";
-import { Bell, Compass, Home, LogIn, User, Users } from "lucide-react";
+import { Compass, Home, LogIn, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -46,7 +46,7 @@ export function AppBottomNav() {
 
   return (
     <nav
-      className="bg-background/95 border-border/70 fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t px-4 py-1.5 shadow-lg backdrop-blur-md md:hidden"
+      className="bg-background border-border fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t px-2 pt-1 pb-[calc(0.25rem+env(safe-area-inset-bottom))] md:hidden"
       aria-label={t("exploreGroup")}
     >
       {navItems.map((item) => {
@@ -57,8 +57,9 @@ export function AppBottomNav() {
           <Link
             key={item.label}
             href={item.href}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "relative flex cursor-pointer flex-col items-center justify-center rounded-xl px-3 py-1 text-[10px] font-medium transition-colors",
+              "relative flex min-h-11 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors",
               isActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
@@ -70,7 +71,7 @@ export function AppBottomNav() {
                 <span className="bg-primary absolute -top-1 -right-1 size-2 rounded-full" />
               )}
             </div>
-            <span className="mt-1">{item.label}</span>
+            <span>{item.label}</span>
           </Link>
         );
       })}

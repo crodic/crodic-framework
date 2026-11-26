@@ -164,47 +164,54 @@ export function CosplayerProfileView({
       />
 
       {/* 2. Main Content Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="border-border/60 no-scrollbar mb-6 [scrollbar-width:none] overflow-x-auto overflow-y-hidden border-b [&::-webkit-scrollbar]:hidden">
-          <TabsList className="no-scrollbar flex h-auto w-max min-w-full [scrollbar-width:none] justify-start gap-3 rounded-none bg-transparent p-0 sm:gap-6 md:gap-8 [&::-webkit-scrollbar]:hidden">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full min-w-0"
+      >
+        <div className="border-border mb-4 max-w-full min-w-0 touch-pan-x scrollbar-none overflow-x-auto overscroll-x-contain border-b">
+          <TabsList
+            variant="line"
+            className="flex h-auto w-max min-w-full justify-start gap-1 p-1"
+          >
             {effectiveOwnerMode ? (
               /* OWNER TABS */
               <>
                 <TabsTrigger
                   value="following"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("followingTab")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="liked"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("likedTab")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="collections"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("collectionsTab")}
                 </TabsTrigger>
                 {initialAlbums.length > 0 && (
                   <TabsTrigger
                     value="albums"
-                    className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                    className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                   >
                     {t("myWorksTab")}
                   </TabsTrigger>
                 )}
                 <TabsTrigger
                   value="characters"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("charactersTab")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("aboutTab")}
                 </TabsTrigger>
@@ -214,19 +221,19 @@ export function CosplayerProfileView({
               <>
                 <TabsTrigger
                   value="albums"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("allAlbumsTab")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="characters"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("charactersTab")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
-                  className="data-[state=active]:text-primary after:bg-primary relative shrink-0 px-1 py-2 text-xs font-bold whitespace-nowrap transition-colors after:bottom-0 after:h-0.5 sm:text-base"
+                  className="data-[state=active]:text-primary after:bg-primary min-h-10 shrink-0 px-3 text-sm after:bottom-0"
                 >
                   {t("aboutTab")}
                 </TabsTrigger>

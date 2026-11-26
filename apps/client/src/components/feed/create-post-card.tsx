@@ -34,7 +34,7 @@ export function CreatePostCard() {
   };
 
   return (
-    <div className="border-border/70 bg-card/70 hover:border-border rounded-2xl border p-4 shadow-xs backdrop-blur-xs transition-colors">
+    <div className="border-border bg-card rounded-xl border p-4">
       <div className="flex items-center gap-3">
         {/* User Avatar */}
         <Avatar className="border-primary/30 size-10 shrink-0 border">

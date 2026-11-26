@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
   reactCompiler: true,
+  experimental: {
+    viewTransition: true,
+  },
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [

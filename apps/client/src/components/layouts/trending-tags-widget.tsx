@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Link, useRouter } from "@/i18n/navigation";
-import { ArrowRight, Flame } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { getTrendingTags, type TagSummaryResDto } from "@/services/tags";
@@ -10,7 +10,6 @@ import { getTrendingTags, type TagSummaryResDto } from "@/services/tags";
 export function TrendingTagsWidget() {
   const t = useTranslations("Feed");
   const locale = useLocale();
-  const router = useRouter();
 
   const { data: tags = [], isLoading } = useQuery<TagSummaryResDto[]>({
     queryKey: ["right-rail-trending-tags", locale],
@@ -24,19 +23,14 @@ export function TrendingTagsWidget() {
   if (!isLoading && (!tags || tags.length === 0)) return null;
 
   return (
-    <div className="border-border/70 bg-card/70 rounded-2xl border p-4 shadow-xs backdrop-blur-xs">
-      <div className="mb-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/15 text-amber-500">
-            <Flame className="size-3.5 fill-amber-500" />
-          </div>
-          <h3 className="text-foreground text-sm font-bold">
-            {t("trendingTags")}
-          </h3>
-        </div>
+    <div className="border-border bg-card rounded-xl border p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-foreground text-base font-semibold">
+          {t("trendingTags")}
+        </h3>
         <Link
           href="/tags"
-          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-semibold transition-colors"
+          className="text-primary inline-flex min-h-8 shrink-0 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
         >
           <span>{t("viewAll")}</span>
           <ArrowRight className="size-3" />
@@ -64,7 +58,7 @@ export function TrendingTagsWidget() {
                 </span>
                 <span>{tag.name}</span>
                 {tag.usageCount > 0 && (
-                  <span className="text-muted-foreground/60 text-[10px] tabular-nums">
+                  <span className="text-muted-foreground text-xs tabular-nums">
                     {tag.usageCount}
                   </span>
                 )}

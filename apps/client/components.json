@@ -20,6 +20,7 @@
   },
   "registries": {
     "@reui": "https://reui.io/r/{name}.json",
-    "@efferd": "https://efferd.com/r/{name}.json"
+    "@efferd": "https://efferd.com/r/{name}.json",
+    "@transition-kit": "https://transition-kit.space/r/{name}.json"
   }
 }

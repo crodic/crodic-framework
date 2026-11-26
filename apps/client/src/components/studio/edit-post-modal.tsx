@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -124,17 +124,12 @@ export function EditPostModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-border/80 bg-card/95 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl p-5 shadow-2xl backdrop-blur-md sm:p-6">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto rounded-2xl p-4 sm:max-w-lg sm:p-6">
         <DialogHeader>
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-xl">
-              <Pencil className="size-4" />
-            </div>
-            <DialogTitle className="text-base font-bold sm:text-lg">
-              {tFeed("editPost")}
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-muted-foreground text-xs">
+          <DialogTitle className="text-lg font-semibold">
+            {tFeed("editPost")}
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
             {tFeed("editPostDesc")}
           </DialogDescription>
         </DialogHeader>
@@ -142,24 +137,24 @@ export function EditPostModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* Tiêu đề */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">{t("titleLabel")}</Label>
+            <Label className="text-sm font-medium">{t("titleLabel")}</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("titlePlaceholder")}
-              className="border-border/70 bg-background/50 h-9.5 rounded-xl text-xs sm:text-sm"
+              className="h-10"
               required
             />
           </div>
 
           {/* Lời ngỏ / Caption */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">{t("descLabel")}</Label>
+            <Label className="text-sm font-medium">{t("descLabel")}</Label>
             <Textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={t("descPlaceholder")}
-              className="border-border/70 bg-background/50 min-h-[80px] rounded-xl text-xs sm:text-sm"
+              className="min-h-20"
               rows={3}
             />
           </div>
@@ -167,7 +162,7 @@ export function EditPostModal({
           {/* Nhân vật & Series */}
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">
+              <Label className="text-sm font-medium">
                 {t("characterLabel")}
               </Label>
               <CharacterAutocomplete
@@ -184,9 +179,7 @@ export function EditPostModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">
-                {t("seriesLabel")}
-              </Label>
+              <Label className="text-sm font-medium">{t("seriesLabel")}</Label>
               <SeriesAutocomplete
                 value={fandomName}
                 onChange={setFandomName}
@@ -197,11 +190,9 @@ export function EditPostModal({
 
           {/* Danh mục Album */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
-              {t("categoryLabel")}
-            </Label>
+            <Label className="text-sm font-medium">{t("categoryLabel")}</Label>
             <Select value={albumCategory} onValueChange={setAlbumCategory}>
-              <SelectTrigger className="border-border/70 bg-background/50 h-9.5 rounded-xl text-xs sm:text-sm">
+              <SelectTrigger className="w-full data-[size=default]:h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -220,7 +211,7 @@ export function EditPostModal({
 
           {/* Tag Picker */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">{t("tagCharacter")}</Label>
+            <Label className="text-sm font-medium">{t("tagCharacter")}</Label>
             <TagPicker
               value={tags}
               onChange={setTags}
@@ -233,10 +224,10 @@ export function EditPostModal({
           <div className="border-border/60 space-y-3 rounded-xl border p-3">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-xs font-semibold">
+                <Label className="text-sm font-medium">
                   {t("publicAlbum")}
                 </Label>
-                <p className="text-muted-foreground text-[11px]">
+                <p className="text-muted-foreground text-sm">
                   {t("publicAlbumDesc")}
                 </p>
               </div>
@@ -245,10 +236,8 @@ export function EditPostModal({
 
             <div className="border-border/40 flex items-center justify-between border-t pt-2.5">
               <div>
-                <Label className="text-xs font-semibold">
-                  {t("watermark")}
-                </Label>
-                <p className="text-muted-foreground text-[11px]">
+                <Label className="text-sm font-medium">{t("watermark")}</Label>
+                <p className="text-muted-foreground text-sm">
                   {t("watermarkDesc")}
                 </p>
               </div>

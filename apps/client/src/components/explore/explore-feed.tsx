@@ -4,16 +4,23 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { Check, Flame, Loader2, Search, SearchX, Users } from "lucide-react";
+import { Check, Loader2, Search, SearchX, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ListError } from "@/components/common/list-error";
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   StaggerContainer,
   StaggerItem,
   HoverLiftCard,
-  TabIndicator,
 } from "@/components/ui/motion-primitives";
 import { ExploreCard } from "./explore-card";
-import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { getPosts, type PostSummaryResDto } from "@/services/posts";
@@ -26,6 +33,8 @@ import {
 
 export function ExploreFeed() {
   const t = useTranslations("Explore");
+  const tNav = useTranslations("Navigation");
+  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,20 +91,28 @@ export function ExploreFeed() {
   const effectiveSearch =
     searchQuery || (selectedTagObj ? selectedTagObj.name : undefined);
 
-  const { data: postsResponse, isLoading: isLoadingPosts } = useQuery({
+  const {
+    data: postsResponse,
+    isLoading: isLoadingPosts,
+    isError: isPostsError,
+    refetch: refetchPosts,
+  } = useQuery({
     queryKey: ["explore-posts", effectiveSearch, isAuthenticated],
     queryFn: () =>
       getPosts({ search: effectiveSearch || undefined, limit: 50 }),
     enabled: !isHydrating,
   });
 
-  const { data: cosplayersResponse, isLoading: isLoadingCosplayers } = useQuery(
-    {
-      queryKey: ["explore-cosplayers", searchQuery],
-      queryFn: () =>
-        getCosplayers({ search: searchQuery || undefined, limit: 20 }),
-    }
-  );
+  const {
+    data: cosplayersResponse,
+    isLoading: isLoadingCosplayers,
+    isError: isCosplayersError,
+    refetch: refetchCosplayers,
+  } = useQuery({
+    queryKey: ["explore-cosplayers", searchQuery],
+    queryFn: () =>
+      getCosplayers({ search: searchQuery || undefined, limit: 20 }),
+  });
 
   const posts: PostSummaryResDto[] = useMemo(() => {
     return postsResponse?.data || [];
@@ -145,11 +162,16 @@ export function ExploreFeed() {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-6">
+      <h1 className="page-title">{tNav("explore")}</h1>
       {/* 1. CATEGORY TABS & TRENDING TAGS */}
       <div className="space-y-4">
         {/* Category Tabs */}
-        <div className="border-border/60 flex scrollbar-none items-center gap-2 overflow-x-auto border-b pb-2">
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={tNav("explore")}
+        >
           {filterTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -157,20 +179,10 @@ export function ExploreFeed() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "relative cursor-pointer rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors select-none sm:text-sm",
-                  isActive
-                    ? "text-primary-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                )}
+                aria-pressed={isActive}
+                className="filter-button"
               >
-                {isActive && (
-                  <TabIndicator
-                    layoutId="exploreActiveCategoryTab"
-                    className="rounded-xl shadow-sm"
-                  />
-                )}
-                <span className="relative z-10">{tab.label}</span>
+                {tab.label}
               </button>
             );
           })}
@@ -178,11 +190,14 @@ export function ExploreFeed() {
 
         {/* Trending Fandoms / Tags Section */}
         {exploreTags.length > 1 && (
-          <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-1">
-            <div className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs font-bold uppercase select-none">
-              <Flame className="size-3.5 fill-rose-500 text-rose-500" />
-              <span className="hidden sm:inline">{t("trendingFandoms")}:</span>
-            </div>
+          <div
+            className="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label={t("trendingFandoms")}
+          >
+            <span className="text-muted-foreground text-sm">
+              {t("trendingFandoms")}
+            </span>
 
             {exploreTags.map((tag) => {
               const isSelected = selectedTag === tag.id;
@@ -191,12 +206,8 @@ export function ExploreFeed() {
                   key={tag.id}
                   type="button"
                   onClick={() => setSelectedTag(tag.id)}
-                  className={cn(
-                    "cursor-pointer rounded-full px-3.5 py-1 text-xs font-semibold whitespace-nowrap transition-all select-none",
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border/40 border"
-                  )}
+                  aria-pressed={isSelected}
+                  className="filter-button"
                 >
                   {tag.label}
                 </button>
@@ -241,6 +252,8 @@ export function ExploreFeed() {
             <div className="flex min-h-[100px] items-center justify-center">
               <Loader2 className="text-primary size-6 animate-spin" />
             </div>
+          ) : isCosplayersError && !cosplayersResponse ? (
+            <ListError onRetry={() => void refetchCosplayers()} />
           ) : cosplayers.length > 0 ? (
             <StaggerContainer className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {cosplayers.map((cosplayer) => (
@@ -295,9 +308,20 @@ export function ExploreFeed() {
       {activeTab !== "cosplayers" && (
         <section>
           {isLoadingPosts ? (
-            <div className="flex min-h-[300px] items-center justify-center">
-              <Loader2 className="text-primary size-8 animate-spin" />
+            <div
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              role="status"
+            >
+              <span className="sr-only">{tCommon("loading")}</span>
+              {Array.from({ length: 3 }, (_, index) => (
+                <Skeleton
+                  key={index}
+                  className="aspect-[4/3] rounded-xl motion-reduce:animate-none"
+                />
+              ))}
             </div>
+          ) : isPostsError && !postsResponse ? (
+            <ListError onRetry={() => void refetchPosts()} />
           ) : filteredItems.length > 0 ? (
             <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
               {filteredItems.map((item) => (
@@ -307,22 +331,29 @@ export function ExploreFeed() {
               ))}
             </StaggerContainer>
           ) : (
-            <div className="border-border/70 bg-card/40 flex flex-col items-center justify-center rounded-2xl border p-12 text-center">
-              <div className="bg-muted/60 text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-full">
-                <SearchX className="size-6" />
-              </div>
-              <h3 className="text-foreground text-base font-bold">
-                {t("noResults")}
-              </h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearSearch}
-                className="mt-4 cursor-pointer rounded-xl text-xs font-semibold"
-              >
-                {t("clearSearch")}
-              </Button>
-            </div>
+            <Empty className="border-border gap-4 rounded-xl border">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <SearchX aria-hidden="true" />
+                </EmptyMedia>
+                <EmptyTitle>{t("noResults")}</EmptyTitle>
+              </EmptyHeader>
+              {(searchQuery ||
+                selectedTag !== "all" ||
+                activeTab !== "all") && (
+                <EmptyContent>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setActiveTab("all");
+                      handleClearSearch();
+                    }}
+                  >
+                    {t("clearFilter")}
+                  </Button>
+                </EmptyContent>
+              )}
+            </Empty>
           )}
         </section>
       )}

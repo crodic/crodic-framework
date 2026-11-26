@@ -30,8 +30,10 @@ export default async function NotificationsPage({
   setRequestLocale(locale);
 
   return (
-    <Layout>
-      <NotificationsView />
+    <Layout showRightRail={false}>
+      <div className="mx-auto w-full max-w-5xl">
+        <NotificationsView />
+      </div>
     </Layout>
   );
 }

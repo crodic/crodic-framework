@@ -2,14 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import {
-  Bell,
-  CheckCheck,
-  Filter,
-  Loader2,
-  MessageSquare,
-  Settings,
-} from "lucide-react";
+import { Bell, CheckCheck, Filter, Loader2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -34,6 +27,7 @@ import {
 
 export function NotificationsView() {
   const t = useTranslations("Notifications");
+  const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
   const isHydrating = useAuthStore((state) => state.isHydrating);
@@ -44,6 +38,7 @@ export function NotificationsView() {
   const {
     data: notificationsResponse,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ["notifications"],
@@ -119,119 +114,91 @@ export function NotificationsView() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Banner & Action Bar */}
-      <div className="border-border/70 bg-card relative overflow-hidden rounded-2xl border p-6 shadow-xs sm:p-8">
-        <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-          <div className="flex items-start gap-4">
-            <div className="bg-primary/10 border-primary/20 text-primary flex size-12 shrink-0 items-center justify-center rounded-xl border sm:size-14">
-              <Bell className="size-6 sm:size-7" />
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-foreground text-xl font-extrabold tracking-tight sm:text-2xl">
-                  {t("title")}
-                </h1>
-                {unreadCount > 0 && (
-                  <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold tabular-nums">
-                    {t("newCount", { count: String(unreadCount) })}
-                  </span>
-                )}
-              </div>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                {t("desc")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
+              {t("title")}
+            </h1>
             {unreadCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                className="border-border/80 bg-background/60 hover:bg-primary/10 hover:text-primary h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-              >
-                <CheckCheck className="size-4" />
-                <span>{t("markAllRead")}</span>
-              </Button>
+              <span className="bg-muted text-foreground rounded-md px-2 py-1 text-xs font-medium tabular-nums">
+                {t("newCount", { count: String(unreadCount) })}
+              </span>
             )}
+          </div>
+          <p className="text-muted-foreground text-sm">{t("desc")}</p>
+        </div>
 
+        <div className="flex flex-wrap gap-2">
+          {unreadCount > 0 && (
             <Button
               variant="outline"
-              size="sm"
-              asChild
-              className="border-border/80 bg-background/60 hover:bg-card h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
+              onClick={handleMarkAllAsRead}
+              className="h-10"
             >
-              <Link href="/settings">
-                <Settings className="text-muted-foreground size-4" />
-                <span>{t("settings")}</span>
-              </Link>
+              <CheckCheck aria-hidden="true" />
+              {t("markAllRead")}
             </Button>
-          </div>
+          )}
+          <Button asChild variant="outline" className="h-10">
+            <Link href="/settings">
+              <Settings aria-hidden="true" />
+              {t("settings")}
+            </Link>
+          </Button>
         </div>
+      </header>
+
+      <div className="border-border flex flex-wrap items-center justify-between gap-3 border-b pb-3">
+        <div className="flex flex-wrap gap-1">
+          {(["all", "social", "system"] as const).map((category) => (
+            <Button
+              key={category}
+              variant={activeCategory === category ? "secondary" : "ghost"}
+              size="sm"
+              aria-pressed={activeCategory === category}
+              onClick={() => setActiveCategory(category)}
+              className="h-9"
+            >
+              {t(`tabs.${category}`)}
+              <span className="text-muted-foreground tabular-nums">
+                {categoryCounts[category]}
+              </span>
+            </Button>
+          ))}
+        </div>
+
+        <Button
+          variant={showUnreadOnly ? "secondary" : "outline"}
+          size="sm"
+          aria-pressed={showUnreadOnly}
+          onClick={() => setShowUnreadOnly((prev) => !prev)}
+          className="h-9"
+        >
+          <Filter aria-hidden="true" />
+          {t("unreadFilter", { count: String(unreadCount) })}
+        </Button>
       </div>
 
-      {/* 2. Category Filter Tabs Bar */}
-      <div className="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-        <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto sm:gap-2">
-          <Button
-            size="sm"
-            variant={activeCategory === "all" ? "default" : "ghost"}
-            onClick={() => setActiveCategory("all")}
-            className="h-8.5 cursor-pointer rounded-xl text-xs font-semibold"
-          >
-            {t("tabs.all")} ({categoryCounts.all})
-          </Button>
-
-          <Button
-            size="sm"
-            variant={activeCategory === "social" ? "default" : "ghost"}
-            onClick={() => setActiveCategory("social")}
-            className="h-8.5 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-          >
-            <MessageSquare className="size-3.5" />
-            <span>{t("tabs.social")}</span>
-            <span className="text-[11px] opacity-80">
-              ({categoryCounts.social})
-            </span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant={activeCategory === "system" ? "default" : "ghost"}
-            onClick={() => setActiveCategory("system")}
-            className="h-8.5 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-          >
-            <Bell className="size-3.5" />
-            <span>{t("tabs.system")}</span>
-            <span className="text-[11px] opacity-80">
-              ({categoryCounts.system})
-            </span>
-          </Button>
+      {isLoading || isHydrating ? (
+        <div
+          role="status"
+          className="flex min-h-48 items-center justify-center"
+        >
+          <Loader2
+            aria-hidden="true"
+            className="text-muted-foreground size-5 animate-spin"
+          />
+          <span className="sr-only">{tCommon("loading")}</span>
         </div>
-
-        {/* Unread Toggle */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant={showUnreadOnly ? "secondary" : "outline"}
-            size="sm"
-            onClick={() => setShowUnreadOnly((prev) => !prev)}
-            className="border-border/70 h-8.5 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-          >
-            <Filter className="size-3.5" />
-            <span>{t("unreadFilter", { count: String(unreadCount) })}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* 3. Notifications Feed List */}
-      {isLoading ? (
-        <div className="flex min-h-[300px] items-center justify-center">
-          <Loader2 className="text-primary size-8 animate-spin" />
-        </div>
+      ) : isError && notifications.length === 0 ? (
+        <Empty className="py-12" role="status">
+          <EmptyHeader>
+            <EmptyDescription>{t("errorOccurred")}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : filteredNotifications.length > 0 ? (
-        <div className="space-y-3">
+        <div className="divide-border divide-y">
           {filteredNotifications.map((notification) => (
             <NotificationItemCard
               key={notification.id}
@@ -242,19 +209,13 @@ export function NotificationsView() {
           ))}
         </div>
       ) : (
-        <Empty className="border-border/60 bg-card/40 rounded-3xl border border-dashed py-16 text-center">
-          <EmptyMedia>
-            <div className="bg-muted/70 text-muted-foreground flex size-14 items-center justify-center rounded-2xl">
-              <Bell className="size-7" />
-            </div>
+        <Empty className="gap-3 py-12">
+          <EmptyMedia variant="icon" className="mb-0">
+            <Bell aria-hidden="true" className="size-5" />
           </EmptyMedia>
           <EmptyHeader>
-            <EmptyTitle className="text-foreground text-base font-bold">
-              {t("emptyTitle")}
-            </EmptyTitle>
-            <EmptyDescription className="text-muted-foreground mt-1 max-w-sm text-xs">
-              {t("emptyDesc")}
-            </EmptyDescription>
+            <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+            <EmptyDescription>{t("emptyDesc")}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       )}

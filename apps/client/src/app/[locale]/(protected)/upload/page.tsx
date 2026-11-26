@@ -25,16 +25,16 @@ export default async function StudioUploadPage({ params }: UploadPageProps) {
   const t = await getTranslations({ locale, namespace: "Studio" });
 
   return (
-    <Layout showRightRail={true}>
-      <div className="space-y-6">
-        <div className="mb-6">
-          <h1 className="text-foreground text-2xl font-bold tracking-tight">
+    <Layout showRightRail={false}>
+      <div className="mx-auto w-full max-w-5xl space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
             {t("createAlbumTitle")}
           </h1>
           <p className="text-muted-foreground text-sm">
             {t("createAlbumDesc")}
           </p>
-        </div>
+        </header>
 
         <StudioUploadView />
       </div>

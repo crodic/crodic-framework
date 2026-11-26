@@ -25,13 +25,13 @@ export function AppShell({
       <AppSidebar />
 
       {/* Main Content Inset */}
-      <SidebarInset className="bg-background flex h-dvh min-h-dvh flex-col overflow-hidden">
+      <SidebarInset className="bg-background flex h-dvh min-h-dvh min-w-0 flex-col overflow-hidden">
         <AppHeader />
-        <div className="flex-1 overflow-y-auto pb-16 md:pb-6">
-          <div className="flex w-full items-start gap-4 px-3 py-4 sm:px-5 sm:py-5 lg:gap-6 lg:px-6">
+        <div className="flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
+          <div className="mx-auto flex w-full max-w-screen-2xl items-start gap-6 p-4 sm:p-6">
             <main className="min-w-0 flex-1">{children}</main>
             {showRightRail && (
-              <aside className="hidden w-[340px] shrink-0 space-y-5 self-start xl:sticky xl:top-4 xl:block">
+              <aside className="hidden w-80 shrink-0 self-start xl:sticky xl:top-6 xl:block">
                 <AppRightRail />
               </aside>
             )}

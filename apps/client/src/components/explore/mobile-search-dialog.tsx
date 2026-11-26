@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Flame, History, Search, TrendingUp, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export interface MobileSearchDialogProps {
@@ -18,7 +18,7 @@ export interface MobileSearchDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const POPULAR_SEARCHES = [
+const SUGGESTED_SEARCHES = [
   "Acheron",
   "Raiden Shogun",
   "Honkai Star Rail",
@@ -35,6 +35,7 @@ export function MobileSearchDialog({
   const router = useRouter();
   const t = useTranslations("Explore");
   const tCommon = useTranslations("Common");
+  const tNav = useTranslations("Navigation");
   const [query, setQuery] = useState("");
 
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
@@ -82,14 +83,18 @@ export function MobileSearchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-border/80 bg-background/95 fixed top-0 right-0 left-0 z-50 m-0 max-h-none w-full max-w-full translate-x-0 translate-y-0 rounded-none border-b p-4 shadow-2xl backdrop-blur-md sm:hidden">
+      <DialogContent
+        showCloseButton={false}
+        aria-describedby={undefined}
+        className="bg-background max-h-[85dvh] gap-4 overflow-y-auto rounded-xl p-4 sm:p-6"
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>{t("searchPlaceholder")}</DialogTitle>
         </DialogHeader>
 
         {/* Search input form */}
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 pt-2">
-          <div className="relative flex-1">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               autoFocus
@@ -97,51 +102,54 @@ export function MobileSearchDialog({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="border-border/80 bg-muted/40 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-10 w-full rounded-xl pr-9 pl-9 text-xs"
+              aria-label={tCommon("search")}
+              className="h-11 w-full rounded-lg pr-10 pl-9 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setQuery("")}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-full p-0.5"
+                aria-label={tNav("clearSearch")}
+                className="text-muted-foreground absolute top-1/2 right-1 -translate-y-1/2"
               >
-                <X className="size-3.5" />
-              </button>
+                <X aria-hidden="true" />
+              </Button>
             )}
           </div>
 
           <Button
             type="submit"
             size="sm"
-            className="bg-primary text-primary-foreground h-10 rounded-xl px-3 text-xs font-semibold"
+            disabled={!query.trim()}
+            className="h-11 rounded-lg px-3"
           >
             {tCommon("search")}
           </Button>
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => onOpenChange(false)}
-            className="text-muted-foreground h-10 px-2 text-xs"
+            aria-label={tCommon("close")}
+            className="text-muted-foreground size-11 rounded-lg"
           >
-            {tCommon("close")}
+            <X aria-hidden="true" />
           </Button>
         </form>
 
         {/* Suggestions & Recent searches */}
-        <div className="mt-4 space-y-4 pb-2">
+        <div className="space-y-4">
           {/* Recent searches */}
           {recentSearches.length > 0 && (
             <div>
-              <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs font-semibold">
-                <div className="flex items-center gap-1.5">
-                  <History className="size-3.5" />
-                  <span>{t("recentSearches")}</span>
-                </div>
+              <div className="mb-2 flex items-center justify-between gap-2 text-sm font-medium">
+                <h2>{t("recentSearches")}</h2>
                 <button
                   type="button"
                   onClick={handleClearRecent}
-                  className="text-muted-foreground/80 hover:text-foreground cursor-pointer text-[11px]"
+                  className="text-muted-foreground hover:text-foreground min-h-8 cursor-pointer underline-offset-4 hover:underline"
                 >
                   {t("clearRecent")}
                 </button>
@@ -152,7 +160,7 @@ export function MobileSearchDialog({
                     key={item}
                     type="button"
                     onClick={() => handleSearch(item)}
-                    className="border-border/60 bg-card/60 hover:bg-muted text-foreground/90 flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1 text-xs transition-colors"
+                    className="filter-button"
                   >
                     <span>{item}</span>
                   </button>
@@ -163,19 +171,15 @@ export function MobileSearchDialog({
 
           {/* Popular searches */}
           <div>
-            <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-semibold">
-              <Flame className="size-3.5 fill-amber-500 text-amber-500" />
-              <span>{t("popularSearches")}</span>
-            </div>
+            <h2 className="mb-2 text-sm font-medium">{t("popularSearches")}</h2>
             <div className="flex flex-wrap gap-1.5">
-              {POPULAR_SEARCHES.map((item) => (
+              {SUGGESTED_SEARCHES.map((item) => (
                 <button
                   key={item}
                   type="button"
                   onClick={() => handleSearch(item)}
-                  className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
+                  className="filter-button"
                 >
-                  <TrendingUp className="size-3" />
                   <span>{item}</span>
                 </button>
               ))}

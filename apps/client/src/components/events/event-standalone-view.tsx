@@ -59,7 +59,7 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* 1. HERO BANNER HEADER */}
-      <div className="border-border/80 bg-card relative overflow-hidden rounded-3xl border">
+      <div className="border-border bg-card relative overflow-hidden rounded-2xl border">
         <div className="relative h-64 w-full sm:h-80 md:h-96 lg:h-[420px]">
           <Image
             src={event.bannerImageUrl || event.imageUrl}
@@ -78,7 +78,7 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
               <span className="text-xl leading-none font-black sm:text-3xl">
                 {event.dayLabel}
               </span>
-              <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase sm:text-xs">
+              <span className="text-xs font-medium text-white/85">
                 {event.monthLabel}
               </span>
             </div>
@@ -92,7 +92,8 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-8 cursor-pointer rounded-full border-white/20 bg-black/65 px-3 text-xs text-white hover:bg-black/85"
+                aria-label={tDetail("share")}
+                className="h-10 rounded-lg border-white/20 bg-black/75 px-3 text-sm text-white hover:bg-black/90 hover:text-white"
               >
                 <Share2 className="mr-1.5 size-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">{tDetail("share")}</span>

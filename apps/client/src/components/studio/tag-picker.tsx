@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, X, Sparkles, Flame, Check } from "lucide-react";
+import { Plus, X, Flame, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -113,19 +112,19 @@ export function TagPicker({
   return (
     <div ref={containerRef} className={cn("space-y-3", className)}>
       {/* A. Selected Tags Container */}
-      <div className="flex min-h-[36px] flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         {value.map((tag, idx) => (
           <span
             key={`${tag}-${idx}`}
-            className="group bg-primary/10 text-primary border-primary/20 hover:border-primary/40 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all select-none"
+            className="bg-muted text-foreground inline-flex max-w-full items-center gap-1 rounded-md px-2 py-0.5 text-sm"
           >
             <span className="text-primary/70">#</span>
             <span>{tag}</span>
             <button
               type="button"
               onClick={() => handleRemoveTag(tag)}
-              className="text-primary/60 hover:text-primary hover:bg-primary/20 -mr-1 ml-0.5 cursor-pointer rounded-full p-0.5 transition-colors"
-              title={t("removeTag", { tag })}
+              className="text-muted-foreground hover:text-foreground hover:bg-background focus-visible:ring-ring flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:ring-2"
+              aria-label={t("removeTag", { tag })}
             >
               <X className="size-3" />
             </button>
@@ -133,7 +132,7 @@ export function TagPicker({
         ))}
 
         {value.length === 0 && (
-          <span className="text-muted-foreground/60 text-xs italic select-none">
+          <span className="text-muted-foreground text-xs">
             {t("noTagsYet")}
           </span>
         )}
@@ -142,7 +141,7 @@ export function TagPicker({
       {/* B. Input Field with Autocomplete & Custom Tag Option */}
       <div className="relative">
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className="relative min-w-0 flex-1">
             <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xs font-bold">
               #
             </span>
@@ -169,7 +168,7 @@ export function TagPicker({
                   ? t("tagLimitReached")
                   : t("tagInputPlaceholder")
               }
-              className="border-border/70 bg-background/50 focus-visible:ring-primary/40 focus-visible:border-primary/60 h-9.5 rounded-xl pr-3 pl-7 text-xs sm:text-sm"
+              className="h-10 ps-7"
             />
           </div>
 
@@ -181,7 +180,7 @@ export function TagPicker({
               if (trimmedInput) handleAddTag(trimmedInput);
             }}
             disabled={!trimmedInput || value.length >= maxTags}
-            className="border-border/70 hover:border-primary/60 hover:text-primary h-9.5 cursor-pointer rounded-xl px-3 text-xs font-semibold"
+            className="h-10"
           >
             <Plus className="mr-1 size-3.5" />
             <span>{t("addTag")}</span>
@@ -190,35 +189,26 @@ export function TagPicker({
 
         {/* C. Autocomplete Dropdown */}
         {isOpen && trimmedInput.length > 0 && (
-          <div className="border-border/80 bg-popover/95 absolute top-full left-0 z-50 mt-1.5 max-h-56 w-full overflow-y-auto rounded-2xl border p-1.5 shadow-2xl backdrop-blur-md">
+          <div className="bg-popover absolute start-0 top-full z-50 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border p-1.5 shadow-md">
             {/* Custom tag add CTA if not exact match */}
             <button
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                handleAddTag(trimmedInput);
-              }}
-              className="hover:bg-primary/10 text-primary flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleAddTag(trimmedInput)}
+              className="hover:bg-primary/10 text-primary flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-start text-sm font-semibold transition-colors"
             >
               <div className="flex items-center gap-1.5">
-                <Sparkles className="size-3.5" />
                 <span>
                   {t("addCustomTag")}:{" "}
                   <strong className="underline">#{trimmedInput}</strong>
                 </span>
               </div>
-              <Badge
-                variant="outline"
-                className="border-primary/30 text-[10px] font-normal"
-              >
-                Custom
-              </Badge>
             </button>
 
             {/* System Tag Management Autocomplete items */}
             {suggestions.length > 0 && (
               <div className="border-border/40 mt-1 border-t pt-1">
-                <div className="text-muted-foreground/80 px-2 py-1 text-[10px] font-bold tracking-wider uppercase">
+                <div className="text-muted-foreground px-2 py-1 text-xs font-medium">
                   {t("systemTags")}
                 </div>
                 {suggestions.map((sug) => {
@@ -228,12 +218,10 @@ export function TagPicker({
                       key={sug.id}
                       type="button"
                       disabled={isSelected}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleAddTag(sug.name);
-                      }}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleAddTag(sug.name)}
                       className={cn(
-                        "flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors",
+                        "flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-start text-sm transition-colors",
                         isSelected
                           ? "bg-muted/30 cursor-not-allowed opacity-50"
                           : "hover:bg-muted"
@@ -251,7 +239,7 @@ export function TagPicker({
                       </div>
                       <div className="flex items-center gap-2">
                         {sug.usageCount > 0 && (
-                          <span className="text-muted-foreground text-[11px] tabular-nums">
+                          <span className="text-muted-foreground text-xs tabular-nums">
                             {sug.usageCount.toLocaleString()}
                           </span>
                         )}

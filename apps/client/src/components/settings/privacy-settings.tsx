@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  AlertTriangle,
-  Download,
-  EyeOff,
-  LogOut,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { Download, LogOut, Tag, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +9,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
@@ -24,6 +16,7 @@ import { useSignOut } from "@/hooks/use-profile";
 
 export function PrivacySettings() {
   const t = useTranslations("Settings.privacy");
+  const tStudio = useTranslations("Studio");
   const signOutMutation = useSignOut();
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [mutedTags, setMutedTags] = useState<string[]>([
@@ -43,39 +36,37 @@ export function PrivacySettings() {
   return (
     <div className="space-y-6">
       {/* 1. Privacy Settings */}
-      <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <EyeOff className="text-primary size-4" />
-            <span>{t("title")}</span>
-          </CardTitle>
-          <CardDescription className="text-xs">{t("desc")}</CardDescription>
+      <Card className="rounded-xl shadow-none">
+        <CardHeader className="px-4 sm:px-6">
+          <h2 className="text-lg font-semibold">{t("title")}</h2>
+          <CardDescription>{t("desc")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3.5">
+        <CardContent className="space-y-4 px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5 pr-4">
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
+              <p className="text-foreground text-sm font-medium">
                 {t("onlineStatus")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {t("onlineStatusDesc")}
               </p>
             </div>
             <Switch
+              aria-label={t("onlineStatus")}
               checked={showOnlineStatus}
               onCheckedChange={setShowOnlineStatus}
             />
           </div>
 
           {/* Muted Tags */}
-          <div className="bg-muted/40 border-border/50 space-y-2.5 rounded-xl border p-3.5">
+          <div className="border-border space-y-2 border-t pt-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <p className="text-foreground flex items-center gap-1.5 text-xs font-semibold sm:text-sm">
+                <p className="text-foreground flex items-center gap-1.5 text-sm font-medium">
                   <Tag className="text-primary size-3.5" />
                   <span>{t("mutedTags")}</span>
                 </p>
-                <p className="text-muted-foreground text-[11px]">
+                <p className="text-muted-foreground text-xs">
                   {t("mutedTagsDesc")}
                 </p>
               </div>
@@ -92,9 +83,10 @@ export function PrivacySettings() {
                   <button
                     type="button"
                     onClick={() => removeMutedTag(tag)}
-                    className="hover:text-destructive text-muted-foreground cursor-pointer text-xs"
+                    className="text-muted-foreground hover:text-destructive focus-visible:ring-ring flex size-6 cursor-pointer items-center justify-center rounded-md focus-visible:ring-2"
+                    aria-label={tStudio("removeTag", { tag })}
                   >
-                    ×
+                    <X className="size-3.5" aria-hidden="true" />
                   </button>
                 </Badge>
               ))}
@@ -104,22 +96,13 @@ export function PrivacySettings() {
       </Card>
 
       {/* 2. Data Management */}
-      <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <Download className="text-primary size-4" />
-            <span>{t("dataManagement")}</span>
-          </CardTitle>
-          <CardDescription className="text-xs">
-            {t("dataManagementDesc")}
-          </CardDescription>
+      <Card className="rounded-xl shadow-none">
+        <CardHeader className="px-4 sm:px-6">
+          <h2 className="text-lg font-semibold">{t("dataManagement")}</h2>
+          <CardDescription>{t("dataManagementDesc")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 cursor-pointer gap-1.5 rounded-xl text-xs"
-          >
+        <CardContent className="px-4 sm:px-6">
+          <Button variant="outline" size="sm" className="h-9">
             <Download className="size-3.5" />
             <span>{t("downloadData")}</span>
           </Button>
@@ -127,23 +110,20 @@ export function PrivacySettings() {
       </Card>
 
       {/* 3. Danger Zone */}
-      <Card className="border-destructive/30 bg-destructive/5 rounded-2xl shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-destructive flex items-center gap-2 text-base font-bold">
-            <AlertTriangle className="size-4" />
-            <span>{t("dangerZone")}</span>
-          </CardTitle>
-          <CardDescription className="text-xs">
-            {t("dangerZoneDesc")}
-          </CardDescription>
+      <Card className="border-destructive/30 rounded-xl shadow-none">
+        <CardHeader className="px-4 sm:px-6">
+          <h2 className="text-destructive text-lg font-semibold">
+            {t("dangerZone")}
+          </h2>
+          <CardDescription>{t("dangerZoneDesc")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="bg-background border-border/60 flex items-center justify-between rounded-xl border p-3">
+        <CardContent className="space-y-3 px-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
+              <p className="text-foreground text-sm font-medium">
                 {t("signOutThisDevice")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {t("signOutThisDeviceDesc")}
               </p>
             </div>
@@ -152,27 +132,23 @@ export function PrivacySettings() {
               size="sm"
               onClick={handleSignOut}
               disabled={signOutMutation.isPending}
-              className="text-muted-foreground hover:text-foreground h-8 cursor-pointer gap-1.5 rounded-xl text-xs"
+              className="text-muted-foreground hover:text-foreground h-9"
             >
               <LogOut className="size-3.5" />
               <span>{t("signOut")}</span>
             </Button>
           </div>
 
-          <div className="bg-background border-destructive/30 flex items-center justify-between rounded-xl border p-3">
+          <div className="border-border flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <div>
-              <p className="text-destructive text-xs font-semibold sm:text-sm">
+              <p className="text-destructive text-sm font-medium">
                 {t("deleteAccount")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {t("deleteAccountDesc")}
               </p>
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 cursor-pointer gap-1.5 rounded-xl text-xs"
-            >
+            <Button variant="destructive" size="sm" className="h-9">
               <Trash2 className="size-3.5" />
               <span>{t("deleteAccountBtn")}</span>
             </Button>

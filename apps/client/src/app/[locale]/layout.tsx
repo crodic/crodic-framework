@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
+import {
+  ThemeTransitionProvider,
+  ThemeTransitionScript,
+} from "@/components/transitions/theme-transition";
 import Provider from "@/components/provider";
 import {
   fetchActiveClientWhiteLabel,
@@ -11,7 +14,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { dancingScript, geistMono, geistSans } from "@/fonts";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -126,37 +128,29 @@ export default async function LocaleLayout({
 
   // Fetch active white label on server (SSR)
   const whiteLabel = await fetchActiveClientWhiteLabel();
+  const themeStorageKey = `${process.env.APP_NAME}-theme`;
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <WhiteLabelServerStyle styles={whiteLabel?.styles} />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased`}
-        suppressHydrationWarning
-      >
-        <NextIntlClientProvider messages={messages} locale={locale}>
+    <>
+      <WhiteLabelServerStyle styles={whiteLabel?.styles} />
+      <ThemeTransitionScript storageKey={themeStorageKey} />
+      <NextIntlClientProvider messages={messages} locale={locale}>
+        <ThemeTransitionProvider
+          transition="gif-chika"
+          storageKey={themeStorageKey}
+        >
           <Provider>
             <WhiteLabelProvider initialData={whiteLabel}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-                storageKey={`${process.env.APP_NAME}-theme`}
-              >
-                {children}
-                {modal}
-              </ThemeProvider>
+              {children}
+              {modal}
             </WhiteLabelProvider>
           </Provider>
-        </NextIntlClientProvider>
-        <GoogleAnalytics
-          gtmId={process.env.NEXT_PUBLIC_GTM_ID}
-          gaId={process.env.NEXT_PUBLIC_GA_ID}
-        />
-      </body>
-    </html>
+        </ThemeTransitionProvider>
+      </NextIntlClientProvider>
+      <GoogleAnalytics
+        gtmId={process.env.NEXT_PUBLIC_GTM_ID}
+        gaId={process.env.NEXT_PUBLIC_GA_ID}
+      />
+    </>
   );
 }

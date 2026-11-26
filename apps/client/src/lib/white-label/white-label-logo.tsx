@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useTheme } from "next-themes";
-import React, { useSyncExternalStore } from "react";
+import type React from "react";
+import { useThemeTransition } from "@/components/transitions/theme-transition";
 import { DEFAULT_BRAND_NAME } from "./white-label.config";
 import { useWhiteLabel } from "./white-label-provider";
 import { cn } from "@/lib/utils";
@@ -17,8 +17,6 @@ type WhiteLabelLogoProps = {
   showEmblemOnFallback?: boolean;
 };
 
-const emptySubscribe = () => () => {};
-
 export function WhiteLabelLogo({
   className,
   width = 180,
@@ -29,12 +27,7 @@ export function WhiteLabelLogo({
   showEmblemOnFallback = true,
 }: WhiteLabelLogoProps) {
   const { whiteLabel, isEnabled } = useWhiteLabel();
-  const { theme, resolvedTheme } = useTheme();
-  const isMounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
+  const { mounted, resolvedTheme } = useThemeTransition();
 
   const brandName =
     isEnabled && whiteLabel?.brandName
@@ -42,7 +35,7 @@ export function WhiteLabelLogo({
       : DEFAULT_BRAND_NAME;
 
   const defaultFallback = (
-    <div className="inline-flex items-center gap-2.5">
+    <div className="inline-flex min-w-0 items-center gap-2.5">
       {showEmblemOnFallback && (
         <div className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full shadow-xs">
           <svg
@@ -69,7 +62,7 @@ export function WhiteLabelLogo({
     return <>{fallback ?? defaultFallback}</>;
   }
 
-  const isDark = isMounted && (resolvedTheme === "dark" || theme === "dark");
+  const isDark = mounted && resolvedTheme === "dark";
   const logoSrc = (isDark && whiteLabel.siteDarkLogo) || whiteLabel.siteLogo;
 
   if (!logoSrc) {

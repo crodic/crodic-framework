@@ -38,7 +38,8 @@
     "portfolio": "My Portfolio",
     "messages": "Messages",
     "notifications": "Notifications",
-    "search": "Search"
+    "search": "Search",
+    "clearSearch": "Clear search"
   },
   "Landing": {
     "metaTitle": "Kosume - Where Cosplay Passion Shines",
@@ -58,7 +59,7 @@
     "hero": {
       "titleLead": "Where Passion",
       "titleTrail": "Shines",
-      "subtitle": "Social network and high-quality portfolio platform where professional cosplayers showcase work and fans discover favorite characters.",
+      "subtitle": "Share your cosplay albums, follow creators, and find work featuring your favorite characters.",
       "exploreNow": "Explore Now",
       "signUp": "Register",
       "viewTags": "Browse Encyclopedia",
@@ -70,8 +71,8 @@
     },
     "features": {
       "badge": "Creator Ecosystem",
-      "title": "Groundbreaking Features for Cosplayers & Fandom",
-      "subtitle": "Everything you need to celebrate cosplay art, connect with community, and safeguard creative works.",
+      "title": "Tools for the cosplay community",
+      "subtitle": "Build a portfolio, look up characters, and find cosplay events.",
       "items": {
         "portfolio": {
           "badge": "Creator Studio",
@@ -108,15 +109,15 @@
     "cosplayers": {
       "badge": "Top Creators",
       "title": "Featured Cosplayers This Week",
-      "subtitle": "Discover and follow the most captivating cosplayers in the community.",
+      "subtitle": "Browse portfolios and follow the creators you want to keep up with.",
       "viewAll": "View All Cosplayers",
       "follow": "Follow",
       "following": "Following"
     },
     "albums": {
       "badge": "Trending Creations",
-      "title": "Explore Latest Albums",
-      "subtitle": "Immerse yourself in meticulously crafted and artistic cosplay photo albums.",
+      "title": "Latest cosplay albums",
+      "subtitle": "See recent photo sets from the community.",
       "viewAll": "Explore More Artworks",
       "like": "Like",
       "likeAlbumAria": "Like album {name}"
@@ -440,7 +441,7 @@
     "layout": {
       "welcome": "Welcome to Kosume",
       "tagline": "The Premier Cosplay Showcase & Community Platform",
-      "description": "Connecting cosplayers, photographers, crafters and Anime/Game fans across Vietnam.",
+      "description": "Share cosplay albums and follow cosplayers, photographers, and prop makers.",
       "operational": "Platform Online 99.9%",
       "feature1Title": "Visual Portfolio & Showcase",
       "feature1Desc": "Curate character shoots, tagging, and high-definition cosplay albums.",
@@ -605,7 +606,7 @@
     "trendingTitle": "Trending Tags",
     "directoryTitle": "Canonical Tag Directory",
     "searchResultsTitle": "Tagged Content Results",
-    "searchPlaceholder": "Search tags, characters, franchises, or aliases...",
+    "searchPlaceholder": "Search tags, characters, or series",
     "noTagsFound": "No tags found",
     "noTagsFoundDesc": "Try searching for a different character or franchise name.",
     "noContentFound": "No published content matches the selected tags.",
@@ -1163,7 +1164,7 @@
     "works": "Works",
     "cosplayers": "Cosplayers",
     "characters": "Characters",
-    "popularSearches": "Popular Searches",
+    "popularSearches": "Suggested searches",
     "recentSearches": "Recent Searches",
     "clearRecent": "Clear History",
     "noRecentSearches": "No recent searches",
@@ -1221,7 +1222,7 @@
     "followError": "Failed to update follow status.",
     "verifiedBadge": "Verified",
     "bookBtn": "Book Cosplay",
-    "applyCosplayer": "Apply for Cosplayer",
+    "applyCosplayer": "Apply",
     "roleRequestSuccess": "Cosplayer role request submitted to Admin for approval!",
     "roleRequestError": "Failed to submit request",
     "editDialog": {
@@ -1349,6 +1350,8 @@
   "Common": {
     "loading": "Loading...",
     "error": "Something went wrong. Please try again!",
+    "loadError": "Couldn’t load content",
+    "retry": "Retry",
     "empty": "No data available",
     "search": "Search",
     "filter": "Filter",

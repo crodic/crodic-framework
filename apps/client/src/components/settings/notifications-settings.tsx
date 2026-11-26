@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, Mail } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
@@ -20,43 +18,40 @@ export function NotificationsSettings() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <Bell className="text-primary size-4" />
-            <span>{t("systemTitle")}</span>
-          </CardTitle>
-          <CardDescription className="text-xs">
-            {t("systemDesc")}
-          </CardDescription>
+      <Card className="rounded-xl shadow-none">
+        <CardHeader className="px-4 sm:px-6">
+          <h2 className="text-lg font-semibold">{t("systemTitle")}</h2>
+          <CardDescription>{t("systemDesc")}</CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-3.5">
-          <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
+        <CardContent className="divide-border divide-y px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
             <div className="space-y-0.5 pr-4">
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
+              <p className="text-foreground text-sm font-medium">
                 {t("newPostTitle")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {t("newPostDesc")}
               </p>
             </div>
             <Switch
+              aria-label={t("newPostTitle")}
               checked={notifyNewPost}
               onCheckedChange={setNotifyNewPost}
             />
           </div>
 
-          <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
+          <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
             <div className="space-y-0.5 pr-4">
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
+              <p className="text-foreground text-sm font-medium">
                 {t("interactionsTitle")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 {t("interactionsDesc")}
               </p>
             </div>
             <Switch
+              aria-label={t("interactionsTitle")}
               checked={notifyInteractions}
               onCheckedChange={setNotifyInteractions}
             />
@@ -64,27 +59,21 @@ export function NotificationsSettings() {
         </CardContent>
       </Card>
 
-      <Card className="border-border/70 bg-card/60 rounded-2xl shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <Mail className="text-primary size-4" />
-            <span>{t("emailTitle")}</span>
-          </CardTitle>
-          <CardDescription className="text-xs">
-            {t("emailDesc")}
-          </CardDescription>
+      <Card className="rounded-xl shadow-none">
+        <CardHeader className="px-4 sm:px-6">
+          <h2 className="text-lg font-semibold">{t("emailTitle")}</h2>
+          <CardDescription>{t("emailDesc")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="bg-muted/40 border-border/50 flex items-center justify-between rounded-xl border p-3">
+        <CardContent className="px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
             <div className="space-y-0.5 pr-4">
-              <p className="text-foreground text-xs font-semibold sm:text-sm">
+              <p className="text-foreground text-sm font-medium">
                 {t("eventsTitle")}
               </p>
-              <p className="text-muted-foreground text-[11px]">
-                {t("eventsDesc")}
-              </p>
+              <p className="text-muted-foreground text-xs">{t("eventsDesc")}</p>
             </div>
             <Switch
+              aria-label={t("eventsTitle")}
               checked={notifyFestivals}
               onCheckedChange={setNotifyFestivals}
             />

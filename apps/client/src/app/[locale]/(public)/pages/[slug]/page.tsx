@@ -46,10 +46,11 @@ export default async function CmsPage({ params }: PageProps) {
   }
 
   return (
-    <Layout>
+    <Layout showRightRail={false}>
       {/* nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml */}
-      <div
-        className="prose dark:prose-invert mx-auto w-full max-w-none px-6 py-12 md:px-12 md:py-20"
+      <article
+        aria-label={page.title}
+        className="prose dark:prose-invert mx-auto w-full max-w-[72ch] min-w-0 px-4 py-8 [overflow-wrap:anywhere] sm:px-6 sm:py-12 [&_table]:block [&_table]:overflow-x-auto"
         dangerouslySetInnerHTML={{ __html: page.content || "" }}
       />
     </Layout>

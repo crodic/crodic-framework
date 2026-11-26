@@ -251,7 +251,7 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] }}
-        className="border-border/70 bg-card/70 hover:border-border rounded-3xl border p-4 shadow-xs backdrop-blur-md transition-colors sm:p-5"
+        className="border-border bg-card rounded-xl border p-4 sm:p-5"
       >
         {/* 1. Post Header: Author info & options */}
         <div className="flex items-center justify-between gap-3">

@@ -20,14 +20,15 @@ import {
 import SortableImageUpload from "@/components/form/sortable-image-upload";
 import type { ImagePayload } from "@/components/form/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { X, Images, Film } from "lucide-react";
+import { X } from "lucide-react";
 import { CreateAlbumForm } from "./create-album-form";
 import { VideoUploadSection } from "./video-upload-section";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { PostTypeSwitch } from "./post-type-switch";
 
 export interface CreateAlbumModalProps {
   open?: boolean;
@@ -81,37 +82,6 @@ export function CreateAlbumModal({
 
   const setIsOpen = handleOpenChange;
 
-  const typeSwitcher = (
-    <div className="border-border/60 bg-muted/40 mb-4 flex items-center gap-1.5 rounded-xl border p-1">
-      <button
-        type="button"
-        onClick={() => setPostType("photoset")}
-        className={cn(
-          "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all",
-          postType === "photoset"
-            ? "bg-background text-foreground shadow-xs"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <Images className="size-3.5 text-purple-400" />
-        <span>{t("photoPostType")}</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => setPostType("video")}
-        className={cn(
-          "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all",
-          postType === "video"
-            ? "bg-background text-foreground shadow-xs"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <Film className="size-3.5 text-pink-400" />
-        <span>{t("videoPostType")}</span>
-      </button>
-    </div>
-  );
-
   // Common content for image upload
   const sortableUploadSection = (
     <SortableImageUpload
@@ -125,16 +95,16 @@ export function CreateAlbumModal({
       maxFiles={20}
       gridClassName={
         isMobile
-          ? "grid-cols-4 gap-2"
+          ? "grid-cols-3 gap-2"
           : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"
       }
-      className="max-none w-full"
+      className="w-full max-w-none"
     />
   );
 
   const mediaSection = (
-    <div>
-      {typeSwitcher}
+    <div className="space-y-4">
+      <PostTypeSwitch value={postType} onChange={setPostType} />
       {postType === "photoset" ? (
         sortableUploadSection
       ) : (
@@ -152,24 +122,26 @@ export function CreateAlbumModal({
     return (
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
-        <DrawerContent className="bg-background border-border flex max-h-[92vh] flex-col p-0">
-          <DrawerHeader className="border-border/60 flex flex-row items-center justify-between border-b px-4 py-3">
+        <DrawerContent className="bg-background border-border flex max-h-[92dvh] flex-col p-0">
+          <DrawerHeader className="border-border flex flex-row items-start justify-between gap-3 border-b px-4 py-3">
             <div>
-              <DrawerTitle className="text-foreground text-left text-base font-bold">
+              <DrawerTitle className="text-foreground text-start text-lg font-semibold">
                 {t("createAlbumTitle")}
               </DrawerTitle>
-              <p className="text-muted-foreground text-left text-xs">
+              <p className="text-muted-foreground text-start text-sm">
                 {t("createAlbumDesc")}
               </p>
             </div>
             <DrawerClose asChild>
-              <button
+              <Button
                 type="button"
-                className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1"
+                variant="ghost"
+                size="icon"
+                className="size-10"
                 aria-label={tCommon("close")}
               >
                 <X className="size-5" />
-              </button>
+              </Button>
             </DrawerClose>
           </DrawerHeader>
 
@@ -201,36 +173,36 @@ export function CreateAlbumModal({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         showCloseButton={false}
-        className="bg-card border-border/80 flex max-h-[90vh] w-[95vw] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl p-0 shadow-2xl sm:max-w-4xl lg:max-w-5xl"
+        className="bg-background flex max-h-[90dvh] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-4xl"
       >
-        <DialogHeader className="border-border/60 flex flex-row items-center justify-between border-b px-6 py-4">
+        <DialogHeader className="border-border flex flex-row items-start justify-between gap-3 border-b px-6 py-4">
           <div>
-            <DialogTitle className="text-foreground text-left text-base font-bold sm:text-lg">
+            <DialogTitle className="text-foreground text-start text-lg font-semibold">
               {t("createAlbumTitle")}
             </DialogTitle>
-            <p className="text-muted-foreground text-left text-xs">
+            <p className="text-muted-foreground text-start text-sm">
               {t("createAlbumDesc")}
             </p>
           </div>
           <DialogClose asChild>
-            <button
+            <Button
               type="button"
-              className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-1.5 transition-colors"
+              variant="ghost"
+              size="icon"
+              className="size-10"
               aria-label={tCommon("close")}
             >
               <X className="size-5" />
-            </button>
+            </Button>
           </DialogClose>
         </DialogHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           {/* Top Section: Upload Media */}
-          <div className="border-border/60 bg-muted/20 rounded-2xl border p-4 sm:p-5">
-            {mediaSection}
-          </div>
+          <div className="pb-2">{mediaSection}</div>
 
           {/* Bottom Section: Form Details */}
-          <div className="border-border/60 rounded-2xl border p-4 sm:p-5">
+          <div className="border-border border-t pt-6">
             <CreateAlbumForm
               imagesPayload={imagesPayload}
               coverIndex={coverIndex}
