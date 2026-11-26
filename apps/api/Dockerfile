@@ -8,7 +8,7 @@ ENV PATH="$PNPM_HOME/bin:$PATH"
 ENV HUSKY=0
 ENV pnpm_config_store_dir="/pnpm/store"
 
-RUN apk add --no-cache libc6-compat dumb-init fontconfig font-dejavu font-noto ffmpeg \
+RUN apk add --no-cache libc6-compat dumb-init fontconfig font-dejavu font-noto \
   && fc-cache -f \
   && npm install -g pnpm@11.25.0
 

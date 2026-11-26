@@ -30,7 +30,6 @@ describe('Kosume Platform Settings Schema', () => {
       max_file_size_mb: 25,
       auto_approve_posts: true,
       commission_platform_rate_percent: 5,
-      cosplay_confidence_threshold_percent: 50,
       banned_keywords: 'test',
       support_email: 'not-an-email',
       support_hotline: '1900-KOSUME',

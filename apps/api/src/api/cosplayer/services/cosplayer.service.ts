@@ -31,12 +31,6 @@ import {
   CosplayerSummaryResDto,
 } from '../dto/cosplayer-res.dto';
 import { applyKosumeWatermark } from '../utils/watermark.util';
-import {
-  classifyCosplayImage,
-  classifyCosplayVideo,
-} from '../utils/cosplay-moderation.util';
-import { SettingsService } from '../../settings/settings.service';
-import { SettingKeys } from '../../settings/enums/setting-keys';
 
 function slugify(text: string): string {
   return text
@@ -63,8 +57,6 @@ export class CosplayerService {
     private readonly userRepo: Repository<UserEntity>,
     @Optional()
     private readonly filesystemService?: FilesystemService,
-    @Optional()
-    private readonly settingsService?: SettingsService,
   ) {}
 
   /**
@@ -449,8 +441,6 @@ export class CosplayerService {
     originalName: string;
     size: number;
     mimeType: string;
-    isCosplay?: boolean;
-    moderationConfidence?: number;
   }> {
     if (!this.filesystemService) {
       throw new BadRequestException('Filesystem service not available');
@@ -502,67 +492,11 @@ export class CosplayerService {
 
     const url = this.filesystemService.disk().url(filename);
 
-    let isCosplay = true;
-    let moderationConfidence = 1.0;
-
-    let threshold = 0;
-    if (this.settingsService) {
-      try {
-        const kosumeSetting = await this.settingsService.get<any>(
-          SettingKeys.KOSUME,
-        );
-        if (kosumeSetting?.cosplay_confidence_threshold_percent != null) {
-          threshold =
-            Number(kosumeSetting.cosplay_confidence_threshold_percent) / 100;
-        } else {
-          threshold = 0.5;
-        }
-      } catch {
-        threshold = 0.5;
-      }
-    }
-
-    if (threshold > 0) {
-      if (file.mimetype?.startsWith('image/')) {
-        try {
-          const mod = await classifyCosplayImage(fileBuffer, threshold);
-          isCosplay = mod.isCosplay;
-          moderationConfidence = mod.confidence;
-        } catch {
-          // Fallback gracefully without blocking
-        }
-      } else if (file.mimetype?.startsWith('video/')) {
-        try {
-          const mod = await classifyCosplayVideo(fileBuffer, threshold);
-          isCosplay = mod.isCosplay;
-          moderationConfidence = mod.confidence;
-        } catch {
-          // Fallback gracefully without blocking
-        }
-      }
-
-      if (isCosplay === false) {
-        try {
-          await this.filesystemService.disk().delete(filename);
-        } catch {
-          // Ignore cleanup error
-        }
-
-        const currentPercent = Math.round((moderationConfidence || 0) * 100);
-        const requiredPercent = Math.round(threshold * 100);
-        throw new BadRequestException(
-          `Tệp tải lên không vượt qua kiểm duyệt nội dung Cosplay (${currentPercent}% / yêu cầu tối thiểu ${requiredPercent}%). Vui lòng tải lên ảnh hoặc video liên quan đến cosplay nhân vật anime, game, truyện tranh.`,
-        );
-      }
-    }
-
     return {
       url,
       originalName: file.originalname,
       size: fileSize,
       mimeType: file.mimetype,
-      isCosplay,
-      moderationConfidence,
     };
   }
 
