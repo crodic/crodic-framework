@@ -18,6 +18,9 @@ export class UpdateKosumeSettingReqDto {
   @NumberFieldOptional({ min: 0, max: 100 })
   commission_platform_rate_percent?: number;
 
+  @NumberFieldOptional({ min: 0, max: 100 })
+  cosplay_confidence_threshold_percent?: number;
+
   @StringFieldOptional({ maxLength: 2000 })
   @Trim()
   banned_keywords?: string;

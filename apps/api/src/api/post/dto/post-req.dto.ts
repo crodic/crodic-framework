@@ -184,6 +184,10 @@ export class UpdatePostStatusReqDto {
 
   @BooleanFieldOptional()
   isPublic?: boolean;
+
+  @StringFieldOptional({ maxLength: 500 })
+  @Trim()
+  reason?: string;
 }
 
 export class TogglePostFeaturedReqDto {

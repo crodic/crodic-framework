@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { apiUpdateAdminPostStatus } from '../queries'
 import type { Post, PostStatus } from '../schema'
 
@@ -37,6 +38,7 @@ export function PostStatusDialog({
   const { t } = useTranslation()
   const [status, setStatus] = useState<PostStatus>(post?.status || 'published')
   const [isPublic, setIsPublic] = useState<boolean>(post?.isPublic ?? true)
+  const [reason, setReason] = useState('')
   const [isPending, setIsPending] = useState(false)
 
   // Sync state when post changes
@@ -44,6 +46,7 @@ export function PostStatusDialog({
     if (nextOpen && post) {
       setStatus(post.status)
       setIsPublic(post.isPublic)
+      setReason('')
     }
     onOpenChange(nextOpen)
   }
@@ -58,6 +61,7 @@ export function PostStatusDialog({
         id: post.id,
         status,
         isPublic,
+        reason: reason.trim() ? reason.trim() : undefined,
       })
       toast.success(
         t(
@@ -136,6 +140,33 @@ export function PostStatusDialog({
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
+
+          {status !== 'published' && (
+            <div className='space-y-1.5'>
+              <Label htmlFor='moderation-reason'>
+                {t(
+                  'posts.fields.moderationReason',
+                  'Lý do từ chối / Ghi chú kiểm duyệt'
+                )}
+              </Label>
+              <Textarea
+                id='moderation-reason'
+                rows={3}
+                placeholder={t(
+                  'posts.fields.moderationReasonPlaceholder',
+                  'Nhập lý do gửi thông báo cho tác giả (VD: Hình ảnh không liên quan đến cosplay nhân vật anime/game, vi phạm bản quyền...)'
+                )}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <p className='text-muted-foreground text-xs'>
+                {t(
+                  'posts.fields.moderationReasonHelp',
+                  'Lý do này sẽ được gửi trực tiếp qua thông báo hệ thống đến tác giả bài viết.'
+                )}
+              </p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button

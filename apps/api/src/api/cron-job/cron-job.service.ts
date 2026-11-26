@@ -143,6 +143,19 @@ export class CronJobService {
         return 'Daily tag maintenance enqueued successfully.';
       },
     },
+    {
+      key: 'notify-pending-posts-digest',
+      name: 'Daily Pending Posts Moderation Digest',
+      schedule: '0 8 * * *',
+      description:
+        'Gửi email tổng hợp hàng ngày đến các Admin có bật nhận email nếu có hơn 10 bài viết đang chờ duyệt.',
+      category: 'Content Moderation',
+      handler: async (ref) => {
+        const { PostService } = await import('../post/services/post.service');
+        const service = ref.get(PostService, { strict: false });
+        return await service.sendDailyPendingPostsDigest();
+      },
+    },
   ];
 
   constructor(
@@ -362,6 +375,14 @@ export class CronJobService {
   @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async handleScheduledTagMaintenance(): Promise<void> {
     await this.runJob('sync-tag-stats', ECronJobTriggerType.SCHEDULED);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  async handleScheduledPendingPostsDigest(): Promise<void> {
+    await this.runJob(
+      'notify-pending-posts-digest',
+      ECronJobTriggerType.SCHEDULED,
+    );
   }
 
   /**

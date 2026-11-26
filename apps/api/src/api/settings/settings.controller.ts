@@ -64,6 +64,7 @@ export class SettingsController {
       max_file_size_mb: 25,
       auto_approve_posts: true,
       commission_platform_rate_percent: 5,
+      cosplay_confidence_threshold_percent: 50,
       banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
       support_email: 'support@kosume.com',
       support_hotline: '1900-KOSUME',

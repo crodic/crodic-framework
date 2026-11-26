@@ -17,6 +17,9 @@ export class KosumeSettingResDto {
   @NumberField({ min: 0, max: 100 })
   commission_platform_rate_percent!: number;
 
+  @NumberField({ min: 0, max: 100 })
+  cosplay_confidence_threshold_percent!: number;
+
   @StringField()
   banned_keywords!: string;
 

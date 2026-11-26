@@ -56,6 +56,7 @@ export function PagePlatformSettings() {
       max_file_size_mb: 25,
       auto_approve_posts: true,
       commission_platform_rate_percent: 5,
+      cosplay_confidence_threshold_percent: 50,
       banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
       support_email: 'support@kosume.com',
       support_hotline: '1900-KOSUME',
@@ -225,6 +226,39 @@ export function PagePlatformSettings() {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='cosplay_confidence_threshold_percent'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {t(
+                            'platformSettings.cosplayConfidenceThreshold',
+                            'Độ tin cậy Cosplay tối thiểu của AI (%)'
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            min={0}
+                            max={100}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'platformSettings.cosplayConfidenceThresholdHelp',
+                            'Ngưỡng tin cậy của mô hình AI CLIP (0-100%). Mặc định 50%. Nhập 0% để tắt tính năng tự động kiểm duyệt AI. Ảnh hoặc video dưới mức này sẽ bị chặn tải lên.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />

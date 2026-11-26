@@ -354,4 +354,115 @@ describe('PostService', () => {
       expect(res.data).toEqual([]);
     });
   });
+
+  describe('updateStatusAdmin & Moderation Notifications', () => {
+    it('notifies author when post is approved to PUBLISHED', async () => {
+      const mockPost = {
+        id: id('10'),
+        authorId: id('200'),
+        title: 'Cosplay Raiden Shogun',
+        status: EPostStatus.HIDDEN,
+        slug: 'raiden-shogun',
+      };
+      postRepo.findOne.mockResolvedValue({ ...mockPost });
+
+      const notifRepoMock = {
+        create: jest.fn().mockImplementation((d) => d),
+        save: jest.fn().mockImplementation(async (d) => d),
+      };
+      (service as any).notificationRepo = notifRepoMock;
+
+      jest.spyOn(service, 'findOneAdmin').mockResolvedValue({
+        id: id('10'),
+        status: EPostStatus.PUBLISHED,
+      } as any);
+
+      await service.updateStatusAdmin(id('10'), EPostStatus.PUBLISHED, true);
+
+      expect(notifRepoMock.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientUserId: id('200'),
+          title: expect.stringContaining('phê duyệt'),
+        }),
+      );
+      expect(notifRepoMock.save).toHaveBeenCalled();
+    });
+
+    it('notifies author with rejection reason when post is set to HIDDEN', async () => {
+      const mockPost = {
+        id: id('11'),
+        authorId: id('201'),
+        title: 'Casual Outfit',
+        status: EPostStatus.HIDDEN,
+      };
+      postRepo.findOne.mockResolvedValue({ ...mockPost });
+
+      const notifRepoMock = {
+        create: jest.fn().mockImplementation((d) => d),
+        save: jest.fn().mockImplementation(async (d) => d),
+      };
+      (service as any).notificationRepo = notifRepoMock;
+
+      jest.spyOn(service, 'findOneAdmin').mockResolvedValue({
+        id: id('11'),
+        status: EPostStatus.HIDDEN,
+      } as any);
+
+      await service.updateStatusAdmin(
+        id('11'),
+        EPostStatus.ARCHIVED,
+        false,
+        'Ảnh không phải nhân vật cosplay',
+      );
+
+      expect(notifRepoMock.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientUserId: id('201'),
+          description: expect.stringContaining(
+            'Ảnh không phải nhân vật cosplay',
+          ),
+        }),
+      );
+      expect(notifRepoMock.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendDailyPendingPostsDigest', () => {
+    it('skips sending email when pending posts count is 10 or less', async () => {
+      postRepo.count.mockResolvedValue(8);
+      const emailQueueMock = { sendMail: jest.fn() };
+      (service as any).emailQueueService = emailQueueMock;
+
+      const res = await service.sendDailyPendingPostsDigest();
+
+      expect(res).toContain('chưa vượt ngưỡng > 10');
+      expect(emailQueueMock.sendMail).not.toHaveBeenCalled();
+    });
+
+    it('sends 1 consolidated email (to + cc) when pending posts count > 10', async () => {
+      postRepo.count.mockResolvedValue(15);
+      const adminRepoMock = {
+        find: jest.fn().mockResolvedValue([
+          { email: 'admin1@kosume.com', notifications: { email: true } },
+          { email: 'admin2@kosume.com', notifications: { email: true } },
+          { email: 'admin3@kosume.com', notifications: { email: false } }, // opt-out
+        ]),
+      };
+      const emailQueueMock = { sendMail: jest.fn().mockResolvedValue({}) };
+      (service as any).adminUserRepo = adminRepoMock;
+      (service as any).emailQueueService = emailQueueMock;
+
+      const res = await service.sendDailyPendingPostsDigest();
+
+      expect(res).toContain('Đã gửi 1 email digest');
+      expect(emailQueueMock.sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'admin1@kosume.com',
+          cc: ['admin2@kosume.com'],
+          template: 'admin-pending-posts-digest',
+          context: expect.objectContaining({ pendingCount: 15 }),
+        }),
+      );
+    });
+  });
 });

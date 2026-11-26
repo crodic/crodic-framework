@@ -5,6 +5,9 @@ import { CosplayerProfileEntity } from '../cosplayer/entities/cosplayer-profile.
 import { EntityTagEntity } from '../tag/entities/entity-tag.entity';
 import { TagModule } from '../tag/tag.module';
 import { UserEntity } from '../user/entities/user.entity';
+import { AdminUserEntity } from '../admin-user/entities/admin-user.entity';
+import { NotificationEntity } from '../notification/entities/notification.entity';
+import { EmailQueueModule } from '../../background/queues/email-queue/email-queue.module';
 import { PostAdminController } from './controllers/post-admin.controller';
 import { PostPublicController } from './controllers/post-public.controller';
 import { PostUserController } from './controllers/post-user.controller';
@@ -27,8 +30,11 @@ import { PostService } from './services/post.service';
       CosplayerProfileEntity,
       CosplayerCharacterEntity,
       EntityTagEntity,
+      NotificationEntity,
+      AdminUserEntity,
     ]),
     TagModule,
+    EmailQueueModule,
   ],
   controllers: [PostPublicController, PostUserController, PostAdminController],
   providers: [PostService],

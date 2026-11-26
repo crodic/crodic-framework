@@ -115,7 +115,12 @@ export class PostAdminController {
     @Param('id') id: AutoIncrementID,
     @Body() dto: UpdatePostStatusReqDto,
   ) {
-    return this.postService.updateStatusAdmin(id, dto.status, dto.isPublic);
+    return this.postService.updateStatusAdmin(
+      id,
+      dto.status,
+      dto.isPublic,
+      dto.reason,
+    );
   }
 
   @Delete(':id')

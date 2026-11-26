@@ -28,12 +28,18 @@ export async function apiUpdateAdminPostStatus({
   id,
   status,
   isPublic,
+  reason,
 }: {
   id: string
   status: PostStatus
   isPublic?: boolean
+  reason?: string
 }) {
-  return await http.patch(`/admin/posts/${id}/status`, { status, isPublic })
+  return await http.patch(`/admin/posts/${id}/status`, {
+    status,
+    isPublic,
+    reason,
+  })
 }
 
 export async function apiDeleteAdminPost(id: string) {

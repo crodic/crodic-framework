@@ -6,13 +6,20 @@ import {
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Brackets, DataSource, ILike, In, Repository } from 'typeorm';
+import { Brackets, DataSource, ILike, In, IsNull, Repository } from 'typeorm';
+import { AllConfigType } from '../../../config/config.type';
+import { EEmailLogSource } from '../../../common/constants/entity.enum';
+import { EmailQueueService } from '../../../background/queues/email-queue/email-queue.service';
+import { AdminUserEntity } from '../../admin-user/entities/admin-user.entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import { CosplayerCharacterEntity } from '../../cosplayer/entities/cosplayer-character.entity';
@@ -46,6 +53,8 @@ import {
   ENotificationType,
 } from '../../notification/constants/notification.constant';
 import { NotificationEntity } from '../../notification/entities/notification.entity';
+import { SettingsService } from '../../settings/settings.service';
+import { SettingKeys } from '../../settings/enums/setting-keys';
 
 function slugify(text: string): string {
   return text
@@ -63,6 +72,8 @@ function slugify(text: string): string {
 
 @Injectable()
 export class PostService {
+  private readonly logger = new Logger(PostService.name);
+
   constructor(
     @InjectDataSource()
     private readonly dataSource: DataSource,
@@ -83,7 +94,19 @@ export class PostService {
     @InjectRepository(EntityTagEntity)
     private readonly entityTagRepo: Repository<EntityTagEntity>,
     @Optional()
+    @InjectRepository(NotificationEntity)
+    private readonly notificationRepo?: Repository<NotificationEntity>,
+    @Optional()
+    @InjectRepository(AdminUserEntity)
+    private readonly adminUserRepo?: Repository<AdminUserEntity>,
+    @Optional()
     private readonly entityTaggingService?: EntityTaggingService,
+    @Optional()
+    private readonly settingsService?: SettingsService,
+    @Optional()
+    private readonly emailQueueService?: EmailQueueService,
+    @Optional()
+    private readonly configService?: ConfigService<AllConfigType>,
   ) {}
 
   /**
@@ -504,12 +527,80 @@ export class PostService {
   }
 
   /**
+   * Validate post text against prohibited keywords defined in Kosume settings.
+   */
+  private async validateBannedKeywords(
+    textFields: (string | undefined | null)[],
+  ): Promise<void> {
+    if (!this.settingsService) return;
+    try {
+      const kosumeSetting = await this.settingsService.get<any>(
+        SettingKeys.KOSUME,
+      );
+      const bannedKeywordsRaw: string = kosumeSetting?.banned_keywords;
+      if (!bannedKeywordsRaw || typeof bannedKeywordsRaw !== 'string') return;
+
+      const keywords = bannedKeywordsRaw
+        .split(/[,;\n]/)
+        .map((k) => k.trim().toLowerCase())
+        .filter((k) => k.length > 0);
+
+      if (keywords.length === 0) return;
+
+      const combinedText = textFields
+        .filter((t): t is string => !!t)
+        .join(' ')
+        .toLowerCase();
+
+      for (const keyword of keywords) {
+        if (combinedText.includes(keyword)) {
+          throw new BadRequestException(
+            `Bài đăng chứa từ khóa không phù hợp: "${keyword}". Vui lòng chỉnh sửa trước khi đăng.`,
+          );
+        }
+      }
+    } catch (err) {
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+    }
+  }
+
+  /**
    * Create post / studio album.
    */
   async create(
     authorId: AutoIncrementID,
     dto: CreatePostReqDto,
   ): Promise<PostDetailResDto> {
+    await this.validateBannedKeywords([
+      dto.title,
+      dto.caption,
+      dto.characterName,
+      dto.fandomName,
+      ...(dto.tags || []),
+      ...(dto.media || []).map((m) => m.caption),
+    ]);
+
+    let initialStatus = dto.status ?? EPostStatus.PUBLISHED;
+    let isPublic = dto.isPublic ?? true;
+
+    if (this.settingsService) {
+      try {
+        const kosumeSetting = await this.settingsService.get<any>(
+          SettingKeys.KOSUME,
+        );
+        if (kosumeSetting?.auto_approve_posts === false) {
+          if (initialStatus === EPostStatus.PUBLISHED) {
+            initialStatus = EPostStatus.HIDDEN;
+            isPublic = false;
+          }
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
     const slugCandidate = await this.generateUniqueSlug(dto);
 
     return await this.dataSource.transaction(async (em) => {
@@ -527,9 +618,9 @@ export class PostService {
         copyrightTagId: dto.copyrightTagId ?? null,
         coverImageUrl: dto.coverImageUrl,
         collaborators: dto.collaborators || [],
-        isPublic: dto.isPublic ?? true,
+        isPublic,
         enableWatermark: dto.enableWatermark ?? false,
-        status: dto.status ?? EPostStatus.PUBLISHED,
+        status: initialStatus,
         photosCount: dto.media?.length || 1,
         likesCount: 0,
         commentsCount: 0,
@@ -667,6 +758,31 @@ export class PostService {
       throw new ForbiddenException(
         'You do not have permission to edit this post',
       );
+    }
+
+    await this.validateBannedKeywords([
+      dto.title,
+      dto.caption,
+      dto.characterName,
+      dto.fandomName,
+      ...(dto.tags || []),
+      ...(dto.media || []).map((m) => m.caption),
+    ]);
+
+    if (this.settingsService && dto.status === EPostStatus.PUBLISHED) {
+      try {
+        const kosumeSetting = await this.settingsService.get<any>(
+          SettingKeys.KOSUME,
+        );
+        if (
+          kosumeSetting?.auto_approve_posts === false &&
+          post.status === EPostStatus.HIDDEN
+        ) {
+          dto.status = EPostStatus.HIDDEN;
+        }
+      } catch {
+        // Fallback gracefully
+      }
     }
 
     return await this.dataSource.transaction(async (em) => {
@@ -998,24 +1114,147 @@ export class PostService {
   }
 
   /**
-   * Admin: Update post status and public visibility.
+   * Admin: Update post status and public visibility, sending notifications to author.
    */
   async updateStatusAdmin(
     postId: AutoIncrementID,
     status: EPostStatus,
     isPublic?: boolean,
+    reason?: string,
   ): Promise<PostDetailResDto> {
     const post = await this.postRepo.findOne({ where: { id: postId } });
     if (!post) {
       throw new NotFoundException(`Post #${postId} not found`);
     }
 
+    const oldStatus = post.status;
     post.status = status;
     if (isPublic !== undefined) {
       post.isPublic = isPublic;
     }
     const saved = await this.postRepo.save(post);
+
+    if (oldStatus !== status) {
+      try {
+        const notifRepo =
+          this.notificationRepo ||
+          this.dataSource.getRepository(NotificationEntity);
+
+        if (status === EPostStatus.PUBLISHED) {
+          const notif = notifRepo.create({
+            recipientUserId: post.authorId,
+            category: ENotificationCategory.SYSTEM,
+            type: ENotificationType.SECURITY,
+            title: 'Bài viết của bạn đã được phê duyệt 🎉',
+            description: `Bài viết "${post.title}" của bạn đã được kiểm duyệt thành công và hiện đã hiển thị công khai trên hệ thống.`,
+            actionUrl: `/posts/${post.slug || post.id}`,
+            previewImageUrl: post.coverImageUrl,
+            subjectType: 'post',
+            subjectId: post.id,
+          });
+          await notifRepo.save(notif);
+        } else if (
+          status === EPostStatus.HIDDEN ||
+          status === EPostStatus.ARCHIVED
+        ) {
+          const rejectReason = reason?.trim()
+            ? `Lý do: ${reason.trim()}`
+            : 'Lý do: Nội dung chưa đáp ứng tiêu chuẩn cộng đồng hoặc chất lượng cosplay của nền tảng.';
+
+          const notif = notifRepo.create({
+            recipientUserId: post.authorId,
+            category: ENotificationCategory.SYSTEM,
+            type: ENotificationType.SECURITY,
+            title: 'Bài viết của bạn chưa được duyệt',
+            description: `Bài viết "${post.title}" chưa được phê duyệt. ${rejectReason}`,
+            actionUrl: `/profile`,
+            previewImageUrl: post.coverImageUrl,
+            subjectType: 'post',
+            subjectId: post.id,
+          });
+          await notifRepo.save(notif);
+        }
+      } catch (err: any) {
+        this.logger.warn(
+          `Failed to notify author #${post.authorId} on status change: ${err?.message || err}`,
+        );
+      }
+    }
+
     return this.findOneAdmin(saved.id);
+  }
+
+  /**
+   * Daily Cron: Checks pending posts and emails admins if pending count > 10.
+   * Consolidates recipient admins into 1 email using To + CC.
+   */
+  async sendDailyPendingPostsDigest(): Promise<string> {
+    const pendingCount = await this.postRepo.count({
+      where: {
+        status: EPostStatus.HIDDEN,
+        deletedAt: IsNull(),
+      },
+    });
+
+    if (pendingCount <= 10) {
+      return `Hiện có ${pendingCount} bài viết chờ duyệt (chưa vượt ngưỡng > 10). Không cần gửi email.`;
+    }
+
+    const adminRepo =
+      this.adminUserRepo || this.dataSource.getRepository(AdminUserEntity);
+
+    const admins = await adminRepo.find({
+      select: ['id', 'email', 'notifications'],
+      where: { deletedAt: IsNull() },
+    });
+
+    const eligibleEmails = admins
+      .filter((admin) => {
+        if (!admin.email || !admin.email.trim()) return false;
+        if (
+          admin.notifications &&
+          typeof admin.notifications === 'object' &&
+          admin.notifications.email === false
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map((admin) => admin.email.trim());
+
+    if (eligibleEmails.length === 0) {
+      return `Có ${pendingCount} bài viết chờ duyệt nhưng không tìm thấy Admin nào bật nhận email thông báo.`;
+    }
+
+    const to = eligibleEmails[0];
+    const cc = eligibleEmails.length > 1 ? eligibleEmails.slice(1) : undefined;
+
+    const adminBaseUrl =
+      this.configService
+        ?.get('app.corsOrigin', { infer: true })
+        ?.split(',')?.[0] || 'http://localhost:3000';
+    const reviewUrl = `${adminBaseUrl}/posts?status=hidden`;
+
+    if (this.emailQueueService) {
+      await this.emailQueueService.sendMail({
+        to,
+        cc,
+        subject: `[Kosume Admin] Thông báo: Có ${pendingCount} bài viết đang chờ kiểm duyệt`,
+        template: 'admin-pending-posts-digest',
+        context: {
+          pendingCount,
+          reviewUrl,
+          currentDate: new Date().toLocaleDateString('vi-VN'),
+        },
+        source: EEmailLogSource.SYSTEM,
+      });
+    }
+
+    this.logger.log(
+      `Daily pending posts digest enqueued: To=${to}, CC=${cc ? cc.length : 0} admins, PendingCount=${pendingCount}`,
+    );
+
+    return `Đã gửi 1 email digest (To: ${to}, CC: ${cc ? cc.length : 0} admins) cho ${pendingCount} bài viết chờ duyệt.`;
   }
 
   /**

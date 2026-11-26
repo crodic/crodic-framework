@@ -8,6 +8,7 @@ describe('Kosume Platform Settings Schema', () => {
       max_file_size_mb: 25,
       auto_approve_posts: true,
       commission_platform_rate_percent: 5,
+      cosplay_confidence_threshold_percent: 50,
       banned_keywords: 'nude, nsfw, spam, scam, lừa đảo, cờ bạc',
       support_email: 'support@kosume.com',
       support_hotline: '1900-KOSUME',
@@ -18,6 +19,7 @@ describe('Kosume Platform Settings Schema', () => {
     if (parsed.success) {
       expect(parsed.data.max_photos_per_album).toBe(50)
       expect(parsed.data.commission_platform_rate_percent).toBe(5)
+      expect(parsed.data.cosplay_confidence_threshold_percent).toBe(50)
       expect(parsed.data.support_email).toBe('support@kosume.com')
     }
   })
@@ -28,6 +30,7 @@ describe('Kosume Platform Settings Schema', () => {
       max_file_size_mb: 25,
       auto_approve_posts: true,
       commission_platform_rate_percent: 5,
+      cosplay_confidence_threshold_percent: 50,
       banned_keywords: 'test',
       support_email: 'not-an-email',
       support_hotline: '1900-KOSUME',

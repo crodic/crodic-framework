@@ -60,11 +60,13 @@ describe('PostAdminController', () => {
     await controller.updateStatus(id('1'), {
       status: EPostStatus.HIDDEN,
       isPublic: false,
+      reason: 'Vi phạm tiêu chuẩn cosplay',
     });
     expect(service.updateStatusAdmin).toHaveBeenCalledWith(
       id('1'),
       EPostStatus.HIDDEN,
       false,
+      'Vi phạm tiêu chuẩn cosplay',
     );
   });
 
