@@ -13,13 +13,6 @@ export interface EventFilterTag {
   label: string;
 }
 
-const EVENT_FILTER_KEYWORDS: Record<string, readonly string[]> = {
-  festival: ["festival", "lễ hội", "expo", "fes"],
-  photoshoot: ["photoshoot", "photo", "chụp"],
-  contest: ["contest", "cuộc thi", "thi"],
-  workshop: ["workshop", "chế tác"],
-};
-
 /**
  * Returns the localized display label for an event lifecycle status.
  */
@@ -54,32 +47,15 @@ export function canApplyToEvent(
 }
 
 /**
- * Matches an event against a category filter chip without relying on locale text equality.
+ * Matches an event against a dynamic category filter chip.
  */
 export function matchesEventFilter(
   event: EventSummaryResDto,
   selectedTagId: string
 ): boolean {
-  if (selectedTagId === "all") return true;
-  if (selectedTagId === "festival" && event.isFeaturedFestival) return true;
-
-  const keywords = EVENT_FILTER_KEYWORDS[selectedTagId];
-  if (!keywords) {
-    const lower = selectedTagId.toLowerCase();
-    return Boolean(
-      event.categories?.some((c) => c.toLowerCase().includes(lower)) ||
-      event.title.toLowerCase().includes(lower)
-    );
-  }
-
-  const lowerTitle = event.title.toLowerCase();
-  const matchesTitle = keywords.some((kw) => lowerTitle.includes(kw));
-  const matchesCategory = Boolean(
-    event.categories?.some((cat) => {
-      const lowerCat = cat.toLowerCase();
-      return keywords.some((kw) => lowerCat.includes(kw));
-    })
+  if (!selectedTagId || selectedTagId === "all") return true;
+  const lower = selectedTagId.trim().toLowerCase();
+  return Boolean(
+    event.categories?.some((cat) => cat.trim().toLowerCase() === lower)
   );
-
-  return matchesTitle || matchesCategory;
 }

@@ -132,17 +132,19 @@
   }
 }
 
-::view-transition-old(.tk-theme),
-::view-transition-new(.tk-theme) {
+html[data-theme-transition]::view-transition-old(root),
+html[data-theme-transition]::view-transition-new(root) {
   mix-blend-mode: normal;
 }
 
-::view-transition-old(.tk-theme-circle-reveal),
-::view-transition-old(.tk-theme-gif-chika) {
+html[data-theme-transition="circle-reveal"]::view-transition-old(root),
+html[data-theme-transition="gif-chika"]::view-transition-old(root) {
   animation: none;
+  z-index: 1;
 }
 
-::view-transition-new(.tk-theme-circle-reveal) {
+html[data-theme-transition="circle-reveal"]::view-transition-new(root) {
+  z-index: 9999;
   animation: tk-theme-circle-reveal var(--tk-theme-duration, 1000ms)
     var(--tk-theme-easing, ease-in-out) both;
 }
@@ -156,7 +158,8 @@
   }
 }
 
-::view-transition-new(.tk-theme-gif-chika) {
+html[data-theme-transition="gif-chika"]::view-transition-new(root) {
+  z-index: 9999;
   mask-image: url("/theme/chika.gif");
   mask-repeat: no-repeat;
   mask-position: var(--tk-x) var(--tk-y);
@@ -184,9 +187,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(.tk-theme),
-  ::view-transition-old(.tk-theme),
-  ::view-transition-new(.tk-theme) {
+  html[data-theme-transition]::view-transition-group(root),
+  html[data-theme-transition]::view-transition-old(root),
+  html[data-theme-transition]::view-transition-new(root) {
     animation: none !important;
     mask-image: none;
   }

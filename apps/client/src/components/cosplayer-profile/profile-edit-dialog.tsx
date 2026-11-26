@@ -375,7 +375,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="displayName"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("displayName")}
                       </FormLabel>
@@ -395,7 +395,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="handle"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("handle")}
                       </FormLabel>
@@ -415,7 +415,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="roleBadge"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("roleBadge")}
                       </FormLabel>
@@ -435,7 +435,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="tagline"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("tagline")}
                       </FormLabel>
@@ -455,7 +455,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="locationLabel"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("location")}
                       </FormLabel>
@@ -475,7 +475,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="workArea"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("workArea")}
                       </FormLabel>
@@ -495,7 +495,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="heightCm"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("heightCm")}
                       </FormLabel>
@@ -518,7 +518,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="experienceYearsNum"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("experienceYearsNum")}
                       </FormLabel>
@@ -544,7 +544,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="skillsText"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("skills")}
                       </FormLabel>
@@ -571,7 +571,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="specialtiesText"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("specialties")}
                       </FormLabel>
@@ -598,7 +598,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="awardsBadgesText"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("awards")}
                       </FormLabel>
@@ -628,7 +628,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="contactEmail"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("contactEmail")}
                       </FormLabel>
@@ -649,7 +649,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="contactPhone"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("contactPhone")}
                       </FormLabel>
@@ -672,7 +672,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="bio"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("bio")}
                       </FormLabel>
@@ -693,7 +693,7 @@ export function ProfileEditDialog({
                   control={form.control}
                   name="artisticBio"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem>
                       <FormLabel className="text-muted-foreground text-xs font-semibold">
                         {t("artisticBio")}
                       </FormLabel>
@@ -732,7 +732,7 @@ export function ProfileEditDialog({
               />
 
               {/* 4. Social Links */}
-              <div className="space-y-2 pt-1">
+              <div className="grid gap-2 pt-1">
                 <FormLabel className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold">
                   <LinkIcon className="text-primary size-3.5" />
                   <span>{t("socialLinks")}</span>
@@ -746,7 +746,7 @@ export function ProfileEditDialog({
                         <FormControl>
                           <Input
                             placeholder={t("facebookPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -763,7 +763,7 @@ export function ProfileEditDialog({
                         <FormControl>
                           <Input
                             placeholder={t("instagramPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -780,7 +780,7 @@ export function ProfileEditDialog({
                         <FormControl>
                           <Input
                             placeholder={t("tiktokPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -797,7 +797,7 @@ export function ProfileEditDialog({
                         <FormControl>
                           <Input
                             placeholder={t("twitterPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>

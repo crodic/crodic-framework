@@ -28,7 +28,6 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CreateAlbumModal } from "@/components/studio/create-album-modal";
 import { WhiteLabelLogo } from "@/lib/white-label";
-import { MobileSearchDialog } from "@/components/explore/mobile-search-dialog";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useProfile, useSignOut } from "@/hooks/use-profile";
 import { useQuery } from "@tanstack/react-query";
@@ -40,7 +39,6 @@ export function AppHeader() {
   const router = useRouter();
   const t = useTranslations("Navigation");
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   // Authentication State
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -138,25 +136,14 @@ export function AppHeader() {
       </div>
 
       {/* Right Area: Actions + User Profile or Guest Auth */}
-      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-        {/* Mobile Search Button (visible only on mobile) */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setMobileSearchOpen(true)}
-          className="text-muted-foreground size-10 rounded-lg md:hidden"
-          aria-label={t("search")}
-        >
-          <Search className="size-4" />
-        </Button>
-
+      <div className="flex shrink-0 items-center gap-2">
         {/* "+ Đăng album" Action Button - Desktop (Only visible for authenticated users) */}
         {isAuthenticated && (
           <CreateAlbumModal
             trigger={
               <Button
                 size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-colors sm:px-4 sm:text-sm md:inline-flex"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 hidden h-10 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-xs transition-colors sm:px-4 sm:text-sm md:inline-flex"
               >
                 <Plus className="size-4 shrink-0" />
                 <span>{t("postAlbum")}</span>
@@ -165,12 +152,10 @@ export function AppHeader() {
           />
         )}
 
-        {/* Language Switcher & Theme Mode Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Language Switcher & Theme Mode Toggle (Desktop only; moved to Sidebar Sheet on mobile) */}
+        <div className="hidden items-center gap-2 md:flex">
           <LanguageSwitcher />
-          <div className="hidden md:block">
-            <ModeToggle className="size-10 rounded-lg" />
-          </div>
+          <ModeToggle />
         </div>
 
         {isHydrating ? (
@@ -183,7 +168,7 @@ export function AppHeader() {
               variant="outline"
               size="icon"
               asChild
-              className="text-muted-foreground relative size-10 rounded-lg"
+              className="text-muted-foreground hover:text-foreground relative size-10 rounded-lg shadow-none"
               aria-label={t("notifications")}
             >
               <Link href="/notifications">
@@ -198,11 +183,11 @@ export function AppHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   aria-label={displayName}
-                  className="border-border bg-background size-10 rounded-lg border p-0 has-[>svg]:p-0 md:size-auto md:h-10 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
+                  className="size-10 rounded-lg p-0 shadow-none has-[>svg]:p-0 md:size-auto md:h-10 md:gap-2 md:px-2.5 md:has-[>svg]:px-2.5"
                 >
-                  <Avatar className="border-primary/30 size-7 rounded-md border">
+                  <Avatar className="size-7 rounded-md">
                     <AvatarImage
                       src={displayAvatar}
                       alt={displayName}
@@ -285,12 +270,6 @@ export function AppHeader() {
           </div>
         )}
       </div>
-
-      {/* Mobile Search Dialog */}
-      <MobileSearchDialog
-        open={mobileSearchOpen}
-        onOpenChange={setMobileSearchOpen}
-      />
     </header>
   );
 }

@@ -148,7 +148,7 @@ export function LanguageSwitcher({
           disabled={isPending}
           aria-label={t(locale as "en" | "vi")}
           className={cn(
-            "border-border/70 bg-background/80 hover:bg-muted/60 h-9 shrink-0 cursor-pointer gap-1.5 rounded-xl px-2.5 text-xs font-semibold transition-colors",
+            "text-muted-foreground hover:text-foreground h-10 shrink-0 cursor-pointer gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-none transition-colors",
             className,
             triggerClassName
           )}

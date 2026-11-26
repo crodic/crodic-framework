@@ -4,35 +4,41 @@ import React from "react";
 import { useTranslations } from "next-intl";
 
 export interface EventsFilterBarProps {
+  categories: string[];
   selectedTagId: string;
   onSelectTag: (tagId: string) => void;
 }
 
-const FILTER_ITEMS = [
-  { id: "all", labelKey: "filterAll" },
-  { id: "festival", labelKey: "filterFestival" },
-  { id: "photoshoot", labelKey: "filterPhotoshoot" },
-  { id: "contest", labelKey: "filterContest" },
-  { id: "workshop", labelKey: "filterWorkshop" },
-] as const;
-
 export function EventsFilterBar({
+  categories,
   selectedTagId,
   onSelectTag,
 }: EventsFilterBarProps) {
   const t = useTranslations("Events");
 
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
-      {FILTER_ITEMS.map((item) => (
+      <button
+        type="button"
+        onClick={() => onSelectTag("all")}
+        aria-pressed={selectedTagId === "all"}
+        className="filter-button"
+      >
+        {t("filterAll")}
+      </button>
+      {categories.map((category) => (
         <button
-          key={item.id}
+          key={category}
           type="button"
-          onClick={() => onSelectTag(item.id)}
-          aria-pressed={selectedTagId === item.id}
+          onClick={() => onSelectTag(category)}
+          aria-pressed={selectedTagId.toLowerCase() === category.toLowerCase()}
           className="filter-button"
         >
-          {t(item.labelKey)}
+          {category}
         </button>
       ))}
     </div>

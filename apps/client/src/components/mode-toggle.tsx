@@ -24,10 +24,13 @@ export function ModeToggle({ className }: { className?: string }) {
           variant="outline"
           size="icon"
           aria-label={t("toggleTheme")}
-          className={cn("size-9 shrink-0", className)}
+          className={cn(
+            "text-muted-foreground hover:text-foreground size-10 shrink-0 rounded-lg shadow-none",
+            className
+          )}
         >
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 motion-safe:transition-transform dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 motion-safe:transition-transform dark:scale-100 dark:rotate-0" />
+          <Sun className="size-4 scale-100 rotate-0 motion-safe:transition-transform dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute size-4 scale-0 rotate-90 motion-safe:transition-transform dark:scale-100 dark:rotate-0" />
           <span className="sr-only">{t("toggleTheme")}</span>
         </Button>
       </DropdownMenuTrigger>

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -16,6 +17,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ModeToggle } from "@/components/mode-toggle";
 import { APP_SIDEBAR_NAV } from "@/config/navigation";
 import { useAuthStore } from "@/store/use-auth-store";
 import { isProtectedRoute } from "@/config/routes";
@@ -168,6 +171,19 @@ export function AppSidebar() {
           );
         })}
       </SidebarContent>
+
+      {/* Mobile Quick Preferences Footer (Language & Theme) */}
+      <SidebarFooter className="border-sidebar-border/60 border-t p-3 md:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-muted-foreground text-xs font-medium">
+            {tNav("language")}
+          </span>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher align="end" />
+            <ModeToggle />
+          </div>
+        </div>
+      </SidebarFooter>
 
       {/* Subtle Sidebar Rail */}
       <SidebarRail />

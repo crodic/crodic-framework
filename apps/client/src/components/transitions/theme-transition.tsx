@@ -25,21 +25,16 @@ SOFTWARE.
 "use client";
 
 import {
-  addTransitionType,
   createContext,
-  startTransition,
   use,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
-  ViewTransition,
 } from "react";
-import type { ComponentProps, ReactNode } from "react";
-
-import { cn } from "@/lib/utils";
+import { flushSync } from "react-dom";
+import type { ReactNode } from "react";
 
 export type Theme = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
@@ -113,18 +108,15 @@ export const ThemeTransitionScript = ({
 );
 
 /**
- * Writes the transition geometry to the root element (view transition
- * pseudo-elements inherit from it), in the coordinate space of the snapshot
- * (the provider's element), so styles can place masks and clip paths relative
- * to what the user sees. Also writes the optional duration/easing overrides.
+ * Writes the transition geometry to the root element (`:root`), which
+ * `::view-transition-*(root)` pseudo-elements inherit from, so animations
+ * originate from the pointer/control or viewport center.
  */
 const writeTransitionVars = (
-  element: HTMLElement,
   origin: ThemeTransitionOrigin | undefined,
   duration: number | undefined,
   easing: string | undefined
 ) => {
-  const rect = element.getBoundingClientRect();
   const width = window.innerWidth;
   const height = window.innerHeight;
 
@@ -153,12 +145,12 @@ const writeTransitionVars = (
 
   const radius = Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
   const { style } = document.documentElement;
-  style.setProperty("--tk-x", `${x - rect.left}px`);
-  style.setProperty("--tk-y", `${y - rect.top}px`);
-  style.setProperty("--tk-left", `${-rect.left}px`);
-  style.setProperty("--tk-top", `${-rect.top}px`);
-  style.setProperty("--tk-cx", `${width / 2 - rect.left}px`);
-  style.setProperty("--tk-cy", `${height / 2 - rect.top}px`);
+  style.setProperty("--tk-x", `${x}px`);
+  style.setProperty("--tk-y", `${y}px`);
+  style.setProperty("--tk-left", "0px");
+  style.setProperty("--tk-top", "0px");
+  style.setProperty("--tk-cx", `${width / 2}px`);
+  style.setProperty("--tk-cy", `${height / 2}px`);
   style.setProperty("--tk-r", `${radius}px`);
   if (duration === undefined) {
     style.removeProperty("--tk-theme-duration");
@@ -172,10 +164,7 @@ const writeTransitionVars = (
   }
 };
 
-export interface ThemeTransitionProviderProps extends Omit<
-  ComponentProps<"div">,
-  "children"
-> {
+export interface ThemeTransitionProviderProps {
   children: ReactNode;
   /** Style used when `setTheme` is called without one. */
   transition?: string;
@@ -188,11 +177,8 @@ export interface ThemeTransitionProviderProps extends Omit<
 }
 
 /**
- * Owns the theme and animates every change with React's `<ViewTransition>`.
- *
- * Wrap everything the user sees: the element it renders is what gets
- * snapshotted. Updates inside `children` never animate through it; only theme
- * changes do.
+ * Owns the theme and animates changes across the full root viewport (including
+ * Radix Portals like Sheet/Dialog/Popover) using `document.startViewTransition()`.
  */
 export const ThemeTransitionProvider = ({
   children,
@@ -201,10 +187,7 @@ export const ThemeTransitionProvider = ({
   storageKey = "theme",
   duration,
   easing,
-  className,
-  ...props
 }: ThemeTransitionProviderProps) => {
-  const ref = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<{
     theme: Theme;
     transition: string;
@@ -277,7 +260,7 @@ export const ThemeTransitionProvider = ({
       };
       const nextResolvedTheme = next === "system" ? systemTheme : next;
       if (
-        !ref.current ||
+        typeof document.startViewTransition !== "function" ||
         nextResolvedTheme === resolvedTheme ||
         window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ) {
@@ -285,11 +268,24 @@ export const ThemeTransitionProvider = ({
         return;
       }
 
-      writeTransitionVars(ref.current, options.origin, duration, easing);
-      startTransition(() => {
-        addTransitionType(THEME_TRANSITION_TYPE);
-        setState(nextState);
+      writeTransitionVars(options.origin, duration, easing);
+      const root = document.documentElement;
+      root.dataset.themeTransition = nextState.transition;
+
+      const vt = document.startViewTransition(() => {
+        flushSync(() => {
+          setState(nextState);
+        });
+        root.classList.remove("light", "dark");
+        root.classList.add(nextResolvedTheme);
+        root.style.colorScheme = nextResolvedTheme;
       });
+
+      void vt.finished
+        .catch(() => {})
+        .finally(() => {
+          delete root.dataset.themeTransition;
+        });
     },
     [
       duration,
@@ -314,28 +310,8 @@ export const ThemeTransitionProvider = ({
     [mounted, resolvedTheme, setTheme, theme, toggleTheme]
   );
 
-  const activeTransition = state?.transition ?? transition;
-
   return (
-    <ThemeTransitionContext value={value}>
-      <ViewTransition
-        default="none"
-        update={{
-          [THEME_TRANSITION_TYPE]: `tk-theme tk-theme-${activeTransition}`,
-          default: "none",
-        }}
-      >
-        <div
-          ref={ref}
-          data-slot="theme-transition"
-          data-theme={state ? resolvedTheme : undefined}
-          className={cn("bg-background text-foreground min-h-svh", className)}
-          {...props}
-        >
-          <ViewTransition update="none">{children}</ViewTransition>
-        </div>
-      </ViewTransition>
-    </ThemeTransitionContext>
+    <ThemeTransitionContext value={value}>{children}</ThemeTransitionContext>
   );
 };
 

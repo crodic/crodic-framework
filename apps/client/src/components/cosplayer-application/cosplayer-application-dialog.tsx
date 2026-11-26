@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { TagChipsInput } from "@/components/ui/tag-chips-input";
@@ -139,13 +140,13 @@ export function CosplayerApplicationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <BadgeCheck className="text-primary size-5" />
-            {t("dialogTitle")}
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl p-5 sm:max-w-lg sm:p-6">
+        <DialogHeader className="space-y-1 pr-8 text-left">
+          <DialogTitle className="flex items-center gap-2 text-base font-bold sm:text-lg">
+            <BadgeCheck className="text-primary size-5 shrink-0" />
+            <span>{t("dialogTitle")}</span>
           </DialogTitle>
-          <DialogDescription className="text-xs">
+          <DialogDescription className="text-muted-foreground text-xs leading-relaxed">
             {t("dialogDesc")}
           </DialogDescription>
         </DialogHeader>
@@ -238,7 +239,7 @@ export function CosplayerApplicationDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 pt-2"
+              className="space-y-5 pt-1"
             >
               {!isEmailVerified && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-300">
@@ -276,8 +277,8 @@ export function CosplayerApplicationDialog({
                 control={form.control}
                 name="stageName"
                 render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                  <FormItem>
+                    <FormLabel className="text-foreground text-xs font-semibold">
                       {t("stageNameLabel")}{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
@@ -297,35 +298,37 @@ export function CosplayerApplicationDialog({
                 control={form.control}
                 name="bio"
                 render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                  <FormItem>
+                    <FormLabel className="text-foreground text-xs font-semibold">
                       {t("bioLabel")}{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t("bioPlaceholder")}
-                        className="min-h-24 rounded-xl text-sm"
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="text-muted-foreground flex justify-between text-[11px]">
-                      <span>{t("minChars")}</span>
-                      <span>
-                        {t("currentChars", {
-                          count: String(field.value?.length || 0),
-                        })}
-                      </span>
+                    <div className="space-y-1.5">
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("bioPlaceholder")}
+                          className="min-h-24 rounded-xl text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <div className="text-muted-foreground flex justify-between text-[11px]">
+                        <span>{t("minChars")}</span>
+                        <span>
+                          {t("currentChars", {
+                            count: String(field.value?.length || 0),
+                          })}
+                        </span>
+                      </div>
                     </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="space-y-2">
-                <label className="text-muted-foreground text-xs font-semibold">
+              <div className="grid gap-2">
+                <Label className="text-foreground text-xs font-semibold">
                   {t("socialLinksLabel")}
-                </label>
+                </Label>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   <FormField
                     control={form.control}
@@ -335,7 +338,7 @@ export function CosplayerApplicationDialog({
                         <FormControl>
                           <Input
                             placeholder={t("facebookPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -351,7 +354,7 @@ export function CosplayerApplicationDialog({
                         <FormControl>
                           <Input
                             placeholder={t("instagramPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -367,7 +370,7 @@ export function CosplayerApplicationDialog({
                         <FormControl>
                           <Input
                             placeholder={t("tiktokPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -383,7 +386,7 @@ export function CosplayerApplicationDialog({
                         <FormControl>
                           <Input
                             placeholder={t("twitterPlaceholder")}
-                            className="h-9 rounded-xl text-xs"
+                            className="h-10 rounded-xl text-sm"
                             {...field}
                           />
                         </FormControl>
@@ -398,20 +401,23 @@ export function CosplayerApplicationDialog({
                 control={form.control}
                 name="portfolioUrls"
                 render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-muted-foreground text-xs font-semibold">
+                  <FormItem>
+                    <FormLabel className="text-foreground text-xs font-semibold">
                       {t("portfolioLabel")}
                     </FormLabel>
-                    <FormControl>
-                      <TagChipsInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder={t("portfolioPlaceholder")}
-                      />
-                    </FormControl>
-                    <p className="text-muted-foreground text-[11px]">
-                      {t("portfolioHint")}
-                    </p>
+                    <div className="space-y-1.5">
+                      <FormControl>
+                        <TagChipsInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder={t("portfolioPlaceholder")}
+                          addLabel={t("addPortfolioLink")}
+                        />
+                      </FormControl>
+                      <p className="text-muted-foreground text-[11px] leading-relaxed">
+                        {t("portfolioHint")}
+                      </p>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -422,14 +428,14 @@ export function CosplayerApplicationDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  className="rounded-xl"
+                  className="h-10 rounded-xl text-xs font-semibold sm:text-sm"
                 >
                   {t("cancelBtn")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={submitMutation.isPending || !isEmailVerified}
-                  className="gap-2 rounded-xl text-xs font-semibold"
+                  className="h-10 gap-2 rounded-xl text-xs font-semibold sm:text-sm"
                 >
                   {submitMutation.isPending && (
                     <Loader2 className="size-3.5 animate-spin" />

@@ -4,23 +4,16 @@ import React, { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import {
-  Search,
-  SearchX,
-  Tags,
-  X,
-  Film,
-  User,
-  Palette,
-  Hash,
-} from "lucide-react";
+import { Search, SearchX, Tags, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ListError } from "@/components/common/list-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  getTagCategories,
   getTags,
   getTrendingTags,
+  type TagCategoryResDto,
   type TagSummaryResDto,
 } from "@/services/tags";
 import { TagCard } from "./tag-card";
@@ -56,14 +49,12 @@ export function TagDirectoryView() {
   // Debounce search query to prevent high API frequency
   const debouncedSearch = useDebounce(searchQuery.trim(), 400);
 
-  // Categories list
-  const categories = [
-    { id: "all", label: t("allCategories"), icon: Tags },
-    { id: "character", label: t("category.character"), icon: User },
-    { id: "copyright", label: t("category.copyright"), icon: Film },
-    { id: "artist", label: t("category.artist"), icon: Palette },
-    { id: "general", label: t("category.general"), icon: Hash },
-  ];
+  // Fetch active categories dynamically from backend
+  const { data: tagCategories = [] } = useQuery<TagCategoryResDto[]>({
+    queryKey: ["tags-active-categories"],
+    queryFn: getTagCategories,
+    staleTime: 60 * 1000,
+  });
 
   // Fetch trending tags for the top bar
   const { data: trendingTags = [] } = useQuery<TagSummaryResDto[]>({
@@ -156,24 +147,39 @@ export function TagDirectoryView() {
         )}
       </header>
 
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label={t("allCategories")}
-      >
-        {categories.map(({ id, label, icon: Icon }) => (
+      {tagCategories.length > 0 && (
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={t("allCategories")}
+        >
           <button
-            key={id}
             type="button"
-            onClick={() => setActiveCategory(id)}
-            aria-pressed={activeCategory === id}
+            onClick={() => setActiveCategory("all")}
+            aria-pressed={activeCategory === "all"}
             className="filter-button"
           >
-            <Icon className="size-4" aria-hidden="true" />
-            {label}
+            <Tags className="size-4" aria-hidden="true" />
+            {t("allCategories")}
           </button>
-        ))}
-      </div>
+          {tagCategories.map((cat) => {
+            const label = t.has(`category.${cat.slug}` as any)
+              ? t(`category.${cat.slug}` as any)
+              : cat.name;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.slug)}
+                aria-pressed={activeCategory === cat.slug}
+                className="filter-button"
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* 3. Grid of Tag Cards (3 columns on larger screens) */}
       {isLoading ? (

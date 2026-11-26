@@ -21,7 +21,6 @@ import {
   Settings,
   Award,
   Share2,
-  UserRoundPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -305,7 +304,7 @@ export function ProfileHero({
       </div>
 
       {/* 2. Profile Details & Overlapping Avatar */}
-      <div className="relative px-4 sm:px-6 md:px-8">
+      <div className="relative px-1 sm:px-6 md:px-8">
         <div className="-mt-12 mb-4 flex flex-col gap-4 sm:-mt-16 md:-mt-20 lg:flex-row lg:items-end lg:justify-between">
           {/* Left Column: Avatar + Details */}
           <div className="flex min-w-0 flex-1 flex-col items-center gap-3.5 text-center sm:flex-row sm:items-end sm:gap-5 sm:text-left">
@@ -427,7 +426,7 @@ export function ProfileHero({
           </div>
 
           {/* Right Column: Actions */}
-          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-1 sm:justify-start sm:gap-2.5 lg:mt-0 lg:w-auto lg:justify-end">
+          <div className="mt-2 flex w-full items-center justify-center gap-2 sm:justify-start sm:gap-2.5 lg:mt-0 lg:w-auto lg:justify-end">
             {isOwnerView ? (
               /* OWNER ACTIONS */
               <>
@@ -436,20 +435,20 @@ export function ProfileHero({
                     type="button"
                     variant="outline"
                     onClick={() => setIsApplicationDialogOpen(true)}
-                    className="border-primary/40 text-primary hover:bg-primary/10 h-10 gap-1.5 rounded-xl px-2.5 text-xs font-semibold sm:px-3.5"
+                    className="border-primary/40 text-primary hover:bg-primary/10 h-10 min-w-0 gap-1.5 rounded-xl px-2.5 text-xs font-semibold sm:px-3.5 sm:text-sm"
                   >
-                    <UserRoundPlus className="size-3.5" />
-                    <span>{tCos("applyCosplayer")}</span>
+                    <BadgeCheck className="size-4 shrink-0" />
+                    <span className="truncate">{tCos("applyCosplayer")}</span>
                   </Button>
                 )}
 
                 <Button
                   type="button"
                   onClick={() => setIsEditDialogOpen(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 flex-initial gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-sm sm:px-4"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 min-w-0 flex-initial gap-1.5 rounded-xl px-2.5 text-xs font-semibold shadow-sm sm:px-4 sm:text-sm"
                 >
-                  <Pencil className="size-4" />
-                  <span>{t("editProfile")}</span>
+                  <Pencil className="size-4 shrink-0" />
+                  <span className="truncate">{t("editProfile")}</span>
                 </Button>
 
                 {onToggleViewMode && (

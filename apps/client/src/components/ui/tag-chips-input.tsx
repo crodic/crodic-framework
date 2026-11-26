@@ -10,6 +10,7 @@ interface TagChipsInputProps {
   value?: string[];
   onChange?: (value: string[]) => void;
   placeholder?: string;
+  addLabel?: string;
   maxItems?: number;
   className?: string;
   disabled?: boolean;
@@ -22,6 +23,7 @@ export function TagChipsInput({
   value = [],
   onChange,
   placeholder = "",
+  addLabel = "Add",
   maxItems = 30,
   className,
   disabled = false,
@@ -120,7 +122,7 @@ export function TagChipsInput({
           className="border-input/70 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-muted/40 h-10 w-full cursor-pointer justify-center gap-1.5 rounded-xl border-dashed text-xs font-semibold transition-colors"
         >
           <Plus className="size-4" />
-          <span>Add</span>
+          <span>{addLabel}</span>
         </Button>
       )}
     </div>

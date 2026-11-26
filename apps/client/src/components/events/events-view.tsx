@@ -68,7 +68,23 @@ export function EventsView() {
       .slice(0, 3);
   }, [allEvents]);
 
-  // Filter events using structured category/festival logic
+  // Derive unique categories dynamically from backend event records
+  const availableCategories = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const event of allEvents) {
+      for (const rawCat of event.categories ?? []) {
+        const trimmed = rawCat.trim();
+        if (!trimmed) continue;
+        const key = trimmed.toLowerCase();
+        if (!seen.has(key)) {
+          seen.set(key, trimmed);
+        }
+      }
+    }
+    return Array.from(seen.values());
+  }, [allEvents]);
+
+  // Filter events using dynamic categories
   const filteredEvents = useMemo(() => {
     return allEvents.filter((e) => matchesEventFilter(e, selectedTagId));
   }, [selectedTagId, allEvents]);
@@ -97,13 +113,16 @@ export function EventsView() {
         </section>
       )}
 
-      {/* 2. Filter Tag Chips */}
-      <section aria-label={t("title")}>
-        <EventsFilterBar
-          selectedTagId={selectedTagId}
-          onSelectTag={setSelectedTagId}
-        />
-      </section>
+      {/* 2. Filter Tag Chips (only shown when backend events have categories) */}
+      {availableCategories.length > 0 && (
+        <section aria-label={t("title")}>
+          <EventsFilterBar
+            categories={availableCategories}
+            selectedTagId={selectedTagId}
+            onSelectTag={setSelectedTagId}
+          />
+        </section>
+      )}
 
       {/* 3. Events Grid */}
       <section aria-label={t("title")}>

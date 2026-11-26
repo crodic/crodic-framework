@@ -171,8 +171,9 @@ export function LandingNavbar() {
               </nav>
 
               <div className="border-border flex flex-col gap-3 border-t pt-4">
-                <div className="self-start">
-                  <LanguageSwitcher />
+                <div className="flex items-center justify-between gap-2">
+                  <LanguageSwitcher align="start" />
+                  <ModeToggle />
                 </div>
                 <Button
                   asChild
