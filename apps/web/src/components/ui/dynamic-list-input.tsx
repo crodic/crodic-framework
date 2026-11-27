@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export interface DynamicListInputProps {
@@ -67,16 +68,18 @@ export function DynamicListInput({
             disabled={disabled}
             className='bg-background h-9 flex-1 text-sm shadow-xs'
           />
-          <button
+          <Button
             type='button'
+            variant='destructive'
+            size='icon'
             disabled={disabled}
             onClick={() => handleRemoveItem(index)}
-            className='flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-rose-200 bg-rose-100 text-rose-600 transition-colors hover:bg-rose-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-900/60'
+            className='size-9 shrink-0'
             aria-label='Xóa mục'
             title='Xóa mục này'
           >
             <Minus className='size-4 stroke-[2.5]' />
-          </button>
+          </Button>
         </div>
       ))}
 
@@ -91,16 +94,18 @@ export function DynamicListInput({
             disabled={disabled}
             className='bg-background h-9 flex-1 text-sm shadow-xs'
           />
-          <button
+          <Button
             type='button'
+            variant='default'
+            size='icon'
             disabled={disabled || !draftValue.trim()}
             onClick={handleAddItem}
-            className='flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-amber-500/40 bg-amber-400 font-bold text-amber-950 transition-colors hover:bg-amber-500 active:scale-95 disabled:pointer-events-none disabled:opacity-50'
+            className='size-9 shrink-0'
             aria-label='Thêm mục'
             title='Thêm mục mới'
           >
             <Plus className='size-4 stroke-[2.5]' />
-          </button>
+          </Button>
         </div>
       )}
     </div>
