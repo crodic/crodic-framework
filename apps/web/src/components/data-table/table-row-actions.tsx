@@ -69,7 +69,7 @@ export function TableRowActions({ children }: { children: ReactNode }) {
   collect(children)
   return (
     <div
-      className='flex items-center justify-center gap-1'
+      className='flex w-fit items-center justify-start gap-1'
       onClick={(event) => event.stopPropagation()}
     >
       {companions}
