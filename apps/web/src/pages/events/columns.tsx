@@ -7,7 +7,6 @@ import {
   FileText,
   Heart,
   MapPin,
-  SlidersHorizontalIcon,
   Trash2Icon,
   Users,
 } from 'lucide-react'
@@ -27,14 +26,12 @@ import { EventColumnKey, type Event } from './schema'
 interface GetEventColumnsProps {
   onView: (event: Event) => void
   onEdit: (event: Event) => void
-  onStatusChange: (event: Event) => void
   onDelete: (event: Event) => void
 }
 
 export function getEventsTableColumns({
   onView,
   onEdit,
-  onStatusChange,
   onDelete,
 }: GetEventColumnsProps): ColumnDef<Event>[] {
   return [
@@ -103,7 +100,10 @@ export function getEventsTableColumns({
       id: EventColumnKey.dateString,
       accessorFn: (row) => row.dateString,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Thời gian diễn ra' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.date', 'Event date')}
+        />
       ),
       cell: ({ row }) => (
         <div className='text-muted-foreground flex items-center gap-1.5 text-xs tabular-nums'>
@@ -120,7 +120,10 @@ export function getEventsTableColumns({
       id: EventColumnKey.locationLabel,
       accessorFn: (row) => row.locationLabel,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Khu vực' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.location', 'Location')}
+        />
       ),
       cell: ({ row }) => (
         <Badge variant='outline' className='text-xs font-normal'>
@@ -133,7 +136,10 @@ export function getEventsTableColumns({
       id: EventColumnKey.status,
       accessorFn: (row) => row.status,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Trạng thái' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('events.columns.status', 'Status')}
+        />
       ),
       cell: ({ row }) => <EventStatusBadge status={row.original.status} />,
       meta: {
@@ -198,7 +204,7 @@ export function getEventsTableColumns({
           column={column}
           label={i18n.t(
             'events.columns.engagement',
-            'Quan tâm / Tham gia / Đơn'
+            'Interest / Attendees / Applications'
           )}
         />
       ),
@@ -206,18 +212,21 @@ export function getEventsTableColumns({
         <div className='flex items-center gap-3 font-mono text-xs tabular-nums'>
           <span
             className='text-muted-foreground flex items-center gap-1'
-            title='Lượt quan tâm'
+            title={i18n.t('events.columns.interested', 'Interested')}
           >
             <Heart className='text-destructive size-3' aria-hidden='true' />
             {row.original.interestedCount.toLocaleString()}
           </span>
-          <span className='flex items-center gap-1' title='Số người tham gia'>
+          <span
+            className='flex items-center gap-1'
+            title={i18n.t('events.columns.attendees', 'Attendees')}
+          >
             <Users className='text-primary size-3' aria-hidden='true' />
             {row.original.participantsCount.toLocaleString()}
           </span>
           <span
             className='text-muted-foreground flex items-center gap-1'
-            title='Đơn ứng tuyển'
+            title={i18n.t('events.columns.applications', 'Applications')}
           >
             <FileText className='size-3' aria-hidden='true' />
             {row.original.applicationsCount.toLocaleString()}
@@ -250,17 +259,6 @@ export function getEventsTableColumns({
               }
               icon={<EditIcon className='mr-2 size-3.5' />}
               onSelect={() => onEdit(event)}
-            />
-            <TableRowAction
-              label={
-                <>
-                  <span>
-                    {i18n.t('events.actions.status', 'Đổi trạng thái')}
-                  </span>
-                </>
-              }
-              icon={<SlidersHorizontalIcon className='mr-2 size-3.5' />}
-              onSelect={() => onStatusChange(event)}
             />
             <TableRowAction
               label={

@@ -236,7 +236,13 @@ export function PageEventShow() {
                   {t('events.show.metricApplications', 'Đơn ứng tuyển')}
                 </dt>
                 <dd className='text-sm font-semibold tabular-nums'>
-                  {event.applicationsCount.toLocaleString()} hồ sơ
+                  {t(
+                    'events.show.applicationsCount',
+                    '{{count}} applications',
+                    {
+                      count: event.applicationsCount,
+                    }
+                  )}
                 </dd>
               </dl>
             </CardContent>
@@ -255,8 +261,13 @@ export function PageEventShow() {
                 </CardTitle>
                 <CardDescription>
                   {event.organizerName
-                    ? `Đơn vị tổ chức: ${event.organizerName}`
-                    : 'Thông tin giới thiệu và danh mục sự kiện'}
+                    ? t('events.show.organizer', 'Organizer: {{name}}', {
+                        name: event.organizerName,
+                      })
+                    : t(
+                        'events.show.aboutDescription',
+                        'Event overview and categories'
+                      )}
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-4'>
@@ -273,7 +284,10 @@ export function PageEventShow() {
                 <div className='text-foreground/90 text-sm leading-relaxed whitespace-pre-line'>
                   {event.description || (
                     <span className='text-muted-foreground italic'>
-                      Chưa có mô tả chi tiết cho sự kiện này.
+                      {t(
+                        'events.show.emptyDescription',
+                        'No detailed description is available for this event.'
+                      )}
                     </span>
                   )}
                 </div>
@@ -352,7 +366,8 @@ export function PageEventShow() {
                             )}
                           </div>
                           <p className='text-muted-foreground truncate text-xs'>
-                            {p.roleLabel || 'Cosplayer'}
+                            {p.roleLabel ||
+                              t('events.show.cosplayerRole', 'Cosplayer')}
                           </p>
                         </div>
                       </div>
@@ -382,7 +397,7 @@ export function PageEventShow() {
               <CardContent className='space-y-4'>
                 <div className='space-y-1.5'>
                   <p className='text-muted-foreground text-xs font-medium'>
-                    Ảnh đại diện (Poster)
+                    {t('events.show.posterLabel', 'Poster image')}
                   </p>
                   <div className='border-border/70 bg-muted/30 overflow-hidden rounded-lg border'>
                     <img
@@ -396,7 +411,7 @@ export function PageEventShow() {
                 {event.bannerImageUrl && (
                   <div className='space-y-1.5'>
                     <p className='text-muted-foreground text-xs font-medium'>
-                      Ảnh Hero Banner
+                      {t('events.show.heroBannerLabel', 'Hero banner')}
                     </p>
                     <div className='border-border/70 bg-muted/30 overflow-hidden rounded-lg border'>
                       <img
@@ -419,25 +434,33 @@ export function PageEventShow() {
               </CardHeader>
               <CardContent className='divide-border divide-y text-sm'>
                 <div className='flex items-center justify-between py-2.5'>
-                  <span className='text-muted-foreground'>Bắt đầu</span>
+                  <span className='text-muted-foreground'>
+                    {t('events.show.startLabel', 'Starts')}
+                  </span>
                   <span className='font-mono font-medium tabular-nums'>
                     {formatTimestamp(event.startAt)}
                   </span>
                 </div>
                 <div className='flex items-center justify-between py-2.5'>
-                  <span className='text-muted-foreground'>Kết thúc</span>
+                  <span className='text-muted-foreground'>
+                    {t('events.show.endLabel', 'Ends')}
+                  </span>
                   <span className='font-mono font-medium tabular-nums'>
                     {formatTimestamp(event.endAt)}
                   </span>
                 </div>
                 <div className='flex items-center justify-between py-2.5'>
-                  <span className='text-muted-foreground'>Ngày tạo</span>
+                  <span className='text-muted-foreground'>
+                    {t('events.show.createdLabel', 'Created')}
+                  </span>
                   <span className='font-mono font-medium tabular-nums'>
                     {formatTimestamp(event.createdAt)}
                   </span>
                 </div>
                 <div className='flex items-center justify-between py-2.5'>
-                  <span className='text-muted-foreground'>Cập nhật</span>
+                  <span className='text-muted-foreground'>
+                    {t('events.show.updatedLabel', 'Updated')}
+                  </span>
                   <span className='font-mono font-medium tabular-nums'>
                     {formatTimestamp(event.updatedAt)}
                   </span>

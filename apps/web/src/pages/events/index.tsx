@@ -63,13 +63,6 @@ export function PageEventsOverview() {
     [navigate]
   )
 
-  const handleOpenStatus = useCallback(
-    (event: Event) => {
-      navigate(`/events/${event.id}/edit`)
-    },
-    [navigate]
-  )
-
   const handleOpenDelete = useCallback((event: Event) => {
     setEventToDelete(event)
   }, [])
@@ -79,10 +72,9 @@ export function PageEventsOverview() {
       getEventsTableColumns({
         onView: handleOpenView,
         onEdit: handleOpenEdit,
-        onStatusChange: handleOpenStatus,
         onDelete: handleOpenDelete,
       }),
-    [handleOpenView, handleOpenEdit, handleOpenStatus, handleOpenDelete]
+    [handleOpenView, handleOpenEdit, handleOpenDelete]
   )
 
   const buildQuery: RestResourceQueryBuilderFn<typeof eventFilterParsers> =

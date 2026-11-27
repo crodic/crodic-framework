@@ -19,11 +19,8 @@ export function EventStatusBadge({
   if (status === 'upcoming') {
     return (
       <Badge
-        variant='outline'
-        className={cn(
-          'border-primary/25 bg-primary/10 text-primary dark:text-primary gap-1 text-xs font-medium',
-          className
-        )}
+        variant='outline-warning'
+        className={cn('gap-1 text-xs font-medium', className)}
       >
         <Clock className='size-3' aria-hidden='true' />
         <span>{t('events.status.upcoming', 'Sắp diễn ra')}</span>
@@ -34,7 +31,7 @@ export function EventStatusBadge({
   if (status === 'ongoing') {
     return (
       <Badge
-        variant='outline-success'
+        variant='success'
         className={cn('gap-1 text-xs font-medium', className)}
       >
         <CheckCircle2 className='size-3' aria-hidden='true' />
@@ -46,7 +43,7 @@ export function EventStatusBadge({
   if (status === 'completed') {
     return (
       <Badge
-        variant='outline'
+        variant='secondary'
         className={cn('text-muted-foreground text-xs font-medium', className)}
       >
         {t('events.status.completed', 'Đã kết thúc')}
@@ -88,11 +85,8 @@ export function EventFeaturedBadge({
 
   return (
     <Badge
-      variant='outline'
-      className={cn(
-        'border-primary/30 bg-primary/10 text-primary gap-1 text-xs font-medium',
-        className
-      )}
+      variant='info'
+      className={cn('gap-1 text-xs font-medium', className)}
     >
       <Star className='size-3' aria-hidden='true' />
       <span>{t('events.badges.featuredFestival', 'Festival')}</span>
@@ -114,15 +108,18 @@ export function EventRecruitingBadge({
 
   if (!isRecruiting) {
     return (
-      <span className={cn('text-muted-foreground text-xs', className)}>
+      <Badge
+        variant='secondary'
+        className={cn('text-xs font-medium', className)}
+      >
         {t('events.recruiting.closed', 'Đóng')}
-      </span>
+      </Badge>
     )
   }
 
   return (
     <Badge
-      variant='outline-success'
+      variant='success'
       className={cn('gap-1 text-xs font-medium', className)}
     >
       <UserCheck className='size-3' aria-hidden='true' />

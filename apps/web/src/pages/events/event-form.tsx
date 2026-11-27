@@ -469,7 +469,10 @@ export function EventForm({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder='Ban tổ chức / Studio'
+                            placeholder={t(
+                              'events.form.organizerPlaceholder',
+                              'Organizer / Studio'
+                            )}
                             {...field}
                             value={field.value ?? ''}
                           />
@@ -684,7 +687,10 @@ export function EventForm({
                                 syncDates(startDate, endDate, val, endTime)
                               }}
                               className='w-28 font-mono tabular-nums'
-                              aria-label='Giờ bắt đầu'
+                              aria-label={t(
+                                'events.form.startTimeLabel',
+                                'Start time'
+                              )}
                             />
                           </div>
                           <FormMessage />
@@ -779,7 +785,10 @@ export function EventForm({
                                 syncDates(startDate, endDate, startTime, val)
                               }}
                               className='w-28 font-mono tabular-nums'
-                              aria-label='Giờ kết thúc'
+                              aria-label={t(
+                                'events.form.endTimeLabel',
+                                'End time'
+                              )}
                             />
                           </div>
                           <FormMessage />
