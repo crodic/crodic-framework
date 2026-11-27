@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><title>Email hệ thống Kosume</title
+  ><style>
+    body {
+      max-width: 840px;
+      margin: 40px auto;
+      padding: 0 24px;
+      font:
+        16px/1.6 Arial,
+        sans-serif;
+      color: #18181b;
+      background: #fff;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.3;
+      margin: 0 0 12px;
+    }
+    p,
+    small {
+      color: #52525b;
+    }
+    ul {
+      padding: 0;
+      list-style: none;
+    }
+    li {
+      padding: 14px 0;
+      border-bottom: 1px solid #e4e4e7;
+    }
+    a {
+      color: #6d28d9;
+      font-weight: 600;
+    }
+    small {
+      display: block;
+      font-size: 13px;
+    }
+  </style>
+  <h1>Email hệ thống Kosume</h1>
+  <p>
+    11 template dùng layout đã được duyệt. Đây là bản xem trước với dữ liệu minh
+    họa; các token không dùng để xác minh tài khoản thật.
+  </p>
+  <ul>
+    <li>
+      <a href="user-email-verification.html">Xác minh email người dùng</a
+      ><small>user-email-verification.hbs</small>
+    </li>
+    <li>
+      <a href="user-email-reset-password.html">Đặt lại mật khẩu người dùng</a
+      ><small>user-email-reset-password.hbs</small>
+    </li>
+    <li>
+      <a href="user-email-restore.html">Khôi phục tài khoản người dùng</a
+      ><small>user-email-restore.hbs</small>
+    </li>
+    <li>
+      <a href="admin-email-verification.html">Xác minh tài khoản quản trị</a
+      ><small>admin-email-verification.hbs</small>
+    </li>
+    <li>
+      <a href="admin-email-reset-password.html">Đặt lại mật khẩu quản trị</a
+      ><small>admin-email-reset-password.hbs</small>
+    </li>
+    <li>
+      <a href="admin-account-deletion-requested.html"
+        >Yêu cầu xóa tài khoản quản trị</a
+      ><small>admin-account-deletion-requested.hbs</small>
+    </li>
+    <li>
+      <a href="admin-account-hard-deleted.html"
+        >Xác nhận xóa tài khoản quản trị</a
+      ><small>admin-account-hard-deleted.hbs</small>
+    </li>
+    <li>
+      <a href="admin-account-hard-deleted-report.html"
+        >Báo cáo xóa tài khoản quản trị</a
+      ><small>admin-account-hard-deleted-report.hbs</small>
+    </li>
+    <li>
+      <a href="admin-pending-posts-digest.html">Báo cáo bài viết chờ duyệt</a
+      ><small>admin-pending-posts-digest.hbs</small>
+    </li>
+    <li>
+      <a href="email-verification.html">Xác minh email — luồng dùng chung</a
+      ><small>email-verification.hbs</small>
+    </li>
+    <li>
+      <a href="email-reset-password.html">Đặt lại mật khẩu — luồng dùng chung</a
+      ><small>email-reset-password.hbs</small>
+    </li>
+  </ul>
+  <p>Tạo lại bằng <code>node docs/design/emails/render-all.cjs</code>.</p>
+</html>

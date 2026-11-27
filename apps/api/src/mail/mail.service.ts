@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Handlebars from 'handlebars';
 import * as fs from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { AllConfigType } from '../config/config.type';
 import { ISendMailOptions } from './constants/mail.constant';
 
@@ -34,7 +34,18 @@ export class MailService {
     }
 
     const template = fs.readFileSync(templatePath, 'utf8');
-    return Handlebars.compile(template, { strict: false })(context);
+    const renderer = Handlebars.create();
+    for (const name of ['email-layout', 'email-button']) {
+      const partialPath = join(
+        dirname(templatePath),
+        'partials',
+        `${name}.hbs`,
+      );
+      if (fs.existsSync(partialPath)) {
+        renderer.registerPartial(name, fs.readFileSync(partialPath, 'utf8'));
+      }
+    }
+    return renderer.compile(template, { strict: false })(context);
   }
 
   async sendDirectMail(options: ISendMailOptions): Promise<{ html: string }> {

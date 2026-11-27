@@ -1,0 +1,15 @@
+Kosume
+
+Xác minh email của bạn
+
+Chào bạn,
+
+Xác minh địa chỉ email dưới đây để hoàn tất đăng ký tài khoản Kosume:
+
+cosplayer@example.com
+
+https://api.crodic.click/api/v1/user/auth/verify/email?token=preview-only-not-a-valid-token
+
+Nếu bạn không tạo tài khoản này, bạn có thể bỏ qua email.
+
+Kosume · Cộng đồng sáng tạo cosplay
