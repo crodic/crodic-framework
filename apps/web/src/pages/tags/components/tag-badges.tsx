@@ -24,12 +24,12 @@ import { Badge } from '@/components/ui/badge'
 import type { TagCategory, TagSafetyRating, TagStatus } from '../schema'
 
 export const TAG_CATEGORY_ACCENTS: Record<TagCategory, string> = {
-  general: 'text-sky-700 dark:text-sky-300',
-  copyright: 'text-violet-700 dark:text-violet-300',
-  character: 'text-emerald-700 dark:text-emerald-300',
-  artist: 'text-amber-750 dark:text-amber-300',
-  meta: 'text-indigo-700 dark:text-indigo-300',
-  system: 'text-rose-700 dark:text-rose-300',
+  general: 'text-primary dark:text-primary',
+  copyright: 'text-primary dark:text-primary',
+  character: 'text-primary dark:text-primary',
+  artist: 'text-primary dark:text-primary',
+  meta: 'text-primary dark:text-primary',
+  system: 'text-destructive dark:text-destructive',
 }
 
 export const CATEGORY_ICONS: Record<
@@ -55,58 +55,58 @@ const CATEGORY_STYLES: Record<
   }
 > = {
   general: {
-    dot: 'bg-sky-500 ring-sky-500/30',
+    dot: 'bg-primary ring-sky-500/30',
     badge:
-      'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/15 dark:text-sky-300',
-    chip: 'border-sky-500/20 bg-sky-500/5 text-foreground hover:bg-sky-500/10 hover:border-sky-500/40 dark:border-sky-500/25 dark:bg-sky-950/30 dark:hover:bg-sky-900/40',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+    chip: 'border-primary/20 bg-primary/5 text-foreground hover:bg-primary/10 hover:border-primary/40 dark:border-primary/25 dark:bg-primary/30 dark:hover:bg-primary/40',
     counter:
-      'bg-sky-500/10 text-sky-700 border-sky-500/25 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-500/30',
-    text: 'text-sky-700 dark:text-sky-300',
+      'bg-primary/10 text-primary border-primary/25 dark:bg-primary/60 dark:text-primary dark:border-primary/30',
+    text: 'text-primary dark:text-primary',
   },
   copyright: {
-    dot: 'bg-violet-500 ring-violet-500/30',
+    dot: 'bg-primary ring-violet-500/30',
     badge:
-      'border-violet-500/25 bg-violet-500/10 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-300',
-    chip: 'border-violet-500/20 bg-violet-500/5 text-foreground hover:bg-violet-500/10 hover:border-violet-500/40 dark:border-violet-500/25 dark:bg-violet-950/30 dark:hover:bg-violet-900/40',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+    chip: 'border-primary/20 bg-primary/5 text-foreground hover:bg-primary/10 hover:border-primary/40 dark:border-primary/25 dark:bg-primary/30 dark:hover:bg-primary/40',
     counter:
-      'bg-violet-500/10 text-violet-700 border-violet-500/25 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-500/30',
-    text: 'text-violet-700 dark:text-violet-300',
+      'bg-primary/10 text-primary border-primary/25 dark:bg-primary/60 dark:text-primary dark:border-primary/30',
+    text: 'text-primary dark:text-primary',
   },
   character: {
-    dot: 'bg-emerald-500 ring-emerald-500/30',
+    dot: 'bg-primary ring-emerald-500/30',
     badge:
-      'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300',
-    chip: 'border-emerald-500/20 bg-emerald-500/5 text-foreground hover:bg-emerald-500/10 hover:border-emerald-500/40 dark:border-emerald-500/25 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+    chip: 'border-primary/20 bg-primary/5 text-foreground hover:bg-primary/10 hover:border-primary/40 dark:border-primary/25 dark:bg-primary/30 dark:hover:bg-primary/40',
     counter:
-      'bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-500/30',
-    text: 'text-emerald-700 dark:text-emerald-300',
+      'bg-primary/10 text-primary border-primary/25 dark:bg-primary/60 dark:text-primary dark:border-primary/30',
+    text: 'text-primary dark:text-primary',
   },
   artist: {
-    dot: 'bg-amber-500 ring-amber-500/30',
+    dot: 'bg-primary ring-amber-500/30',
     badge:
-      'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300',
-    chip: 'border-amber-500/20 bg-amber-500/5 text-foreground hover:bg-amber-500/10 hover:border-amber-500/40 dark:border-amber-500/25 dark:bg-amber-950/30 dark:hover:bg-amber-900/40',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+    chip: 'border-primary/20 bg-primary/5 text-foreground hover:bg-primary/10 hover:border-primary/40 dark:border-primary/25 dark:bg-primary/30 dark:hover:bg-primary/40',
     counter:
-      'bg-amber-500/10 text-amber-700 border-amber-500/25 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-500/30',
-    text: 'text-amber-700 dark:text-amber-300',
+      'bg-primary/10 text-primary border-primary/25 dark:bg-primary/60 dark:text-primary dark:border-primary/30',
+    text: 'text-primary dark:text-primary',
   },
   meta: {
-    dot: 'bg-indigo-500 ring-indigo-500/30',
+    dot: 'bg-primary ring-indigo-500/30',
     badge:
-      'border-indigo-500/25 bg-indigo-500/10 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300',
-    chip: 'border-indigo-500/20 bg-indigo-500/5 text-foreground hover:bg-indigo-500/10 hover:border-indigo-500/40 dark:border-indigo-500/25 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+    chip: 'border-primary/20 bg-primary/5 text-foreground hover:bg-primary/10 hover:border-primary/40 dark:border-primary/25 dark:bg-primary/30 dark:hover:bg-primary/40',
     counter:
-      'bg-indigo-500/10 text-indigo-700 border-indigo-500/25 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-500/30',
-    text: 'text-indigo-700 dark:text-indigo-300',
+      'bg-primary/10 text-primary border-primary/25 dark:bg-primary/60 dark:text-primary dark:border-primary/30',
+    text: 'text-primary dark:text-primary',
   },
   system: {
-    dot: 'bg-rose-500 ring-rose-500/30',
+    dot: 'bg-destructive ring-rose-500/30',
     badge:
-      'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300',
-    chip: 'border-rose-500/20 bg-rose-500/5 text-foreground hover:bg-rose-500/10 hover:border-rose-500/40 dark:border-rose-500/25 dark:bg-rose-950/30 dark:hover:bg-rose-900/40',
+      'border-destructive/25 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/15 dark:text-destructive',
+    chip: 'border-destructive/20 bg-destructive/5 text-foreground hover:bg-destructive/10 hover:border-destructive/40 dark:border-destructive/25 dark:bg-destructive/30 dark:hover:bg-destructive/40',
     counter:
-      'bg-rose-500/10 text-rose-700 border-rose-500/25 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-500/30',
-    text: 'text-rose-700 dark:text-rose-300',
+      'bg-destructive/10 text-destructive border-destructive/25 dark:bg-destructive/60 dark:text-destructive dark:border-destructive/30',
+    text: 'text-destructive dark:text-destructive',
   },
 }
 
@@ -119,22 +119,22 @@ const SAFETY_CONFIG: Record<
 > = {
   safe: {
     style:
-      'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
     icon: ShieldCheckIcon,
   },
   sensitive: {
     style:
-      'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
     icon: AlertCircleIcon,
   },
   r18: {
     style:
-      'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300',
+      'border-destructive/25 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/15 dark:text-destructive',
     icon: ShieldAlertIcon,
   },
   r18g: {
     style:
-      'border-red-600/30 bg-red-600/15 text-red-800 dark:border-red-500/40 dark:bg-red-950/60 dark:text-red-200 font-bold',
+      'border-destructive/30 bg-destructive/15 text-destructive dark:border-destructive/40 dark:bg-destructive/60 dark:text-destructive font-bold',
     icon: ShieldAlertIcon,
   },
 }
@@ -148,22 +148,22 @@ const STATUS_CONFIG: Record<
 > = {
   active: {
     style:
-      'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
     icon: CheckCircle2Icon,
   },
   pending: {
     style:
-      'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
     icon: ClockIcon,
   },
   merged: {
     style:
-      'border-violet-500/25 bg-violet-500/10 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-300',
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
     icon: GitMergeIcon,
   },
   banned: {
     style:
-      'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300',
+      'border-destructive/25 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/15 dark:text-destructive',
     icon: BanIcon,
   },
 }
@@ -279,7 +279,7 @@ export function AuditActionBadge({
 
   if (norm.includes('merge')) {
     style =
-      'border-violet-500/25 bg-violet-500/10 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-300'
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary'
     Icon = GitMergeIcon
   } else if (
     norm.includes('attach') ||
@@ -287,7 +287,7 @@ export function AuditActionBadge({
     norm.includes('create')
   ) {
     style =
-      'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300'
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary'
     Icon = PlusIcon
   } else if (
     norm.includes('detach') ||
@@ -295,15 +295,15 @@ export function AuditActionBadge({
     norm.includes('delete')
   ) {
     style =
-      'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300'
+      'border-destructive/25 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/15 dark:text-destructive'
     Icon = XIcon
   } else if (norm.includes('unlock')) {
     style =
-      'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/15 dark:text-sky-300'
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary'
     Icon = UnlockIcon
   } else if (norm.includes('lock') || norm.includes('freeze')) {
     style =
-      'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300'
+      'border-primary/25 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary'
     Icon = LockIcon
   }
 
@@ -395,7 +395,7 @@ export function TagNodeChip({
         )}
         {isSystem && (
           <LockIcon
-            className='size-3 shrink-0 text-amber-500 opacity-80'
+            className='text-primary size-3 shrink-0 opacity-80'
             aria-hidden='true'
           />
         )}

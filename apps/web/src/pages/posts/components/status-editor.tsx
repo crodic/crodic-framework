@@ -2,13 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -19,37 +12,26 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiUpdateAdminPostStatus } from '../queries'
 import type { Post, PostStatus } from '../schema'
 
-interface PostStatusDialogProps {
+interface PostStatusEditorProps {
   post: Post | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  onClose: () => void
   onSuccess: () => void
 }
 
-export function PostStatusDialog({
+export function PostStatusEditor({
   post,
-  open,
-  onOpenChange,
+  onClose,
   onSuccess,
-}: PostStatusDialogProps) {
+}: PostStatusEditorProps) {
   const { t } = useTranslation()
   const [status, setStatus] = useState<PostStatus>(post?.status || 'published')
   const [isPublic, setIsPublic] = useState<boolean>(post?.isPublic ?? true)
   const [reason, setReason] = useState('')
   const [isPending, setIsPending] = useState(false)
-
-  // Sync state when post changes
-  const handleOpen = (nextOpen: boolean) => {
-    if (nextOpen && post) {
-      setStatus(post.status)
-      setIsPublic(post.isPublic)
-      setReason('')
-    }
-    onOpenChange(nextOpen)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,7 +52,7 @@ export function PostStatusDialog({
         )
       )
       onSuccess()
-      onOpenChange(false)
+      onClose()
     } catch {
       toast.error(
         t('posts.messages.updateFailed', 'Cập nhật trạng thái thất bại')
@@ -83,13 +65,11 @@ export function PostStatusDialog({
   if (!post) return null
 
   return (
-    <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className='max-w-md'>
-        <DialogHeader>
-          <DialogTitle>
-            {t('posts.dialog.moderateTitle', 'Kiểm duyệt bài đăng')}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={<>{t('posts.dialog.moderateTitle', 'Kiểm duyệt bài đăng')}</>}
+        />
 
         <form onSubmit={handleSubmit} className='space-y-4 pt-2'>
           <div className='space-y-1.5'>
@@ -168,11 +148,11 @@ export function PostStatusDialog({
             </div>
           )}
 
-          <DialogFooter>
+          <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
             <Button
               type='button'
               variant='outline'
-              onClick={() => onOpenChange(false)}
+              onClick={() => onClose()}
               disabled={isPending}
             >
               {t('common.cancel', 'Hủy')}
@@ -182,9 +162,9 @@ export function PostStatusDialog({
                 ? t('common.saving', 'Đang lưu...')
                 : t('common.save', 'Lưu thay đổi')}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

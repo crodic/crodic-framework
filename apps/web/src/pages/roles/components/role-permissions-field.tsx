@@ -223,7 +223,7 @@ export function RolePermissionsField({
       {renderPermissionsContent()}
 
       {form.formState.errors.permissionIds && (
-        <p className='text-sm text-red-500'>
+        <p className='text-destructive text-sm'>
           {form.formState.errors.permissionIds.message}
         </p>
       )}

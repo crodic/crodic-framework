@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GalleryHorizontalEnd, PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
@@ -18,7 +19,6 @@ import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getSpotlightBannersTableColumns } from './columns'
-import { SpotlightBannerDialog } from './components/spotlight-banner-dialog'
 import {
   apiDeleteAdminSpotlightBanner,
   apiToggleAdminSpotlightBanner,
@@ -33,11 +33,8 @@ const spotlightFilterParsers = {
 
 export function PageSpotlightBannersOverview() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [selectedBanner, setSelectedBanner] = useState<SpotlightBanner | null>(
-    null
-  )
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [bannerToDelete, setBannerToDelete] = useState<SpotlightBanner | null>(
     null
   )
@@ -73,15 +70,16 @@ export function PageSpotlightBannersOverview() {
     onError: restApiErrorHandler,
   })
 
-  const handleEdit = useCallback((banner: SpotlightBanner) => {
-    setSelectedBanner(banner)
-    setIsDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (banner: SpotlightBanner) => {
+      navigate(`/spotlight-banners/${banner.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleCreate = useCallback(() => {
-    setSelectedBanner(null)
-    setIsDialogOpen(true)
-  }, [])
+    navigate('/spotlight-banners/create')
+  }, [navigate])
 
   const { mutate: toggleBanner } = toggleMutation
   const handleToggle = useCallback(
@@ -136,7 +134,7 @@ export function PageSpotlightBannersOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -162,12 +160,6 @@ export function PageSpotlightBannersOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <SpotlightBannerDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        banner={selectedBanner}
-      />
 
       {bannerToDelete && (
         <DeleteAlertDialog

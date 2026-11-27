@@ -188,7 +188,7 @@ export function PageUserShow() {
         />
       )}
 
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex-1'>
         <PageHeader
           title={data?.fullName || t('users.show.title')}
           description={t('users.show.description')}
@@ -231,7 +231,7 @@ export function PageUserShow() {
                             variant='outline'
                             type='button'
                             disabled
-                            className='text-muted-foreground border-emerald-500/30 opacity-50'
+                            className='text-muted-foreground border-primary/30 opacity-50'
                           >
                             <RotateCcw className='size-4' aria-hidden='true' />
                             {t('buttons.restore', 'Restore')}
@@ -296,9 +296,9 @@ export function PageUserShow() {
         )}
 
         {isPendingRequest && (
-          <div className='flex flex-col justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 sm:flex-row sm:items-center'>
+          <div className='border-primary/40 bg-primary/10 flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center'>
             <div>
-              <p className='text-sm font-semibold text-amber-700 dark:text-amber-300'>
+              <p className='text-primary dark:text-primary text-sm font-semibold'>
                 Người dùng này đã gửi yêu cầu nâng cấp vai trò Cosplayer
               </p>
               <p className='text-muted-foreground text-xs'>

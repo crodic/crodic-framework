@@ -66,7 +66,7 @@ export function DashboardKpiCards({
             className={cn(
               'flex size-8 items-center justify-center rounded-lg',
               isHealthy
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-primary/10 text-primary dark:text-primary'
                 : 'bg-destructive/10 text-destructive'
             )}
           >
@@ -96,7 +96,7 @@ export function DashboardKpiCards({
           <span className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
             {t('dashboard.kpi.completedJobs', 'Completed Jobs')}
           </span>
-          <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'>
+          <div className='bg-primary/10 text-primary dark:text-primary flex size-8 items-center justify-center rounded-lg'>
             <CheckCircle2Icon className='size-4' />
           </div>
         </div>
@@ -112,7 +112,7 @@ export function DashboardKpiCards({
               {totalFailed} failed job(s)
             </span>
           ) : (
-            <span className='font-medium text-emerald-600 dark:text-emerald-400'>
+            <span className='text-primary dark:text-primary font-medium'>
               Zero error in active runs
             </span>
           )}
@@ -155,18 +155,18 @@ export function DashboardKpiCards({
           <span className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
             {t('dashboard.kpi.storageCache', 'Redis & DB Core')}
           </span>
-          <div className='flex size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400'>
+          <div className='bg-primary/10 text-primary dark:text-primary flex size-8 items-center justify-center rounded-lg'>
             <ZapIcon className='size-4' />
           </div>
         </div>
         <div className='mt-2.5 flex items-baseline gap-2'>
-          <span className='text-2xl font-bold tracking-tight text-amber-600 tabular-nums dark:text-amber-400'>
+          <span className='text-primary dark:text-primary text-2xl font-bold tracking-tight tabular-nums'>
             {redisLatency}
           </span>
           <span className='text-muted-foreground text-xs'>ping latency</span>
         </div>
         <p className='text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs'>
-          <DatabaseIcon className='size-3.5 text-emerald-600 dark:text-emerald-400' />
+          <DatabaseIcon className='text-primary dark:text-primary size-3.5' />
           <span className='capitalize'>PostgreSQL {databaseStatus}</span>
         </p>
       </Card>

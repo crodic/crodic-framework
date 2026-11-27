@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { apiDeleteCmsPage, useDataCmsPageById } from '../queries'
 import { LOCALES } from '../schema'
@@ -98,79 +99,85 @@ export function PageCmsPageShow() {
         handleDelete={() => deleteMutation.mutate(id)}
         isLoading={deleteMutation.isPending}
       />
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex-1'>
         {/* Top Header */}
-        <div className='flex flex-wrap items-end justify-between gap-3'>
-          <div>
-            <div className='flex items-center gap-2'>
-              <h2 className='text-2xl font-bold tracking-tight'>
-                {translation?.title ?? 'Untitled'}
-              </h2>
-              <Badge variant={isPublished ? 'default' : 'secondary'}>
-                {isPublished
-                  ? t('cmsPages.form.statusPublished', 'Published')
-                  : t('cmsPages.form.statusDraft', 'Draft')}
-              </Badge>
-            </div>
-            <p className='text-muted-foreground text-sm'>
-              /{translation?.slug}
-            </p>
-          </div>
+        <PageHeader
+          title={<>{translation?.title ?? 'Untitled'}</>}
+          description={<>/{translation?.slug}</>}
+          badges={
+            <>
+              <div className='flex items-center gap-2'>
+                <Badge variant={isPublished ? 'default' : 'secondary'}>
+                  {isPublished
+                    ? t('cmsPages.form.statusPublished', 'Published')
+                    : t('cmsPages.form.statusDraft', 'Draft')}
+                </Badge>
+              </div>
+            </>
+          }
+          actions={
+            <>
+              <div className='flex flex-wrap items-center gap-4'>
+                <div className='border-border flex items-center gap-2 border-r pr-4'>
+                  <span className='text-sm font-medium'>
+                    {t('cmsPages.form.locale')}:
+                  </span>
+                  <Select value={activeLocale} onValueChange={setCurrentLocale}>
+                    <SelectTrigger className='bg-background h-8 w-[140px]'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {data.translations?.map((item) => {
+                        const matchedLocale = LOCALES.find(
+                          (l) => l.value === item.locale
+                        )
+                        return (
+                          <SelectItem key={item.locale} value={item.locale}>
+                            {matchedLocale?.label || item.locale.toUpperCase()}
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div className='flex flex-wrap items-center gap-4'>
-            <div className='border-border flex items-center gap-2 border-r pr-4'>
-              <span className='text-sm font-medium'>
-                {t('cmsPages.form.locale')}:
-              </span>
-              <Select value={activeLocale} onValueChange={setCurrentLocale}>
-                <SelectTrigger className='bg-background h-8 w-[140px]'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {data.translations?.map((item) => {
-                    const matchedLocale = LOCALES.find(
-                      (l) => l.value === item.locale
-                    )
-                    return (
-                      <SelectItem key={item.locale} value={item.locale}>
-                        {matchedLocale?.label || item.locale.toUpperCase()}
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Button variant='outline' onClick={() => navigate(-1)}>
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.back', 'Back')}
+                  </Button>
 
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button variant='outline' onClick={() => navigate(-1)}>
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.back', 'Back')}
-              </Button>
+                  {translation?.slug && (
+                    <Button variant='outline' asChild>
+                      <a href={displayUrl} target='_blank' rel='noreferrer'>
+                        <ExternalLinkIcon
+                          className='size-4'
+                          aria-hidden='true'
+                        />
+                        {t('buttons.open', 'Open')}
+                      </a>
+                    </Button>
+                  )}
 
-              {translation?.slug && (
-                <Button variant='outline' asChild>
-                  <a href={displayUrl} target='_blank' rel='noreferrer'>
-                    <ExternalLinkIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.open', 'Open')}
-                  </a>
-                </Button>
-              )}
+                  <Button
+                    onClick={() => navigate(`/cms-pages/${data.id}/edit`)}
+                  >
+                    <EditIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.edit', 'Edit')}
+                  </Button>
 
-              <Button onClick={() => navigate(`/cms-pages/${data.id}/edit`)}>
-                <EditIcon className='size-4' aria-hidden='true' />
-                {t('buttons.edit', 'Edit')}
-              </Button>
-
-              <Button
-                variant='destructive'
-                onClick={() => setIsDeleteOpen(true)}
-              >
-                <TrashIcon className='size-4' aria-hidden='true' />
-                {t('buttons.delete', 'Delete')}
-              </Button>
-            </div>
-          </div>
-        </div>
+                  <Button
+                    variant='destructive'
+                    onClick={() => setIsDeleteOpen(true)}
+                  >
+                    <TrashIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.delete', 'Delete')}
+                  </Button>
+                </div>
+              </div>
+            </>
+          }
+        />
 
         {/* 2-Column Layout */}
         <div className='grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]'>
@@ -372,7 +379,7 @@ export function PageCmsPageShow() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className='min-h-100 overflow-auto rounded-md border bg-white p-6 dark:bg-zinc-950'>
+                  <div className='dark:bg-muted min-h-100 overflow-auto rounded-md border bg-white p-6'>
                     <div
                       className='prose dark:prose-invert max-w-none'
                       dangerouslySetInnerHTML={{
@@ -390,7 +397,7 @@ export function PageCmsPageShow() {
               <Card>
                 <CardHeader className='pb-3'>
                   <CardTitle className='flex items-center gap-2 text-base'>
-                    <GlobeIcon className='size-4 text-blue-500' />
+                    <GlobeIcon className='text-primary size-4' />
                     {t(
                       'cmsPages.show.googleSearchPreview',
                       'Google Search Result Preview'
@@ -418,7 +425,7 @@ export function PageCmsPageShow() {
                     </div>
 
                     {/* Blue Title */}
-                    <h3 className='line-clamp-1 cursor-pointer text-lg leading-snug font-medium text-blue-600 hover:underline dark:text-blue-400'>
+                    <h3 className='text-primary dark:text-primary line-clamp-1 cursor-pointer text-lg leading-snug font-medium hover:underline'>
                       {translation?.seoTitle ||
                         translation?.title ||
                         'Untitled Page'}

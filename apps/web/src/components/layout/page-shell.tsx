@@ -17,7 +17,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        'flex w-full flex-col gap-6',
+        'flex w-full min-w-0 flex-col gap-6',
         fixed && 'flex-1 overflow-hidden',
         className
       )}
@@ -64,6 +64,7 @@ export function PageHeader({
       <div className='flex min-w-0 items-start gap-2.5 sm:gap-4'>
         {backTo !== undefined && (
           <Button
+            type='button'
             variant='outline'
             size='icon'
             aria-label={backLabel}
@@ -81,21 +82,21 @@ export function PageHeader({
         )}
         <div className='min-w-0 flex-1 space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
-            <h1 className='text-xl font-bold tracking-tight text-balance break-words sm:text-2xl'>
+            <h1 className='text-2xl font-semibold tracking-tight text-balance break-words'>
               {title}
             </h1>
             {badges}
           </div>
           {description && (
-            <p className='text-muted-foreground text-xs text-pretty sm:text-sm'>
+            <div className='text-muted-foreground text-sm text-pretty'>
               {description}
-            </p>
+            </div>
           )}
         </div>
       </div>
 
       {(actions || children) && (
-        <div className='flex flex-wrap items-center gap-2 self-start sm:shrink-0 sm:self-auto'>
+        <div className='flex w-full flex-wrap items-center gap-2 self-start sm:w-auto sm:self-auto'>
           {actions || children}
         </div>
       )}

@@ -128,7 +128,7 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
           <div className='flex flex-col gap-1'>
             {isEmailVerified ? (
               <Badge variant='outline-success' className='gap-1 text-xs'>
-                <BadgeCheck className='size-3 text-emerald-600' />
+                <BadgeCheck className='text-primary size-3' />
                 {i18n.t('users.table.emailVerified', 'Email đã xác minh')}
               </Badge>
             ) : (
@@ -143,9 +143,9 @@ export function getUsersTableColumns(): ColumnDef<UserSchema>[] {
               (isCosplayerVerified ? (
                 <Badge
                   variant='outline'
-                  className='gap-1 border-blue-500/40 text-xs text-blue-500'
+                  className='border-primary/40 text-primary gap-1 text-xs'
                 >
-                  <CheckCircle2 className='size-3 text-blue-500' />
+                  <CheckCircle2 className='text-primary size-3' />
                   {i18n.t(
                     'users.table.cosplayerVerified',
                     'Tích xanh Cosplayer'

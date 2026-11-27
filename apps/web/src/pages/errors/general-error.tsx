@@ -46,8 +46,8 @@ export function GeneralError({
         <p className='text-muted-foreground text-center text-pretty'>
           {t('errors.general.description')}
         </p>
-        <p className='text-center text-red-600'>{errorMessage}</p>
-        <Collapsible className='text-gray-400'>
+        <p className='text-destructive text-center'>{errorMessage}</p>
+        <Collapsible className='text-muted-foreground'>
           <CollapsibleTrigger>
             <i>{t('errors.general.seeMore')}</i>
           </CollapsibleTrigger>

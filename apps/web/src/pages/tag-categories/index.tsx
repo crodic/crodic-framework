@@ -18,7 +18,6 @@ import { getTagCategoriesColumns } from './columns'
 import { DeleteTagCategoryDialog } from './delete-dialog'
 import { useDataTagCategories } from './queries'
 import type { TagCategorySchema } from './schema'
-import { TagCategoryDialog } from './tag-category-dialog'
 
 const categoryFilterParsers = {
   name: parseAsString,
@@ -32,7 +31,6 @@ export function PageTagCategoriesOverview() {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] =
     useState<TagCategorySchema | null>(null)
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   useBreadcrumb([
@@ -46,14 +44,15 @@ export function PageTagCategoriesOverview() {
   ])
 
   const handleCreate = useCallback(() => {
-    setSelectedCategory(null)
-    setIsFormDialogOpen(true)
-  }, [])
+    navigate('/tag-categories/create')
+  }, [navigate])
 
-  const handleEdit = useCallback((category: TagCategorySchema) => {
-    setSelectedCategory(category)
-    setIsFormDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (category: TagCategorySchema) => {
+      navigate(`/tag-categories/${category.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleDelete = useCallback((category: TagCategorySchema) => {
     setSelectedCategory(category)
@@ -103,7 +102,7 @@ export function PageTagCategoriesOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={t('navigation.management.tagCategories', 'Tag Categories')}
         description={t(
@@ -159,12 +158,6 @@ export function PageTagCategoriesOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <TagCategoryDialog
-        open={isFormDialogOpen}
-        onOpenChange={setIsFormDialogOpen}
-        category={selectedCategory}
-      />
 
       <DeleteTagCategoryDialog
         open={isDeleteDialogOpen}

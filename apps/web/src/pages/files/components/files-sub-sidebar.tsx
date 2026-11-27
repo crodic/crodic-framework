@@ -135,11 +135,11 @@ export function FilesSubSidebar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align='start' className='w-48'>
             <DropdownMenuItem onClick={onUploadClick} className='gap-2.5'>
-              <Upload className='size-4 text-violet-500' />
+              <Upload className='text-primary size-4' />
               <span>{t('files.actions.upload', 'Upload file')}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onCreateFolderClick} className='gap-2.5'>
-              <FolderPlus className='size-4 text-amber-500' />
+              <FolderPlus className='text-primary size-4' />
               <span>{t('files.actions.createFolder', 'New folder')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -177,15 +177,14 @@ export function FilesSubSidebar({
           size='sm'
           className={cn(
             'h-8.5 justify-start gap-2.5 px-2.5 text-xs font-medium',
-            view === 'starred' &&
-              'font-semibold text-amber-500 dark:text-amber-400'
+            view === 'starred' && 'text-primary dark:text-primary font-semibold'
           )}
           onClick={() => onViewChange('starred')}
         >
           <Star
             className={cn(
               'size-4',
-              starredCount > 0 && 'fill-amber-400 text-amber-500'
+              starredCount > 0 && 'fill-primary text-primary'
             )}
           />
           <span className='min-w-0 flex-1 truncate text-left'>
@@ -397,7 +396,7 @@ export function FilesSubSidebar({
         <div className='bg-muted/80 flex h-2 w-full overflow-hidden rounded-full'>
           {categoryPercents.image > 0 && (
             <div
-              className='h-full bg-violet-500 transition-[width] duration-200 ease-out'
+              className='bg-primary h-full transition-[width] duration-200 ease-out'
               style={{ width: `${categoryPercents.image}%` }}
               title={t(
                 FILE_CATEGORY_CONFIG.image.i18nKey,
@@ -407,7 +406,7 @@ export function FilesSubSidebar({
           )}
           {categoryPercents.video > 0 && (
             <div
-              className='h-full bg-pink-500 transition-[width] duration-200 ease-out'
+              className='bg-primary h-full transition-[width] duration-200 ease-out'
               style={{ width: `${categoryPercents.video}%` }}
               title={t(
                 FILE_CATEGORY_CONFIG.video.i18nKey,
@@ -417,7 +416,7 @@ export function FilesSubSidebar({
           )}
           {categoryPercents.document > 0 && (
             <div
-              className='h-full bg-amber-500 transition-[width] duration-200 ease-out'
+              className='bg-primary h-full transition-[width] duration-200 ease-out'
               style={{ width: `${categoryPercents.document}%` }}
               title={t(
                 FILE_CATEGORY_CONFIG.document.i18nKey,
@@ -427,7 +426,7 @@ export function FilesSubSidebar({
           )}
           {categoryPercents.archive > 0 && (
             <div
-              className='h-full bg-emerald-500 transition-[width] duration-200 ease-out'
+              className='bg-primary h-full transition-[width] duration-200 ease-out'
               style={{ width: `${categoryPercents.archive}%` }}
               title={t(
                 FILE_CATEGORY_CONFIG.archive.i18nKey,
@@ -440,21 +439,21 @@ export function FilesSubSidebar({
         {/* Legend dots */}
         <div className='text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10px]'>
           <span className='flex items-center gap-1'>
-            <span className='size-1.5 rounded-full bg-violet-500' />
+            <span className='bg-primary size-1.5 rounded-full' />
             {t(
               FILE_CATEGORY_CONFIG.image.i18nKey,
               FILE_CATEGORY_CONFIG.image.label
             )}
           </span>
           <span className='flex items-center gap-1'>
-            <span className='size-1.5 rounded-full bg-pink-500' />
+            <span className='bg-primary size-1.5 rounded-full' />
             {t(
               FILE_CATEGORY_CONFIG.video.i18nKey,
               FILE_CATEGORY_CONFIG.video.label
             )}
           </span>
           <span className='flex items-center gap-1'>
-            <span className='size-1.5 rounded-full bg-amber-500' />
+            <span className='bg-primary size-1.5 rounded-full' />
             {t(
               FILE_CATEGORY_CONFIG.document.i18nKey,
               FILE_CATEGORY_CONFIG.document.label

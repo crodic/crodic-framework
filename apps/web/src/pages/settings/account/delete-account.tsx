@@ -98,7 +98,7 @@ export default function DeleteAccount() {
                 {t('common.actions.cancel', { defaultValue: 'Cancel' })}
               </AlertDialogCancel>
               <AlertDialogAction
-                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                className='bg-destructive hover:bg-destructive/90 text-white'
                 onClick={(e) => {
                   e.preventDefault()
                   handleDelete()

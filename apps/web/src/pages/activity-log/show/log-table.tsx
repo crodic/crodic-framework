@@ -43,7 +43,7 @@ function renderValue(value: any, isOld: boolean, isChanged: boolean) {
       )
     }
     return (
-      <span className='rounded bg-green-500/10 px-1.5 py-0.5 font-medium text-green-600 dark:text-green-500'>
+      <span className='bg-primary/10 text-primary dark:text-primary rounded px-1.5 py-0.5 font-medium'>
         {strValue}
       </span>
     )

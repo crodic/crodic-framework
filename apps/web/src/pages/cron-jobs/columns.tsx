@@ -32,7 +32,7 @@ export function getCronJobLogColumns({
           return (
             <Badge
               variant='outline'
-              className='gap-1 border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+              className='border-primary bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary gap-1'
             >
               <Loader2 className='h-3 w-3 animate-spin' />
               Running
@@ -43,7 +43,7 @@ export function getCronJobLogColumns({
           return (
             <Badge
               variant='outline'
-              className='border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+              className='border-primary bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary'
             >
               Success
             </Badge>

@@ -124,9 +124,9 @@ export function TextPreviewViewer({
       <div className='bg-muted/40 flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2 text-xs'>
         <div className='flex max-w-sm items-center gap-2 truncate'>
           {isTabular ? (
-            <FileSpreadsheet className='size-4 text-emerald-500' />
+            <FileSpreadsheet className='text-primary size-4' />
           ) : (
-            <Code2 className='size-4 text-amber-500' />
+            <Code2 className='text-primary size-4' />
           )}
           <span className='text-foreground truncate font-medium'>
             {file.original_name}
@@ -191,7 +191,7 @@ export function TextPreviewViewer({
             title='Copy all content'
           >
             {copied ? (
-              <Check className='size-3.5 text-emerald-500' />
+              <Check className='text-primary size-3.5' />
             ) : (
               <Copy className='size-3.5' />
             )}

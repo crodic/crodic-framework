@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import {
@@ -15,7 +16,6 @@ import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getStatesTableColumns } from '../columns/states-columns'
-import { StateDialog } from '../dialogs/state-dialog'
 import { apiDeleteState, useStatesQuery } from '../queries'
 import { StateColumnKey, type StateSchema } from '../schema'
 
@@ -27,18 +27,18 @@ const stateFilterParsers = {
 
 export function StatesTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedState, setSelectedState] = useState<StateSchema | null>(null)
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [stateToDelete, setStateToDelete] = useState<StateSchema | null>(null)
 
-  const handleEdit = useCallback((state: StateSchema) => {
-    setSelectedState(state)
-    setDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (state: StateSchema) => {
+      navigate(`/locations/states/${state.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleDelete = useCallback((state: StateSchema) => {
     setStateToDelete(state)
@@ -102,8 +102,7 @@ export function StatesTab() {
           <Button
             size='sm'
             onClick={() => {
-              setSelectedState(null)
-              setDialogOpen(true)
+              navigate('/locations/states/create')
             }}
           >
             <PlusIcon className='mr-1 size-4' />
@@ -112,12 +111,6 @@ export function StatesTab() {
           <DataTableSortList table={table} />
         </DataTableToolbar>
       </DataTable>
-
-      <StateDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        state={selectedState}
-      />
 
       {deleteDialogOpen && stateToDelete && (
         <DeleteAlertDialog

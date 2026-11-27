@@ -7,14 +7,6 @@ import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormField,
@@ -24,6 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import AutoCompleteSelectControl from '@/components/forms/auto-complete-select-control'
+import { PageHeader } from '@/components/layout/page-shell'
 import {
   apiCreateCountry,
   apiUpdateCountry,
@@ -35,17 +28,12 @@ import {
   type CountrySchema,
 } from '../schema'
 
-interface CountryDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface CountryEditorProps {
+  onClose: () => void
   country?: CountrySchema | null
 }
 
-export function CountryDialog({
-  open,
-  onOpenChange,
-  country,
-}: CountryDialogProps) {
+export function CountryEditor({ onClose, country }: CountryEditorProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!country
@@ -104,7 +92,7 @@ export function CountryDialog({
         regionId: '',
       })
     }
-  }, [country, form, open])
+  }, [country, form])
 
   const mutation = useMutation({
     mutationFn: (values: CountryFormSchema) =>
@@ -119,7 +107,7 @@ export function CountryDialog({
           ? t('locations.country.updated', 'Country updated successfully')
           : t('locations.country.created', 'Country created successfully')
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: restApiErrorHandler,
   })
@@ -136,21 +124,25 @@ export function CountryDialog({
       )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[min(90vh,calc(100dvh-2rem))] overflow-y-auto sm:max-w-2xl'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? t('locations.country.editTitle', 'Edit Country')
-              : t('locations.country.createTitle', 'Create Country')}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              'locations.country.dialogDesc',
-              'Fill in the country details including codes, region, and currency.'
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEdit
+                ? t('locations.country.editTitle', 'Edit Country')
+                : t('locations.country.createTitle', 'Create Country')}
+            </>
+          }
+          description={
+            <>
+              {t(
+                'locations.country.dialogDesc',
+                'Fill in the country details including codes, region, and currency.'
+              )}
+            </>
+          }
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -367,22 +359,22 @@ export function CountryDialog({
               />
             </div>
 
-            <DialogFooter className='pt-4'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
                 disabled={mutation.isPending}
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
               >
                 {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button type='submit' disabled={mutation.isPending}>
                 {submitLabel}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

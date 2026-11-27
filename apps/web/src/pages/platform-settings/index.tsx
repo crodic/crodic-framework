@@ -88,7 +88,7 @@ export function PagePlatformSettings() {
   }
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -235,7 +235,7 @@ export function PagePlatformSettings() {
               <Card>
                 <CardHeader>
                   <div className='flex items-center gap-2'>
-                    <ShieldAlert className='size-5 text-rose-500' />
+                    <ShieldAlert className='text-destructive size-5' />
                     <CardTitle>
                       {t(
                         'platformSettings.filterTitle',
@@ -283,7 +283,7 @@ export function PagePlatformSettings() {
               <Card>
                 <CardHeader>
                   <div className='flex items-center gap-2'>
-                    <HelpCircle className='size-5 text-blue-500' />
+                    <HelpCircle className='text-primary size-5' />
                     <CardTitle>
                       {t(
                         'platformSettings.supportTitle',

@@ -60,7 +60,7 @@ export function PagePermissionOverview() {
 
   return (
     <>
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex-1'>
         <PageHeader
           title='Permissions'
           description='Review permission keys and maintain display metadata.'

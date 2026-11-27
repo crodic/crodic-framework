@@ -87,25 +87,25 @@ export function DocumentPreviewViewer({
           className
         )}
       >
-        <div className='mb-4 flex size-20 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 shadow-sm ring-1 ring-amber-500/20 dark:text-amber-400'>
+        <div className='bg-primary/10 text-primary dark:text-primary mb-4 flex size-20 items-center justify-center rounded-2xl shadow-sm ring-1 ring-amber-500/20'>
           <FileText className='size-10' />
         </div>
         <div className='mb-2 flex items-center gap-2'>
           <h4 className='text-foreground max-w-md truncate text-base font-semibold'>
             {file.original_name}
           </h4>
-          <span className='rounded bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400'>
+          <span className='bg-primary/15 text-primary dark:text-primary rounded px-2 py-0.5 text-xs font-semibold'>
             Word 97-2003 (.doc)
           </span>
         </div>
-        <div className='mb-6 max-w-md rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-left text-xs leading-relaxed text-amber-800 dark:text-amber-200'>
+        <div className='border-primary/30 bg-primary/10 text-primary dark:text-primary mb-6 max-w-md rounded-lg border px-4 py-3 text-left text-xs leading-relaxed'>
           <p className='mb-1 font-semibold'>
             {t(
               'files.preview.docNotSupportedTitle',
               'Legacy Word format (.doc) does not support direct preview'
             )}
           </p>
-          <p className='text-muted-foreground dark:text-amber-200/80'>
+          <p className='text-muted-foreground dark:text-primary/80'>
             {t(
               'files.preview.docNotSupportedDesc',
               'Browser preview only supports modern Word format (.docx). Please download the file to view it on your device.'

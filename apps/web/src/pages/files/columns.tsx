@@ -137,8 +137,8 @@ export function getFilesTableColumns({
             className={cn(
               'size-3.5 transition-colors',
               starred
-                ? 'fill-amber-400 text-amber-500'
-                : 'text-muted-foreground/30 hover:text-amber-500'
+                ? 'fill-primary text-primary'
+                : 'text-muted-foreground/30 hover:text-primary'
             )}
           />
         </Button>
@@ -203,7 +203,7 @@ export function getFilesTableColumns({
                       className={cn(
                         'inline-flex shrink-0 items-center gap-1 rounded-sm px-1 py-0.5 text-[10px] font-medium',
                         isPrivate
-                          ? 'border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          ? 'border-primary/20 bg-primary/10 text-primary dark:text-primary border'
                           : 'bg-muted text-muted-foreground border-border/60 border'
                       )}
                     >
@@ -508,7 +508,7 @@ export function getFilesTableColumns({
                   {isFilePrivate(row.original) && onShare && (
                     <DropdownMenuItem
                       onClick={() => onShare(row.original)}
-                      className='text-amber-600 dark:text-amber-400'
+                      className='text-primary dark:text-primary'
                     >
                       <Link2 className='size-4' />
                       {i18n.t('files.actions.share', 'Share link')}

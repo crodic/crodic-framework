@@ -213,7 +213,7 @@ export function getEventsTableColumns({
             className='text-muted-foreground flex items-center gap-1'
             title='Lượt quan tâm'
           >
-            <Heart className='size-3 text-rose-500' aria-hidden='true' />
+            <Heart className='text-destructive size-3' aria-hidden='true' />
             {row.original.interestedCount.toLocaleString()}
           </span>
           <span className='flex items-center gap-1' title='Số người tham gia'>

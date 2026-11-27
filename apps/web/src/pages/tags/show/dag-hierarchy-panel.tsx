@@ -244,7 +244,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 className={cn(
                   'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'child'
-                    ? 'bg-background text-emerald-600 shadow-xs dark:text-emerald-400'
+                    ? 'bg-background text-primary dark:text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -256,7 +256,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 className={cn(
                   'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'related'
-                    ? 'bg-background text-sky-600 shadow-xs dark:text-sky-400'
+                    ? 'bg-background text-primary dark:text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -268,7 +268,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 className={cn(
                   'cursor-pointer rounded-lg py-1.5 text-center text-xs font-semibold transition-all sm:flex-1',
                   direction === 'disambiguation'
-                    ? 'bg-background text-amber-600 shadow-xs dark:text-amber-400'
+                    ? 'bg-background text-primary dark:text-primary shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -422,7 +422,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                     <div className='flex shrink-0 items-center gap-2'>
                       {alreadyLinked ? (
                         <span className='text-muted-foreground bg-muted inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium'>
-                          <CheckIcon className='size-3 text-emerald-500' />
+                          <CheckIcon className='text-primary size-3' />
                           {t('tags.hierarchy.alreadyLinked', 'Already linked')}
                         </span>
                       ) : isCurrentlyLinking ? (
@@ -767,7 +767,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
                 <div className='space-y-0.5'>
                   <div className='flex items-center gap-2'>
                     <SplitIcon
-                      className='size-4 text-amber-500'
+                      className='text-primary size-4'
                       aria-hidden='true'
                     />
                     <CardTitle className='text-sm font-semibold'>

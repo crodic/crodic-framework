@@ -121,7 +121,7 @@ export function MergeTagDialog({
         >
           <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
             <div className='flex items-center gap-3'>
-              <div className='flex size-10 shrink-0 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-600 shadow-2xs dark:text-violet-400'>
+              <div className='border-primary/20 bg-primary/10 text-primary dark:text-primary flex size-10 shrink-0 items-center justify-center rounded-xl border shadow-2xs'>
                 <GitMergeIcon className='size-5' aria-hidden='true' />
               </div>
               <div>
@@ -293,7 +293,7 @@ export function MergeTagDialog({
               <div className='border-border/80 bg-muted/10 space-y-3 rounded-xl border p-4 shadow-2xs'>
                 <div className='text-foreground flex items-center gap-2 text-xs font-semibold'>
                   <AlertTriangleIcon
-                    className='size-4 text-amber-500'
+                    className='text-primary size-4'
                     aria-hidden='true'
                   />
                   <span>

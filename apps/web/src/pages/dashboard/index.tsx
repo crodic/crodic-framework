@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { DashboardKpiCards } from './components/dashboard-kpi-cards'
 import { KosumeAnalyticsTab } from './components/kosume-analytics-tab'
 import { QueueMetricsBarChart } from './components/queue-metrics-bar-chart'
@@ -136,37 +137,37 @@ export function Dashboard() {
       </Helmet>
 
       {/* ===== Main ===== */}
-      <Main className='flex flex-1 flex-col gap-6'>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h1 className='text-2xl font-bold tracking-tight text-balance md:text-3xl'>
-              {t('dashboard.title')}
-            </h1>
-            <p className='text-muted-foreground text-sm text-pretty'>
-              {t('dashboard.systemHealth.description')}
-            </p>
-          </div>
-          <div className='flex items-center gap-2'>
-            <Button
-              type='button'
-              variant='outline'
-              size='sm'
-              onClick={() => {
-                healthQuery.refetch()
-                queueQuery.refetch()
-              }}
-              disabled={isGlobalFetching}
-              className='gap-2'
-            >
-              <RefreshCwIcon
-                className={
-                  isGlobalFetching ? 'size-3.5 animate-spin' : 'size-3.5'
-                }
-              />
-              <span>{t('dashboard.systemHealth.refresh', 'Refresh All')}</span>
-            </Button>
-          </div>
-        </div>
+      <Main className='flex-1'>
+        <PageHeader
+          title={<>{t('dashboard.title')}</>}
+          description={<>{t('dashboard.systemHealth.description')}</>}
+          actions={
+            <>
+              <div className='flex items-center gap-2'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => {
+                    healthQuery.refetch()
+                    queueQuery.refetch()
+                  }}
+                  disabled={isGlobalFetching}
+                  className='gap-2'
+                >
+                  <RefreshCwIcon
+                    className={
+                      isGlobalFetching ? 'size-3.5 animate-spin' : 'size-3.5'
+                    }
+                  />
+                  <span>
+                    {t('dashboard.systemHealth.refresh', 'Refresh All')}
+                  </span>
+                </Button>
+              </div>
+            </>
+          }
+        />
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue='kosume' className='w-full space-y-6'>
@@ -374,14 +375,14 @@ function getIndicatorDetails(
         'Primary relational data store'
       ),
       icon: DatabaseIcon,
-      accent: 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20',
+      accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
       badgeText: healthy
         ? t('dashboard.indicators.operational', 'Operational')
         : t('dashboard.indicators.down', 'Down'),
       badgeVariant: healthy
         ? ('outline-success' as const)
         : ('outline-destructive' as const),
-      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-destructive',
+      pulseDotClass: healthy ? 'bg-primary' : 'bg-destructive',
       metrics: [
         {
           label: t('dashboard.indicators.responseTime', 'Response'),
@@ -404,14 +405,14 @@ function getIndicatorDetails(
       subtitle: t('dashboard.indicators.redisSub', 'Cache & message broker'),
       icon: ZapIcon,
       accent:
-        'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
+        'text-destructive dark:text-destructive bg-destructive/10 border-destructive/20',
       badgeText: healthy
         ? t('dashboard.indicators.operational', 'Operational')
         : t('dashboard.indicators.down', 'Down'),
       badgeVariant: healthy
         ? ('outline-success' as const)
         : ('outline-destructive' as const),
-      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-destructive',
+      pulseDotClass: healthy ? 'bg-primary' : 'bg-destructive',
       metrics: [
         {
           label: t('dashboard.indicators.latency', 'Latency'),
@@ -433,15 +434,14 @@ function getIndicatorDetails(
         'API process memory allocation'
       ),
       icon: CpuIcon,
-      accent:
-        'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
+      accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
       badgeText: healthy
         ? t('dashboard.indicators.normal', 'Normal')
         : t('dashboard.indicators.degraded', 'High'),
       badgeVariant: healthy
         ? ('outline-success' as const)
         : ('outline-warning' as const),
-      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
+      pulseDotClass: healthy ? 'bg-primary' : 'bg-primary',
       metrics: [
         {
           label: t('dashboard.indicators.limit', 'Limit'),
@@ -465,15 +465,14 @@ function getIndicatorDetails(
         'Server file system capacity'
       ),
       icon: HardDriveIcon,
-      accent:
-        'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+      accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
       badgeText: healthy
         ? t('dashboard.indicators.ready', 'Ready')
         : t('dashboard.indicators.degraded', 'Low Space'),
       badgeVariant: healthy
         ? ('outline-success' as const)
         : ('outline-warning' as const),
-      pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
+      pulseDotClass: healthy ? 'bg-primary' : 'bg-primary',
       metrics: [
         {
           label: t('dashboard.indicators.threshold', 'Threshold'),
@@ -498,8 +497,7 @@ function getIndicatorDetails(
         'Email, File & Tag background workers'
       ),
       icon: WorkflowIcon,
-      accent:
-        'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+      accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
       badgeText: hasFailed
         ? t('dashboard.queues.hasFailed', 'Có job cần xử lý')
         : t('dashboard.indicators.operational', 'Operational'),
@@ -509,9 +507,9 @@ function getIndicatorDetails(
           ? ('outline-success' as const)
           : ('outline-destructive' as const),
       pulseDotClass: hasFailed
-        ? 'bg-amber-500'
+        ? 'bg-primary'
         : healthy
-          ? 'bg-emerald-500'
+          ? 'bg-primary'
           : 'bg-destructive',
       metrics: [
         {
@@ -540,10 +538,10 @@ function getIndicatorDetails(
       ),
       icon: ServerIcon,
       accent:
-        'text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20',
+        'text-muted-foreground dark:text-muted-foreground bg-muted/10 border-border/20',
       badgeText: uptime.startsWith('0d') ? uptime : `Uptime ${uptime}`,
       badgeVariant: 'outline-success' as const,
-      pulseDotClass: 'bg-emerald-500',
+      pulseDotClass: 'bg-primary',
       metrics: [
         ...(nodeVer ? [{ label: 'Node', value: nodeVer }] : []),
         ...(platform ? [{ label: 'OS', value: platform }] : []),
@@ -556,13 +554,13 @@ function getIndicatorDetails(
     subtitle: 'System indicator',
     icon: healthy ? CheckCircle2Icon : XCircleIcon,
     accent: healthy
-      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-      : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+      ? 'text-primary dark:text-primary bg-primary/10 border-primary/20'
+      : 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     badgeText: indicator.status,
     badgeVariant: healthy
       ? ('outline-success' as const)
       : ('outline-warning' as const),
-    pulseDotClass: healthy ? 'bg-emerald-500' : 'bg-amber-500',
+    pulseDotClass: healthy ? 'bg-primary' : 'bg-primary',
     metrics: Object.entries(detail)
       .filter(([k]) => k !== 'status')
       .slice(0, 2)
@@ -765,7 +763,7 @@ function QueueMonitoringSection({
                       <p className='text-muted-foreground font-medium'>
                         {t('dashboard.queues.completed')}
                       </p>
-                      <p className='mt-1 text-sm font-semibold text-emerald-600 tabular-nums dark:text-emerald-400'>
+                      <p className='text-primary dark:text-primary mt-1 text-sm font-semibold tabular-nums'>
                         {formatNumber(counts.completed)}
                       </p>
                     </div>
@@ -776,7 +774,7 @@ function QueueMonitoringSection({
                       <p
                         className={`mt-1 text-sm font-semibold tabular-nums ${
                           queueHasError
-                            ? 'font-semibold text-amber-600 dark:text-amber-400'
+                            ? 'text-primary dark:text-primary font-semibold'
                             : ''
                         }`}
                       >
@@ -865,8 +863,8 @@ function getHealthToneClass(
 ) {
   const base = 'mt-1 text-lg font-semibold tabular-nums'
 
-  if (tone === 'healthy') return `${base} text-emerald-600`
-  if (tone === 'warning') return `${base} text-amber-600`
+  if (tone === 'healthy') return `${base} text-primary`
+  if (tone === 'warning') return `${base} text-primary`
   if (tone === 'critical') return `${base} text-destructive`
 
   return base

@@ -242,7 +242,7 @@ export function getTagCategoriesColumns({
       cell: ({ row }) => {
         const active = row.original.isActive
         return active ? (
-          <Badge className='border-emerald-500/30 bg-emerald-500/15 text-[10px] text-emerald-600 dark:text-emerald-400'>
+          <Badge className='border-primary/30 bg-primary/15 text-primary dark:text-primary text-[10px]'>
             {t('tagCategories.status.active', 'Đang hoạt động')}
           </Badge>
         ) : (

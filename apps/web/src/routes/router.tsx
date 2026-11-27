@@ -267,6 +267,36 @@ const PageRankingSettings = lazy(() =>
   }))
 )
 
+const TagCategoryPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.TagCategoryPage }))
+)
+const SpotlightBannerPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({
+    default: m.SpotlightBannerPage,
+  }))
+)
+const PostPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.PostPage }))
+)
+const ApplicationPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.ApplicationPage }))
+)
+const ReportPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.ReportPage }))
+)
+const CronLogPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.CronLogPage }))
+)
+const LocationPage = lazy(() =>
+  import('@/pages/resource-pages').then((m) => ({ default: m.LocationPage }))
+)
+
+const FileRecordPage = lazy(() =>
+  import('@/pages/files/task-page').then((m) => ({ default: m.FileRecordPage }))
+)
+const FileCreatePage = lazy(() =>
+  import('@/pages/files/task-page').then((m) => ({ default: m.FileCreatePage }))
+)
 const appRoutes: RouteObject[] = [
   {
     path: '/sign-in',
@@ -326,6 +356,174 @@ const appRoutes: RouteObject[] = [
         element: (
           <RouteAuthorize isAnyPermission>
             <Dashboard />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/files/folders/create',
+        element: (
+          <RouteAuthorize action='create' subject='FILE'>
+            <FileCreatePage kind='folder' />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/files/folders/edit',
+        element: (
+          <RouteAuthorize action='update' subject='FILE'>
+            <FileCreatePage kind='rename-folder' />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/files/:id/show',
+        element: (
+          <RouteAuthorize action='read' subject='FILE'>
+            <FileRecordPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/files/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='FILE'>
+            <FileRecordPage edit />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/tag-categories/create',
+        element: (
+          <RouteAuthorize action='create' subject='TAG'>
+            <TagCategoryPage create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/tag-categories/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='TAG'>
+            <TagCategoryPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/spotlight-banners/create',
+        element: (
+          <RouteAuthorize action='create' subject='SPOTLIGHT'>
+            <SpotlightBannerPage create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/spotlight-banners/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='SPOTLIGHT'>
+            <SpotlightBannerPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/posts/:id/show',
+        element: (
+          <RouteAuthorize action='read' subject='POST'>
+            <PostPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/posts/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='POST'>
+            <PostPage edit />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/cosplayer-applications/:id/show',
+        element: (
+          <RouteAuthorize action='update' subject='USER'>
+            <ApplicationPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/content-reports/:id/show',
+        element: (
+          <RouteAuthorize action='update' subject='CONTENT_REPORT'>
+            <ReportPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/cron-jobs/logs/:id/show',
+        element: (
+          <RouteAuthorize action='read' subject='CRON_JOB'>
+            <CronLogPage />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/countries/create',
+        element: (
+          <RouteAuthorize action='create' subject='LOCATION'>
+            <LocationPage kind='countries' create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/countries/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='LOCATION'>
+            <LocationPage kind='countries' />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/states/create',
+        element: (
+          <RouteAuthorize action='create' subject='LOCATION'>
+            <LocationPage kind='states' create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/states/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='LOCATION'>
+            <LocationPage kind='states' />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/cities/create',
+        element: (
+          <RouteAuthorize action='create' subject='LOCATION'>
+            <LocationPage kind='cities' create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/cities/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='LOCATION'>
+            <LocationPage kind='cities' />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/regions/create',
+        element: (
+          <RouteAuthorize action='create' subject='LOCATION'>
+            <LocationPage kind='regions' create />
+          </RouteAuthorize>
+        ),
+      },
+      {
+        path: '/locations/regions/:id/edit',
+        element: (
+          <RouteAuthorize action='update' subject='LOCATION'>
+            <LocationPage kind='regions' />
           </RouteAuthorize>
         ),
       },

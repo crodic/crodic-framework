@@ -32,7 +32,7 @@ export function PrivacyPage() {
         {/* Section 1 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <Eye className='size-4' />
             </div>
             <h2>
@@ -77,7 +77,7 @@ export function PrivacyPage() {
         {/* Section 2 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <ShieldCheck className='size-4' />
             </div>
             <h2>
@@ -103,7 +103,7 @@ export function PrivacyPage() {
         {/* Section 3 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <Cookie className='size-4' />
             </div>
             <h2>
@@ -142,7 +142,7 @@ export function PrivacyPage() {
         {/* Section 4 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <Database className='size-4' />
             </div>
             <h2>
@@ -161,7 +161,7 @@ export function PrivacyPage() {
         {/* Section 5 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <UserCheck className='size-4' />
             </div>
             <h2>
@@ -178,7 +178,7 @@ export function PrivacyPage() {
         {/* Section 6 */}
         <section className='space-y-3'>
           <div className='text-foreground flex items-center gap-2.5 text-lg font-semibold'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500'>
+            <div className='bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg'>
               <Key className='size-4' />
             </div>
             <h2>

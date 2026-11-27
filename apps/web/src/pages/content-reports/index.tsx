@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { ShieldAlert } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useRestResourceTable,
@@ -13,7 +14,6 @@ import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getContentReportsTableColumns } from './columns'
-import { ResolveReportDialog } from './components/resolve-report-dialog'
 import { useDataContentReportsOverview } from './queries'
 import { ReportColumnKey, type ContentReport } from './schema'
 
@@ -25,20 +25,19 @@ const reportFilterParsers = {
 
 export function PageContentReportsOverview() {
   const { t } = useTranslation()
-  const [selectedReport, setSelectedReport] = useState<ContentReport | null>(
-    null
-  )
-  const [isResolveOpen, setIsResolveOpen] = useState(false)
+  const navigate = useNavigate()
 
   useBreadcrumb([
     { title: t('navigation.kosume.title', 'Quản trị Kosume') },
     { title: t('navigation.kosume.reports', 'Duyệt bài vi phạm') },
   ])
 
-  const handleOpenResolve = useCallback((report: ContentReport) => {
-    setSelectedReport(report)
-    setIsResolveOpen(true)
-  }, [])
+  const handleOpenResolve = useCallback(
+    (report: ContentReport) => {
+      navigate(`/content-reports/${report.id}/show`)
+    },
+    [navigate]
+  )
 
   const columns = useMemo(
     () => getContentReportsTableColumns({ onResolve: handleOpenResolve }),
@@ -72,7 +71,7 @@ export function PageContentReportsOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -89,12 +88,6 @@ export function PageContentReportsOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <ResolveReportDialog
-        open={isResolveOpen}
-        onOpenChange={setIsResolveOpen}
-        report={selectedReport}
-      />
     </Main>
   )
 }

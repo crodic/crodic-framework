@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { useDataEmailLogDetail } from '@/pages/email-logs/queries'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { EmailPreview } from './email-preview'
@@ -53,25 +54,23 @@ export default function PageEmailLogShow() {
     <>
       <Main>
         <div className='space-y-6'>
-          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='min-w-0 flex-1'>
-              <h1 className='text-xl font-bold break-words sm:text-2xl'>
-                {t('emailLogs.show.title')}
-              </h1>
-              <p className='text-muted-foreground text-xs break-words sm:text-sm'>
-                {data.subject}
-              </p>
-            </div>
-            <Button
-              onClick={() => navigate(-1)}
-              variant='outline'
-              size='sm'
-              className='gap-1.5 self-start sm:self-auto'
-            >
-              <ArrowLeftIcon size={16} />
-              {t('buttons.back')}
-            </Button>
-          </div>
+          <PageHeader
+            title={<>{t('emailLogs.show.title')}</>}
+            description={<>{data.subject}</>}
+            actions={
+              <>
+                <Button
+                  onClick={() => navigate(-1)}
+                  variant='outline'
+                  size='sm'
+                  className='gap-1.5 self-start sm:self-auto'
+                >
+                  <ArrowLeftIcon size={16} />
+                  {t('buttons.back')}
+                </Button>
+              </>
+            }
+          />
 
           <Card>
             <CardHeader>

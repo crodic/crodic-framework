@@ -137,7 +137,7 @@ export function getPostsTableColumns({
               <div className='flex items-center gap-1 truncate text-xs font-medium'>
                 <span className='truncate'>{author.displayName}</span>
                 {author.isVerified && (
-                  <ShieldCheck className='size-3.5 shrink-0 text-sky-500' />
+                  <ShieldCheck className='text-primary size-3.5 shrink-0' />
                 )}
               </div>
               <span className='text-muted-foreground truncate text-[10px]'>
@@ -161,19 +161,19 @@ export function getPostsTableColumns({
       cell: ({ row }) => (
         <div className='text-muted-foreground flex items-center gap-3 text-xs'>
           <span className='flex items-center gap-1' title='Lượt thích'>
-            <Heart className='size-3.5 text-rose-500' />
+            <Heart className='text-destructive size-3.5' />
             {row.original.likesCount}
           </span>
           <span className='flex items-center gap-1' title='Bình luận'>
-            <MessageSquare className='size-3.5 text-blue-500' />
+            <MessageSquare className='text-primary size-3.5' />
             {row.original.commentsCount}
           </span>
           <span className='flex items-center gap-1' title='Lượt xem'>
-            <Eye className='size-3.5 text-emerald-500' />
+            <Eye className='text-primary size-3.5' />
             {row.original.viewsCount}
           </span>
           <span className='flex items-center gap-1' title='Số lượng ảnh'>
-            <Images className='size-3.5 text-amber-500' />
+            <Images className='text-primary size-3.5' />
             {row.original.photosCount}
           </span>
         </div>
@@ -198,7 +198,7 @@ export function getPostsTableColumns({
             }
           />
           {row.original.isFeaturedWork && (
-            <Star className='size-4 fill-amber-500 text-amber-500' />
+            <Star className='fill-primary text-primary size-4' />
           )}
         </div>
       ),
@@ -232,21 +232,21 @@ export function getPostsTableColumns({
         const status = row.original.status
         if (status === 'published') {
           return (
-            <Badge className='border-emerald-500/20 bg-emerald-500/15 text-xs text-emerald-700 dark:text-emerald-300'>
+            <Badge className='border-primary/20 bg-primary/15 text-primary dark:text-primary text-xs'>
               {i18n.t('posts.status.published', 'Đã xuất bản')}
             </Badge>
           )
         }
         if (status === 'pending_review') {
           return (
-            <Badge className='border-amber-500/20 bg-amber-500/15 text-xs text-amber-700 dark:text-amber-300'>
+            <Badge className='border-primary/20 bg-primary/15 text-primary dark:text-primary text-xs'>
               {i18n.t('posts.status.pending_review', 'Chờ duyệt')}
             </Badge>
           )
         }
         if (status === 'hidden') {
           return (
-            <Badge className='border-rose-500/20 bg-rose-500/15 text-xs text-rose-700 dark:text-rose-300'>
+            <Badge className='border-destructive/20 bg-destructive/15 text-destructive dark:text-destructive text-xs'>
               {i18n.t('posts.status.hidden', 'Bị ẩn / Vi phạm')}
             </Badge>
           )

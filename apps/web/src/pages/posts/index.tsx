@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Image } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
@@ -17,8 +18,6 @@ import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getPostsTableColumns } from './columns'
-import { PostDetailDialog } from './components/post-detail-dialog'
-import { PostStatusDialog } from './components/post-status-dialog'
 import {
   apiDeleteAdminPost,
   apiToggleAdminPostFeature,
@@ -35,10 +34,8 @@ const postFilterParsers = {
 
 export function PagePostsOverview() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
-  const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [postToDelete, setPostToDelete] = useState<Post | null>(null)
 
   useBreadcrumb([
@@ -70,15 +67,19 @@ export function PagePostsOverview() {
     onError: restApiErrorHandler,
   })
 
-  const handleOpenDetail = useCallback((post: Post) => {
-    setSelectedPost(post)
-    setIsDetailOpen(true)
-  }, [])
+  const handleOpenDetail = useCallback(
+    (post: Post) => {
+      navigate(`/posts/${post.id}/show`)
+    },
+    [navigate]
+  )
 
-  const handleOpenStatus = useCallback((post: Post) => {
-    setSelectedPost(post)
-    setIsStatusOpen(true)
-  }, [])
+  const handleOpenStatus = useCallback(
+    (post: Post) => {
+      navigate(`/posts/${post.id}/edit`)
+    },
+    [navigate]
+  )
 
   const { mutate: toggleFeature } = toggleFeatureMutation
   const handleToggleFeature = useCallback(
@@ -148,7 +149,7 @@ export function PagePostsOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -168,21 +169,6 @@ export function PagePostsOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <PostDetailDialog
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        post={selectedPost}
-      />
-
-      <PostStatusDialog
-        open={isStatusOpen}
-        onOpenChange={setIsStatusOpen}
-        post={selectedPost}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-posts'] })
-        }}
-      />
 
       {postToDelete && (
         <DeleteAlertDialog

@@ -35,13 +35,13 @@ import {
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import {
   EventFeaturedBadge,
   EventRecruitingBadge,
   EventStatusBadge,
 } from '../components/event-badges'
-import { EventStatusDialog } from '../components/event-status-dialog'
 import { apiDeleteAdminEvent, useDataAdminEventById } from '../queries'
 
 function formatTimestamp(iso?: string | null): string {
@@ -57,7 +57,6 @@ export function PageEventShow() {
   const queryClient = useQueryClient()
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [copiedSlug, setCopiedSlug] = useState(false)
 
   const { data: event, isFetching } = useDataAdminEventById(id ?? '')
@@ -113,129 +112,131 @@ export function PageEventShow() {
         isLoading={deleteMutation.isPending}
       />
 
-      <EventStatusDialog
-        open={isStatusOpen}
-        onOpenChange={setIsStatusOpen}
-        event={event}
-      />
-
-      <Main className='flex flex-1 flex-col gap-6'>
+      <Main className='flex-1'>
         {/* Top Summary Header Card */}
         <div className='border-border/80 bg-card rounded-2xl border p-4 sm:p-6'>
-          <div className='border-border/60 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-start sm:justify-between'>
-            <div className='flex items-start gap-3'>
-              <Button
-                variant='outline'
-                size='icon'
-                onClick={() => navigate('/events')}
-                className='mt-0.5 size-9 shrink-0 cursor-pointer'
-                aria-label={t('buttons.back', 'Quay lại')}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              </Button>
-
-              <div className='min-w-0 flex-1 space-y-2'>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <h1 className='text-foreground text-xl font-bold tracking-tight sm:text-2xl'>
-                    {event.title}
-                  </h1>
-                  <EventStatusBadge status={event.status} />
-                  <EventFeaturedBadge isFeatured={event.isFeaturedFestival} />
-                  <EventRecruitingBadge isRecruiting={event.isRecruiting} />
-                </div>
-
-                <div className='text-muted-foreground flex flex-wrap items-center gap-2 text-xs'>
-                  <span className='font-mono tabular-nums'>#{event.id}</span>
-                  <span>•</span>
-                  <div className='border-border/70 bg-muted/40 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
-                    <span>/{event.slug}</span>
-                    <Tooltip delayDuration={200}>
-                      <TooltipTrigger asChild>
-                        <button
-                          type='button'
-                          onClick={() => copySlug(event.slug)}
-                          aria-label={t(
-                            'events.actions.copySlug',
-                            'Sao chép slug'
-                          )}
-                          className='text-muted-foreground hover:text-foreground cursor-pointer'
-                        >
-                          {copiedSlug ? (
-                            <CheckIcon
-                              className='size-3 text-emerald-500'
-                              aria-hidden='true'
-                            />
-                          ) : (
-                            <CopyIcon className='size-3' aria-hidden='true' />
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side='top' className='text-xs'>
-                        {copiedSlug ? 'Đã sao chép!' : 'Sao chép slug'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <span>•</span>
-                  <span className='inline-flex items-center gap-1'>
-                    <MapPinIcon className='size-3.5' aria-hidden='true' />
-                    <span>
-                      {event.locationLabel} — {event.venue}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end'>
-              <Button
-                variant='outline'
-                size='sm'
-                asChild
-                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-              >
-                <a
-                  href={`${clientUrl}/events/${event.slug}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
+          <PageHeader
+            title={<>{event.title}</>}
+            badges={
+              <>
+                <Button
+                  variant='outline'
+                  size='icon'
+                  onClick={() => navigate('/events')}
+                  className='mt-0.5 size-9 shrink-0 cursor-pointer'
+                  aria-label={t('buttons.back', 'Quay lại')}
                 >
-                  <ExternalLinkIcon className='size-3.5' aria-hidden='true' />
-                  <span>{t('events.actions.viewPublic', 'Xem trên web')}</span>
-                </a>
-              </Button>
+                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                </Button>
 
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setIsStatusOpen(true)}
-                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-              >
-                <SlidersHorizontalIcon
-                  className='size-3.5'
-                  aria-hidden='true'
-                />
-                <span>{t('events.actions.status', 'Trạng thái')}</span>
-              </Button>
+                <div className='min-w-0 flex-1 space-y-2'>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <EventStatusBadge status={event.status} />
+                    <EventFeaturedBadge isFeatured={event.isFeaturedFestival} />
+                    <EventRecruitingBadge isRecruiting={event.isRecruiting} />
+                  </div>
 
-              <Button
-                size='sm'
-                onClick={() => navigate(`/events/${event.id}/edit`)}
-                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-              >
-                <EditIcon className='size-3.5' aria-hidden='true' />
-                <span>{t('buttons.edit', 'Chỉnh sửa')}</span>
-              </Button>
+                  <div className='text-muted-foreground flex flex-wrap items-center gap-2 text-xs'>
+                    <span className='font-mono tabular-nums'>#{event.id}</span>
+                    <span>•</span>
+                    <div className='border-border/70 bg-muted/40 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
+                      <span>/{event.slug}</span>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type='button'
+                            onClick={() => copySlug(event.slug)}
+                            aria-label={t(
+                              'events.actions.copySlug',
+                              'Sao chép slug'
+                            )}
+                            className='text-muted-foreground hover:text-foreground cursor-pointer'
+                          >
+                            {copiedSlug ? (
+                              <CheckIcon
+                                className='text-primary size-3'
+                                aria-hidden='true'
+                              />
+                            ) : (
+                              <CopyIcon className='size-3' aria-hidden='true' />
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side='top' className='text-xs'>
+                          {copiedSlug ? 'Đã sao chép!' : 'Sao chép slug'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span>•</span>
+                    <span className='inline-flex items-center gap-1'>
+                      <MapPinIcon className='size-3.5' aria-hidden='true' />
+                      <span>
+                        {event.locationLabel} — {event.venue}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </>
+            }
+            actions={
+              <>
+                <div className='grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    asChild
+                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
+                  >
+                    <a
+                      href={`${clientUrl}/events/${event.slug}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      <ExternalLinkIcon
+                        className='size-3.5'
+                        aria-hidden='true'
+                      />
+                      <span>
+                        {t('events.actions.viewPublic', 'Xem trên web')}
+                      </span>
+                    </a>
+                  </Button>
 
-              <Button
-                variant='destructive'
-                size='sm'
-                onClick={() => setIsDeleteOpen(true)}
-                className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-              >
-                <TrashIcon className='size-3.5' aria-hidden='true' />
-                <span>{t('buttons.delete', 'Xóa')}</span>
-              </Button>
-            </div>
-          </div>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => navigate(`/events/${event.id}/edit`)}
+                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
+                  >
+                    <SlidersHorizontalIcon
+                      className='size-3.5'
+                      aria-hidden='true'
+                    />
+                    <span>{t('events.actions.status', 'Trạng thái')}</span>
+                  </Button>
+
+                  <Button
+                    size='sm'
+                    onClick={() => navigate(`/events/${event.id}/edit`)}
+                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
+                  >
+                    <EditIcon className='size-3.5' aria-hidden='true' />
+                    <span>{t('buttons.edit', 'Chỉnh sửa')}</span>
+                  </Button>
+
+                  <Button
+                    variant='destructive'
+                    size='sm'
+                    onClick={() => setIsDeleteOpen(true)}
+                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
+                  >
+                    <TrashIcon className='size-3.5' aria-hidden='true' />
+                    <span>{t('buttons.delete', 'Xóa')}</span>
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           {/* Compact 4-Column Metric Strip */}
           <div className='mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4'>

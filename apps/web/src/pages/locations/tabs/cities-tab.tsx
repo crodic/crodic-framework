@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import {
@@ -15,7 +16,6 @@ import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getCitiesTableColumns } from '../columns/cities-columns'
-import { CityDialog } from '../dialogs/city-dialog'
 import { apiDeleteCity, useCitiesQuery } from '../queries'
 import { CityColumnKey, type CitySchema } from '../schema'
 
@@ -28,18 +28,18 @@ const cityFilterParsers = {
 
 export function CitiesTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedCity, setSelectedCity] = useState<CitySchema | null>(null)
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [cityToDelete, setCityToDelete] = useState<CitySchema | null>(null)
 
-  const handleEdit = useCallback((city: CitySchema) => {
-    setSelectedCity(city)
-    setDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (city: CitySchema) => {
+      navigate(`/locations/cities/${city.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleDelete = useCallback((city: CitySchema) => {
     setCityToDelete(city)
@@ -102,8 +102,7 @@ export function CitiesTab() {
           <Button
             size='sm'
             onClick={() => {
-              setSelectedCity(null)
-              setDialogOpen(true)
+              navigate('/locations/cities/create')
             }}
           >
             <PlusIcon className='mr-1 size-4' />
@@ -112,12 +111,6 @@ export function CitiesTab() {
           <DataTableSortList table={table} />
         </DataTableToolbar>
       </DataTable>
-
-      <CityDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        city={selectedCity}
-      />
 
       {deleteDialogOpen && cityToDelete && (
         <DeleteAlertDialog

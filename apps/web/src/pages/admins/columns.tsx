@@ -155,7 +155,7 @@ export function getAdminsTableColumns({
       cell: ({ row }) => (
         <div className='flex items-center'>
           {row.original.verifiedAt ? (
-            <CheckSquareIcon className='text-green-500' />
+            <CheckSquareIcon className='text-primary' />
           ) : (
             <XSquareIcon className='text-destructive' />
           )}

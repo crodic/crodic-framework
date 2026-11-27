@@ -47,6 +47,7 @@ import {
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { MergeTagDialog } from '../components/merge-tag-dialog'
 import {
@@ -142,9 +143,9 @@ export function PageTagShow() {
         onMerged={(targetId) => navigate(`/tags/${targetId}/show`)}
       />
 
-      <Main className='flex flex-1 flex-col gap-6'>
-        {/* Executive Studio Hero Banner Card */}
-        <div className='border-border/80 bg-card relative rounded-2xl border p-4 shadow-xs transition-all sm:p-6'>
+      <Main className='flex-1'>
+        {/* Tag summary */}
+        <div className='space-y-6'>
           {/* Top Row: Title, Category Badges & Action Toolbar */}
           <div className='border-border/60 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between'>
             <div className='flex items-start gap-3 sm:items-center'>
@@ -161,10 +162,16 @@ export function PageTagShow() {
               <div className='min-w-0 flex-1 space-y-1.5'>
                 <div className='flex flex-wrap items-center gap-2 sm:gap-2.5'>
                   <div className='group/header-name flex items-center gap-1.5'>
-                    <h1 className='text-foreground text-xl font-bold tracking-tight break-all sm:text-2xl md:text-3xl'>
-                      <span className='text-primary mr-0.5 opacity-80'>#</span>
-                      {tag.name}
-                    </h1>
+                    <PageHeader
+                      title={
+                        <>
+                          <span className='text-primary mr-0.5 opacity-80'>
+                            #
+                          </span>
+                          {tag.name}
+                        </>
+                      }
+                    />
                     <Tooltip delayDuration={200}>
                       <TooltipTrigger asChild>
                         <button
@@ -178,7 +185,7 @@ export function PageTagShow() {
                         >
                           {copiedItem === 'name' ? (
                             <CheckIcon
-                              className='size-3.5 text-emerald-500'
+                              className='text-primary size-3.5'
                               aria-hidden='true'
                             />
                           ) : (
@@ -236,7 +243,7 @@ export function PageTagShow() {
                     >
                       {copiedItem === 'slug' ? (
                         <CheckIcon
-                          className='size-3 text-emerald-500'
+                          className='text-primary size-3'
                           aria-hidden='true'
                         />
                       ) : (
@@ -284,7 +291,7 @@ export function PageTagShow() {
                   className='h-9 w-full cursor-pointer gap-1.5 shadow-2xs sm:w-auto'
                 >
                   <GitMergeIcon
-                    className='size-3.5 text-violet-500'
+                    className='text-primary size-3.5'
                     aria-hidden='true'
                   />
                   <span>{t('tags.actions.mergeTag', 'Merge Into Tag...')}</span>
@@ -329,7 +336,7 @@ export function PageTagShow() {
             <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <FlameIcon
-                  className='size-3.5 text-amber-500'
+                  className='text-primary size-3.5'
                   aria-hidden='true'
                 />
                 <span>{t('tags.table.trendingScore', 'Trending Score')}</span>
@@ -342,7 +349,7 @@ export function PageTagShow() {
             <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <GitBranchIcon
-                  className='size-3.5 text-sky-500'
+                  className='text-primary size-3.5'
                   aria-hidden='true'
                 />
                 <span>{t('tags.show.metricRelations', 'DAG Relations')}</span>
@@ -355,7 +362,7 @@ export function PageTagShow() {
             <div className='bg-muted/40 border-border/60 rounded-xl border p-3'>
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
                 <BookMarkedIcon
-                  className='size-3.5 text-violet-500'
+                  className='text-primary size-3.5'
                   aria-hidden='true'
                 />
                 <span>{t('tags.show.metricEditions', 'Wiki Editions')}</span>

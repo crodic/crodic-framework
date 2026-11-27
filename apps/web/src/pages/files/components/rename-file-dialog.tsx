@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from 'react'
 import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -22,6 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiUpdateFile, fileQueryKeys } from '../queries'
 import type { FileSchema } from '../schema'
 
@@ -32,6 +34,7 @@ const renameSchema = z.object({
 type RenameFormValues = z.infer<typeof renameSchema>
 
 export interface RenameFileDialogProps {
+  page?: boolean
   open: boolean
   file: FileSchema | null
   onOpenChange: (open: boolean) => void
@@ -39,6 +42,7 @@ export interface RenameFileDialogProps {
 }
 
 export function RenameFileDialog({
+  page = false,
   open,
   file,
   onOpenChange,
@@ -88,52 +92,84 @@ export function RenameFileDialog({
     mutation.mutate(values)
   }
 
-  return (
+  const Header: ComponentType<PagePartProps> = page
+    ? PageSectionHeader
+    : DialogHeader
+  const Title: ComponentType<PagePartProps> = page ? PageTitle : DialogTitle
+  const Footer: ComponentType<PagePartProps> = page ? PageFooter : DialogFooter
+  const content = (
+    <>
+      <Header>
+        <Title>{t('files.actions.rename', 'Rename file')}</Title>
+      </Header>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <FormField
+            control={form.control}
+            name='name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('files.table.name', 'File name')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    autoFocus
+                    placeholder='filename.ext'
+                    disabled={mutation.isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Footer className='gap-2 sm:gap-0'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => onOpenChange(false)}
+              disabled={mutation.isPending}
+            >
+              {t('buttons.cancel', 'Cancel')}
+            </Button>
+            <Button type='submit' disabled={mutation.isPending}>
+              {mutation.isPending
+                ? t('buttons.saving', 'Saving...')
+                : t('buttons.save', 'Save')}
+            </Button>
+          </Footer>
+        </form>
+      </Form>
+    </>
+  )
+  return page ? (
+    <div className='flex min-w-0 flex-col gap-6'>{content}</div>
+  ) : (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-md'>
-        <DialogHeader>
-          <DialogTitle>{t('files.actions.rename', 'Rename file')}</DialogTitle>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('files.table.name', 'File name')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      autoFocus
-                      placeholder='filename.ext'
-                      disabled={mutation.isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter className='gap-2 sm:gap-0'>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => onOpenChange(false)}
-                disabled={mutation.isPending}
-              >
-                {t('buttons.cancel', 'Cancel')}
-              </Button>
-              <Button type='submit' disabled={mutation.isPending}>
-                {mutation.isPending
-                  ? t('buttons.saving', 'Saving...')
-                  : t('buttons.save', 'Save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+      <DialogContent className='sm:max-w-md'>{content}</DialogContent>
     </Dialog>
   )
+}
+
+function PageTitle({ children }: { children?: ReactNode; className?: string }) {
+  return <PageHeader title={children} />
+}
+
+function PageFooter({
+  children,
+}: {
+  children?: ReactNode
+  className?: string
+}) {
+  return (
+    <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
+      {children}
+    </div>
+  )
+}
+
+type PagePartProps = { children?: ReactNode; className?: string }
+function PageSectionHeader({ children, className }: PagePartProps) {
+  return <header className={className}>{children}</header>
 }

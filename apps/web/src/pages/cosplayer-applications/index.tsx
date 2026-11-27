@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
   useRestResourceTable,
@@ -13,7 +14,6 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getCosplayerApplicationsColumns } from './columns'
 import { useDataCosplayerApplications } from './queries'
-import { ReviewCosplayerApplicationDialog } from './review-dialog'
 import type { CosplayerApplicationSchema } from './schema'
 
 const applicationFilterParsers = {
@@ -23,9 +23,7 @@ const applicationFilterParsers = {
 
 export function PageCosplayerApplicationsOverview() {
   const { t } = useTranslation()
-  const [selectedApplication, setSelectedApplication] =
-    useState<CosplayerApplicationSchema | null>(null)
-  const [isReviewOpen, setIsReviewOpen] = useState(false)
+  const navigate = useNavigate()
 
   useBreadcrumb([
     { title: t('navigation.kosume.title', 'Kosume') },
@@ -39,10 +37,9 @@ export function PageCosplayerApplicationsOverview() {
 
   const handleReview = useCallback(
     (application: CosplayerApplicationSchema) => {
-      setSelectedApplication(application)
-      setIsReviewOpen(true)
+      navigate(`/cosplayer-applications/${application.id}/show`)
     },
-    []
+    [navigate]
   )
 
   const columns = useMemo(
@@ -72,7 +69,7 @@ export function PageCosplayerApplicationsOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={t(
           'navigation.kosume.cosplayerApplications',
@@ -89,12 +86,6 @@ export function PageCosplayerApplicationsOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <ReviewCosplayerApplicationDialog
-        application={selectedApplication}
-        open={isReviewOpen}
-        onOpenChange={setIsReviewOpen}
-      />
     </Main>
   )
 }

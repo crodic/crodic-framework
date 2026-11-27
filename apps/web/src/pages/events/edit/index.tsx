@@ -46,7 +46,7 @@ export function PageEventEdit() {
   if (!id || !data) return <NotFoundError />
 
   return (
-    <Main className='flex flex-1 flex-col gap-6'>
+    <Main className='flex-1'>
       <EventForm
         initialData={data}
         isSubmitting={mutation.isPending}

@@ -312,10 +312,7 @@ export function EventForm({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='flex flex-1 flex-col gap-6'
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1'>
         {/* Clean Sticky Header Bar */}
         <div className='bg-background border-border/70 sticky top-0 z-30 flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-start gap-3 sm:items-center'>

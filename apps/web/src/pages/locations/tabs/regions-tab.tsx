@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import {
@@ -15,7 +16,6 @@ import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getRegionsTableColumns } from '../columns/regions-columns'
-import { RegionDialog } from '../dialogs/region-dialog'
 import { apiDeleteRegion, useRegionsQuery } from '../queries'
 import { RegionColumnKey, type RegionSchema } from '../schema'
 
@@ -25,22 +25,20 @@ const regionFilterParsers = {
 
 export function RegionsTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedRegion, setSelectedRegion] = useState<RegionSchema | null>(
-    null
-  )
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [regionToDelete, setRegionToDelete] = useState<RegionSchema | null>(
     null
   )
 
-  const handleEdit = useCallback((region: RegionSchema) => {
-    setSelectedRegion(region)
-    setDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (region: RegionSchema) => {
+      navigate(`/locations/regions/${region.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleDelete = useCallback((region: RegionSchema) => {
     setRegionToDelete(region)
@@ -95,8 +93,7 @@ export function RegionsTab() {
           <Button
             size='sm'
             onClick={() => {
-              setSelectedRegion(null)
-              setDialogOpen(true)
+              navigate('/locations/regions/create')
             }}
           >
             <PlusIcon className='mr-1 size-4' />
@@ -105,12 +102,6 @@ export function RegionsTab() {
           <DataTableSortList table={table} />
         </DataTableToolbar>
       </DataTable>
-
-      <RegionDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        region={selectedRegion}
-      />
 
       {deleteDialogOpen && regionToDelete && (
         <DeleteAlertDialog

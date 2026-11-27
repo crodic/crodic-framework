@@ -16,14 +16,6 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormField,
@@ -34,6 +26,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiReviewCosplayerApplication } from './queries'
 import type { CosplayerApplicationSchema } from './schema'
 
@@ -44,17 +37,15 @@ const reviewCosplayerFormSchema = z.object({
 
 type ReviewCosplayerFormValues = z.infer<typeof reviewCosplayerFormSchema>
 
-interface ReviewCosplayerApplicationDialogProps {
+interface ApplicationReviewProps {
   application: CosplayerApplicationSchema | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  onClose: () => void
 }
 
-export function ReviewCosplayerApplicationDialog({
+export function ApplicationReview({
   application,
-  open,
-  onOpenChange,
-}: ReviewCosplayerApplicationDialogProps) {
+  onClose,
+}: ApplicationReviewProps) {
   const queryClient = useQueryClient()
   const [showRejectForm, setShowRejectForm] = useState(false)
 
@@ -88,7 +79,7 @@ export function ReviewCosplayerApplicationDialog({
           ? 'Đã duyệt đơn và cấp tích xanh Cosplayer thành công!'
           : 'Đã từ chối đơn đăng ký Cosplayer.'
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message || 'Có lỗi xảy ra khi xử lý đơn')
@@ -122,18 +113,22 @@ export function ReviewCosplayerApplicationDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] max-w-2xl overflow-y-auto sm:max-w-2xl'>
-        <DialogHeader>
-          <DialogTitle className='flex items-center gap-2 text-xl'>
-            <BadgeCheck className='text-primary size-5' />
-            Duyệt đơn đăng ký Cosplayer
-          </DialogTitle>
-          <DialogDescription>
-            Xem xét thông tin hồ sơ và quyết định cấp tích xanh Cosplayer cho
-            tài khoản này.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              <BadgeCheck className='text-primary size-5' />
+              Duyệt đơn đăng ký Cosplayer
+            </>
+          }
+          description={
+            <>
+              Xem xét thông tin hồ sơ và quyết định cấp tích xanh Cosplayer cho
+              tài khoản này.
+            </>
+          }
+        />
 
         <Form {...form}>
           <form
@@ -337,11 +332,11 @@ export function ReviewCosplayerApplicationDialog({
               )}
             />
 
-            <DialogFooter className='gap-2 pt-2 sm:gap-0'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
                 disabled={reviewMutation.isPending}
               >
                 Đóng
@@ -374,7 +369,7 @@ export function ReviewCosplayerApplicationDialog({
                     type='button'
                     onClick={handleApprove}
                     disabled={reviewMutation.isPending}
-                    className='gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700'
+                    className='bg-primary text-primary-foreground hover:bg-primary gap-1.5'
                   >
                     {reviewMutation.isPending ? (
                       <Loader2 className='size-4 animate-spin' />
@@ -385,10 +380,10 @@ export function ReviewCosplayerApplicationDialog({
                   </Button>
                 </div>
               )}
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

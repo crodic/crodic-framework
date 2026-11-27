@@ -175,19 +175,19 @@ export function StepReview({
 
           <ul className='text-muted-foreground space-y-1.5 text-xs'>
             <li className='flex items-center gap-2'>
-              <Check className='size-3.5 text-emerald-600' />
+              <Check className='text-primary size-3.5' />
               <span>{t('setup.review.seedThemes')}</span>
             </li>
             <li className='flex items-center gap-2'>
-              <Check className='size-3.5 text-emerald-600' />
+              <Check className='text-primary size-3.5' />
               <span>{t('setup.review.seedCms')}</span>
             </li>
             <li className='flex items-center gap-2'>
-              <Check className='size-3.5 text-emerald-600' />
+              <Check className='text-primary size-3.5' />
               <span>{t('setup.review.seedLocations')}</span>
             </li>
             <li className='flex items-center gap-2'>
-              <Check className='size-3.5 text-emerald-600' />
+              <Check className='text-primary size-3.5' />
               <span>{t('setup.review.seedRbac')}</span>
             </li>
           </ul>

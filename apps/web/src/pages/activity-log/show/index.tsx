@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { getActionBadge } from '../columns'
 import { useDataGetLogDetail } from '../queries'
@@ -71,22 +72,24 @@ export default function PageActivityLogShow() {
     <>
       <Main>
         <div className='space-y-8'>
-          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <h1 className='text-xl font-bold break-words sm:text-2xl'>
-              {t('activityLogs.show.title')}
-            </h1>
-            <div className='flex items-center gap-2 self-start sm:self-auto'>
-              <Button
-                onClick={() => navigate(-1)}
-                variant='outline'
-                size='sm'
-                className='gap-1.5'
-              >
-                <ArrowLeftIcon size={16} />
-                <span>{t('buttons.back')}</span>
-              </Button>
-            </div>
-          </div>
+          <PageHeader
+            title={<>{t('activityLogs.show.title')}</>}
+            actions={
+              <>
+                <div className='flex items-center gap-2 self-start sm:self-auto'>
+                  <Button
+                    onClick={() => navigate(-1)}
+                    variant='outline'
+                    size='sm'
+                    className='gap-1.5'
+                  >
+                    <ArrowLeftIcon size={16} />
+                    <span>{t('buttons.back')}</span>
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           <Card>
             <CardHeader>

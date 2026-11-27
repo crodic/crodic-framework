@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apps } from './data/apps'
 
 // const route = getRouteApi('/_authenticated/apps/')
@@ -97,14 +98,16 @@ export function Apps() {
 
       {/* ===== Content ===== */}
       <Main fixed>
-        <div>
-          <h1 className='text-2xl font-bold tracking-tight'>
-            App Integrations
-          </h1>
-          <p className='text-muted-foreground'>
-            Here&apos;s a list of your apps for the integration!
-          </p>
-        </div>
+        <PageHeader
+          title={<>App Integrations</>}
+          description={
+            <>
+              <p className='text-muted-foreground'>
+                Here&apos;s a list of your apps for the integration!
+              </p>
+            </>
+          }
+        />
         <div className='my-4 flex items-end justify-between sm:my-0 sm:items-center'>
           <div className='flex flex-col gap-4 sm:my-4 sm:flex-row'>
             <Input
@@ -163,14 +166,14 @@ export function Apps() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className={`${app.connected ? 'border border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900' : ''}`}
+                  className={`${app.connected ? 'border-primary bg-primary hover:bg-primary dark:border-primary dark:bg-primary dark:hover:bg-primary border' : ''}`}
                 >
                   {app.connected ? 'Connected' : 'Connect'}
                 </Button>
               </div>
               <div>
                 <h2 className='mb-1 font-semibold'>{app.name}</h2>
-                <p className='line-clamp-2 text-gray-500'>{app.desc}</p>
+                <p className='text-muted-foreground line-clamp-2'>{app.desc}</p>
               </div>
             </li>
           ))}

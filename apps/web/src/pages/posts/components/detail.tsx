@@ -2,26 +2,14 @@ import { useState } from 'react'
 import { Eye, Heart, MessageSquare, ShieldCheck, Tag } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { PageHeader } from '@/components/layout/page-shell'
 import type { Post } from '../schema'
 
-interface PostDetailDialogProps {
+interface PostDetailProps {
   post: Post | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
 }
 
-export function PostDetailDialog({
-  post,
-  open,
-  onOpenChange,
-}: PostDetailDialogProps) {
+export function PostDetail({ post }: PostDetailProps) {
   const { t } = useTranslation()
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
 
@@ -40,23 +28,25 @@ export function PostDetailDialog({
     (Boolean(fallbackVideoUrl) && activeUrl === fallbackVideoUrl)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] max-w-3xl flex-col p-6'>
-        <DialogHeader>
-          <DialogTitle className='flex items-center gap-2 text-xl font-bold'>
-            {post.title}
-            {post.isFeaturedWork && (
-              <Badge
-                variant='default'
-                className='bg-amber-500 hover:bg-amber-600'
-              >
-                ★ {t('posts.featured', 'Nổi bật')}
-              </Badge>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {post.title}
+              {post.isFeaturedWork && (
+                <Badge
+                  variant='default'
+                  className='bg-primary hover:bg-primary'
+                >
+                  ★ {t('posts.featured', 'Nổi bật')}
+                </Badge>
+              )}
+            </>
+          }
+        />
 
-        <ScrollArea className='flex-1 pr-3'>
+        <div className='min-w-0'>
           <div className='space-y-4'>
             {/* Main Preview Image or Video */}
             <div className='bg-muted/40 relative flex h-80 w-full items-center justify-center overflow-hidden rounded-lg border'>
@@ -127,7 +117,7 @@ export function PostDetailDialog({
                   <div className='flex items-center gap-1 text-sm font-semibold'>
                     {post.author.displayName}
                     {post.author.isVerified && (
-                      <ShieldCheck className='size-4 text-sky-500' />
+                      <ShieldCheck className='text-primary size-4' />
                     )}
                   </div>
                   <div className='text-muted-foreground text-xs'>
@@ -139,15 +129,15 @@ export function PostDetailDialog({
               {/* Engagement metrics */}
               <div className='text-muted-foreground flex items-center gap-4 text-xs'>
                 <span className='flex items-center gap-1'>
-                  <Heart className='size-3.5 text-rose-500' />
+                  <Heart className='text-destructive size-3.5' />
                   {post.likesCount}
                 </span>
                 <span className='flex items-center gap-1'>
-                  <MessageSquare className='size-3.5 text-blue-500' />
+                  <MessageSquare className='text-primary size-3.5' />
                   {post.commentsCount}
                 </span>
                 <span className='flex items-center gap-1'>
-                  <Eye className='size-3.5 text-emerald-500' />
+                  <Eye className='text-primary size-3.5' />
                   {post.viewsCount}
                 </span>
               </div>
@@ -225,8 +215,8 @@ export function PostDetailDialog({
               </div>
             )}
           </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </>
   )
 }

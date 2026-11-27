@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { apiEditPermission, useDataPermissionEdit } from '../queries'
 import { permissionFormSchema, type PermissionFormSchema } from '../schema'
@@ -95,33 +96,31 @@ export function PagePermissionEdit() {
       <Main>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-            <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-              <div>
-                <h1 className='text-2xl font-bold tracking-tight'>
-                  Edit Permission Metadata
-                </h1>
-                <p className='text-muted-foreground font-mono text-sm'>
-                  {data.key}
-                </p>
-              </div>
-              <div className='flex items-center gap-2'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => navigate(-1)}
-                >
-                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                  Cancel
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={editPermissionMutation.isPending}
-                >
-                  <SaveIcon className='size-4' aria-hidden='true' />
-                  Save
-                </Button>
-              </div>
-            </div>
+            <PageHeader
+              title={<>Edit Permission Metadata</>}
+              description={<>{data.key}</>}
+              actions={
+                <>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => navigate(-1)}
+                    >
+                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                      Cancel
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={editPermissionMutation.isPending}
+                    >
+                      <SaveIcon className='size-4' aria-hidden='true' />
+                      Save
+                    </Button>
+                  </div>
+                </>
+              }
+            />
 
             <Card>
               <CardHeader>

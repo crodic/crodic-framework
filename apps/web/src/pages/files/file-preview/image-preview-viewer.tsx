@@ -54,7 +54,7 @@ export function ImagePreviewViewer({
       className={cn(
         'relative flex size-full max-h-[min(650px,72dvh)] min-h-[360px] items-center justify-center overflow-hidden rounded-xl select-none',
         isCheckerboard
-          ? 'bg-neutral-900 bg-[linear-gradient(45deg,#262626_25%,transparent_25%),linear-gradient(-45deg,#262626_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#262626_75%),linear-gradient(-45deg,transparent_75%,#262626_75%)] bg-[size:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]'
+          ? 'bg-muted bg-[linear-gradient(45deg,#262626_25%,transparent_25%),linear-gradient(-45deg,#262626_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#262626_75%),linear-gradient(-45deg,transparent_75%,#262626_75%)] bg-[size:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]'
           : 'bg-black/50',
         scale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-default',
         className

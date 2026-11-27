@@ -5,14 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -22,20 +14,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiResolveContentReport } from '../queries'
 import type { ContentReport } from '../schema'
 
-interface ResolveReportDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface ReportReviewProps {
+  onClose: () => void
   report: ContentReport | null
 }
 
-export function ResolveReportDialog({
-  open,
-  onOpenChange,
-  report,
-}: ResolveReportDialogProps) {
+export function ReportReview({ onClose, report }: ReportReviewProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<'resolved' | 'dismissed'>('resolved')
@@ -51,7 +39,7 @@ export function ResolveReportDialog({
           'Đã xử lý báo cáo vi phạm thành công'
         )
       )
-      onOpenChange(false)
+      onClose()
       setResolutionNote('')
     },
     onError: restApiErrorHandler,
@@ -70,14 +58,14 @@ export function ResolveReportDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[480px]'>
-        <DialogHeader>
-          <DialogTitle>Xử lý báo cáo vi phạm #{report.id}</DialogTitle>
-          <DialogDescription>
-            Đưa ra quyết định phê duyệt xử lý hoặc bác bỏ báo cáo này.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={<> Xử lý báo cáo vi phạm #{report.id} </>}
+          description={
+            <>Đưa ra quyết định phê duyệt xử lý hoặc bác bỏ báo cáo này.</>
+          }
+        />
 
         <div className='grid gap-4 py-3'>
           <div className='bg-muted/40 space-y-1.5 rounded-md border p-3 text-sm'>
@@ -114,7 +102,7 @@ export function ResolveReportDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='resolved'>
-                  <div className='flex items-center gap-2 text-emerald-600 dark:text-emerald-400'>
+                  <div className='text-primary dark:text-primary flex items-center gap-2'>
                     <CheckCircle2 className='size-4' />
                     <span>Xác nhận vi phạm (Resolved)</span>
                   </div>
@@ -141,10 +129,10 @@ export function ResolveReportDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
           <Button
             variant='outline'
-            onClick={() => onOpenChange(false)}
+            onClick={() => onClose()}
             disabled={resolveMutation.isPending}
           >
             Hủy
@@ -152,8 +140,8 @@ export function ResolveReportDialog({
           <Button onClick={handleResolve} disabled={resolveMutation.isPending}>
             {resolveMutation.isPending ? 'Đang lưu...' : 'Lưu kết quả'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </>
   )
 }

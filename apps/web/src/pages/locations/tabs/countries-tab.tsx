@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import {
@@ -15,7 +16,6 @@ import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { getCountriesTableColumns } from '../columns/countries-columns'
-import { CountryDialog } from '../dialogs/country-dialog'
 import {
   apiDeleteCountry,
   useCountriesQuery,
@@ -31,12 +31,8 @@ const countryFilterParsers = {
 
 export function CountriesTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedCountry, setSelectedCountry] = useState<CountrySchema | null>(
-    null
-  )
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [countryToDelete, setCountryToDelete] = useState<CountrySchema | null>(
@@ -45,10 +41,12 @@ export function CountriesTab() {
 
   const { data: regions } = usePublicRegionsQuery()
 
-  const handleEdit = useCallback((country: CountrySchema) => {
-    setSelectedCountry(country)
-    setDialogOpen(true)
-  }, [])
+  const handleEdit = useCallback(
+    (country: CountrySchema) => {
+      navigate(`/locations/countries/${country.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleDelete = useCallback((country: CountrySchema) => {
     setCountryToDelete(country)
@@ -114,8 +112,7 @@ export function CountriesTab() {
           <Button
             size='sm'
             onClick={() => {
-              setSelectedCountry(null)
-              setDialogOpen(true)
+              navigate('/locations/countries/create')
             }}
           >
             <PlusIcon className='mr-1 size-4' />
@@ -124,12 +121,6 @@ export function CountriesTab() {
           <DataTableSortList table={table} />
         </DataTableToolbar>
       </DataTable>
-
-      <CountryDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        country={selectedCountry}
-      />
 
       {deleteDialogOpen && countryToDelete && (
         <DeleteAlertDialog

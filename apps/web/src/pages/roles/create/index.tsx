@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { useDataPermissionFormOptions } from '@/pages/permissions/queries'
 import { RolePermissionsField } from '../components/role-permissions-field'
 import { validateAssignablePermissionIds } from '../permission-matrix.helper'
@@ -81,30 +82,34 @@ export default function PageRoleCreate() {
       <Main>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-            <div className='flex items-center justify-between'>
-              <h3 className='text-2xl font-bold'>{t('roles.create.title')}</h3>
-              <div className='flex items-center gap-2'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => navigate(-1)}
-                >
-                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                  {t('buttons.cancel')}
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={
-                    createRoleMutate.isPending ||
-                    permissionsQuery.isLoading ||
-                    permissionsQuery.isError
-                  }
-                >
-                  <SaveIcon className='size-4' aria-hidden='true' />
-                  {t('buttons.save')}
-                </Button>
-              </div>
-            </div>
+            <PageHeader
+              title={<>{t('roles.create.title')}</>}
+              actions={
+                <>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => navigate(-1)}
+                    >
+                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.cancel')}
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={
+                        createRoleMutate.isPending ||
+                        permissionsQuery.isLoading ||
+                        permissionsQuery.isError
+                      }
+                    >
+                      <SaveIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.save')}
+                    </Button>
+                  </div>
+                </>
+              }
+            />
 
             <Card>
               <CardContent className='grid grid-cols-1 items-start gap-8 md:grid-cols-3'>

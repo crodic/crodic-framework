@@ -9,14 +9,6 @@ import { RestQueryBuilder } from '@/lib/query-builder'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormDescription,
@@ -29,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import AutoCompleteAsyncSelectControl from '@/components/forms/auto-complete-async-select-control'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
+import { PageHeader } from '@/components/layout/page-shell'
 import {
   apiCreateAdminSpotlightBanner,
   apiUpdateAdminSpotlightBanner,
@@ -58,17 +51,15 @@ interface CosplayerSelectOption {
   [key: string]: unknown
 }
 
-interface SpotlightBannerDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface SpotlightBannerEditorProps {
+  onClose: () => void
   banner: SpotlightBanner | null
 }
 
-export function SpotlightBannerDialog({
-  open,
-  onOpenChange,
+export function SpotlightBannerEditor({
+  onClose,
   banner,
-}: SpotlightBannerDialogProps) {
+}: SpotlightBannerEditorProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!banner
@@ -116,7 +107,7 @@ export function SpotlightBannerDialog({
       toast.success(
         t('spotlight.messages.created', 'Đã thêm banner tiêu điểm thành công')
       )
-      onOpenChange(false)
+      onClose()
       form.reset()
     },
     onError: restApiErrorHandler,
@@ -132,7 +123,7 @@ export function SpotlightBannerDialog({
           'Đã cập nhật banner tiêu điểm thành công'
         )
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: restApiErrorHandler,
   })
@@ -148,18 +139,20 @@ export function SpotlightBannerDialog({
   const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-[560px]'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? 'Chỉnh sửa banner tiêu điểm'
-              : 'Thêm banner tiêu điểm mới'}
-          </DialogTitle>
-          <DialogDescription>
-            Thiết lập banner carousel nổi bật trên trang chủ Kosume.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEdit
+                ? 'Chỉnh sửa banner tiêu điểm'
+                : 'Thêm banner tiêu điểm mới'}
+            </>
+          }
+          description={
+            <>Thiết lập banner carousel nổi bật trên trang chủ Kosume.</>
+          }
+        />
 
         <Form {...form}>
           <form
@@ -349,11 +342,11 @@ export function SpotlightBannerDialog({
               )}
             />
 
-            <DialogFooter className='pt-2'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
                 disabled={isPending}
               >
                 {t('common.cancel', 'Hủy')}
@@ -365,10 +358,10 @@ export function SpotlightBannerDialog({
                     ? t('common.update', 'Cập nhật')
                     : t('common.create', 'Tạo mới')}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

@@ -55,25 +55,25 @@ export function getContentReportsTableColumns({
             label: i18n.t('contentReports.targets.post', 'Bài viết'),
             icon: ExternalLink,
             className:
-              'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+              'bg-primary/10 text-primary dark:text-primary border-primary/20',
           },
           user: {
             label: i18n.t('contentReports.targets.user', 'Người dùng'),
             icon: User,
             className:
-              'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+              'bg-primary/10 text-primary dark:text-primary border-primary/20',
           },
           comment: {
             label: i18n.t('contentReports.targets.comment', 'Bình luận'),
             icon: MessageSquare,
             className:
-              'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+              'bg-primary/10 text-primary dark:text-primary border-primary/20',
           },
           event: {
             label: i18n.t('contentReports.targets.event', 'Sự kiện'),
             icon: AlertCircle,
             className:
-              'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+              'bg-primary/10 text-primary dark:text-primary border-primary/20',
           },
         }
 
@@ -203,14 +203,14 @@ export function getContentReportsTableColumns({
         }
         if (status === 'reviewing') {
           return (
-            <Badge className='gap-1 border-blue-500/20 bg-blue-500/15 text-xs text-blue-700 dark:text-blue-300'>
+            <Badge className='border-primary/20 bg-primary/15 text-primary dark:text-primary gap-1 text-xs'>
               <Clock className='size-3' />
               Đang xem xét
             </Badge>
           )
         }
         return (
-          <Badge className='gap-1 border-amber-500/20 bg-amber-500/15 text-xs text-amber-700 dark:text-amber-300'>
+          <Badge className='border-primary/20 bg-primary/15 text-primary dark:text-primary gap-1 text-xs'>
             <AlertCircle className='size-3' />
             Chờ duyệt
           </Badge>

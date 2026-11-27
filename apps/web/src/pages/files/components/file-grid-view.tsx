@@ -97,7 +97,7 @@ function getFileIconAndBadge(file: FileSchema) {
   if (ext === 'pdf' || mime.includes('pdf')) {
     return {
       icon: FileText,
-      color: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
+      color: 'text-destructive bg-destructive/10 border-destructive/20',
       label: 'PDF',
     }
   }
@@ -108,7 +108,7 @@ function getFileIconAndBadge(file: FileSchema) {
   ) {
     return {
       icon: FileSpreadsheet,
-      color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       label: ext.toUpperCase() || 'EXCEL',
     }
   }
@@ -119,7 +119,7 @@ function getFileIconAndBadge(file: FileSchema) {
   ) {
     return {
       icon: FileText,
-      color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       label: ext.toUpperCase() || 'DOC',
     }
   }
@@ -130,7 +130,7 @@ function getFileIconAndBadge(file: FileSchema) {
   ) {
     return {
       icon: FileArchive,
-      color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       label: ext.toUpperCase() || 'ZIP',
     }
   }
@@ -151,7 +151,7 @@ function getFileIconAndBadge(file: FileSchema) {
   ) {
     return {
       icon: FileCode,
-      color: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       label: ext.toUpperCase() || 'CODE',
     }
   }
@@ -161,7 +161,7 @@ function getFileIconAndBadge(file: FileSchema) {
   ) {
     return {
       icon: FileAudio,
-      color: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       label: ext.toUpperCase() || 'AUDIO',
     }
   }
@@ -303,8 +303,8 @@ const FileCardItem = memo(function FileCardItem({
                     className={cn(
                       'size-3.5 transition-colors',
                       isStarred?.(file.public_id)
-                        ? 'fill-amber-400 text-amber-500'
-                        : 'text-muted-foreground/60 hover:text-amber-500'
+                        ? 'fill-primary text-primary'
+                        : 'text-muted-foreground/60 hover:text-primary'
                     )}
                   />
                 </Button>
@@ -355,7 +355,7 @@ const FileCardItem = memo(function FileCardItem({
                     {isFilePrivate(file) && onShareFile && (
                       <DropdownMenuItem
                         onClick={() => onShareFile(file)}
-                        className='gap-2 text-amber-600 dark:text-amber-400'
+                        className='text-primary dark:text-primary gap-2'
                       >
                         <Link2 className='size-4' />
                         {t('files.actions.share', 'Share link')}
@@ -488,7 +488,7 @@ const FileCardItem = memo(function FileCardItem({
                           className={cn(
                             'inline-flex shrink-0 cursor-default items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-medium',
                             isPrivate
-                              ? 'border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                              ? 'border-primary/20 bg-primary/10 text-primary dark:text-primary border'
                               : 'bg-muted text-muted-foreground border-border/60 border'
                           )}
                           onClick={(e) => e.stopPropagation()}
@@ -627,7 +627,7 @@ const FileCardItem = memo(function FileCardItem({
             {isFilePrivate(file) && onShareFile && (
               <ContextMenuItem
                 onClick={() => onShareFile(file)}
-                className='gap-2 text-amber-600 dark:text-amber-400'
+                className='text-primary dark:text-primary gap-2'
               >
                 <Link2 className='size-4' />
                 {t('files.actions.share', 'Share link')}

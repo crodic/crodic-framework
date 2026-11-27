@@ -9,14 +9,6 @@ import http from '@/lib/http'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormField,
@@ -26,6 +18,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import AutoCompleteAsyncSelectControl from '@/components/forms/auto-complete-async-select-control'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiCreateState, apiUpdateState } from '../queries'
 import {
   type StateFormSchema,
@@ -33,19 +26,17 @@ import {
   type StateSchema,
 } from '../schema'
 
-interface StateDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface StateEditorProps {
+  onClose: () => void
   state?: StateSchema | null
   defaultCountryId?: string
 }
 
-export function StateDialog({
-  open,
-  onOpenChange,
+export function StateEditor({
+  onClose,
   state,
   defaultCountryId,
-}: StateDialogProps) {
+}: StateEditorProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!state
@@ -84,7 +75,7 @@ export function StateDialog({
         timezone: '',
       })
     }
-  }, [state, defaultCountryId, form, open])
+  }, [state, defaultCountryId, form])
 
   const mutation = useMutation({
     mutationFn: (values: StateFormSchema) =>
@@ -105,7 +96,7 @@ export function StateDialog({
               'State / Province created successfully'
             )
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: restApiErrorHandler,
   })
@@ -122,21 +113,25 @@ export function StateDialog({
       )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[min(90vh,calc(100dvh-2rem))] overflow-y-auto sm:max-w-xl'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? t('locations.state.editTitle', 'Edit State / Province')
-              : t('locations.state.createTitle', 'Create State / Province')}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              'locations.state.dialogDesc',
-              'Add or update state / province information and assign it to a country.'
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEdit
+                ? t('locations.state.editTitle', 'Edit State / Province')
+                : t('locations.state.createTitle', 'Create State / Province')}
+            </>
+          }
+          description={
+            <>
+              {t(
+                'locations.state.dialogDesc',
+                'Add or update state / province information and assign it to a country.'
+              )}
+            </>
+          }
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -277,22 +272,22 @@ export function StateDialog({
               )}
             />
 
-            <DialogFooter className='pt-4'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
                 disabled={mutation.isPending}
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
               >
                 {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button type='submit' disabled={mutation.isPending}>
                 {submitLabel}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

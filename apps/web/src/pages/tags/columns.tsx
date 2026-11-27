@@ -81,10 +81,7 @@ function TagNameCell({ tag, t }: { tag: TagSummary; t: TFunction }) {
               className='text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring shrink-0 cursor-pointer rounded p-0.5 opacity-0 transition-opacity group-hover/tag:opacity-100 focus-visible:opacity-100 focus-visible:ring-1'
             >
               {copied ? (
-                <CheckIcon
-                  className='size-3 text-emerald-500'
-                  aria-hidden='true'
-                />
+                <CheckIcon className='text-primary size-3' aria-hidden='true' />
               ) : (
                 <CopyIcon className='size-3' aria-hidden='true' />
               )}
@@ -117,10 +114,7 @@ function TagNameCell({ tag, t }: { tag: TagSummary; t: TFunction }) {
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <span className='inline-flex shrink-0'>
-                <LockIcon
-                  className='size-3 text-amber-500'
-                  aria-hidden='true'
-                />
+                <LockIcon className='text-primary size-3' aria-hidden='true' />
               </span>
             </TooltipTrigger>
             <TooltipContent side='top' className='text-xs'>
@@ -316,7 +310,7 @@ export function getTagsTableColumns({
       cell: ({ row }) => (
         <div className='inline-flex items-center gap-1 font-mono text-xs tabular-nums'>
           {row.original.trendingScore > 0 ? (
-            <span className='inline-flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400'>
+            <span className='text-primary dark:text-primary inline-flex items-center gap-1 font-medium'>
               <FlameIcon className='size-3.5 shrink-0' aria-hidden='true' />
               {row.original.trendingScore.toFixed(1)}
             </span>
@@ -419,7 +413,7 @@ export function getTagsTableColumns({
                     className='cursor-pointer gap-2'
                   >
                     <GitMergeIcon
-                      className='size-4 text-violet-500'
+                      className='text-primary size-4'
                       aria-hidden='true'
                     />
                     <span>

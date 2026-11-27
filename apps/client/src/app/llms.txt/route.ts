@@ -1,23 +1,35 @@
-// Statically served llms.txt with information about the website and author Crodic Crystal
+import { getPathname } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
+import { getAppExternalUrl, getRootExternalUrl } from "@/lib/subdomain";
+
 export const dynamic = "force-static";
 
 export async function GET() {
+  const rootBase = getRootExternalUrl().replace(/\/+$/, "");
+  const appBase = getAppExternalUrl().replace(/\/+$/, "");
+  const localizedPath = (href: string, locale = routing.defaultLocale) =>
+    getPathname({ locale, href });
+  const rootUrl = `${rootBase}${localizedPath("/")}`;
+  const rootViUrl = `${rootBase}${localizedPath("/", routing.locales.includes("vi") ? "vi" : routing.defaultLocale)}`;
+  const appLink = (href: string) => `${appBase}${localizedPath(href)}`;
+  const appUrl = appLink("/");
+
   const content = `# Kosume & Crodic Framework - Creative Cosplay Community & Portfolio Platform
 
 > Kosume là nền tảng mạng xã hội và không gian portfolio chuyên nghiệp dành cho cosplayer, nhiếp ảnh gia, họa sĩ và người hâm mộ văn hóa ACGN (Anime, Manga, Game, Light Novel) để chia sẻ, kết nối và tôn vinh nghệ thuật hóa thân.
 
-## Tác giả & Nhà sáng lập (Author & Creator)
+**Tác giả & Nhà sáng lập (Author & Creator)**
 - **Tác giả:** Crodic Crystal (crodic crystal)
 - **Vai trò:** Founder, Software Architect & Lead Developer
 - **Hệ sinh thái:** Crodic Framework, Crodic Ecosystem & Kosume Platform (crodic.click)
 - **Tầm nhìn & Sứ mệnh:** Xây dựng nền tảng sáng tạo mở, hiện đại và chuẩn mực cao; tôn vinh tài năng của các cosplayer, bảo vệ bản quyền tác phẩm nghệ thuật, đồng thời kết nối cộng đồng người hâm mộ thông qua hệ thống bách khoa toàn thư nhân vật và mạng lưới sự kiện lễ hội.
 
-## Giới thiệu Nền tảng (Platform Overview)
+**Giới thiệu Nền tảng (Platform Overview)**
 - **Tên nền tảng:** Kosume (thuộc hệ sinh thái Crodic Framework)
 - **Tên miền chính:** crodic.click
 - **Lĩnh vực hoạt động:** Mạng xã hội chuyên biệt cho Cosplay, Portfolio cá nhân của Creator, Bách khoa toàn thư nhân vật (Waifu/Character Encyclopedia), Lịch lễ hội & sự kiện Cosplay (Cosplay Fes & Events), Bảng xếp hạng thịnh hành (Creator Leaderboard).
 
-## Tính năng Cốt lõi (Core Features)
+**Tính năng Cốt lõi (Core Features)**
 1. **Creator Portfolio & Studio:**
    - Trưng bày bộ ảnh cosplay chất lượng cao (HD/4K) với bố cục đa dạng (đơn ảnh, collage, album bộ ảnh).
    - Tùy chỉnh ảnh bìa, phân loại thể loại (Studio, Fes, Casual, Series, Original).
@@ -40,25 +52,27 @@ export async function GET() {
    - Hệ thống gắn nhãn phân loại mức độ an toàn (General, Sensitive, Questionable, Explicit).
    - Cơ chế xác thực tài khoản nghệ sĩ (Verified Artist Badge) và quản lý tag bản quyền chính thống.
 
-## Điều hướng Nền tảng (Key Navigation URLs)
-- Trang chủ (Home / Landing): /
-- Khám phá Tác phẩm (Explore Artworks): /explore
-- Bảng tin Cộng đồng (Community Feed): /feed
-- Bách khoa toàn thư Tags & Nhân vật: /tags
-- Lịch Lễ hội & Sự kiện Cosplay: /events
-- Bảng xếp hạng Cosplayer (Leaderboard): /ranking
-- Đăng nhập (Sign In): /auth/login
-- Đăng ký Thành viên (Sign Up): /auth/sign-up
-- Studio Sáng tạo Cá nhân: /profile
-
-## Công nghệ & Kiến trúc (Technical Architecture)
+**Công nghệ & Kiến trúc (Technical Architecture)**
 - **Kiến trúc Monorepo:** Crodic Framework Monorepo tối ưu hóa với Turborepo và pnpm.
 - **Frontend Client:** Next.js (App Router), React, Tailwind CSS v4, Motion/React, Next-Intl (đa ngôn ngữ VI/EN).
 - **Backend API:** NestJS, TypeScript, TypeORM, PostgreSQL, Redis Cache.
 - **Tối ưu hóa:** Server-Side Rendering (SSR), Static Generation (SSG), hệ thống QueryBuilder chuẩn hóa lọc dữ liệu, tối ưu hóa SEO và Web Vitals.
 
----
-© Crodic Crystal. Crodic Framework & Kosume Ecosystem.
+## Điều hướng Nền tảng
+
+- [Trang giới thiệu Crodic và Kosume](${rootUrl}): Giới thiệu nền tảng và cộng đồng.
+- [Trang giới thiệu bằng tiếng Việt](${rootViUrl}): Phiên bản tiếng Việt của trang giới thiệu.
+- [Trang chủ cộng đồng Kosume](${appUrl}): Các nội dung và tác phẩm nổi bật.
+- [Khám phá tác phẩm](${appLink("/explore")}): Tìm và khám phá các bộ ảnh cosplay.
+- [Bảng tin cộng đồng](${appLink("/feed")}): Bài đăng trong cộng đồng.
+- [Tags và bách khoa nhân vật](${appLink("/tags")}): Tra cứu thẻ, nhân vật và tác phẩm.
+- [Lễ hội và sự kiện cosplay](${appLink("/events")}): Lịch và thông tin sự kiện.
+- [Bảng xếp hạng](${appLink("/ranking")}): Bảng xếp hạng cosplayer.
+
+## Optional
+
+- [Sitemap](${rootBase}/sitemap.xml): Danh sách URL công khai của nền tảng.
+- [Robots](${rootBase}/robots.txt): Quy tắc truy cập dành cho crawler.
 `;
 
   return new Response(content, {

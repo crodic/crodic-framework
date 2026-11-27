@@ -99,13 +99,13 @@ export function FilesHeader({
         return {
           title: t('files.nav.starred', 'Starred Files'),
           icon: Star,
-          color: 'text-amber-500 fill-amber-400',
+          color: 'text-primary fill-primary',
         }
       case 'recent':
         return {
           title: t('files.nav.recent', 'Recent Files'),
           icon: Clock,
-          color: 'text-blue-500',
+          color: 'text-primary',
         }
       case 'trash':
         return {
@@ -187,7 +187,7 @@ export function FilesHeader({
                 onClick={onCreateFolderClick}
                 className='h-8 gap-1.5 px-2.5 text-xs font-medium'
               >
-                <FolderPlus className='size-3.5 text-amber-500' />
+                <FolderPlus className='text-primary size-3.5' />
                 <span>{t('files.actions.createFolder', 'New Folder')}</span>
               </Button>
               <Button
@@ -211,6 +211,7 @@ export function FilesHeader({
               size='sm'
               className='h-8 gap-1.5 px-2.5 text-xs font-medium'
               onClick={onOpenPicker}
+              aria-label={t('files.picker.demoButton')}
             >
               <MousePointer className='size-3.5' />
               <span className='hidden sm:inline'>

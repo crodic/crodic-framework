@@ -9,14 +9,6 @@ import http from '@/lib/http'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormField,
@@ -26,24 +18,23 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import AutoCompleteAsyncSelectControl from '@/components/forms/auto-complete-async-select-control'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiCreateCity, apiUpdateCity } from '../queries'
 import { type CityFormSchema, cityFormSchema, type CitySchema } from '../schema'
 
-interface CityDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface CityEditorProps {
+  onClose: () => void
   city?: CitySchema | null
   defaultCountryId?: string
   defaultStateId?: string
 }
 
-export function CityDialog({
-  open,
-  onOpenChange,
+export function CityEditor({
+  onClose,
   city,
   defaultCountryId,
   defaultStateId,
-}: CityDialogProps) {
+}: CityEditorProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!city
@@ -89,7 +80,7 @@ export function CityDialog({
         countryCode: '',
       })
     }
-  }, [city, defaultCountryId, defaultStateId, form, open])
+  }, [city, defaultCountryId, defaultStateId, form])
 
   const mutation = useMutation({
     mutationFn: (values: CityFormSchema) =>
@@ -103,7 +94,7 @@ export function CityDialog({
           ? t('locations.city.updated', 'City updated successfully')
           : t('locations.city.created', 'City created successfully')
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: restApiErrorHandler,
   })
@@ -120,21 +111,25 @@ export function CityDialog({
       )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[min(90vh,calc(100dvh-2rem))] overflow-y-auto sm:max-w-xl'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? t('locations.city.editTitle', 'Edit City / District')
-              : t('locations.city.createTitle', 'Create City / District')}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              'locations.city.dialogDesc',
-              'Enter city details and assign it to a country and state / province.'
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEdit
+                ? t('locations.city.editTitle', 'Edit City / District')
+                : t('locations.city.createTitle', 'Create City / District')}
+            </>
+          }
+          description={
+            <>
+              {t(
+                'locations.city.dialogDesc',
+                'Enter city details and assign it to a country and state / province.'
+              )}
+            </>
+          }
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -312,22 +307,22 @@ export function CityDialog({
               )}
             />
 
-            <DialogFooter className='pt-4'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
                 disabled={mutation.isPending}
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
               >
                 {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button type='submit' disabled={mutation.isPending}>
                 {submitLabel}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

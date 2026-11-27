@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -57,6 +58,7 @@ import type { FileSchema, FolderSchema } from '../schema'
 import { StorageOverviewWidget } from './storage-overview-widget'
 
 interface FileInspectorProps {
+  page?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
   file: FileSchema | null
@@ -76,6 +78,7 @@ interface FileInspectorProps {
 }
 
 export function FileInspector({
+  page = false,
   open,
   onOpenChange,
   file,
@@ -137,493 +140,511 @@ export function FileInspector({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  return (
+  const Header: ComponentType<PagePartProps> = page
+    ? PageSectionHeader
+    : SheetHeader
+  const Title: ComponentType<PagePartProps> = page
+    ? PageSectionTitle
+    : SheetTitle
+  const content = (
+    <>
+      <Header className='border-border flex flex-row items-center space-y-0 border-b px-5 py-4 pr-12'>
+        <div className='flex items-center gap-2'>
+          <Info className='text-primary size-4' />
+          <Title className='text-base font-semibold'>
+            {t('files.inspector.title')}
+          </Title>
+        </div>
+      </Header>
+
+      {!activeFile ? (
+        <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-5'>
+          <StorageOverviewWidget files={files} folders={folders} />
+          <div className='flex flex-1 flex-col items-center justify-center p-6 text-center'>
+            <div className='bg-muted text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-2xl'>
+              <FileIcon className='size-6' />
+            </div>
+            <p className='text-muted-foreground text-xs font-medium'>
+              {t('files.inspector.empty', 'Select a file to inspect details')}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className='min-h-0 flex-1 overflow-y-auto p-5'>
+          <div className='flex flex-col gap-5'>
+            {/* Media Preview Box */}
+            <div
+              role='button'
+              tabIndex={0}
+              className='border-border/80 bg-muted/40 group relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border shadow-inner'
+              onClick={() => onPreview(activeFile)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onPreview(activeFile)
+                }
+              }}
+            >
+              {isPreviewableImage(activeFile) ||
+              isPreviewableVideo(activeFile) ||
+              isPreviewableAudio(activeFile) ? (
+                <FilePreviewThumbnail
+                  file={activeFile}
+                  className='size-full object-contain transition-transform duration-200 group-hover:scale-105'
+                />
+              ) : (
+                <div className='flex flex-col items-center gap-2 p-6'>
+                  <FileIcon className='text-muted-foreground size-12' />
+                  <span className='text-muted-foreground text-xs font-medium uppercase'>
+                    {activeFile.mime}
+                  </span>
+                </div>
+              )}
+
+              <div className='absolute top-2 right-2 flex gap-1.5 opacity-80 transition-opacity group-hover:opacity-100'>
+                <Button
+                  variant='secondary'
+                  size='icon'
+                  className='bg-background/80 size-7 rounded-md backdrop-blur-xs'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onPreview(activeFile)
+                  }}
+                  title={t('files.actions.preview')}
+                  aria-label={t('files.actions.preview')}
+                >
+                  <ExternalLink className='size-3.5' />
+                </Button>
+              </div>
+            </div>
+
+            {/* Title & Badges */}
+            <div className='flex flex-col gap-1.5'>
+              <h3 className='text-foreground text-base leading-snug font-bold break-all'>
+                {activeFile.original_name}
+              </h3>
+              <div className='flex flex-wrap items-center gap-1.5'>
+                <Badge variant='outline' className='text-xs uppercase'>
+                  {activeFile.resource_type}
+                </Badge>
+                <Badge
+                  variant={
+                    activeFile.status === 'active' ? 'secondary' : 'outline'
+                  }
+                  className='text-xs capitalize'
+                >
+                  {activeFile.status}
+                </Badge>
+                {activeFile.disk && (
+                  <Badge
+                    variant='outline'
+                    className={cn(
+                      'gap-1 text-xs',
+                      isFilePrivate(activeFile)
+                        ? 'border-primary/30 bg-primary/10 text-primary dark:text-primary'
+                        : 'border-border bg-muted/40 text-muted-foreground'
+                    )}
+                  >
+                    {isFilePrivate(activeFile) ? (
+                      <Lock className='size-3' />
+                    ) : (
+                      <Globe className='size-3' />
+                    )}
+                    <span>
+                      {getFileDiskLabel(
+                        activeFile.disk,
+                        isFilePrivate(activeFile)
+                      )}
+                    </span>
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className='grid grid-cols-2 gap-2'>
+              <Button
+                variant='default'
+                size='sm'
+                onClick={() => downloadFile(activeFile)}
+                className='h-9 justify-center gap-2'
+              >
+                <Download className='size-4' />
+                <span>{t('files.actions.download', 'Download')}</span>
+              </Button>
+
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => onPreview(activeFile)}
+                className='h-9 justify-center gap-2'
+              >
+                <Eye className='size-4' />
+                <span>{t('files.actions.preview')}</span>
+              </Button>
+
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={handleCopy}
+                className='h-9 justify-center gap-2'
+              >
+                {copied ? (
+                  <Check className='text-primary size-4' />
+                ) : (
+                  <Copy className='size-4' />
+                )}
+                <span>{copied ? 'Copied!' : t('files.inspector.copyUrl')}</span>
+              </Button>
+
+              {isFilePrivate(activeFile) && onShare && (
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => onShare(activeFile)}
+                  className='text-primary hover:text-primary dark:text-primary h-9 justify-center gap-2'
+                >
+                  <Link2 className='size-4' />
+                  <span>{t('files.actions.share', 'Share Link')}</span>
+                </Button>
+              )}
+
+              {activeFile.deletedAt ? (
+                <>
+                  {canUpdate && onRestore && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => onRestore(activeFile)}
+                      className='text-primary hover:text-primary hover:bg-primary/10 col-span-2 h-9 justify-center gap-2'
+                    >
+                      <RotateCcw className='size-4' />
+                      <span>{t('files.actions.restore', 'Restore File')}</span>
+                    </Button>
+                  )}
+                  {canDelete && onPermanentDelete && (
+                    <Button
+                      variant='destructive'
+                      size='sm'
+                      onClick={() => onPermanentDelete(activeFile)}
+                      className='col-span-2 h-9 justify-center gap-2'
+                    >
+                      <Trash2 className='size-4' />
+                      <span>
+                        {t(
+                          'files.actions.permanentDelete',
+                          'Delete permanently'
+                        )}
+                      </span>
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {canUpdate && onRename && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => onRename(activeFile)}
+                      className='h-9 justify-center gap-2'
+                    >
+                      <Pencil className='size-4' />
+                      <span>{t('files.actions.rename', 'Rename')}</span>
+                    </Button>
+                  )}
+
+                  {canUpdate && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => onMove(activeFile)}
+                      className='h-9 justify-center gap-2'
+                    >
+                      <MoveRight className='size-4' />
+                      <span>{t('files.actions.move')}</span>
+                    </Button>
+                  )}
+
+                  {canDelete && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => onDelete(activeFile)}
+                      className='text-destructive hover:text-destructive hover:bg-destructive/10 col-span-2 h-9 justify-center gap-2'
+                    >
+                      <Trash2 className='size-4' />
+                      <span>{t('files.actions.delete')}</span>
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* File Metadata Details */}
+            <div className='flex flex-col gap-3'>
+              <h4 className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
+                {t('files.inspector.information')}
+              </h4>
+
+              <div className='border-border/70 bg-card/60 grid grid-cols-1 gap-2.5 rounded-xl border p-3.5 text-xs'>
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.size')}
+                  </span>
+                  <span className='text-foreground font-medium'>
+                    {formatBytes(activeFile.size)} (
+                    {activeFile.size.toLocaleString()} B)
+                  </span>
+                </div>
+
+                <Separator />
+
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.mime')}
+                  </span>
+                  <span className='text-foreground max-w-50 truncate font-mono font-medium'>
+                    {activeFile.mime}
+                  </span>
+                </div>
+
+                {/* Visibility Selector & Description */}
+                <Separator />
+                <div className='flex items-center justify-between py-1'>
+                  <div className='flex flex-col gap-0.5'>
+                    <span className='text-muted-foreground font-medium'>
+                      {t('files.visibility.title', 'Visibility')}
+                    </span>
+                    <span className='text-muted-foreground/80 max-w-50 text-[11px] leading-tight'>
+                      {getFileVisibilityTooltip(
+                        activeFile.visibility ??
+                          (isFilePrivate(activeFile) ? 'private' : 'public')
+                      )}
+                    </span>
+                  </div>
+
+                  {canUpdate ? (
+                    <div className='flex items-center gap-1.5'>
+                      {updateVisibilityMutation.isPending && (
+                        <Loader2 className='text-muted-foreground size-3.5 animate-spin' />
+                      )}
+                      <Select
+                        value={
+                          activeFile.visibility ??
+                          (isFilePrivate(activeFile) ? 'private' : 'public')
+                        }
+                        onValueChange={(val: 'public' | 'private') =>
+                          updateVisibilityMutation.mutate(val)
+                        }
+                        disabled={updateVisibilityMutation.isPending}
+                      >
+                        <SelectTrigger className='h-8 w-32 text-xs'>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='public' className='text-xs'>
+                            <div className='flex items-center gap-1.5'>
+                              <Globe className='text-primary size-3.5' />
+                              <span>
+                                {t('files.visibility.public', 'Public')}
+                              </span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value='private' className='text-xs'>
+                            <div className='flex items-center gap-1.5'>
+                              <Lock className='text-primary size-3.5' />
+                              <span>
+                                {t('files.visibility.private', 'Private')}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <span className='font-medium capitalize'>
+                      {getFileVisibilityLabel(
+                        activeFile.visibility ??
+                          (isFilePrivate(activeFile) ? 'private' : 'public')
+                      )}
+                    </span>
+                  )}
+                </div>
+
+                {activeFile.width && activeFile.height && (
+                  <>
+                    <Separator />
+                    <div className='flex items-center justify-between py-1'>
+                      <span className='text-muted-foreground'>
+                        {t('files.inspector.dimensions')}
+                      </span>
+                      <span className='text-foreground font-medium'>
+                        {activeFile.width} &times; {activeFile.height} px
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {activeFile.duration && (
+                  <>
+                    <Separator />
+                    <div className='flex items-center justify-between py-1'>
+                      <span className='text-muted-foreground'>
+                        {t('files.table.duration', 'Duration')}
+                      </span>
+                      <span className='text-foreground font-medium'>
+                        {activeFile.duration}s
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <Separator />
+
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.folder')}
+                  </span>
+                  <span className='text-foreground max-w-50 truncate font-medium'>
+                    {activeFile.folder || t('files.folders.root')}
+                  </span>
+                </div>
+
+                <Separator />
+
+                {/* Uploaded By */}
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.uploadedBy', 'Uploaded by')}
+                  </span>
+                  <div className='flex items-center gap-1.5'>
+                    <Avatar className='border-border/50 size-5 border'>
+                      {activeFile.createdByAdmin?.avatar && (
+                        <AvatarImage src={activeFile.createdByAdmin.avatar} />
+                      )}
+                      <AvatarFallback className='bg-primary/10 text-primary text-[9px] font-semibold'>
+                        {(activeFile.createdByAdmin?.fullName ||
+                          activeFile.createdByAdmin?.email ||
+                          'U')[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className='text-foreground max-w-36 truncate text-xs font-medium'>
+                      {activeFile.createdByAdmin?.fullName ||
+                        activeFile.createdByAdmin?.email ||
+                        t('files.table.system', 'System')}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.uploaded')}
+                  </span>
+                  <span className='text-foreground font-medium'>
+                    {format(new Date(activeFile.createdAt), 'PPpp')}
+                  </span>
+                </div>
+
+                {activeFile.updatedByAdmin && (
+                  <>
+                    <Separator />
+                    <div className='flex items-center justify-between py-1'>
+                      <span className='text-muted-foreground'>
+                        {t(
+                          'files.inspector.lastModifiedBy',
+                          'Last modified by'
+                        )}
+                      </span>
+                      <div className='flex items-center gap-1.5'>
+                        <Avatar className='border-border/50 size-5 border'>
+                          {activeFile.updatedByAdmin?.avatar && (
+                            <AvatarImage
+                              src={activeFile.updatedByAdmin.avatar}
+                            />
+                          )}
+                          <AvatarFallback className='bg-primary/10 text-primary text-[9px] font-semibold'>
+                            {(activeFile.updatedByAdmin?.fullName ||
+                              activeFile.updatedByAdmin?.email ||
+                              'U')[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className='text-foreground max-w-36 truncate text-xs font-medium'>
+                          {activeFile.updatedByAdmin?.fullName ||
+                            activeFile.updatedByAdmin?.email}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeFile.updatedAt && (
+                  <>
+                    <Separator />
+                    <div className='flex items-center justify-between py-1'>
+                      <span className='text-muted-foreground'>
+                        {t('files.inspector.lastActivity', 'Last activity')}
+                      </span>
+                      <span className='text-foreground font-medium'>
+                        {format(new Date(activeFile.updatedAt), 'PPpp')}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {activeFile.deletedAt && (
+                  <>
+                    <Separator />
+                    <div className='flex items-center justify-between py-1'>
+                      <span className='text-destructive font-medium'>
+                        {t('files.inspector.deletedAt', 'Deleted at')}
+                      </span>
+                      <span className='text-destructive font-medium'>
+                        {format(new Date(activeFile.deletedAt), 'PPpp')}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <Separator />
+
+                <div className='flex items-center justify-between py-1'>
+                  <span className='text-muted-foreground'>
+                    {t('files.inspector.publicId', 'Public ID')}
+                  </span>
+                  <span className='text-muted-foreground max-w-45 truncate font-mono text-[11px]'>
+                    {activeFile.public_id}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+  return page ? (
+    <section className='min-w-0 rounded-xl border'>{content}</section>
+  ) : (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side='right'
         className='border-border bg-background flex size-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-md'
       >
-        <SheetHeader className='border-border flex flex-row items-center space-y-0 border-b px-5 py-4 pr-12'>
-          <div className='flex items-center gap-2'>
-            <Info className='text-primary size-4' />
-            <SheetTitle className='text-base font-semibold'>
-              {t('files.inspector.title')}
-            </SheetTitle>
-          </div>
-        </SheetHeader>
-
-        {!activeFile ? (
-          <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-5'>
-            <StorageOverviewWidget files={files} folders={folders} />
-            <div className='flex flex-1 flex-col items-center justify-center p-6 text-center'>
-              <div className='bg-muted text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-2xl'>
-                <FileIcon className='size-6' />
-              </div>
-              <p className='text-muted-foreground text-xs font-medium'>
-                {t('files.inspector.empty', 'Select a file to inspect details')}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className='min-h-0 flex-1 overflow-y-auto p-5'>
-            <div className='flex flex-col gap-5'>
-              {/* Media Preview Box */}
-              <div
-                role='button'
-                tabIndex={0}
-                className='border-border/80 bg-muted/40 group relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border shadow-inner'
-                onClick={() => onPreview(activeFile)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onPreview(activeFile)
-                  }
-                }}
-              >
-                {isPreviewableImage(activeFile) ||
-                isPreviewableVideo(activeFile) ||
-                isPreviewableAudio(activeFile) ? (
-                  <FilePreviewThumbnail
-                    file={activeFile}
-                    className='size-full object-contain transition-transform duration-200 group-hover:scale-105'
-                  />
-                ) : (
-                  <div className='flex flex-col items-center gap-2 p-6'>
-                    <FileIcon className='text-muted-foreground size-12' />
-                    <span className='text-muted-foreground text-xs font-medium uppercase'>
-                      {activeFile.mime}
-                    </span>
-                  </div>
-                )}
-
-                <div className='absolute top-2 right-2 flex gap-1.5 opacity-80 transition-opacity group-hover:opacity-100'>
-                  <Button
-                    variant='secondary'
-                    size='icon'
-                    className='bg-background/80 size-7 rounded-md backdrop-blur-xs'
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onPreview(activeFile)
-                    }}
-                    title={t('files.actions.preview')}
-                    aria-label={t('files.actions.preview')}
-                  >
-                    <ExternalLink className='size-3.5' />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Title & Badges */}
-              <div className='flex flex-col gap-1.5'>
-                <h3 className='text-foreground text-base leading-snug font-bold break-all'>
-                  {activeFile.original_name}
-                </h3>
-                <div className='flex flex-wrap items-center gap-1.5'>
-                  <Badge variant='outline' className='text-xs uppercase'>
-                    {activeFile.resource_type}
-                  </Badge>
-                  <Badge
-                    variant={
-                      activeFile.status === 'active' ? 'secondary' : 'outline'
-                    }
-                    className='text-xs capitalize'
-                  >
-                    {activeFile.status}
-                  </Badge>
-                  {activeFile.disk && (
-                    <Badge
-                      variant='outline'
-                      className={cn(
-                        'gap-1 text-xs',
-                        isFilePrivate(activeFile)
-                          ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                          : 'border-border bg-muted/40 text-muted-foreground'
-                      )}
-                    >
-                      {isFilePrivate(activeFile) ? (
-                        <Lock className='size-3' />
-                      ) : (
-                        <Globe className='size-3' />
-                      )}
-                      <span>
-                        {getFileDiskLabel(
-                          activeFile.disk,
-                          isFilePrivate(activeFile)
-                        )}
-                      </span>
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className='grid grid-cols-2 gap-2'>
-                <Button
-                  variant='default'
-                  size='sm'
-                  onClick={() => downloadFile(activeFile)}
-                  className='h-9 justify-center gap-2'
-                >
-                  <Download className='size-4' />
-                  <span>{t('files.actions.download', 'Download')}</span>
-                </Button>
-
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => onPreview(activeFile)}
-                  className='h-9 justify-center gap-2'
-                >
-                  <Eye className='size-4' />
-                  <span>{t('files.actions.preview')}</span>
-                </Button>
-
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={handleCopy}
-                  className='h-9 justify-center gap-2'
-                >
-                  {copied ? (
-                    <Check className='size-4 text-emerald-500' />
-                  ) : (
-                    <Copy className='size-4' />
-                  )}
-                  <span>
-                    {copied ? 'Copied!' : t('files.inspector.copyUrl')}
-                  </span>
-                </Button>
-
-                {isFilePrivate(activeFile) && onShare && (
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={() => onShare(activeFile)}
-                    className='h-9 justify-center gap-2 text-amber-600 hover:text-amber-700 dark:text-amber-400'
-                  >
-                    <Link2 className='size-4' />
-                    <span>{t('files.actions.share', 'Share Link')}</span>
-                  </Button>
-                )}
-
-                {activeFile.deletedAt ? (
-                  <>
-                    {canUpdate && onRestore && (
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => onRestore(activeFile)}
-                        className='text-primary hover:text-primary hover:bg-primary/10 col-span-2 h-9 justify-center gap-2'
-                      >
-                        <RotateCcw className='size-4' />
-                        <span>
-                          {t('files.actions.restore', 'Restore File')}
-                        </span>
-                      </Button>
-                    )}
-                    {canDelete && onPermanentDelete && (
-                      <Button
-                        variant='destructive'
-                        size='sm'
-                        onClick={() => onPermanentDelete(activeFile)}
-                        className='col-span-2 h-9 justify-center gap-2'
-                      >
-                        <Trash2 className='size-4' />
-                        <span>
-                          {t(
-                            'files.actions.permanentDelete',
-                            'Delete permanently'
-                          )}
-                        </span>
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {canUpdate && onRename && (
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => onRename(activeFile)}
-                        className='h-9 justify-center gap-2'
-                      >
-                        <Pencil className='size-4' />
-                        <span>{t('files.actions.rename', 'Rename')}</span>
-                      </Button>
-                    )}
-
-                    {canUpdate && (
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => onMove(activeFile)}
-                        className='h-9 justify-center gap-2'
-                      >
-                        <MoveRight className='size-4' />
-                        <span>{t('files.actions.move')}</span>
-                      </Button>
-                    )}
-
-                    {canDelete && (
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => onDelete(activeFile)}
-                        className='text-destructive hover:text-destructive hover:bg-destructive/10 col-span-2 h-9 justify-center gap-2'
-                      >
-                        <Trash2 className='size-4' />
-                        <span>{t('files.actions.delete')}</span>
-                      </Button>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* File Metadata Details */}
-              <div className='flex flex-col gap-3'>
-                <h4 className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
-                  {t('files.inspector.information')}
-                </h4>
-
-                <div className='border-border/70 bg-card/60 grid grid-cols-1 gap-2.5 rounded-xl border p-3.5 text-xs'>
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.size')}
-                    </span>
-                    <span className='text-foreground font-medium'>
-                      {formatBytes(activeFile.size)} (
-                      {activeFile.size.toLocaleString()} B)
-                    </span>
-                  </div>
-
-                  <Separator />
-
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.mime')}
-                    </span>
-                    <span className='text-foreground max-w-50 truncate font-mono font-medium'>
-                      {activeFile.mime}
-                    </span>
-                  </div>
-
-                  {/* Visibility Selector & Description */}
-                  <Separator />
-                  <div className='flex items-center justify-between py-1'>
-                    <div className='flex flex-col gap-0.5'>
-                      <span className='text-muted-foreground font-medium'>
-                        {t('files.visibility.title', 'Visibility')}
-                      </span>
-                      <span className='text-muted-foreground/80 max-w-50 text-[11px] leading-tight'>
-                        {getFileVisibilityTooltip(
-                          activeFile.visibility ??
-                            (isFilePrivate(activeFile) ? 'private' : 'public')
-                        )}
-                      </span>
-                    </div>
-
-                    {canUpdate ? (
-                      <div className='flex items-center gap-1.5'>
-                        {updateVisibilityMutation.isPending && (
-                          <Loader2 className='text-muted-foreground size-3.5 animate-spin' />
-                        )}
-                        <Select
-                          value={
-                            activeFile.visibility ??
-                            (isFilePrivate(activeFile) ? 'private' : 'public')
-                          }
-                          onValueChange={(val: 'public' | 'private') =>
-                            updateVisibilityMutation.mutate(val)
-                          }
-                          disabled={updateVisibilityMutation.isPending}
-                        >
-                          <SelectTrigger className='h-8 w-32 text-xs'>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value='public' className='text-xs'>
-                              <div className='flex items-center gap-1.5'>
-                                <Globe className='size-3.5 text-blue-500' />
-                                <span>
-                                  {t('files.visibility.public', 'Public')}
-                                </span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value='private' className='text-xs'>
-                              <div className='flex items-center gap-1.5'>
-                                <Lock className='size-3.5 text-amber-500' />
-                                <span>
-                                  {t('files.visibility.private', 'Private')}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ) : (
-                      <span className='font-medium capitalize'>
-                        {getFileVisibilityLabel(
-                          activeFile.visibility ??
-                            (isFilePrivate(activeFile) ? 'private' : 'public')
-                        )}
-                      </span>
-                    )}
-                  </div>
-
-                  {activeFile.width && activeFile.height && (
-                    <>
-                      <Separator />
-                      <div className='flex items-center justify-between py-1'>
-                        <span className='text-muted-foreground'>
-                          {t('files.inspector.dimensions')}
-                        </span>
-                        <span className='text-foreground font-medium'>
-                          {activeFile.width} &times; {activeFile.height} px
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeFile.duration && (
-                    <>
-                      <Separator />
-                      <div className='flex items-center justify-between py-1'>
-                        <span className='text-muted-foreground'>
-                          {t('files.table.duration', 'Duration')}
-                        </span>
-                        <span className='text-foreground font-medium'>
-                          {activeFile.duration}s
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  <Separator />
-
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.folder')}
-                    </span>
-                    <span className='text-foreground max-w-50 truncate font-medium'>
-                      {activeFile.folder || t('files.folders.root')}
-                    </span>
-                  </div>
-
-                  <Separator />
-
-                  {/* Uploaded By */}
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.uploadedBy', 'Uploaded by')}
-                    </span>
-                    <div className='flex items-center gap-1.5'>
-                      <Avatar className='border-border/50 size-5 border'>
-                        {activeFile.createdByAdmin?.avatar && (
-                          <AvatarImage src={activeFile.createdByAdmin.avatar} />
-                        )}
-                        <AvatarFallback className='bg-primary/10 text-primary text-[9px] font-semibold'>
-                          {(activeFile.createdByAdmin?.fullName ||
-                            activeFile.createdByAdmin?.email ||
-                            'U')[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className='text-foreground max-w-36 truncate text-xs font-medium'>
-                        {activeFile.createdByAdmin?.fullName ||
-                          activeFile.createdByAdmin?.email ||
-                          t('files.table.system', 'System')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.uploaded')}
-                    </span>
-                    <span className='text-foreground font-medium'>
-                      {format(new Date(activeFile.createdAt), 'PPpp')}
-                    </span>
-                  </div>
-
-                  {activeFile.updatedByAdmin && (
-                    <>
-                      <Separator />
-                      <div className='flex items-center justify-between py-1'>
-                        <span className='text-muted-foreground'>
-                          {t(
-                            'files.inspector.lastModifiedBy',
-                            'Last modified by'
-                          )}
-                        </span>
-                        <div className='flex items-center gap-1.5'>
-                          <Avatar className='border-border/50 size-5 border'>
-                            {activeFile.updatedByAdmin?.avatar && (
-                              <AvatarImage
-                                src={activeFile.updatedByAdmin.avatar}
-                              />
-                            )}
-                            <AvatarFallback className='bg-primary/10 text-primary text-[9px] font-semibold'>
-                              {(activeFile.updatedByAdmin?.fullName ||
-                                activeFile.updatedByAdmin?.email ||
-                                'U')[0]?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className='text-foreground max-w-36 truncate text-xs font-medium'>
-                            {activeFile.updatedByAdmin?.fullName ||
-                              activeFile.updatedByAdmin?.email}
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {activeFile.updatedAt && (
-                    <>
-                      <Separator />
-                      <div className='flex items-center justify-between py-1'>
-                        <span className='text-muted-foreground'>
-                          {t('files.inspector.lastActivity', 'Last activity')}
-                        </span>
-                        <span className='text-foreground font-medium'>
-                          {format(new Date(activeFile.updatedAt), 'PPpp')}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeFile.deletedAt && (
-                    <>
-                      <Separator />
-                      <div className='flex items-center justify-between py-1'>
-                        <span className='text-destructive font-medium'>
-                          {t('files.inspector.deletedAt', 'Deleted at')}
-                        </span>
-                        <span className='text-destructive font-medium'>
-                          {format(new Date(activeFile.deletedAt), 'PPpp')}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  <Separator />
-
-                  <div className='flex items-center justify-between py-1'>
-                    <span className='text-muted-foreground'>
-                      {t('files.inspector.publicId', 'Public ID')}
-                    </span>
-                    <span className='text-muted-foreground max-w-45 truncate font-mono text-[11px]'>
-                      {activeFile.public_id}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {content}
       </SheetContent>
     </Sheet>
   )
+}
+
+type PagePartProps = { children?: ReactNode; className?: string }
+function PageSectionHeader({ children, className }: PagePartProps) {
+  return <header className={className}>{children}</header>
+}
+
+function PageSectionTitle({ children, className }: PagePartProps) {
+  return <h2 className={className}>{children}</h2>
 }

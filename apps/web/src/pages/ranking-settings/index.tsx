@@ -142,7 +142,7 @@ export function PageRankingSettings() {
   }
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={
           <div className='flex items-center gap-2'>
@@ -200,12 +200,12 @@ export function PageRankingSettings() {
                     <span className='text-primary'>Điểm Xếp Hạng</span>
                     <span>=</span>
                     <Badge variant='outline' className='gap-1 font-semibold'>
-                      <Flame className='size-3 text-orange-500' />
+                      <Flame className='text-primary size-3' />
                       Likes × {watchedLikesWeight}
                     </Badge>
                     <span>+</span>
                     <Badge variant='outline' className='gap-1 font-semibold'>
-                      <Users className='size-3 text-blue-500' />
+                      <Users className='text-primary size-3' />
                       Followers × {watchedFollowersWeight}
                     </Badge>
                   </div>
@@ -470,11 +470,11 @@ export function PageRankingSettings() {
                           <span
                             className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                               item.rank === 1
-                                ? 'bg-amber-500/20 text-amber-500'
+                                ? 'bg-primary/20 text-primary'
                                 : item.rank === 2
-                                  ? 'bg-slate-300/20 text-slate-400'
+                                  ? 'bg-muted/20 text-muted-foreground'
                                   : item.rank === 3
-                                    ? 'bg-amber-700/20 text-amber-600'
+                                    ? 'bg-primary/20 text-primary'
                                     : 'text-muted-foreground'
                             }`}
                           >

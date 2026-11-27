@@ -44,6 +44,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 
 type HelpCategory = 'all' | 'tags' | 'files' | 'security' | 'cms' | 'audit'
 
@@ -98,7 +99,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: GitBranchIcon,
     badgeVi: 'Taxonomy DAG',
     badgeEn: 'Taxonomy DAG',
-    accent: 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/tags',
     bulletsVi: [
       'Liên kết phân cấp đa tầng (Parent, Child, Related, Disambiguation)',
@@ -125,8 +126,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: BookMarkedIcon,
     badgeVi: 'Wiki & Snapshots',
     badgeEn: 'Wiki & Snapshots',
-    accent:
-      'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/tag-encyclopedias',
     bulletsVi: [
       'Trình biên tập Rich-text Tiptap WYSIWYG chuyên sâu',
@@ -153,8 +153,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: GitMergeIcon,
     badgeVi: 'Atomic Merge',
     badgeEn: 'Atomic Merge',
-    accent:
-      'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/tags',
     bulletsVi: [
       'Bảng xem trước tác động (Impact Preview) kiểm toán số lượng',
@@ -181,8 +180,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: FolderSearchIcon,
     badgeVi: 'Multi-Disk Storage',
     badgeEn: 'Multi-Disk Storage',
-    accent:
-      'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/files',
     bulletsVi: [
       'Hỗ trợ đa ổ lưu trữ: Local Disk, Cloud S3 Public & S3 Private',
@@ -209,8 +207,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: ShieldCheckIcon,
     badgeVi: 'RBAC Security',
     badgeEn: 'RBAC Security',
-    accent:
-      'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/roles',
     bulletsVi: [
       'Ma trận phân quyền trực quan theo từng phân hệ nghiệp vụ',
@@ -238,7 +235,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     badgeVi: 'CMS Studio',
     badgeEn: 'CMS Studio',
     accent:
-      'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
+      'text-destructive dark:text-destructive bg-destructive/10 border-destructive/20',
     link: '/cms-pages',
     bulletsVi: [
       'Biên tập trực quan với công cụ định dạng phong phú Tiptap',
@@ -265,8 +262,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: PaletteIcon,
     badgeVi: 'Theme & Brand',
     badgeEn: 'Theme & Brand',
-    accent:
-      'text-pink-600 dark:text-pink-400 bg-pink-500/10 border-pink-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/white-labels',
     bulletsVi: [
       'Tải lên logo và favicon riêng biệt cho từng thương hiệu',
@@ -293,8 +289,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: LayersIcon,
     badgeVi: 'Audit Trail',
     badgeEn: 'Audit Trail',
-    accent:
-      'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
+    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
     link: '/logs',
     bulletsVi: [
       'Nhật ký thao tác chi tiết: Hành động, thực thể đích, người thực hiện, thời gian',
@@ -626,17 +621,23 @@ export function PageHelpCenter() {
           </Button>
         </div>
 
-        <div className='max-w-3xl space-y-2.5'>
-          <h1 className='text-foreground text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl'>
-            {t('helpCenter.title', 'Trung tâm Trợ giúp & Hướng dẫn Quản trị')}
-          </h1>
-          <p className='text-muted-foreground text-xs leading-relaxed sm:text-sm sm:leading-6'>
-            {t(
-              'helpCenter.description',
-              'Hướng dẫn vận hành toàn diện: Phân cấp thẻ ngữ nghĩa & Wiki bách khoa (DAG), Quản trị tệp tin Media, Quản lý người dùng & Ma trận phân quyền, Soạn thảo nội dung CMS và Tùy biến thương hiệu.'
-            )}
-          </p>
-        </div>
+        <PageHeader
+          title={
+            <>
+              {t('helpCenter.title', 'Trung tâm Trợ giúp & Hướng dẫn Quản trị')}
+            </>
+          }
+          description={
+            <>
+              <p className='text-muted-foreground text-xs leading-relaxed sm:text-sm sm:leading-6'>
+                {t(
+                  'helpCenter.description',
+                  'Hướng dẫn vận hành toàn diện: Phân cấp thẻ ngữ nghĩa & Wiki bách khoa (DAG), Quản trị tệp tin Media, Quản lý người dùng & Ma trận phân quyền, Soạn thảo nội dung CMS và Tùy biến thương hiệu.'
+                )}
+              </p>
+            </>
+          }
+        />
 
         {/* Live Search Bar */}
         <div className='mt-6 space-y-2'>
@@ -990,16 +991,14 @@ export function PageHelpCenter() {
                     className={cn(
                       'flex w-full cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 text-left text-xs transition-all',
                       isChecked
-                        ? 'border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-950/20'
+                        ? 'border-primary/50 bg-primary/5 dark:bg-primary/20'
                         : 'border-border/70 hover:bg-muted/40 bg-card'
                     )}
                   >
                     <CheckCircle2Icon
                       className={cn(
                         'mt-0.5 size-4 shrink-0 transition-colors',
-                        isChecked
-                          ? 'text-emerald-500'
-                          : 'text-muted-foreground/40'
+                        isChecked ? 'text-primary' : 'text-muted-foreground/40'
                       )}
                     />
                     <span
@@ -1017,7 +1016,7 @@ export function PageHelpCenter() {
               })}
 
               {allDiagnosticsCompleted && (
-                <div className='rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300'>
+                <div className='border-primary/40 bg-primary/10 text-primary dark:text-primary rounded-xl border p-3 text-center text-xs font-semibold'>
                   ✓{' '}
                   {isVi
                     ? 'Bạn đã hoàn tất cả 4 bước chẩn đoán kiểm tra!'

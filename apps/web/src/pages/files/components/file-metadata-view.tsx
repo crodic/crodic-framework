@@ -101,8 +101,8 @@ export function FileMetadataView({
                 className={cn(
                   'size-2 rounded-full',
                   file.status === 'active'
-                    ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
-                    : 'bg-amber-500 ring-2 ring-amber-500/20'
+                    ? 'bg-primary ring-2 ring-emerald-500/20'
+                    : 'bg-primary ring-2 ring-amber-500/20'
                 )}
               />
               <span className='text-foreground font-medium capitalize'>

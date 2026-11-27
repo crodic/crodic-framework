@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Clock, ListOrdered } from 'lucide-react'
 import { parseAsArrayOf, parseAsString } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import {
@@ -16,7 +17,6 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getCronJobLogColumns } from './columns'
 import { CronJobCards } from './components/cron-job-cards'
-import { LogDetailDialog } from './components/log-detail-dialog'
 import { TriggerConfirmDialog } from './components/trigger-confirm-dialog'
 import {
   useDataCronJobs,
@@ -33,11 +33,9 @@ const cronJobLogFilterParsers = {
 
 export function PageCronJobsOverview() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [selectedJobToTrigger, setSelectedJobToTrigger] =
     useState<CronJobSchema | null>(null)
-  const [selectedLogDetail, setSelectedLogDetail] =
-    useState<CronJobLogSchema | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   useBreadcrumb([{ title: t('navigation.general.cronJobs', 'Cron Jobs') }])
 
@@ -45,10 +43,12 @@ export function PageCronJobsOverview() {
 
   const triggerMutation = useTriggerCronJobMutation()
 
-  const handleOpenDetail = useCallback((log: CronJobLogSchema) => {
-    setSelectedLogDetail(log)
-    setIsDetailOpen(true)
-  }, [])
+  const handleOpenDetail = useCallback(
+    (log: CronJobLogSchema) => {
+      navigate(`/cron-jobs/logs/${log.id}/show`)
+    },
+    [navigate]
+  )
 
   const columns = useMemo(
     () => getCronJobLogColumns({ onViewDetails: handleOpenDetail }),
@@ -118,7 +118,7 @@ export function PageCronJobsOverview() {
   }
 
   return (
-    <Main fluid className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main fluid className='flex-1'>
       <PageHeader
         title={t('cronJobs.overview.title', 'Cron Jobs Management')}
         description={t(
@@ -171,11 +171,6 @@ export function PageCronJobsOverview() {
       />
 
       {/* Execution Log Detail Dialog */}
-      <LogDetailDialog
-        log={selectedLogDetail}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-      />
     </Main>
   )
 }

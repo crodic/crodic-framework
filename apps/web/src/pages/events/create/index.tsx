@@ -35,7 +35,7 @@ export function PageEventCreate() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-6'>
+    <Main className='flex-1'>
       <EventForm
         isSubmitting={mutation.isPending}
         onSubmit={(values: EventFormValues) => mutation.mutate(values)}

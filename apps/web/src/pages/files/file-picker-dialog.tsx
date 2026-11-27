@@ -586,7 +586,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
         {/* Drag & Drop Visual Overlay */}
         {isDragging && (
           <div className='bg-background/85 pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 backdrop-blur-xs'>
-            <UploadCloud className='text-primary size-10 animate-bounce' />
+            <UploadCloud className='text-primary size-10' />
             <p className='text-base font-semibold'>
               {t('files.picker.dropzoneTitle', 'Drop files to upload')}
             </p>
@@ -649,7 +649,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='__root__'>
-                  📁 {t('files.folders.root', 'Root')}
+                  {t('files.folders.root', 'Root')}
                 </SelectItem>
                 {folders.map((f) => {
                   const depth = f.depth ?? f.folder.split('/').length - 1
@@ -662,7 +662,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
                       style={{ paddingLeft: `${8 + depth * 12}px` }}
                       title={f.folder}
                     >
-                      📁 {displayName}
+                      {displayName}
                     </SelectItem>
                   )
                 })}

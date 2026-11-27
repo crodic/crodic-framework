@@ -197,7 +197,7 @@ export function TagFeaturedImageInput({
               size='sm'
               aria-label={t('buttons.remove', 'Remove')}
               disabled={disabled}
-              className='bg-background/90 hover:bg-destructive hover:text-destructive-foreground absolute top-2.5 right-2.5 h-8 cursor-pointer gap-1.5 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors'
+              className='bg-background/90 hover:bg-destructive absolute top-2.5 right-2.5 h-8 cursor-pointer gap-1.5 px-2.5 text-xs shadow-xs backdrop-blur-xs transition-colors hover:text-white'
               onClick={() => onSelect({ url: '', fileId: null })}
             >
               <XIcon className='size-3.5' aria-hidden='true' />

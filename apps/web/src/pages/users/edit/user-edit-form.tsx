@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
 import { apiEditUser, apiHandleCosplayerRequest } from '../queries'
 import {
@@ -125,38 +126,38 @@ export function UserEditForm({ data }: { data: UserSchema }) {
   }
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-          <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
-            <div className='flex flex-row space-x-2'>
-              <h2 className='text-2xl font-bold tracking-tight'>
-                {t('users.edit.title')}
-              </h2>
-            </div>
-            <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => {
-                  void navigate(-1)
-                }}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              <Button type='submit'>
-                <SaveIcon className='size-4' aria-hidden='true' />
-                {t('buttons.save')}
-              </Button>
-            </div>
-          </div>
+          <PageHeader
+            title={<>{t('users.edit.title')}</>}
+            actions={
+              <>
+                <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
+                  <Button
+                    variant='outline'
+                    type='button'
+                    onClick={() => {
+                      void navigate(-1)
+                    }}
+                  >
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.cancel')}
+                  </Button>
+                  <Button type='submit'>
+                    <SaveIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.save')}
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           {isPendingRequest && (
-            <Card className='border-amber-500/40 bg-amber-500/10'>
+            <Card className='border-primary/40 bg-primary/10'>
               <CardContent className='flex flex-col items-start justify-between gap-3 pt-6 sm:flex-row sm:items-center'>
                 <div>
-                  <p className='text-sm font-semibold text-amber-700 dark:text-amber-300'>
+                  <p className='text-primary dark:text-primary text-sm font-semibold'>
                     Người dùng này đã gửi yêu cầu trở thành Cosplayer
                   </p>
                   <p className='text-muted-foreground text-xs'>

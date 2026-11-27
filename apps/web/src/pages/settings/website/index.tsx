@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import WebsiteForm from './website-form'
 
 export function SettingsWebsite() {
@@ -12,15 +13,17 @@ export function SettingsWebsite() {
   return (
     <>
       <Main>
-        <div className='space-y-0.5'>
-          <h1 className='text-2xl font-bold tracking-tight md:text-xl'>
-            {t('settings.website.title')}
-          </h1>
-          <p className='text-muted-foreground'>
-            {t('settings.website.description')}
-          </p>
-        </div>
-        <Separator className='my-4 lg:my-6' />
+        <PageHeader
+          title={<>{t('settings.website.title')}</>}
+          description={
+            <>
+              <p className='text-muted-foreground'>
+                {t('settings.website.description')}
+              </p>
+            </>
+          }
+        />
+        <Separator />
         <WebsiteForm />
       </Main>
     </>

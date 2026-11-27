@@ -7,14 +7,6 @@ import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormField,
@@ -23,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/layout/page-shell'
 import { apiCreateRegion, apiUpdateRegion } from '../queries'
 import {
   type RegionFormSchema,
@@ -30,17 +23,12 @@ import {
   type RegionSchema,
 } from '../schema'
 
-interface RegionDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface RegionEditorProps {
+  onClose: () => void
   region?: RegionSchema | null
 }
 
-export function RegionDialog({
-  open,
-  onOpenChange,
-  region,
-}: RegionDialogProps) {
+export function RegionEditor({ onClose, region }: RegionEditorProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const isEdit = !!region
@@ -62,7 +50,7 @@ export function RegionDialog({
         name: '',
       })
     }
-  }, [region, form, open])
+  }, [region, form])
 
   const mutation = useMutation({
     mutationFn: (values: RegionFormSchema) =>
@@ -77,7 +65,7 @@ export function RegionDialog({
           ? t('locations.region.updated', 'Region updated successfully')
           : t('locations.region.created', 'Region created successfully')
       )
-      onOpenChange(false)
+      onClose()
     },
     onError: restApiErrorHandler,
   })
@@ -94,21 +82,25 @@ export function RegionDialog({
       )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[min(90vh,calc(100dvh-2rem))] overflow-y-auto sm:max-w-md'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? t('locations.region.editTitle', 'Edit Region')
-              : t('locations.region.createTitle', 'Create Region')}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              'locations.region.dialogDesc',
-              'Enter the details for this geographical region.'
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEdit
+                ? t('locations.region.editTitle', 'Edit Region')
+                : t('locations.region.createTitle', 'Create Region')}
+            </>
+          }
+          description={
+            <>
+              {t(
+                'locations.region.dialogDesc',
+                'Enter the details for this geographical region.'
+              )}
+            </>
+          }
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -132,22 +124,22 @@ export function RegionDialog({
               )}
             />
 
-            <DialogFooter className='pt-4'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
                 disabled={mutation.isPending}
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
               >
                 {t('buttons.cancel', 'Cancel')}
               </Button>
               <Button type='submit' disabled={mutation.isPending}>
                 {submitLabel}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

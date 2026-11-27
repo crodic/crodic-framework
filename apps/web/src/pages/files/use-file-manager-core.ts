@@ -16,6 +16,7 @@ import {
   useQueryStates,
 } from 'nuqs'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
@@ -111,6 +112,7 @@ export async function copyFileUrl(file: FileSchema) {
 }
 
 export function useFileManagerCore() {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const ability = useAuthStore((state) => state.ability)
   const queryClient = useQueryClient()
@@ -224,9 +226,11 @@ export function useFileManagerCore() {
     () => createDialogSetter('folderToRename'),
     [createDialogSetter]
   )
-  const setPreviewFile = useMemo(
-    () => createDialogSetter('previewFile'),
-    [createDialogSetter]
+  const setPreviewFile = useCallback(
+    (file: FileSchema | null) => {
+      if (file) navigate(`/files/${encodeURIComponent(file.public_id)}/show`)
+    },
+    [navigate]
   )
   const setInspectorOpen = useMemo(
     () => createDialogSetter('inspectorOpen'),
@@ -248,9 +252,11 @@ export function useFileManagerCore() {
     () => createDialogSetter('movingFile'),
     [createDialogSetter]
   )
-  const setRenamingFile = useMemo(
-    () => createDialogSetter('renamingFile'),
-    [createDialogSetter]
+  const setRenamingFile = useCallback(
+    (file: FileSchema | null) => {
+      if (file) navigate(`/files/${encodeURIComponent(file.public_id)}/edit`)
+    },
+    [navigate]
   )
   const setSharingFile = useMemo(
     () => createDialogSetter('sharingFile'),
@@ -470,10 +476,9 @@ export function useFileManagerCore() {
   // --- Inspect Handler ---
   const handleInspectFile = useCallback(
     (file: FileSchema) => {
-      setInspectedFile(file)
-      setInspectorOpen(true)
+      navigate(`/files/${encodeURIComponent(file.public_id)}/show`)
     },
-    [setInspectedFile, setInspectorOpen]
+    [navigate]
   )
 
   // --- Restore & Permanent Delete Mutations ---

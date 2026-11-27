@@ -65,7 +65,7 @@ export function DeleteTagCategoryDialog({
               { name: category.name, slug: category.slug }
             )}
             {category.tagCount && category.tagCount > 0 ? (
-              <span className='mt-2 block text-xs font-semibold text-amber-600 dark:text-amber-400'>
+              <span className='text-primary dark:text-primary mt-2 block text-xs font-semibold'>
                 {t(
                   'tagCategories.deleteDialog.tagCountWarning',
                   `Lưu ý: Danh mục này đang gắn với ${category.tagCount} thẻ.`,

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { useDataPermissionFormOptions } from '@/pages/permissions/queries'
 import { apiEditRole } from '@/pages/roles/queries'
 import { RolePermissionsField } from '../components/role-permissions-field'
@@ -96,36 +97,38 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
   const isProtected = isProtectedRole(data)
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-          <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
-            <h2 className='text-2xl font-bold tracking-tight'>
-              {t('roles.edit.title')}
-            </h2>
-            <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              <Button
-                type='submit'
-                disabled={
-                  isProtected ||
-                  editRoleMutation.isPending ||
-                  permissionsQuery.isLoading ||
-                  permissionsQuery.isError
-                }
-              >
-                <SaveIcon className='size-4' aria-hidden='true' />
-                {t('buttons.save')}
-              </Button>
-            </div>
-          </div>
+          <PageHeader
+            title={<>{t('roles.edit.title')}</>}
+            actions={
+              <>
+                <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
+                  <Button
+                    variant='outline'
+                    type='button'
+                    onClick={() => navigate(-1)}
+                  >
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.cancel')}
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={
+                      isProtected ||
+                      editRoleMutation.isPending ||
+                      permissionsQuery.isLoading ||
+                      permissionsQuery.isError
+                    }
+                  >
+                    <SaveIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.save')}
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           <Card>
             <CardHeader>

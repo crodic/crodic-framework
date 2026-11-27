@@ -67,11 +67,11 @@ export function DocxPreviewViewer({
     >
       <div className='bg-muted/40 flex items-center justify-between border-b px-4 py-2 text-xs'>
         <div className='flex max-w-sm items-center gap-2 truncate'>
-          <FileText className='size-4 text-blue-500' />
+          <FileText className='text-primary size-4' />
           <span className='text-foreground truncate font-medium'>
             {file.original_name}
           </span>
-          <span className='rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400'>
+          <span className='bg-primary/10 text-primary dark:text-primary rounded px-1.5 py-0.5 text-[10px] font-semibold'>
             DOCX
           </span>
         </div>
@@ -101,7 +101,7 @@ export function DocxPreviewViewer({
         </div>
       </div>
 
-      <div className='relative flex-1 overflow-auto bg-neutral-200/50 p-4 dark:bg-neutral-900/70'>
+      <div className='bg-muted/50 dark:bg-muted/70 relative flex-1 overflow-auto p-4'>
         {isLoading && (
           <div className='text-muted-foreground flex h-80 items-center justify-center gap-2 text-sm'>
             <Loader2 className='text-primary size-5 animate-spin' />
@@ -122,7 +122,7 @@ export function DocxPreviewViewer({
         <div
           ref={containerRef}
           className={cn(
-            'docx-preview-wrapper mx-auto max-w-4xl rounded-sm bg-white p-6 text-black shadow-lg dark:bg-neutral-100',
+            'docx-preview-wrapper dark:bg-muted mx-auto max-w-4xl rounded-sm bg-white p-6 text-black shadow-lg',
             isLoading || error ? 'hidden' : 'block'
           )}
         />

@@ -211,14 +211,14 @@ export function StepAdmin({
             {activePasswordCriteria.map((item) => (
               <div key={item.key} className='flex items-center gap-2 text-xs'>
                 {item.valid ? (
-                  <CheckCircle2 className='size-3.5 text-emerald-600 dark:text-emerald-400' />
+                  <CheckCircle2 className='text-primary dark:text-primary size-3.5' />
                 ) : (
                   <Circle className='text-muted-foreground/60 size-3.5' />
                 )}
                 <span
                   className={cn(
                     item.valid
-                      ? 'font-medium text-emerald-700 dark:text-emerald-300'
+                      ? 'text-primary dark:text-primary font-medium'
                       : 'text-muted-foreground'
                   )}
                 >

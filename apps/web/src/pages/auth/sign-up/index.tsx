@@ -16,7 +16,7 @@ export function SignUp() {
 
   return (
     <AuthLayout>
-      <Card className='border-border/70 bg-card/95 relative gap-6 overflow-hidden rounded-2xl py-8 shadow-xl backdrop-blur-md sm:py-10'>
+      <Card className='bg-card gap-6 py-6'>
         <CardHeader className='space-y-2 px-6 sm:px-8'>
           <CardTitle className='text-2xl font-bold tracking-tight sm:text-3xl'>
             {t('auth.signUp.title', { defaultValue: 'Create an account' })}

@@ -62,6 +62,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { WhiteLabelPreview } from '../components/white-label-preview'
 import {
   apiActivateWhiteLabel,
@@ -209,111 +210,114 @@ export default function PageWhiteLabelShow() {
         handleDelete={handleDelete}
         isLoading={deleteMutation.isPending}
       />
-      <Main className='flex flex-1 flex-col gap-6'>
+      <Main className='flex-1'>
         {/* Top Header Bar */}
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex min-w-0 items-start gap-3'>
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={() => navigate('/white-labels')}
-              title={t('whiteLabels.show.back')}
-              aria-label={t('whiteLabels.show.back')}
-              className='shrink-0'
-            >
-              <ArrowLeft className='size-5' />
-            </Button>
-            <div className='min-w-0 flex-1'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <h2 className='text-xl font-bold tracking-tight break-words sm:text-2xl'>
-                  {item.name}
-                </h2>
-                <Badge
-                  variant={item.target === 'admin' ? 'default' : 'secondary'}
-                  className='capitalize'
-                >
-                  {item.target}
-                </Badge>
-                {item.isActive ? (
-                  <Badge variant='solid-success' className='gap-1'>
-                    <Wand2 className='size-3' />
-                    {t('whiteLabels.show.activeBadge')}
+        <PageHeader
+          title={<>{item.name}</>}
+          description={<>{item.description || item.slug}</>}
+          badges={
+            <>
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => navigate('/white-labels')}
+                title={t('whiteLabels.show.back')}
+                aria-label={t('whiteLabels.show.back')}
+                className='shrink-0'
+              >
+                <ArrowLeft className='size-5' />
+              </Button>
+              <div className='min-w-0 flex-1'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Badge
+                    variant={item.target === 'admin' ? 'default' : 'secondary'}
+                    className='capitalize'
+                  >
+                    {item.target}
                   </Badge>
-                ) : (
-                  <Badge variant='outline' className='text-muted-foreground'>
-                    {t('whiteLabels.show.presetBadge')}
-                  </Badge>
+                  {item.isActive ? (
+                    <Badge variant='solid-success' className='gap-1'>
+                      <Wand2 className='size-3' />
+                      {t('whiteLabels.show.activeBadge')}
+                    </Badge>
+                  ) : (
+                    <Badge variant='outline' className='text-muted-foreground'>
+                      {t('whiteLabels.show.presetBadge')}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </>
+          }
+          actions={
+            <>
+              <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
+                {styles && (
+                  <>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setIsCodeDialogOpen(true)}
+                      className='gap-1.5'
+                    >
+                      <Code2Icon className='size-4' />
+                      <span>{t('whiteLabels.show.downloadCss')}</span>
+                    </Button>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={exportJson}
+                      className='gap-1.5'
+                    >
+                      <DownloadIcon className='size-4' />
+                      <span>{t('whiteLabels.show.exportJson')}</span>
+                    </Button>
+                  </>
+                )}
+
+                {canPublish && !item.isActive && (
+                  <Button
+                    variant='default'
+                    size='sm'
+                    onClick={() => activateMutation.mutate(item.id)}
+                    disabled={activateMutation.isPending}
+                    className='gap-1.5'
+                  >
+                    <Wand2 className='size-4' />
+                    {t('whiteLabels.show.activateTarget', {
+                      target: item.target,
+                    })}
+                  </Button>
+                )}
+
+                {canUpdate && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => navigate(`/white-labels/${item.id}/edit`)}
+                    className='gap-1.5'
+                  >
+                    <Edit2 className='size-4' />
+                    {t('whiteLabels.actions.edit')}
+                  </Button>
+                )}
+
+                {canDelete && (
+                  <Button
+                    variant='destructive'
+                    size='sm'
+                    onClick={() => setIsDeleteOpen(true)}
+                    disabled={deleteMutation.isPending}
+                    className='gap-1.5'
+                  >
+                    <Trash2 className='size-4' />
+                    {t('whiteLabels.actions.delete')}
+                  </Button>
                 )}
               </div>
-              <p className='text-muted-foreground text-xs break-words sm:text-sm'>
-                {item.description || item.slug}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
-            {styles && (
-              <>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => setIsCodeDialogOpen(true)}
-                  className='gap-1.5'
-                >
-                  <Code2Icon className='size-4' />
-                  <span>{t('whiteLabels.show.downloadCss')}</span>
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={exportJson}
-                  className='gap-1.5'
-                >
-                  <DownloadIcon className='size-4' />
-                  <span>{t('whiteLabels.show.exportJson')}</span>
-                </Button>
-              </>
-            )}
-
-            {canPublish && !item.isActive && (
-              <Button
-                variant='default'
-                size='sm'
-                onClick={() => activateMutation.mutate(item.id)}
-                disabled={activateMutation.isPending}
-                className='gap-1.5'
-              >
-                <Wand2 className='size-4' />
-                {t('whiteLabels.show.activateTarget', { target: item.target })}
-              </Button>
-            )}
-
-            {canUpdate && (
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => navigate(`/white-labels/${item.id}/edit`)}
-                className='gap-1.5'
-              >
-                <Edit2 className='size-4' />
-                {t('whiteLabels.actions.edit')}
-              </Button>
-            )}
-
-            {canDelete && (
-              <Button
-                variant='destructive'
-                size='sm'
-                onClick={() => setIsDeleteOpen(true)}
-                disabled={deleteMutation.isPending}
-                className='gap-1.5'
-              >
-                <Trash2 className='size-4' />
-                {t('whiteLabels.actions.delete')}
-              </Button>
-            )}
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Tab Navigation (Synchronized with Create / Edit UI) */}
         <div className='border-b pb-4'>

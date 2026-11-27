@@ -6,14 +6,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Form,
   FormControl,
   FormDescription,
@@ -32,6 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { PageHeader } from '@/components/layout/page-shell'
 import { useCreateTagCategory, useUpdateTagCategory } from './queries'
 import {
   tagCategoryFormSchema,
@@ -39,9 +32,8 @@ import {
   type TagCategorySchema,
 } from './schema'
 
-interface TagCategoryDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface TagCategoryEditorProps {
+  onClose: () => void
   category: TagCategorySchema | null
 }
 
@@ -75,11 +67,10 @@ const COLOR_PRESETS = [
   '#64748b', // slate
 ]
 
-export function TagCategoryDialog({
-  open,
-  onOpenChange,
+export function TagCategoryEditor({
+  onClose,
   category,
-}: TagCategoryDialogProps) {
+}: TagCategoryEditorProps) {
   const { t } = useTranslation()
   const isEditing = Boolean(category)
   const createMutation = useCreateTagCategory()
@@ -99,30 +90,28 @@ export function TagCategoryDialog({
   })
 
   useEffect(() => {
-    if (open) {
-      if (category) {
-        form.reset({
-          name: category.name,
-          slug: category.slug || '',
-          description: category.description || '',
-          color: category.color || '#3b82f6',
-          icon: category.icon || 'Tag',
-          sortOrder: category.sortOrder ?? 0,
-          isActive: category.isActive,
-        })
-      } else {
-        form.reset({
-          name: '',
-          slug: '',
-          description: '',
-          color: '#3b82f6',
-          icon: 'Tag',
-          sortOrder: 0,
-          isActive: true,
-        })
-      }
+    if (category) {
+      form.reset({
+        name: category.name,
+        slug: category.slug || '',
+        description: category.description || '',
+        color: category.color || '#3b82f6',
+        icon: category.icon || 'Tag',
+        sortOrder: category.sortOrder ?? 0,
+        isActive: category.isActive,
+      })
+    } else {
+      form.reset({
+        name: '',
+        slug: '',
+        description: '',
+        color: '#3b82f6',
+        icon: 'Tag',
+        sortOrder: 0,
+        isActive: true,
+      })
     }
-  }, [open, category, form])
+  }, [category, form])
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending
 
@@ -148,7 +137,7 @@ export function TagCategoryDialog({
           )
         )
       }
-      onOpenChange(false)
+      onClose()
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -159,27 +148,34 @@ export function TagCategoryDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] max-w-xl overflow-y-auto sm:max-w-2xl'>
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing
-              ? t('tagCategories.dialog.editTitle', 'Chỉnh sửa danh mục thẻ')
-              : t('tagCategories.dialog.createTitle', 'Thêm mới danh mục thẻ')}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? t(
-                  'tagCategories.dialog.editDescription',
-                  `Chỉnh sửa thông tin định danh và hiển thị cho danh mục "${category?.name}".`,
-                  { name: category?.name }
-                )
-              : t(
-                  'tagCategories.dialog.createDescription',
-                  'Tạo danh mục mới để phân loại và nhóm các thẻ trong hệ thống.'
-                )}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className='flex w-full min-w-0 flex-col gap-6'>
+        <PageHeader
+          title={
+            <>
+              {isEditing
+                ? t('tagCategories.dialog.editTitle', 'Chỉnh sửa danh mục thẻ')
+                : t(
+                    'tagCategories.dialog.createTitle',
+                    'Thêm mới danh mục thẻ'
+                  )}
+            </>
+          }
+          description={
+            <>
+              {isEditing
+                ? t(
+                    'tagCategories.dialog.editDescription',
+                    `Chỉnh sửa thông tin định danh và hiển thị cho danh mục "${category?.name}".`,
+                    { name: category?.name }
+                  )
+                : t(
+                    'tagCategories.dialog.createDescription',
+                    'Tạo danh mục mới để phân loại và nhóm các thẻ trong hệ thống.'
+                  )}
+            </>
+          }
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -410,11 +406,11 @@ export function TagCategoryDialog({
               )}
             />
 
-            <DialogFooter className='gap-2 pt-2'>
+            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose()}
                 disabled={isSubmitting}
               >
                 {t('tagCategories.dialog.cancel', 'Hủy bỏ')}
@@ -427,10 +423,10 @@ export function TagCategoryDialog({
                   ? t('tagCategories.dialog.save', 'Lưu thay đổi')
                   : t('tagCategories.dialog.create', 'Tạo danh mục')}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }

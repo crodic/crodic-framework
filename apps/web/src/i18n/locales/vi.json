@@ -1,4 +1,10 @@
 {
+  "recordPage": {
+    "loadError": "Không tải được dữ liệu. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "loading": "Đang tải",
+    "create": "Tạo mới"
+  },
   "config.version": "phiên bản: {{version}}",
   "config.language.vietnamese": "Tiếng Việt",
   "config.language.english": "English",

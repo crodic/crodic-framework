@@ -127,7 +127,7 @@ export function CronJobCards({
                     {isRunning && (
                       <Badge
                         variant='outline'
-                        className='border-blue-500 py-0 text-[10px] text-blue-600 dark:text-blue-400'
+                        className='border-primary text-primary dark:text-primary py-0 text-[10px]'
                       >
                         Running
                       </Badge>
@@ -135,7 +135,7 @@ export function CronJobCards({
                     {isSuccess && (
                       <Badge
                         variant='outline'
-                        className='flex items-center gap-1 border-emerald-500 py-0 text-[10px] text-emerald-600 dark:text-emerald-400'
+                        className='border-primary text-primary dark:text-primary flex items-center gap-1 py-0 text-[10px]'
                       >
                         <CheckCircle2 className='h-3 w-3' /> Success
                       </Badge>

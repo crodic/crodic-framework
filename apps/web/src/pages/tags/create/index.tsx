@@ -33,7 +33,7 @@ export function PageTagCreate() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-6'>
+    <Main className='flex-1'>
       <TagForm
         isSubmitting={mutation.isPending}
         onSubmit={(values: TagFormValues) => mutation.mutate(values)}

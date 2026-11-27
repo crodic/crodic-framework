@@ -286,7 +286,7 @@ export function CmsPageForm({
             </div>
           </div>
 
-          <div className='border-border w-full shrink-0 border-t bg-slate-50/50 lg:w-[320px] lg:overflow-y-auto lg:border-t-0 lg:border-l dark:bg-slate-900/50'>
+          <div className='border-border bg-muted/50 dark:bg-muted/50 w-full shrink-0 border-t lg:w-[320px] lg:overflow-y-auto lg:border-t-0 lg:border-l'>
             <Tabs defaultValue='page' className='flex flex-col'>
               <TabsList className='mx-4 mt-4 grid grid-cols-2'>
                 <TabsTrigger value='page'>

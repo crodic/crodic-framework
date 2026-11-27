@@ -195,7 +195,7 @@ export default function ComponentTableRowActions({
                 <RotateCcw
                   size={16}
                   aria-hidden='true'
-                  className='text-emerald-600 dark:text-emerald-400'
+                  className='text-primary dark:text-primary'
                 />
               </Button>
             ) : (
@@ -288,7 +288,7 @@ export default function ComponentTableRowActions({
             <BadgeCheck
               className={`size-4 ${
                 row.original.verifiedAt
-                  ? 'fill-emerald-100 text-emerald-500 dark:fill-emerald-950'
+                  ? 'fill-primary text-primary dark:fill-primary'
                   : 'text-muted-foreground'
               }`}
               aria-hidden='true'
@@ -317,7 +317,7 @@ export default function ComponentTableRowActions({
               <CheckCircle2
                 className={`size-4 ${
                   row.original.cosplayerProfile.isVerified
-                    ? 'fill-blue-100 text-blue-500 dark:fill-blue-950'
+                    ? 'fill-primary text-primary dark:fill-primary'
                     : 'text-muted-foreground'
                 }`}
                 aria-hidden='true'
@@ -356,7 +356,7 @@ export default function ComponentTableRowActions({
                 disabled={handleCosplayerRequestMutation.isPending}
               >
                 <UserCheck
-                  className='size-4 text-emerald-600 dark:text-emerald-400'
+                  className='text-primary dark:text-primary size-4'
                   aria-hidden='true'
                 />
               </Button>
@@ -380,7 +380,7 @@ export default function ComponentTableRowActions({
                 disabled={handleCosplayerRequestMutation.isPending}
               >
                 <UserX
-                  className='size-4 text-amber-600 dark:text-amber-400'
+                  className='text-primary dark:text-primary size-4'
                   aria-hidden='true'
                 />
               </Button>

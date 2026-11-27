@@ -211,7 +211,7 @@ export function PageAdminShow() {
         />
       )}
 
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex-1'>
         <PageHeader
           title={data?.fullName || t('adminUsers.show.title')}
           description={t('adminUsers.show.description')}
@@ -253,7 +253,7 @@ export function PageAdminShow() {
                           variant='outline'
                           type='button'
                           disabled
-                          className='text-muted-foreground border-emerald-500/30 opacity-50'
+                          className='text-muted-foreground border-primary/30 opacity-50'
                         >
                           <RotateCcw className='size-4' aria-hidden='true' />
                           {t('buttons.restore', 'Restore')}

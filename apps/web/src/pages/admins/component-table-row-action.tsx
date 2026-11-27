@@ -96,7 +96,7 @@ export default function ComponentTableRowActions({
                 <RotateCcw
                   size={16}
                   aria-hidden='true'
-                  className='text-emerald-600 dark:text-emerald-400'
+                  className='text-primary dark:text-primary'
                 />
               </Button>
             ) : (

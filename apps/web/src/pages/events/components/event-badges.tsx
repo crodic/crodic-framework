@@ -21,7 +21,7 @@ export function EventStatusBadge({
       <Badge
         variant='outline'
         className={cn(
-          'gap-1 border-blue-500/25 bg-blue-500/10 text-xs font-medium text-blue-700 dark:text-blue-300',
+          'border-primary/25 bg-primary/10 text-primary dark:text-primary gap-1 text-xs font-medium',
           className
         )}
       >

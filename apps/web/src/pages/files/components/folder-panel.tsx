@@ -192,7 +192,7 @@ export function FolderPanel({
                 onClick={() => onSelect(folder.folder)}
               >
                 <Folder
-                  className='size-3.5 shrink-0 fill-amber-500/20 text-amber-500/80'
+                  className='fill-primary/20 text-primary/80 size-3.5 shrink-0'
                   aria-hidden='true'
                 />
                 <span className='min-w-0 flex-1 truncate text-left'>

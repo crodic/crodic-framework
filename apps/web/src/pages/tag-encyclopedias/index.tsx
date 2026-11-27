@@ -187,7 +187,7 @@ export function PageTagEncyclopediaOverview() {
           row.original.isEditLocked ? (
             <Badge
               variant='outline'
-              className='gap-1 border-amber-500/30 bg-amber-500/10 text-xs font-medium text-amber-600 dark:text-amber-400'
+              className='border-primary/30 bg-primary/10 text-primary dark:text-primary gap-1 text-xs font-medium'
             >
               <LockIcon className='size-3' aria-hidden='true' />
               <span>{t('tags.encyclopedia.accessLocked', 'Admin Locked')}</span>
@@ -195,7 +195,7 @@ export function PageTagEncyclopediaOverview() {
           ) : (
             <Badge
               variant='outline'
-              className='gap-1 border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-600 dark:text-emerald-400'
+              className='border-primary/30 bg-primary/10 text-primary dark:text-primary gap-1 text-xs font-medium'
             >
               <UnlockIcon className='size-3' aria-hidden='true' />
               <span>{t('tags.encyclopedia.accessOpen', 'Community Open')}</span>
@@ -284,7 +284,7 @@ export function PageTagEncyclopediaOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={t('tags.encyclopedia.overviewTitle', 'Tag Encyclopedia (dic)')}
         description={t(

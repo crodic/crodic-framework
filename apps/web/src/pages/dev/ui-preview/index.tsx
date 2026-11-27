@@ -166,7 +166,7 @@ function makeWorkflowDemoRow({
 export function PageUiPreview() {
   return (
     <>
-      <Main className='flex flex-1 flex-col gap-6'>
+      <Main className='flex-1'>
         <div>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
             UI Preview

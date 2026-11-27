@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/card'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import { useDataPermissionById } from '../queries'
 import { FORBIDDEN_ROLE_PERMISSION_KEYS } from '../schema'
@@ -51,31 +52,34 @@ export default function PagePermissionShow() {
     <>
       <Main>
         <div className='space-y-6'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='space-y-2'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <h1 className='text-2xl font-bold tracking-tight'>
-                  {data.name}
-                </h1>
-                <Badge variant='secondary'>{data.group}</Badge>
-                {isReserved && <Badge>Reserved</Badge>}
-              </div>
-              <p className='text-muted-foreground font-mono text-sm'>
-                {data.key}
-              </p>
-            </div>
-
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button onClick={() => navigate(-1)} variant='outline'>
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                Back
-              </Button>
-              <Button onClick={() => navigate(`/permissions/${data.id}/edit`)}>
-                <Edit2Icon className='size-4' aria-hidden='true' />
-                Edit metadata
-              </Button>
-            </div>
-          </div>
+          <PageHeader
+            title={<>{data.name}</>}
+            description={<>{data.key}</>}
+            badges={
+              <>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Badge variant='secondary'>{data.group}</Badge>
+                  {isReserved && <Badge>Reserved</Badge>}
+                </div>
+              </>
+            }
+            actions={
+              <>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Button onClick={() => navigate(-1)} variant='outline'>
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => navigate(`/permissions/${data.id}/edit`)}
+                  >
+                    <Edit2Icon className='size-4' aria-hidden='true' />
+                    Edit metadata
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           <div className='grid gap-4 md:grid-cols-3'>
             <Card>

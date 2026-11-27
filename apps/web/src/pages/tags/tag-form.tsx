@@ -233,10 +233,7 @@ export function TagForm({
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='flex flex-1 flex-col gap-6'
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1'>
         {/* Clean Sticky Header Bar */}
         <div className='bg-background/95 border-border/70 sticky top-0 z-30 flex flex-col gap-3 border-b pb-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-start gap-3 sm:items-center'>
@@ -428,7 +425,7 @@ export function TagForm({
                               >
                                 {copiedSlug ? (
                                   <CheckIcon
-                                    className='size-3.5 text-emerald-500'
+                                    className='text-primary size-3.5'
                                     aria-hidden='true'
                                   />
                                 ) : (
@@ -474,7 +471,7 @@ export function TagForm({
                               <SelectItem value='general'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-sky-500'
+                                    className='bg-primary size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -485,7 +482,7 @@ export function TagForm({
                               <SelectItem value='copyright'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-violet-600'
+                                    className='bg-primary size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -499,7 +496,7 @@ export function TagForm({
                               <SelectItem value='character'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-emerald-600'
+                                    className='bg-primary size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -510,7 +507,7 @@ export function TagForm({
                               <SelectItem value='artist'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-amber-600'
+                                    className='bg-primary size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -524,7 +521,7 @@ export function TagForm({
                               <SelectItem value='meta'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-indigo-600'
+                                    className='bg-primary size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -538,7 +535,7 @@ export function TagForm({
                               <SelectItem value='system'>
                                 <div className='flex items-center gap-2'>
                                   <span
-                                    className='size-2 rounded-full bg-rose-600'
+                                    className='bg-destructive size-2 rounded-full'
                                     aria-hidden='true'
                                   />
                                   <span>
@@ -580,7 +577,7 @@ export function TagForm({
                             <SelectItem value='safe'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-emerald-500'
+                                  className='bg-primary size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.safety.safe', 'Safe')}</span>
@@ -589,7 +586,7 @@ export function TagForm({
                             <SelectItem value='sensitive'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-amber-500'
+                                  className='bg-primary size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>
@@ -600,7 +597,7 @@ export function TagForm({
                             <SelectItem value='r18'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-rose-500'
+                                  className='bg-destructive size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.safety.r18', 'R-18')}</span>
@@ -609,7 +606,7 @@ export function TagForm({
                             <SelectItem value='r18g'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-red-700'
+                                  className='bg-destructive size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.safety.r18g', 'R-18G')}</span>
@@ -646,7 +643,7 @@ export function TagForm({
                             <SelectItem value='active'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-emerald-500'
+                                  className='bg-primary size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.status.active', 'Active')}</span>
@@ -655,7 +652,7 @@ export function TagForm({
                             <SelectItem value='pending'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-amber-500'
+                                  className='bg-primary size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>
@@ -666,7 +663,7 @@ export function TagForm({
                             <SelectItem value='banned'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-rose-500'
+                                  className='bg-destructive size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.status.banned', 'Banned')}</span>
@@ -675,7 +672,7 @@ export function TagForm({
                             <SelectItem value='merged'>
                               <div className='flex items-center gap-2'>
                                 <span
-                                  className='size-2 rounded-full bg-violet-500'
+                                  className='bg-primary size-2 rounded-full'
                                   aria-hidden='true'
                                 />
                                 <span>{t('tags.status.merged', 'Merged')}</span>
@@ -738,7 +735,7 @@ export function TagForm({
                               'text-[10px] font-bold',
                               isActive
                                 ? 'text-primary-foreground'
-                                : 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-primary dark:text-primary'
                             )}
                           >
                             ✓
@@ -822,7 +819,7 @@ export function TagForm({
                                 className={cn(
                                   'font-mono text-[11px] tabular-nums',
                                   currentLen > 250
-                                    ? 'font-semibold text-amber-500'
+                                    ? 'text-primary font-semibold'
                                     : 'text-muted-foreground'
                                 )}
                               >
@@ -915,14 +912,14 @@ export function TagForm({
                       className={cn(
                         'flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors',
                         field.value
-                          ? 'border-amber-500/40 bg-amber-500/5'
+                          ? 'border-primary/40 bg-primary/5'
                           : 'border-border/70 bg-card hover:border-border'
                       )}
                     >
                       <div className='space-y-0.5 pr-2'>
                         <div className='flex items-center gap-1.5'>
                           <LockIcon
-                            className='size-4 text-amber-500'
+                            className='text-primary size-4'
                             aria-hidden='true'
                           />
                           <FormLabel className='cursor-pointer text-xs font-semibold'>

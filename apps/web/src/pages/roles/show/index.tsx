@@ -27,6 +27,7 @@ import {
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
 import {
   getFallbackPermissionDetails,
@@ -107,47 +108,48 @@ export default function PageRoleShow() {
 
       <Main>
         <div className='space-y-6'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='space-y-2'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <h1 className='text-2xl font-bold tracking-tight'>
-                  {data.name}
-                </h1>
-                {isSystemRole ? (
-                  <Badge variant='secondary'>System role</Badge>
-                ) : (
-                  <Badge variant='outline'>Custom role</Badge>
-                )}
-                {isSuperAdmin && <Badge>Full access</Badge>}
-              </div>
-              <p className='text-muted-foreground text-sm'>
-                {data.description || t('roles.show.description')}
-              </p>
-            </div>
-
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button onClick={() => navigate(-1)} variant='outline'>
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                <span>{t('buttons.back')}</span>
-              </Button>
-              <Button
-                onClick={() => navigate(`/roles/${data.id}/edit`)}
-                variant='default'
-                disabled={isProtected}
-              >
-                <Edit2Icon className='size-4' aria-hidden='true' />
-                <span>{t('buttons.edit')}</span>
-              </Button>
-              <Button
-                variant='destructive'
-                onClick={() => setIsShowDeleteDialog(true)}
-                disabled={isProtected}
-              >
-                <Trash2Icon className='size-4' aria-hidden='true' />
-                <span>{t('buttons.delete')}</span>
-              </Button>
-            </div>
-          </div>
+          <PageHeader
+            title={<>{data.name}</>}
+            description={<>{data.description || t('roles.show.description')}</>}
+            badges={
+              <>
+                <div className='flex flex-wrap items-center gap-2'>
+                  {isSystemRole ? (
+                    <Badge variant='secondary'>System role</Badge>
+                  ) : (
+                    <Badge variant='outline'>Custom role</Badge>
+                  )}
+                  {isSuperAdmin && <Badge>Full access</Badge>}
+                </div>
+              </>
+            }
+            actions={
+              <>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Button onClick={() => navigate(-1)} variant='outline'>
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    <span>{t('buttons.back')}</span>
+                  </Button>
+                  <Button
+                    onClick={() => navigate(`/roles/${data.id}/edit`)}
+                    variant='default'
+                    disabled={isProtected}
+                  >
+                    <Edit2Icon className='size-4' aria-hidden='true' />
+                    <span>{t('buttons.edit')}</span>
+                  </Button>
+                  <Button
+                    variant='destructive'
+                    onClick={() => setIsShowDeleteDialog(true)}
+                    disabled={isProtected}
+                  >
+                    <Trash2Icon className='size-4' aria-hidden='true' />
+                    <span>{t('buttons.delete')}</span>
+                  </Button>
+                </div>
+              </>
+            }
+          />
 
           <div className='grid gap-4 md:grid-cols-4'>
             <Card>

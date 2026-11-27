@@ -130,7 +130,7 @@ export function KosumeAnalyticsTab() {
             <CardTitle className='text-muted-foreground text-sm font-medium'>
               {t('dashboard.kosume.totalUsers', 'Người dùng & Fan')}
             </CardTitle>
-            <Users className='size-4 text-blue-500' />
+            <Users className='text-primary size-4' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{kpi.totalUsers}</div>
@@ -154,7 +154,7 @@ export function KosumeAnalyticsTab() {
           <CardContent>
             <div className='text-2xl font-bold'>{kpi.totalCosplayers}</div>
             <p className='text-muted-foreground mt-1 flex items-center gap-1 text-xs'>
-              <ShieldCheck className='size-3 text-sky-500' />
+              <ShieldCheck className='text-primary size-3' />
               <span>
                 {t('dashboard.kosume.verifiedCosplayersSub', {
                   count: kpi.verifiedCosplayers,
@@ -171,12 +171,12 @@ export function KosumeAnalyticsTab() {
             <CardTitle className='text-muted-foreground text-sm font-medium'>
               {t('dashboard.kosume.posts', 'Tác phẩm & Bộ ảnh')}
             </CardTitle>
-            <ImageIcon className='size-4 text-emerald-500' />
+            <ImageIcon className='text-primary size-4' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{kpi.totalPosts}</div>
             <p className='text-muted-foreground mt-1 flex items-center gap-1 text-xs'>
-              <Star className='size-3 text-amber-500' />
+              <Star className='text-primary size-3' />
               <span>
                 {t('dashboard.kosume.featuredPostsSub', {
                   count: kpi.featuredPosts,
@@ -193,7 +193,7 @@ export function KosumeAnalyticsTab() {
             <CardTitle className='text-muted-foreground text-sm font-medium'>
               {t('dashboard.kosume.events', 'Sự kiện & Lễ hội')}
             </CardTitle>
-            <CalendarDays className='size-4 text-purple-500' />
+            <CalendarDays className='text-primary size-4' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{kpi.activeEvents}</div>
@@ -210,10 +210,10 @@ export function KosumeAnalyticsTab() {
       {/* 2. Urgent Moderation & Attention Banners */}
       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         {/* Pending Reports */}
-        <Card className='border-rose-500/20 bg-rose-500/5 shadow-xs'>
+        <Card className='border-destructive/20 bg-destructive/5 shadow-xs'>
           <CardHeader className='pb-2'>
             <div className='flex items-center justify-between'>
-              <span className='flex items-center gap-1.5 text-xs font-semibold text-rose-700 dark:text-rose-400'>
+              <span className='text-destructive dark:text-destructive flex items-center gap-1.5 text-xs font-semibold'>
                 <ShieldAlert className='size-4' />
                 {t('dashboard.kosume.pendingReportsTitle', 'Báo cáo vi phạm')}
               </span>
@@ -242,16 +242,16 @@ export function KosumeAnalyticsTab() {
         </Card>
 
         {/* Pending Posts */}
-        <Card className='border-amber-500/20 bg-amber-500/5 shadow-xs'>
+        <Card className='border-primary/20 bg-primary/5 shadow-xs'>
           <CardHeader className='pb-2'>
             <div className='flex items-center justify-between'>
-              <span className='flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400'>
+              <span className='text-primary dark:text-primary flex items-center gap-1.5 text-xs font-semibold'>
                 <Clock className='size-4' />
                 {t('dashboard.kosume.pendingPostsTitle', 'Bài đăng chờ duyệt')}
               </span>
               <Badge
                 variant='secondary'
-                className='bg-amber-500/15 text-xs text-amber-700 dark:text-amber-300'
+                className='bg-primary/15 text-primary dark:text-primary text-xs'
               >
                 {t('dashboard.kosume.pendingPostsBadge', {
                   count: kpi.pendingPosts,

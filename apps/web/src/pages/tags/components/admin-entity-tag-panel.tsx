@@ -276,7 +276,7 @@ export function AdminEntityTagPanel({
             {/* Work-Level Community Tag Lock */}
             <div className='border-border/70 bg-muted/20 flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs'>
               <div className='flex items-center gap-2.5 text-xs'>
-                <div className='shrink-0 rounded-lg bg-amber-500/10 p-1.5 text-amber-600 dark:text-amber-400'>
+                <div className='bg-primary/10 text-primary dark:text-primary shrink-0 rounded-lg p-1.5'>
                   <LockIcon className='size-3.5' aria-hidden='true' />
                 </div>
                 <div className='space-y-0.5'>

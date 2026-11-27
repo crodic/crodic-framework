@@ -19,7 +19,6 @@ import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getEventsTableColumns } from './columns'
-import { EventStatusDialog } from './components/event-status-dialog'
 import { apiDeleteAdminEvent, useDataAdminEventsOverview } from './queries'
 import { EventColumnKey, type Event } from './schema'
 
@@ -33,8 +32,6 @@ export function PageEventsOverview() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null)
 
   useBreadcrumb([
@@ -66,10 +63,12 @@ export function PageEventsOverview() {
     [navigate]
   )
 
-  const handleOpenStatus = useCallback((event: Event) => {
-    setSelectedEvent(event)
-    setIsStatusOpen(true)
-  }, [])
+  const handleOpenStatus = useCallback(
+    (event: Event) => {
+      navigate(`/events/${event.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleOpenDelete = useCallback((event: Event) => {
     setEventToDelete(event)
@@ -118,7 +117,7 @@ export function PageEventsOverview() {
   })
 
   return (
-    <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+    <Main className='flex-1'>
       <PageHeader
         title={t(
           'navigation.kosume.events',
@@ -148,12 +147,6 @@ export function PageEventsOverview() {
           <DataTableSortList table={table} align='end' />
         </DataTableToolbar>
       </DataTable>
-
-      <EventStatusDialog
-        open={isStatusOpen}
-        onOpenChange={setIsStatusOpen}
-        event={selectedEvent}
-      />
 
       {eventToDelete && (
         <DeleteAlertDialog

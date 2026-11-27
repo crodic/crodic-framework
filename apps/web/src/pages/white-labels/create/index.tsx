@@ -7,6 +7,7 @@ import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { WhiteLabelForm } from '../components/white-label-form'
 import { apiCreateWhiteLabel, whiteLabelQueryKeys } from '../queries'
 import type { WhiteLabelFormSchema } from '../schema'
@@ -44,7 +45,7 @@ export function PageWhiteLabelCreate() {
 
   return (
     <>
-      <Main className='flex flex-1 flex-col gap-6'>
+      <Main className='flex-1'>
         <div className='flex items-center gap-4'>
           <Button
             variant='ghost'
@@ -54,19 +55,25 @@ export function PageWhiteLabelCreate() {
           >
             <ArrowLeft className='size-5' />
           </Button>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
-              {t('whiteLabels.create.title', {
-                defaultValue: 'Create White Label Profile',
-              })}
-            </h2>
-            <p className='text-muted-foreground text-sm'>
-              {t('whiteLabels.create.description', {
-                defaultValue:
-                  'Customize brand logos, typography, metadata, and color themes with live preview.',
-              })}
-            </p>
-          </div>
+          <PageHeader
+            title={
+              <>
+                {t('whiteLabels.create.title', {
+                  defaultValue: 'Create White Label Profile',
+                })}
+              </>
+            }
+            description={
+              <>
+                <p className='text-muted-foreground text-sm'>
+                  {t('whiteLabels.create.description', {
+                    defaultValue:
+                      'Customize brand logos, typography, metadata, and color themes with live preview.',
+                  })}
+                </p>
+              </>
+            }
+          />
         </div>
 
         <WhiteLabelForm

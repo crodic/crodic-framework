@@ -65,7 +65,7 @@ export function PageEmailLogOverview() {
 
   return (
     <>
-      <Main fluid className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main fluid className='flex-1'>
         <PageHeader
           title='Email Logs'
           description='Audit email delivery, schedules, and failures.'

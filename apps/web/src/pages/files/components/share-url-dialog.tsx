@@ -157,7 +157,7 @@ export function ShareUrlDialog({
                   aria-label='Copy link'
                 >
                   {copied ? (
-                    <Check className='size-4 text-emerald-500' />
+                    <Check className='text-primary size-4' />
                   ) : (
                     <Copy className='size-4' />
                   )}
