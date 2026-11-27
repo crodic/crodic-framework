@@ -404,15 +404,15 @@ export class EntityTaggingService {
       ),
     );
 
+    const canonicalTags = await this.tagService.resolveOrCreateCanonicalTags(
+      cleanNames,
+      actor,
+      manager,
+    );
     const resolvedTags: TagEntity[] = [];
     const seenIds = new Set<string>();
 
-    for (const rawName of cleanNames) {
-      const canonical = await this.tagService.resolveOrCreateCanonicalTag(
-        rawName,
-        actor,
-        manager,
-      );
+    for (const canonical of canonicalTags) {
       if (!seenIds.has(String(canonical.id))) {
         seenIds.add(String(canonical.id));
         resolvedTags.push(canonical);

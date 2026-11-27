@@ -5,6 +5,7 @@ import {
 } from '../../../common/query-builder';
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { slugifyAscii } from '../../../common/utils/slug.util';
 import {
   ConflictException,
   ForbiddenException,
@@ -25,18 +26,6 @@ import {
 } from '../dto/collection-res.dto';
 import { CollectionItemEntity } from '../entities/collection-item.entity';
 import { CollectionEntity } from '../entities/collection.entity';
-
-function slugify(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 @Injectable()
 export class CollectionService {
@@ -118,7 +107,7 @@ export class CollectionService {
     userId: AutoIncrementID,
     dto: CreateCollectionReqDto,
   ): Promise<CollectionResDto> {
-    let slugCandidate = slugify(dto.title);
+    let slugCandidate = slugifyAscii(dto.title);
     if (!slugCandidate) {
       slugCandidate = `col-${Date.now().toString(36)}`;
     }

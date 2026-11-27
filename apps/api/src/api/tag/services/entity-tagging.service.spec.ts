@@ -92,13 +92,26 @@ describe('EntityTaggingService (Collaborative Folksonomy Governance)', () => {
       ),
     } as unknown as DataSource;
 
+    const resolveOrCreateCanonicalTag = jest.fn(async () => ({
+      id: id('999'),
+      name: 'Cyberpunk',
+      isSystem: false,
+      ...(opts.resolvedTag ?? {}),
+    }));
+    const resolveOrCreateCanonicalTags = jest.fn(
+      async (names: string[], actor: any, transactionManager: any) => {
+        const tags = [];
+        for (const name of names) {
+          tags.push(
+            await resolveOrCreateCanonicalTag(name, actor, transactionManager),
+          );
+        }
+        return tags;
+      },
+    );
     const tagService = {
-      resolveOrCreateCanonicalTag: jest.fn(async () => ({
-        id: id('999'),
-        name: 'Cyberpunk',
-        isSystem: false,
-        ...(opts.resolvedTag ?? {}),
-      })),
+      resolveOrCreateCanonicalTag,
+      resolveOrCreateCanonicalTags,
     } as unknown as TagService;
 
     const cacheService = {

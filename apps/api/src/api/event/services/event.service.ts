@@ -5,6 +5,7 @@ import {
 } from '../../../common/query-builder';
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { slugifyAscii } from '../../../common/utils/slug.util';
 import {
   BadRequestException,
   ConflictException,
@@ -454,15 +455,7 @@ export class EventService {
     adminId: AutoIncrementID,
     dto: CreateEventReqDto,
   ): Promise<EventDetailResDto> {
-    let slugCandidate = dto.title
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[đĐ]/g, 'd')
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    let slugCandidate = slugifyAscii(dto.title);
 
     if (!slugCandidate) {
       slugCandidate = `event-${Date.now().toString(36)}`;

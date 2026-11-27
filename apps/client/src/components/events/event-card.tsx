@@ -24,10 +24,9 @@ export function EventCard({ event, onApply }: EventCardProps) {
 
   return (
     <article className="group border-border/80 hover:border-primary/40 bg-card relative flex flex-row overflow-hidden rounded-2xl border p-2.5 transition-colors duration-200 sm:flex-col sm:p-3">
-      {/* 1. Poster Image (Links to Intercepting Route) */}
+      {/* 1. Poster Image */}
       <Link
         href={eventLink}
-        scroll={false}
         className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-xl sm:aspect-[16/10] sm:w-full"
       >
         <Image
@@ -99,8 +98,8 @@ export function EventCard({ event, onApply }: EventCardProps) {
               </div>
             )}
 
-          {/* Event Title (Links to Intercepting Route) */}
-          <Link href={eventLink} scroll={false} className="mt-1.5 block">
+          {/* Event Title */}
+          <Link href={eventLink} className="mt-1.5 block">
             <h3
               className="text-foreground hover:text-primary line-clamp-1 cursor-pointer text-sm font-bold transition-colors sm:text-base"
               title={event.title}
@@ -124,9 +123,7 @@ export function EventCard({ event, onApply }: EventCardProps) {
               isRecruitingOpen ? "" : "col-span-2"
             }`}
           >
-            <Link href={eventLink} scroll={false}>
-              {t("viewDetails")}
-            </Link>
+            <Link href={eventLink}>{t("viewDetails")}</Link>
           </Button>
 
           {isRecruitingOpen && (

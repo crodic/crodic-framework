@@ -85,7 +85,7 @@ export function EventsHeroBanner({
                 variant={isRecruitingOpen ? "outline" : "default"}
                 className="h-10 rounded-lg px-3"
               >
-                <Link href={eventLink} scroll={false}>
+                <Link href={eventLink}>
                   <span>{t("viewDetails")}</span>
                   <ArrowUpRight className="size-4" aria-hidden="true" />
                 </Link>

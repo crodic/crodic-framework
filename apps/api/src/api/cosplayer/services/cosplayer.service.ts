@@ -6,6 +6,7 @@ import {
 } from '../../../common/query-builder';
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { slugifyAscii } from '../../../common/utils/slug.util';
 import {
   BadRequestException,
   ConflictException,
@@ -31,18 +32,6 @@ import {
   CosplayerSummaryResDto,
 } from '../dto/cosplayer-res.dto';
 import { applyKosumeWatermark } from '../utils/watermark.util';
-
-function slugify(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 @Injectable()
 export class CosplayerService {
@@ -209,7 +198,7 @@ export class CosplayerService {
         user.username ||
         `${user.firstName} ${user.lastName || ''}`.trim() ||
         `user-${userId}`;
-      let candidateSlug = slugify(baseName) || `cosplayer-${userId}`;
+      let candidateSlug = slugifyAscii(baseName) || `cosplayer-${userId}`;
       const slugExists = await this.profileRepo.count({
         where: { slug: candidateSlug },
       });
@@ -273,7 +262,7 @@ export class CosplayerService {
 
     if (dto.handle) {
       const rawHandle = dto.handle.replace(/^@+/, '').trim();
-      const cleanSlug = slugify(rawHandle) || rawHandle.toLowerCase();
+      const cleanSlug = slugifyAscii(rawHandle) || rawHandle.toLowerCase();
       if (cleanSlug && cleanSlug !== profile.slug) {
         const existing = await this.profileRepo.findOne({
           where: { slug: cleanSlug },

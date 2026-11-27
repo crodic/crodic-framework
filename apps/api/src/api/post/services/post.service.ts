@@ -5,6 +5,7 @@ import {
 } from '../../../common/query-builder';
 import { Paginated } from '../../../common/dto/offset-pagination/paginated.dto';
 import { AutoIncrementID } from '../../../common/types/common.type';
+import { slugifyAscii } from '../../../common/utils/slug.util';
 import {
   BadRequestException,
   ForbiddenException,
@@ -55,20 +56,6 @@ import {
 import { NotificationEntity } from '../../notification/entities/notification.entity';
 import { SettingsService } from '../../settings/settings.service';
 import { SettingKeys } from '../../settings/enums/setting-keys';
-
-function slugify(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 150)
-    .replace(/-+$/g, '');
-}
 
 @Injectable()
 export class PostService {
@@ -505,10 +492,11 @@ export class PostService {
   }
 
   private async generateUniqueSlug(dto: CreatePostReqDto): Promise<string> {
-    let baseSlug = slugify(dto.title);
+    let baseSlug = slugifyAscii(dto.title, 150);
     if (!baseSlug) {
       baseSlug =
-        slugify(dto.characterName || dto.fandomName || '') || 'cosplay-post';
+        slugifyAscii(dto.characterName || dto.fandomName || '', 150) ||
+        'cosplay-post';
     }
 
     for (let attempt = 0; attempt < 5; attempt++) {

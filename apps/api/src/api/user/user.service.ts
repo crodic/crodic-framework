@@ -1,4 +1,5 @@
 import { AutoIncrementID } from '../../common/types/common.type';
+import { slugifyAscii } from '../../common/utils/slug.util';
 import { EAccountProvider } from '../../common/constants/entity.enum';
 import { ErrorCode } from '../../common/constants/error-code.constant';
 import { ValidationException } from '../../common/exceptions/validation.exception';
@@ -46,18 +47,6 @@ import {
   ENotificationType,
 } from '../notification/constants/notification.constant';
 import { AdminCosplayerProfileInputDto } from './dto/create-user.req.dto';
-
-function normalizeUserSlug(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 @Injectable()
 export class UserService {
@@ -375,15 +364,15 @@ export class UserService {
       `User ${user.id}`;
 
     const requestedSlug = profileInput?.slug
-      ? normalizeUserSlug(profileInput.slug)
+      ? slugifyAscii(profileInput.slug)
       : explicitSlug
-        ? normalizeUserSlug(explicitSlug)
+        ? slugifyAscii(explicitSlug)
         : undefined;
 
     let finalSlug =
       requestedSlug ||
       profile?.slug ||
-      normalizeUserSlug(baseDisplayName) ||
+      slugifyAscii(baseDisplayName) ||
       `cosplayer-${user.id}`;
 
     const slugConflict = await profileRepo.findOne({

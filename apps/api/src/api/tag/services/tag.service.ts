@@ -402,6 +402,8 @@ export class TagService {
 
   async removeMany(ids: AutoIncrementID[]): Promise<{ count: number }> {
     let deletedCount = 0;
+    // Each removal owns its transaction so one invalid tag does not roll back
+    // successful removals in the same request.
     for (const id of ids) {
       try {
         await this.remove(id);
@@ -659,6 +661,134 @@ export class TagService {
       : await this.dataSource.transaction(execute);
     await this.cacheService.bumpVersion();
     return result;
+  }
+
+  async resolveOrCreateCanonicalTags(
+    rawInputs: string[],
+    actor: {
+      userId?: AutoIncrementID | null;
+      adminId?: AutoIncrementID | null;
+    },
+    manager: EntityManager,
+  ): Promise<TagEntity[]> {
+    const parsedInputs = rawInputs.map((raw) =>
+      this.normalizationService.parseTagInput(raw),
+    );
+    const normalizedNames = Array.from(
+      new Set(parsedInputs.map(({ normalizedName }) => normalizedName)),
+    );
+
+    if (normalizedNames.length === 0) return [];
+
+    const canonicalTags = await manager.find(TagEntity, {
+      where: { normalizedName: In(normalizedNames) },
+      relations: ['translations'],
+    });
+    const canonicalByName = new Map(
+      canonicalTags.map((tag) => [tag.normalizedName, tag]),
+    );
+    const fallbackNames = normalizedNames.filter(
+      (name) => !canonicalByName.has(name),
+    );
+
+    const [aliases, translations] =
+      fallbackNames.length > 0
+        ? await Promise.all([
+            manager.find(TagAliasEntity, {
+              where: { normalizedAlias: In(fallbackNames) },
+            }),
+            manager.find(TagTranslationEntity, {
+              where: { normalizedName: In(fallbackNames) },
+            }),
+          ])
+        : [[], []];
+
+    const referencedTagIds = Array.from(
+      new Set([
+        ...aliases.map(({ tagId }) => String(tagId)),
+        ...translations.map(({ tagId }) => String(tagId)),
+      ]),
+    );
+    const referencedTags =
+      referencedTagIds.length > 0
+        ? await manager.find(TagEntity, {
+            where: { id: In(referencedTagIds as AutoIncrementID[]) },
+            relations: ['translations'],
+          })
+        : [];
+
+    const tagsById = new Map(
+      referencedTags.map((tag) => [String(tag.id), tag]),
+    );
+    const mergeTargetIds = Array.from(
+      new Set(
+        [...canonicalTags, ...referencedTags]
+          .map((tag) => tag.mergedIntoId)
+          .filter((id): id is AutoIncrementID => Boolean(id))
+          .map(String),
+      ),
+    );
+    const mergeTargets =
+      mergeTargetIds.length > 0
+        ? await manager.find(TagEntity, {
+            where: { id: In(mergeTargetIds as AutoIncrementID[]) },
+            relations: ['translations'],
+          })
+        : [];
+    const mergeTargetsById = new Map(
+      mergeTargets.map((tag) => [String(tag.id), tag]),
+    );
+
+    const aliasesByName = new Map(
+      aliases.map((alias) => [alias.normalizedAlias, alias]),
+    );
+    const translationsByName = new Map(
+      translations.map((translation) => [
+        translation.normalizedName,
+        translation,
+      ]),
+    );
+    const resolved: TagEntity[] = [];
+
+    for (let index = 0; index < rawInputs.length; index++) {
+      const parsed = parsedInputs[index]!;
+      let tag = canonicalByName.get(parsed.normalizedName);
+
+      if (!tag) {
+        const alias = aliasesByName.get(parsed.normalizedName);
+        if (alias) tag = tagsById.get(String(alias.tagId));
+      }
+      if (!tag) {
+        const translation = translationsByName.get(parsed.normalizedName);
+        if (translation) tag = tagsById.get(String(translation.tagId));
+      }
+
+      if (tag?.status === ETagStatus.MERGED && tag.mergedIntoId) {
+        tag = mergeTargetsById.get(String(tag.mergedIntoId)) ?? tag;
+      }
+
+      if (tag?.status === ETagStatus.BANNED) {
+        throw new ForbiddenException(
+          `Tag "${parsed.displayName}" is prohibited by community guidelines`,
+        );
+      }
+
+      if (tag) {
+        await this.cacheService.bumpVersion();
+        resolved.push(tag);
+      } else {
+        // Keep creation sequential so concurrent names cannot claim the same slug.
+        resolved.push(
+          await this.resolveOrCreateCanonicalTag(
+            rawInputs[index]!,
+            actor,
+            manager,
+          ),
+        );
+      }
+    }
+
+    return resolved;
   }
 
   async getTrendingTags(
