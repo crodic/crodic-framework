@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { DynamicListInput } from '@/components/ui/dynamic-list-input'
 import {
   FormControl,
@@ -17,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 
 export function CosplayerProfileFields<T extends FieldValues = any>({
@@ -443,26 +443,34 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
           />
         </div>
 
-        <div className='flex flex-wrap gap-6 pt-1'>
+        <div className='space-y-3 pt-1'>
           <FormField
             control={formControl}
             name='cosplayerProfile.isVerified'
             render={({ field }) => (
-              <FormItem className='flex flex-row items-center gap-2 space-y-0'>
+              <FormItem className='flex flex-row items-center justify-between gap-4 space-y-0 rounded-lg border p-4'>
+                <div className='min-w-0 space-y-1'>
+                  <FormLabel className='cursor-pointer font-medium'>
+                    {t(
+                      'users.show.cosplayerVerified',
+                      'Tích xanh Cosplayer (Verified)'
+                    )}
+                  </FormLabel>
+                  <p className='text-muted-foreground text-sm'>
+                    {t(
+                      'users.show.cosplayerVerifiedDescription',
+                      'Xác nhận đây là hồ sơ Cosplayer chính thức đã được kiểm duyệt.'
+                    )}
+                  </p>
+                </div>
                 <FormControl>
-                  <Checkbox
+                  <Switch
                     checked={Boolean(field.value)}
                     onCheckedChange={(checked) =>
                       field.onChange(Boolean(checked))
                     }
                   />
                 </FormControl>
-                <FormLabel className='cursor-pointer font-normal'>
-                  {t(
-                    'users.show.cosplayerVerified',
-                    'Tích xanh Cosplayer (Verified)'
-                  )}
-                </FormLabel>
               </FormItem>
             )}
           />
@@ -470,18 +478,26 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
             control={formControl}
             name='cosplayerProfile.isCraftingCreator'
             render={({ field }) => (
-              <FormItem className='flex flex-row items-center gap-2 space-y-0'>
+              <FormItem className='flex flex-row items-center justify-between gap-4 space-y-0 rounded-lg border p-4'>
+                <div className='min-w-0 space-y-1'>
+                  <FormLabel className='cursor-pointer font-medium'>
+                    Crafting Creator (Thợ chế tác / Props)
+                  </FormLabel>
+                  <p className='text-muted-foreground text-sm'>
+                    {t(
+                      'users.show.craftingCreatorDescription',
+                      'Đánh dấu người chuyên chế tác trang phục, đạo cụ hoặc props.'
+                    )}
+                  </p>
+                </div>
                 <FormControl>
-                  <Checkbox
+                  <Switch
                     checked={Boolean(field.value)}
                     onCheckedChange={(checked) =>
                       field.onChange(Boolean(checked))
                     }
                   />
                 </FormControl>
-                <FormLabel className='cursor-pointer font-normal'>
-                  Crafting Creator (Thợ chế tác / Props)
-                </FormLabel>
               </FormItem>
             )}
           />
