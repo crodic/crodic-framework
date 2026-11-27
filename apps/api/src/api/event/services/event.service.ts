@@ -116,10 +116,11 @@ export class EventService {
     const eventIds = paginated.data.map((e) => e.id);
     let interestedSet = new Set<string>();
     let participatingSet = new Set<string>();
-    const participantsMap = new Map<string, EventParticipantResDto[]>();
+    let verifiedParticipantEventIds = new Set<string>();
+    const participantsPreviewMap = new Map<string, EventParticipantResDto[]>();
 
     if (eventIds.length > 0) {
-      const [interests, userParticipants, allEventParticipants] =
+      const [interests, userParticipants, participantPreviews, verifiedEvents] =
         await Promise.all([
           currentUserId
             ? this.interestRepo.find({
@@ -131,23 +132,22 @@ export class EventService {
                 where: { userId: currentUserId, eventId: In(eventIds) },
               })
             : Promise.resolve([]),
-          this.participantRepo.find({
-            where: { eventId: In(eventIds) },
-            order: { sortOrder: 'ASC', id: 'ASC' },
-          }),
+          this.findParticipantPreviews(eventIds),
+          this.findVerifiedParticipantEventIds(eventIds),
         ]);
+      verifiedParticipantEventIds = verifiedEvents;
 
       interestedSet = new Set(interests.map((i) => String(i.eventId)));
       participatingSet = new Set(
         userParticipants.map((p) => String(p.eventId)),
       );
 
-      const enriched = await this.enrichParticipants(allEventParticipants);
+      const enriched = await this.enrichParticipants(participantPreviews);
       for (const p of enriched) {
         const key = String(p.eventId);
-        const bucket = participantsMap.get(key) ?? [];
+        const bucket = participantsPreviewMap.get(key) ?? [];
         bucket.push(p);
-        participantsMap.set(key, bucket);
+        participantsPreviewMap.set(key, bucket);
       }
     }
 
@@ -156,7 +156,8 @@ export class EventService {
         event,
         interestedSet.has(String(event.id)),
         participatingSet.has(String(event.id)),
-        participantsMap.get(String(event.id)) ?? [],
+        participantsPreviewMap.get(String(event.id)) ?? [],
+        verifiedParticipantEventIds.has(String(event.id)),
       ),
     );
 
@@ -175,7 +176,7 @@ export class EventService {
       throw new NotFoundException(`Event "${slug}" not found`);
     }
 
-    const [interest, participant, participantsList] = await Promise.all([
+    const [interest, participant] = await Promise.all([
       currentUserId
         ? this.interestRepo.findOne({
             where: { userId: currentUserId, eventId: event.id },
@@ -186,18 +187,97 @@ export class EventService {
             where: { userId: currentUserId, eventId: event.id },
           })
         : null,
-      this.participantRepo.find({
-        where: { eventId: event.id },
-        order: { sortOrder: 'ASC', id: 'ASC' },
-      }),
     ]);
 
-    return this.toDetailDtoWithParticipants(
-      event,
-      participantsList,
-      Boolean(interest),
-      Boolean(participant),
-    );
+    return this.toDetailDto(event, Boolean(interest), Boolean(participant));
+  }
+
+  async getPublicParticipants(
+    slug: string,
+    query: QueryParams,
+  ): Promise<Paginated<EventParticipantResDto>> {
+    const event = await this.eventRepo.findOne({ where: { slug } });
+    if (!event || event.status === EEventStatus.DRAFT) {
+      throw new NotFoundException(`Event "${slug}" not found`);
+    }
+    return this.paginateParticipants(event.id, query);
+  }
+
+  async getAdminParticipants(
+    eventId: AutoIncrementID,
+    query: QueryParams,
+  ): Promise<Paginated<EventParticipantResDto>> {
+    const eventExists = await this.eventRepo.exists({ where: { id: eventId } });
+    if (!eventExists) {
+      throw new NotFoundException(`Event #${eventId} not found`);
+    }
+    return this.paginateParticipants(eventId, query);
+  }
+
+  private async paginateParticipants(
+    eventId: AutoIncrementID,
+    query: QueryParams,
+  ): Promise<Paginated<EventParticipantResDto>> {
+    const paginated = await QueryBuilder.for(
+      this.participantRepo
+        .createQueryBuilder('participant')
+        .where('participant.eventId = :eventId', { eventId }),
+      query,
+    )
+      .allowedSorts(['sortOrder', 'id'])
+      .allowedFilters([])
+      .allowedIncludes([])
+      .defaultSort('sortOrder,id')
+      .setLimit(20, 100)
+      .paginate();
+
+    const participants = await this.enrichParticipants(paginated.data);
+    return new Paginated(participants, paginated.meta, paginated.links);
+  }
+
+  private async findParticipantPreviews(
+    eventIds: AutoIncrementID[],
+  ): Promise<EventParticipantEntity[]> {
+    return this.participantRepo
+      .createQueryBuilder('participant')
+      .where(
+        `participant.id IN (
+          SELECT ranked.id
+          FROM (
+            SELECT ep.id,
+              ROW_NUMBER() OVER (
+                PARTITION BY ep.event_id
+                ORDER BY ep.sort_order ASC, ep.id ASC
+              ) AS participant_rank
+            FROM event_participants ep
+            WHERE ep.event_id IN (:...eventIds)
+          ) ranked
+          WHERE ranked.participant_rank <= 3
+        )`,
+        { eventIds },
+      )
+      .orderBy('participant.eventId', 'ASC')
+      .addOrderBy('participant.sortOrder', 'ASC')
+      .addOrderBy('participant.id', 'ASC')
+      .getMany();
+  }
+
+  private async findVerifiedParticipantEventIds(
+    eventIds: AutoIncrementID[],
+  ): Promise<Set<string>> {
+    const rows = await this.participantRepo
+      .createQueryBuilder('participant')
+      .innerJoin(
+        CosplayerProfileEntity,
+        'profile',
+        'profile.userId = participant.userId AND profile.isVerified = true AND profile.deletedAt IS NULL',
+      )
+      .select('participant.eventId', 'eventId')
+      .where('participant.eventId IN (:...eventIds)', { eventIds })
+      .groupBy('participant.eventId')
+      .getRawMany<{ eventId: string }>();
+
+    return new Set(rows.map((row) => String(row.eventId)));
   }
 
   /**
@@ -367,11 +447,7 @@ export class EventService {
     if (!event) {
       throw new NotFoundException(`Event #${eventId} not found`);
     }
-    const participants = await this.participantRepo.find({
-      where: { eventId },
-      order: { sortOrder: 'ASC' },
-    });
-    return this.toDetailDtoWithParticipants(event, participants, false, false);
+    return this.toDetailDto(event, false, false);
   }
 
   async createEvent(
@@ -424,7 +500,7 @@ export class EventService {
     });
 
     const saved = await this.eventRepo.save(event);
-    return this.toDetailDto(saved, [], false, false);
+    return this.toDetailDto(saved, false, false);
   }
 
   async updateEvent(
@@ -461,11 +537,7 @@ export class EventService {
     if (dto.status !== undefined) event.status = dto.status;
 
     const saved = await this.eventRepo.save(event);
-    const participants = await this.participantRepo.find({
-      where: { eventId },
-      order: { sortOrder: 'ASC' },
-    });
-    return this.toDetailDtoWithParticipants(saved, participants, false, false);
+    return this.toDetailDto(saved, false, false);
   }
 
   async updateEventStatus(
@@ -486,11 +558,7 @@ export class EventService {
     }
 
     const saved = await this.eventRepo.save(event);
-    const participants = await this.participantRepo.find({
-      where: { eventId },
-      order: { sortOrder: 'ASC' },
-    });
-    return this.toDetailDtoWithParticipants(saved, participants, false, false);
+    return this.toDetailDto(saved, false, false);
   }
 
   async deleteEvent(eventId: AutoIncrementID): Promise<void> {
@@ -586,21 +654,12 @@ export class EventService {
     });
   }
 
-  private async toDetailDtoWithParticipants(
-    e: EventEntity,
-    participants: EventParticipantEntity[],
-    isInterested = false,
-    isParticipating = false,
-  ): Promise<EventDetailResDto> {
-    const participantDtos = await this.enrichParticipants(participants);
-    return this.toDetailDto(e, participantDtos, isInterested, isParticipating);
-  }
-
   private toSummaryDto(
     e: EventEntity,
     isInterested = false,
     isParticipating = false,
-    participants?: EventParticipantResDto[],
+    participantsPreview?: EventParticipantResDto[],
+    hasVerifiedParticipant?: boolean,
   ): EventSummaryResDto {
     const dateInfo = this.formatDateLabels(e.startAt, e.endAt);
     return {
@@ -630,7 +689,10 @@ export class EventService {
       participantsCount: Number(e.participantsCount || 0),
       interestedCount: Number(e.interestedCount || 0),
       applicationsCount: Number(e.applicationsCount || 0),
-      participants: participants ?? [],
+      ...(participantsPreview !== undefined ? { participantsPreview } : {}),
+      ...(hasVerifiedParticipant !== undefined
+        ? { hasVerifiedParticipant }
+        : {}),
       isInterestedByCurrentUser: isInterested,
       isParticipatingByCurrentUser: isParticipating,
       createdAt: e.createdAt,
@@ -640,15 +702,13 @@ export class EventService {
 
   private toDetailDto(
     e: EventEntity,
-    participants: EventParticipantResDto[],
     isInterested = false,
     isParticipating = false,
   ): EventDetailResDto {
     return {
-      ...this.toSummaryDto(e, isInterested, isParticipating, participants),
+      ...this.toSummaryDto(e, isInterested, isParticipating),
       description: e.description,
       schedule: e.schedule || [],
-      participants,
     };
   }
 

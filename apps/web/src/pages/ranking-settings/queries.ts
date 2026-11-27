@@ -25,6 +25,7 @@ export async function apiUpdateRankingSettings(
 export async function apiTriggerRankingRecalculate(): Promise<{
   message: string
   processedCategories: string[]
+  failedCategories: string[]
   timestamp: string
 }> {
   const response = await http.post('/admin/rankings/recalculate')

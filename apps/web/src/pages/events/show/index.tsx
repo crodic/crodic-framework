@@ -40,7 +40,11 @@ import {
   EventRecruitingBadge,
   EventStatusBadge,
 } from '../components/event-badges'
-import { apiDeleteAdminEvent, useDataAdminEventById } from '../queries'
+import {
+  apiDeleteAdminEvent,
+  useDataAdminEventById,
+  useDataAdminEventParticipants,
+} from '../queries'
 
 function formatTimestamp(iso?: string | null): string {
   if (!iso) return '—'
@@ -56,8 +60,14 @@ export function PageEventShow() {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [copiedSlug, setCopiedSlug] = useState(false)
+  const [participantsPage, setParticipantsPage] = useState(1)
 
   const { data: event, isFetching } = useDataAdminEventById(id ?? '')
+  const {
+    data: participantsResponse,
+    isFetching: isParticipantsFetching,
+    isError: hasParticipantsError,
+  } = useDataAdminEventParticipants(id ?? '', participantsPage)
 
   useBreadcrumb([
     {
@@ -340,9 +350,10 @@ export function PageEventShow() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {event.participants && event.participants.length > 0 ? (
+                {participantsResponse?.data &&
+                participantsResponse.data.length > 0 ? (
                   <div className='grid gap-3 sm:grid-cols-2'>
-                    {event.participants.map((p) => (
+                    {participantsResponse.data.map((p) => (
                       <div
                         key={p.id}
                         className='border-border/60 bg-muted/20 flex items-center gap-3 rounded-lg border p-3'
@@ -373,6 +384,17 @@ export function PageEventShow() {
                       </div>
                     ))}
                   </div>
+                ) : isParticipantsFetching ? (
+                  <p className='text-muted-foreground text-sm' role='status'>
+                    {t('common.loading', 'Đang tải...')}
+                  </p>
+                ) : hasParticipantsError ? (
+                  <p className='text-destructive text-sm' role='alert'>
+                    {t(
+                      'events.show.participantsLoadError',
+                      'Không tải được danh sách người tham gia.'
+                    )}
+                  </p>
                 ) : (
                   <p className='text-muted-foreground text-xs'>
                     {t(
@@ -381,6 +403,41 @@ export function PageEventShow() {
                     )}
                   </p>
                 )}
+                {participantsResponse?.meta &&
+                  participantsResponse.meta.totalPages > 1 && (
+                    <div className='flex items-center justify-between gap-3 pt-3'>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        disabled={
+                          isParticipantsFetching || participantsPage <= 1
+                        }
+                        onClick={() =>
+                          setParticipantsPage((page) => Math.max(1, page - 1))
+                        }
+                      >
+                        {t('common.previous', 'Trước')}
+                      </Button>
+                      <span className='text-muted-foreground text-xs tabular-nums'>
+                        {participantsResponse.meta.currentPage} /{' '}
+                        {participantsResponse.meta.totalPages}
+                      </span>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        disabled={
+                          isParticipantsFetching ||
+                          participantsPage >=
+                            participantsResponse.meta.totalPages
+                        }
+                        onClick={() => setParticipantsPage((page) => page + 1)}
+                      >
+                        {t('common.next', 'Tiếp')}
+                      </Button>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </div>

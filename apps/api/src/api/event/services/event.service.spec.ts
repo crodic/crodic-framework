@@ -43,6 +43,7 @@ describe('EventService', () => {
     participantRepo = {
       find: jest.fn().mockResolvedValue([]),
       findOne: jest.fn(),
+      createQueryBuilder: jest.fn(),
       create: jest.fn().mockImplementation((dto) => ({ ...dto, id: id('10') })),
       save: jest
         .fn()
@@ -164,7 +165,7 @@ describe('EventService', () => {
   });
 
   describe('findAll', () => {
-    it('excludes draft events when publicOnly is true and enriches participants', async () => {
+    it('excludes draft events and returns a bounded participant preview', async () => {
       const mockEvent = {
         id: id('1'),
         slug: 'spring-fes',
@@ -194,13 +195,37 @@ describe('EventService', () => {
         getManyAndCount: jest.fn().mockResolvedValue([[mockEvent], 1]),
       };
       eventRepo.createQueryBuilder.mockReturnValue(qb);
-      participantRepo.find.mockResolvedValue([
+      const previewQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([
+          {
+            id: id('10'),
+            eventId: id('1'),
+            userId: id('100'),
+            roleLabel: 'Guest',
+            sortOrder: 0,
+          },
+        ]),
+      };
+      const verifiedQueryBuilder = {
+        innerJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        getRawMany: jest.fn().mockResolvedValue([{ eventId: id('1') }]),
+      };
+      participantRepo.createQueryBuilder
+        .mockReturnValueOnce(previewQueryBuilder)
+        .mockReturnValueOnce(verifiedQueryBuilder);
+      profileRepo.find.mockResolvedValue([
         {
-          id: id('10'),
-          eventId: id('1'),
           userId: id('100'),
+          displayName: 'KIRIKO',
+          avatarUrl: 'url',
+          isVerified: true,
           roleLabel: 'Guest',
-          sortOrder: 0,
         },
       ]);
 
@@ -211,13 +236,14 @@ describe('EventService', () => {
       });
       expect(res.data).toHaveLength(1);
       expect(res.data[0].description).toBe('Spring cosplay festival');
-      expect(res.data[0].participants).toHaveLength(1);
-      expect(res.data[0].participants?.[0].name).toBe('KIRIKO');
+      expect(res.data[0].participantsPreview).toHaveLength(1);
+      expect(res.data[0].participantsPreview?.[0].name).toBe('KIRIKO');
+      expect(res.data[0].hasVerifiedParticipant).toBe(true);
     });
   });
 
   describe('findBySlug', () => {
-    it('returns event detail with schedule and participants', async () => {
+    it('returns event detail without embedding the participant list', async () => {
       eventRepo.findOne.mockResolvedValue({
         id: id('1'),
         slug: 'winter-fest',
@@ -231,22 +257,11 @@ describe('EventService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      participantRepo.find.mockResolvedValue([
-        {
-          id: id('10'),
-          eventId: id('1'),
-          userId: id('100'),
-          roleLabel: 'Guest',
-          sortOrder: 0,
-        },
-      ]);
-
       const res = await service.findBySlug('winter-fest');
 
       expect(res.slug).toBe('winter-fest');
       expect(res.dayLabel).toBe('24');
-      expect(res.participants).toHaveLength(1);
-      expect(res.participants[0].name).toBe('KIRIKO');
+      expect(res).not.toHaveProperty('participants');
     });
 
     it('throws NotFoundException when event not found', async () => {

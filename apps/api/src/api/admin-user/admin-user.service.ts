@@ -408,13 +408,14 @@ export class AdminUserService {
       (admin) => admin.notifications?.email !== false,
     );
 
-    for (const admin of adminsToNotify) {
+    if (adminsToNotify.length > 0) {
       await this.emailQueueService.sendMail({
-        to: admin.email,
+        to: adminsToNotify[0].email,
+        cc: adminsToNotify.slice(1).map((admin) => admin.email),
         subject: `Admin Account Deletion Report (${usersToDelete.length} deleted)`,
         template: 'admin-account-hard-deleted-report',
         context: {
-          adminName: admin.fullName || admin.firstName,
+          adminName: 'quản trị viên',
           deletedCount: usersToDelete.length,
         },
       });

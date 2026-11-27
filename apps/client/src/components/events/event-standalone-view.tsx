@@ -2,12 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { UserAvatar } from "@/components/common/user-avatar";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   Building2,
   Calendar,
-  Check,
   ExternalLink,
   Flame,
   MapPin,
@@ -22,6 +20,7 @@ import { EventApplyDialog } from "./event-apply-dialog";
 import { canApplyToEvent, getEventLifecycleLabel } from "./events-types";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useTranslations } from "next-intl";
+import { EventParticipants } from "./event-participants";
 
 export interface EventStandaloneViewProps {
   event: EventDetailResDto | EventSummaryResDto;
@@ -227,45 +226,15 @@ export function EventStandaloneView({ event }: EventStandaloneViewProps) {
           </div>
 
           {/* Featured Guests / Cosplayers */}
-          {event.participants && event.participants.length > 0 && (
+          {event.participantsCount > 0 && (
             <div className="border-border/80 bg-card space-y-4 rounded-2xl border p-6 sm:p-7">
               <h2 className="text-foreground text-lg font-bold sm:text-xl">
                 {tDetail("guests")}
               </h2>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                {event.participants.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/cosplayer/${p.name.toLowerCase()}`}
-                    className="border-border/70 bg-muted/20 hover:border-primary/50 group flex items-center gap-3 rounded-xl border p-3 transition-colors"
-                  >
-                    <div className="border-primary/40 relative size-10 shrink-0 overflow-hidden rounded-full border">
-                      <UserAvatar
-                        avatarUrl={p.avatarUrl}
-                        name={p.name}
-                        sizes="40px"
-                        fallbackClassName="text-xs"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-foreground group-hover:text-primary truncate text-xs font-bold">
-                          {p.name}
-                        </span>
-                        {p.isVerified && (
-                          <Check
-                            className="text-primary size-3 shrink-0 stroke-[3]"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </div>
-                      <p className="text-muted-foreground text-[11px]">
-                        {p.roleLabel || tStandalone("specialGuest")}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <EventParticipants
+                eventSlug={event.slug || event.id}
+                layout="cards"
+              />
             </div>
           )}
 

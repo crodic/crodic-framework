@@ -71,24 +71,37 @@ export class CollectionService {
       .paginate();
 
     const colIds = paginated.data.map((col) => col.id);
-    const items =
-      colIds.length > 0
-        ? await this.itemRepo
-            .createQueryBuilder('item')
-            .leftJoinAndSelect('item.post', 'post')
-            .where('item.collectionId IN (:...colIds)', { colIds })
-            .orderBy('item.sortOrder', 'ASC')
-            .addOrderBy('item.id', 'ASC')
-            .getMany()
-        : [];
-
     const thumbsMap = new Map<string, string[]>();
-    for (const item of items) {
-      const key = String(item.collectionId);
-      const thumbs = thumbsMap.get(key) ?? [];
-      if (thumbs.length < 4 && item.post?.coverImageUrl) {
-        thumbs.push(item.post.coverImageUrl);
-        thumbsMap.set(key, thumbs);
+    if (colIds.length > 0) {
+      const rankedItems = this.itemRepo
+        .createQueryBuilder('item')
+        .innerJoin('item.post', 'post')
+        .select('item.collectionId', 'collection_id')
+        .addSelect('post.coverImageUrl', 'cover_image_url')
+        .addSelect(
+          'ROW_NUMBER() OVER (PARTITION BY item.collectionId ORDER BY item.sortOrder ASC, item.id ASC)',
+          'row_number',
+        )
+        .where('item.collectionId IN (:...colIds)', { colIds })
+        .andWhere('post.coverImageUrl IS NOT NULL')
+        .andWhere("post.coverImageUrl <> ''");
+
+      const previews = await this.itemRepo
+        .createQueryBuilder()
+        .select('preview.collection_id', 'collectionId')
+        .addSelect('preview.cover_image_url', 'coverImageUrl')
+        .from(`(${rankedItems.getQuery()})`, 'preview')
+        .setParameters(rankedItems.getParameters())
+        .where('preview.row_number <= 4')
+        .orderBy('preview.collection_id', 'ASC')
+        .addOrderBy('preview.row_number', 'ASC')
+        .getRawMany<{ collectionId: AutoIncrementID; coverImageUrl: string }>();
+
+      for (const preview of previews) {
+        const key = String(preview.collectionId);
+        const thumbnails = thumbsMap.get(key) ?? [];
+        thumbnails.push(preview.coverImageUrl);
+        thumbsMap.set(key, thumbnails);
       }
     }
 

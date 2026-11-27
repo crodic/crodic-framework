@@ -17,6 +17,8 @@ import { PostLikeEntity } from '../entities/post-like.entity';
 import { PostMediaEntity } from '../entities/post-media.entity';
 import { PostEntity } from '../entities/post.entity';
 import { EntityTagEntity } from '../../tag/entities/entity-tag.entity';
+import { ETaggableEntityType } from '../../tag/constants/tag.constant';
+import { EntityTaggingService } from '../../tag/services/entity-tagging.service';
 import { PostService } from './post.service';
 
 const id = (val: string) => val as unknown as AutoIncrementID;
@@ -31,6 +33,7 @@ describe('PostService', () => {
   let userRepo: any;
   let profileRepo: any;
   let entityTagRepo: any;
+  let entityTaggingService: any;
   let dataSource: any;
   let mockEm: any;
 
@@ -112,6 +115,10 @@ describe('PostService', () => {
     entityTagRepo = {
       find: jest.fn().mockResolvedValue([]),
     };
+    entityTaggingService = {
+      syncAuthorTagsInTransaction: jest.fn().mockResolvedValue(undefined),
+      invalidateCache: jest.fn().mockResolvedValue(undefined),
+    };
 
     mockEm = {
       findOne: jest.fn(),
@@ -160,6 +167,7 @@ describe('PostService', () => {
           provide: getRepositoryToken(EntityTagEntity),
           useValue: entityTagRepo,
         },
+        { provide: EntityTaggingService, useValue: entityTaggingService },
       ],
     }).compile();
 
@@ -273,6 +281,30 @@ describe('PostService', () => {
 
       expect(dataSource.transaction).toHaveBeenCalled();
       expect(res.characterName).toBe('Acheron');
+    });
+
+    it('rolls back post creation when author tag synchronization fails', async () => {
+      const error = new Error('Tag synchronization failed');
+      entityTaggingService.syncAuthorTagsInTransaction.mockRejectedValue(error);
+
+      await expect(
+        service.create(id('100'), {
+          title: 'Tagged Post',
+          coverImageUrl: 'url',
+          tags: ['cosplay'],
+        }),
+      ).rejects.toBe(error);
+
+      expect(
+        entityTaggingService.syncAuthorTagsInTransaction,
+      ).toHaveBeenCalledWith(
+        mockEm,
+        ETaggableEntityType.POST,
+        id('1'),
+        { tagNames: ['cosplay'], ownerUserId: id('100') },
+        { userId: id('100') },
+      );
+      expect(entityTaggingService.invalidateCache).not.toHaveBeenCalled();
     });
   });
 

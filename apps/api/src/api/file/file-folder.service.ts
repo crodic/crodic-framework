@@ -105,6 +105,71 @@ export class FileFolderService {
     return lastEntity;
   }
 
+  private async ensureFolders(
+    folders: string[],
+    folderRepo: Repository<FileFolderEntity>,
+  ): Promise<void> {
+    const paths = new Map<
+      string,
+      { title: string; depth: number; parentName: string | null }
+    >();
+
+    for (const folder of folders) {
+      const segments = this.assertFolder(folder).split('/');
+      let path = '';
+      for (let depth = 0; depth < segments.length; depth++) {
+        const title = segments[depth]!;
+        const parentName = path || null;
+        path = path ? `${path}/${title}` : title;
+        paths.set(path, { title, depth, parentName });
+      }
+    }
+
+    if (paths.size === 0) return;
+
+    const entities = await folderRepo.find({
+      where: { name: In(Array.from(paths.keys())) },
+    });
+    const entitiesByName = new Map(
+      entities.map((entity) => [entity.name, entity]),
+    );
+    const maxDepth = Math.max(
+      ...Array.from(paths.values(), ({ depth }) => depth),
+    );
+
+    for (let depth = 0; depth <= maxDepth; depth++) {
+      const toSave: FileFolderEntity[] = [];
+      for (const [name, path] of paths) {
+        if (path.depth !== depth) continue;
+
+        const parentId = path.parentName
+          ? entitiesByName.get(path.parentName)?.id
+          : null;
+        const current = entitiesByName.get(name);
+        if (!current) {
+          toSave.push(
+            folderRepo.create({
+              name,
+              title: path.title,
+              parentId,
+              depth,
+            }),
+          );
+        } else if (!current.title || current.depth !== depth) {
+          current.title = path.title;
+          current.depth = depth;
+          current.parentId = parentId;
+          toSave.push(current);
+        }
+      }
+
+      if (toSave.length > 0) {
+        const saved = await folderRepo.save(toSave);
+        for (const entity of saved) entitiesByName.set(entity.name, entity);
+      }
+    }
+  }
+
   async getFolderSummary(folderName: string): Promise<FileFolderResDto> {
     const row = await this.fileRepository
       .createQueryBuilder('file')
@@ -277,16 +342,38 @@ export class FileFolderService {
         .where('f.name LIKE :prefix', { prefix: `${fromPrefix}%` })
         .getMany();
 
-      for (const desc of descendantFolders) {
-        const newName = desc.name.replace(fromPrefix, toPrefix);
-        await this.ensureFolder(newName, folderRepo);
+      await this.ensureFolders(
+        descendantFolders.map((desc) =>
+          desc.name.replace(fromPrefix, toPrefix),
+        ),
+        folderRepo,
+      );
+
+      if (descendantFolders.length > 0) {
+        const renameParameters: Record<string, string> = {};
+        const renameCases = descendantFolders
+          .map((desc, index) => {
+            renameParameters[`oldFolder${index}`] = desc.name;
+            renameParameters[`newFolder${index}`] = desc.name.replace(
+              fromPrefix,
+              toPrefix,
+            );
+            return `WHEN :oldFolder${index} THEN :newFolder${index}`;
+          })
+          .join(' ');
+        const oldFolderNames = descendantFolders.map((desc) => desc.name);
+
         await fileRepo
           .createQueryBuilder()
           .update(FileEntity)
-          .set({ folder: newName })
-          .where('folder = :folder', { folder: desc.name })
+          .set({ folder: () => `CASE folder ${renameCases} ELSE folder END` })
+          .where('folder IN (:...oldFolderNames)', { oldFolderNames })
+          .setParameters(renameParameters)
           .execute();
-        await folderRepo.delete({ id: desc.id });
+
+        await folderRepo.delete({
+          id: In(descendantFolders.map((desc) => desc.id)),
+        });
       }
 
       if (existingSource) {

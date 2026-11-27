@@ -68,8 +68,7 @@ export class CosplayerService {
     const baseQb = this.profileRepo
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
-      .where('profile.deletedAt IS NULL')
-      .andWhere('user.deletedAt IS NULL');
+      .where('profile.deletedAt IS NULL');
 
     const paginated = await QueryBuilder.for(baseQb, query)
       .allowedFilters([
@@ -132,8 +131,7 @@ export class CosplayerService {
     const qb = this.profileRepo
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user', 'user.deletedAt IS NULL')
-      .where('profile.deletedAt IS NULL')
-      .andWhere('user.deletedAt IS NULL');
+      .where('profile.deletedAt IS NULL');
 
     if (currentUserId) {
       qb.andWhere('profile.userId != :currentUserId', { currentUserId });

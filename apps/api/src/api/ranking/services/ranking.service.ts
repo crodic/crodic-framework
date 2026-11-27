@@ -9,8 +9,8 @@ import {
   PaginatedMeta,
 } from '../../../common/dto/offset-pagination/paginated.dto';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, In, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import { CosplayerProfileUtil } from '../../cosplayer/utils/cosplayer-profile.util';
 import { LeaderboardItemResDto } from '../dto/ranking-res.dto';
@@ -36,6 +36,8 @@ export class RankingService {
   private readonly logger = new Logger(RankingService.name);
 
   constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
     @InjectRepository(LeaderboardSnapshotEntity)
     private readonly snapshotRepo: Repository<LeaderboardSnapshotEntity>,
     @InjectRepository(CosplayerProfileEntity)
@@ -361,6 +363,7 @@ export class RankingService {
     ];
 
     const processedCategories: string[] = [];
+    const failedCategories: string[] = [];
 
     for (const cat of categories) {
       try {
@@ -371,69 +374,80 @@ export class RankingService {
         );
         const currentItems = paginated.data;
 
-        // Fetch previous active snapshots to calculate previousRank and trend
-        const prevSnapshots = await this.snapshotRepo.find({
-          where: { filterCategory: cat, isCurrent: true },
-        });
-        const prevRankMap = new Map<string, number>();
-        prevSnapshots.forEach((s) => prevRankMap.set(String(s.userId), s.rank));
-
-        // Mark old snapshots as not current
-        await this.snapshotRepo.update(
-          { filterCategory: cat, isCurrent: true },
-          { isCurrent: false },
-        );
-
         const periodKey = this.generatePeriodKey(cat);
-
-        // Save new snapshots
-        const newSnapshots = currentItems.map((item) => {
-          const prevRank = prevRankMap.get(String(item.userId)) ?? null;
-          let trend = ERankingTrend.SAME;
-          if (prevRank !== null) {
-            if (item.rank < prevRank) trend = ERankingTrend.UP;
-            else if (item.rank > prevRank) trend = ERankingTrend.DOWN;
-          }
-
-          return this.snapshotRepo.create({
-            filterCategory: cat,
-            periodKey,
-            isCurrent: true,
-            rank: item.rank,
-            previousRank: prevRank,
-            trend,
-            userId: item.userId,
-            likesCount: item.likesCount,
-            followersCount: item.followersCount,
-            score: item.score,
-            featuredProjects: item.featuredProjects,
+        await this.dataSource.transaction(async (manager) => {
+          const prevSnapshots = await manager.find(LeaderboardSnapshotEntity, {
+            where: { filterCategory: cat, isCurrent: true },
           });
-        });
+          const prevRankMap = new Map<string, number>();
+          prevSnapshots.forEach((snapshot) =>
+            prevRankMap.set(String(snapshot.userId), snapshot.rank),
+          );
 
-        if (newSnapshots.length > 0) {
-          await this.snapshotRepo.save(newSnapshots);
-        }
+          await manager.update(
+            LeaderboardSnapshotEntity,
+            { filterCategory: cat, isCurrent: true },
+            { isCurrent: false },
+          );
+
+          const newSnapshots = currentItems.map((item) => {
+            const prevRank = prevRankMap.get(String(item.userId)) ?? null;
+            let trend = ERankingTrend.SAME;
+            if (prevRank !== null) {
+              if (item.rank < prevRank) trend = ERankingTrend.UP;
+              else if (item.rank > prevRank) trend = ERankingTrend.DOWN;
+            }
+
+            return manager.create(LeaderboardSnapshotEntity, {
+              filterCategory: cat,
+              periodKey,
+              isCurrent: true,
+              rank: item.rank,
+              previousRank: prevRank,
+              trend,
+              userId: item.userId,
+              likesCount: item.likesCount,
+              followersCount: item.followersCount,
+              score: item.score,
+              featuredProjects: item.featuredProjects,
+            });
+          });
+
+          if (newSnapshots.length > 0) {
+            await manager.save(LeaderboardSnapshotEntity, newSnapshots);
+          }
+        });
 
         processedCategories.push(cat);
-      } catch (err: any) {
+      } catch (err) {
+        failedCategories.push(cat);
+        const error = err instanceof Error ? err : new Error(String(err));
         this.logger.error(
-          `Failed to recalculate snapshot for category ${cat}: ${err.message}`,
-          err.stack,
+          `Failed to recalculate snapshot for category ${cat}: ${error.message}`,
+          error.stack,
         );
       }
     }
 
     const timestamp = new Date().toISOString();
+    const hasFailures = failedCategories.length > 0;
     await this.settingsService.set(SettingKeys.RANKING, {
       ...settings,
       lastSnapshotAt: timestamp,
-      lastSnapshotStatus: 'success',
+      lastSnapshotStatus: hasFailures ? 'failed' : 'success',
     });
 
-    this.logger.log('Snapshot recalculation completed successfully.');
+    this.logger.log(
+      hasFailures
+        ? `Snapshot recalculation finished with failures: ${failedCategories.join(', ')}`
+        : 'Snapshot recalculation completed successfully.',
+    );
     return {
-      message: 'Recalculated ranking snapshots successfully',
+      message: hasFailures
+        ? 'Ranking snapshots recalculated with failures'
+        : 'Recalculated ranking snapshots successfully',
       processedCategories,
+      failedCategories,
       timestamp,
     };
   }

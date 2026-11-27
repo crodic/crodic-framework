@@ -90,60 +90,53 @@ export class TagQueryFilterHelper {
    * into canonical Tag IDs.
    */
   async resolveTokensToTagIds(tokens: string[]): Promise<AutoIncrementID[]> {
-    const ids: AutoIncrementID[] = [];
+    const resolved = await Promise.all(
+      tokens.map((raw) => this.resolveTokenToTagId(raw)),
+    );
+    return resolved.filter((id): id is AutoIncrementID => id !== null);
+  }
 
-    for (const raw of tokens) {
-      const { normalized, unaccented } =
-        this.normalizationService.normalizeSearchTerm(raw);
-      const slug = this.normalizationService.toSlug(raw);
-      if (!unaccented) continue;
+  private async resolveTokenToTagId(
+    raw: string,
+  ): Promise<AutoIncrementID | null> {
+    const { normalized, unaccented } =
+      this.normalizationService.normalizeSearchTerm(raw);
+    if (!unaccented) return null;
 
-      let tag = await this.tagRepository.findOne({
+    const slug = this.normalizationService.toSlug(raw);
+    let tag = await this.tagRepository.findOne({
+      where: [
+        { slug: raw },
+        { slug },
+        { normalizedName: normalized },
+        { unaccentedName: unaccented },
+      ],
+    });
+
+    if (!tag) {
+      const alias = await this.aliasRepository.findOne({
         where: [
-          { slug: raw },
-          { slug },
-          { normalizedName: normalized },
-          { unaccentedName: unaccented },
+          { normalizedAlias: normalized },
+          { unaccentedAlias: unaccented },
         ],
       });
-
-      if (!tag) {
-        const alias = await this.aliasRepository.findOne({
-          where: [
-            { normalizedAlias: normalized },
-            { unaccentedAlias: unaccented },
-          ],
-        });
-        if (alias) {
-          tag = await this.tagRepository.findOne({
-            where: { id: alias.tagId },
-          });
-        }
-      }
-
-      if (!tag) {
-        const tr = await this.translationRepository.findOne({
-          where: [
-            { normalizedName: normalized },
-            { unaccentedName: unaccented },
-          ],
-        });
-        if (tr) {
-          tag = await this.tagRepository.findOne({ where: { id: tr.tagId } });
-        }
-      }
-
-      if (tag?.mergedIntoId) {
-        ids.push(tag.mergedIntoId);
-      } else if (tag) {
-        ids.push(tag.id);
-      } else {
-        // Unmatched required token yields impossible ID '-1' so AND query accurately returns 0 results
-        ids.push('-1' as AutoIncrementID);
+      if (alias) {
+        tag = await this.tagRepository.findOne({ where: { id: alias.tagId } });
       }
     }
 
-    return ids;
+    if (!tag) {
+      const tr = await this.translationRepository.findOne({
+        where: [{ normalizedName: normalized }, { unaccentedName: unaccented }],
+      });
+      if (tr) {
+        tag = await this.tagRepository.findOne({ where: { id: tr.tagId } });
+      }
+    }
+
+    if (tag?.mergedIntoId) return tag.mergedIntoId;
+    // Unmatched required tokens use an impossible ID so AND filters match no rows.
+    return tag?.id ?? ('-1' as AutoIncrementID);
   }
 
   /**
@@ -163,16 +156,28 @@ export class TagQueryFilterHelper {
     const anyTokens = [...(options.tagsAny ?? []), ...parsed.anyInclude];
     const noneTokens = [...(options.tagsNone ?? []), ...parsed.mustExclude];
 
+    // Resolve independent input tokens together to avoid serial database round trips.
+    const resolvedAllTokens = await Promise.all(
+      allTokens.map((raw) => this.resolveTokenToTagId(raw)),
+    );
+    const expandedAllTokens = expand
+      ? await Promise.all(
+          resolvedAllTokens.map((id) =>
+            id === null || id === ('-1' as AutoIncrementID)
+              ? []
+              : this.hierarchyService.expandDescendantIds([id]),
+          ),
+        )
+      : resolvedAllTokens.map((id) => (id === null ? [] : [id]));
+
     // 1. AND conditions (each required tag cluster must match)
     for (let idx = 0; idx < allTokens.length; idx++) {
-      const resolved = await this.resolveTokensToTagIds([allTokens[idx]!]);
-      if (resolved[0] === ('-1' as AutoIncrementID)) {
+      const resolvedId = resolvedAllTokens[idx];
+      if (resolvedId === ('-1' as AutoIncrementID)) {
         qb.andWhere('1 = 0');
         return qb;
       }
-      const clusterIds = expand
-        ? await this.hierarchyService.expandDescendantIds(resolved)
-        : resolved;
+      const clusterIds = expandedAllTokens[idx]!;
 
       const pType = `etAllType_${idx}`;
       const pIds = `etAllIds_${idx}`;
@@ -346,11 +351,21 @@ export class TagQueryFilterHelper {
       });
     }
 
+    const resolvedMustInclude = await Promise.all(
+      parsed.mustInclude.map((raw) => this.resolveTokenToTagId(raw)),
+    );
+    const expandedMustInclude = expand
+      ? await Promise.all(
+          resolvedMustInclude.map((id) =>
+            id === null || id === ('-1' as AutoIncrementID)
+              ? []
+              : this.hierarchyService.expandDescendantIds([id]),
+          ),
+        )
+      : resolvedMustInclude.map((id) => (id === null ? [] : [id]));
     for (let idx = 0; idx < parsed.mustInclude.length; idx++) {
-      const resolved = await this.resolveTokensToTagIds([
-        parsed.mustInclude[idx]!,
-      ]);
-      if (resolved[0] === ('-1' as AutoIncrementID)) {
+      const resolvedId = resolvedMustInclude[idx];
+      if (resolvedId === ('-1' as AutoIncrementID)) {
         return {
           parsed,
           matchedTagIds,
@@ -359,9 +374,7 @@ export class TagQueryFilterHelper {
           totalEntities: 0,
         };
       }
-      const clusterIds = expand
-        ? await this.hierarchyService.expandDescendantIds(resolved)
-        : resolved;
+      const clusterIds = expandedMustInclude[idx]!;
       const paramKey = `mustCluster_${idx}`;
       qb.andWhere(
         `EXISTS (

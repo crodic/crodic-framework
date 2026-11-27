@@ -26,7 +26,11 @@ import {
   UpdateEventReqDto,
   UpdateEventStatusReqDto,
 } from '../dto/event-req.dto';
-import { EventDetailResDto, EventSummaryResDto } from '../dto/event-res.dto';
+import {
+  EventDetailResDto,
+  EventParticipantResDto,
+  EventSummaryResDto,
+} from '../dto/event-res.dto';
 import { EventService } from '../services/event.service';
 
 @ApiTags('Admin Events & Conventions Management')
@@ -86,6 +90,31 @@ export class EventAdminController {
   )
   findOne(@Param('id') id: AutoIncrementID) {
     return this.eventService.findById(id);
+  }
+
+  @Get(':id/participants')
+  @ApiAuth({
+    type: EventParticipantResDto,
+    summary: 'Get paginated participants for an event',
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      filters: [],
+      sorts: ['sortOrder', 'id'],
+      includes: [],
+      defaultSort: 'sortOrder,id',
+      defaultLimit: 20,
+      maxLimit: 100,
+    },
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Read, AppSubjects.Event),
+  )
+  getParticipants(
+    @Param('id') id: AutoIncrementID,
+    @Query() query: QueryParams,
+  ) {
+    return this.eventService.getAdminParticipants(id, query);
   }
 
   @Put(':id')

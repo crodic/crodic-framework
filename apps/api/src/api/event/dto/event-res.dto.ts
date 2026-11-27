@@ -137,7 +137,10 @@ export class EventSummaryResDto {
   description?: string;
 
   @ApiPropertyOptional({ type: () => [EventParticipantResDto] })
-  participants?: EventParticipantResDto[];
+  participantsPreview?: EventParticipantResDto[];
+
+  @ApiPropertyOptional({ example: false })
+  hasVerifiedParticipant?: boolean;
 
   @ApiProperty()
   createdAt!: Date;
@@ -154,8 +157,6 @@ export class EventDetailResDto extends EventSummaryResDto {
     example: [{ time: '09:00', activity: 'Khai mạc lễ hội' }],
   })
   schedule!: any[];
-
-  declare participants: EventParticipantResDto[];
 }
 
 export class EventApplicationResDto {

@@ -2,11 +2,9 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { UserAvatar } from "@/components/common/user-avatar";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import {
   Calendar,
-  Check,
   Clock,
   Flame,
   MapPin,
@@ -24,6 +22,7 @@ import { EventApplyDialog } from "./event-apply-dialog";
 import { canApplyToEvent, getEventLifecycleLabel } from "./events-types";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useTranslations } from "next-intl";
+import { EventParticipants } from "./event-participants";
 
 export interface EventDetailModalProps {
   event: EventDetailResDto | EventSummaryResDto;
@@ -191,39 +190,13 @@ export function EventDetailModal({ event }: EventDetailModalProps) {
             )}
 
             {/* Participants / Cosplayers Khách mời */}
-            {event.participants && event.participants.length > 0 && (
+            {event.participantsCount > 0 && (
               <div className="space-y-2.5">
                 <h3 className="text-foreground flex items-center gap-2 text-sm font-bold">
                   <Users className="text-primary size-4" aria-hidden="true" />
                   <span>{tDetail("guests")}</span>
                 </h3>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {event.participants.map((p) => (
-                    <Link
-                      key={p.id}
-                      href={`/cosplayer/${p.name.toLowerCase()}`}
-                      className="border-border/70 bg-muted/20 hover:border-primary/50 flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors"
-                    >
-                      <div className="border-primary/40 relative size-6 overflow-hidden rounded-full border">
-                        <UserAvatar
-                          avatarUrl={p.avatarUrl}
-                          name={p.name}
-                          sizes="24px"
-                          fallbackClassName="text-[10px]"
-                        />
-                      </div>
-                      <span className="text-foreground text-xs font-semibold">
-                        {p.name}
-                      </span>
-                      {p.isVerified && (
-                        <Check
-                          className="text-primary size-3 stroke-[3]"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </Link>
-                  ))}
-                </div>
+                <EventParticipants eventSlug={event.slug || event.id} />
               </div>
             )}
 

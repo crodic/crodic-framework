@@ -5,7 +5,11 @@ import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
-import { EventDetailResDto, EventSummaryResDto } from '../dto/event-res.dto';
+import {
+  EventDetailResDto,
+  EventParticipantResDto,
+  EventSummaryResDto,
+} from '../dto/event-res.dto';
 import { EventService } from '../services/event.service';
 
 @ApiTags('Public Events & Festivals')
@@ -41,6 +45,25 @@ export class EventPublicController {
     return this.eventService.findAll(query, currentUserId, {
       publicOnly: true,
     });
+  }
+
+  @Get(':slug/participants')
+  @ApiAuthOptional({
+    type: EventParticipantResDto,
+    summary: 'Get paginated participants for a public event',
+    isQueryBuilder: true,
+    queryBuilderOptions: {
+      filters: [],
+      sorts: ['sortOrder', 'id'],
+      includes: [],
+      defaultSort: 'sortOrder,id',
+      defaultLimit: 20,
+      maxLimit: 100,
+    },
+  })
+  @ApiParam({ name: 'slug', type: String })
+  getParticipants(@Param('slug') slug: string, @Query() query: QueryParams) {
+    return this.eventService.getPublicParticipants(slug, query);
   }
 
   @Get(':slug')

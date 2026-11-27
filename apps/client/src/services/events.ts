@@ -40,7 +40,8 @@ export interface EventSummaryResDto {
   participantsCount: number;
   interestedCount: number;
   applicationsCount: number;
-  participants?: EventParticipantResDto[];
+  participantsPreview?: EventParticipantResDto[];
+  hasVerifiedParticipant: boolean;
   isInterestedByCurrentUser?: boolean;
   isParticipatingByCurrentUser?: boolean;
   createdAt: string;
@@ -49,7 +50,6 @@ export interface EventSummaryResDto {
 export interface EventDetailResDto extends EventSummaryResDto {
   description: string;
   schedule: { time: string; activity: string }[];
-  participants: EventParticipantResDto[];
   updatedAt: string;
 }
 
@@ -85,6 +85,18 @@ export const getEventBySlug = async (
 ): Promise<EventDetailResDto> => {
   const { data } = await http.get<EventDetailResDto>(
     `/api/v1/public/events/${slug}`
+  );
+  return data;
+};
+
+export const getEventParticipants = async (
+  slug: string,
+  page = 1,
+  limit = 20
+): Promise<PaginatedResponse<EventParticipantResDto>> => {
+  const { data } = await http.get<PaginatedResponse<EventParticipantResDto>>(
+    `/api/v1/public/events/${encodeURIComponent(slug)}/participants`,
+    { params: { page, limit } }
   );
   return data;
 };

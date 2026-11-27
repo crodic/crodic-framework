@@ -16,6 +16,7 @@ describe('RankingAdminController', () => {
       triggerSnapshotRecalculate: jest.fn().mockResolvedValue({
         message: 'Success',
         processedCategories: ['week'],
+        failedCategories: [],
         timestamp: '2026-11-20T00:00:00Z',
       }),
       getPreviewRanking: jest.fn().mockResolvedValue([]),

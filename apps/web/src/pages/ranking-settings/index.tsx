@@ -113,9 +113,19 @@ export function PageRankingSettings() {
 
   const recalculateMutation = useMutation({
     mutationFn: apiTriggerRankingRecalculate,
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: RANKING_SETTINGS_QUERY_KEY })
       queryClient.invalidateQueries({ queryKey: RANKING_PREVIEW_QUERY_KEY })
+      if (result.failedCategories.length > 0) {
+        toast.error(
+          t(
+            'rankingSettings.messages.recalculatedWithFailures',
+            'Snapshot chạy xong nhưng một số nhóm bị lỗi: {{categories}}',
+            { categories: result.failedCategories.join(', ') }
+          )
+        )
+        return
+      }
       toast.success(
         t(
           'rankingSettings.messages.recalculated',
@@ -385,6 +395,25 @@ export function PageRankingSettings() {
                           ? new Date(settings.lastSnapshotAt).toLocaleString()
                           : t('rankingSettings.neverRun', 'Chưa chạy')}
                       </strong>
+                      {settings?.lastSnapshotStatus && (
+                        <Badge
+                          variant={
+                            settings.lastSnapshotStatus === 'failed'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                          className='ml-2 align-middle'
+                        >
+                          {settings.lastSnapshotStatus === 'failed'
+                            ? t('rankingSettings.snapshotFailed', 'Thất bại')
+                            : settings.lastSnapshotStatus === 'success'
+                              ? t(
+                                  'rankingSettings.snapshotSuccess',
+                                  'Thành công'
+                                )
+                              : t('rankingSettings.snapshotIdle', 'Chưa chạy')}
+                        </Badge>
+                      )}
                     </span>
                   </div>
 

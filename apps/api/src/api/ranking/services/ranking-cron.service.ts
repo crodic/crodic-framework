@@ -20,7 +20,11 @@ export class RankingCronService {
 
     try {
       const result = await this.rankingService.triggerSnapshotRecalculate();
-      this.logger.log(`Weekly Ranking Snapshot completed: ${result.message}`);
+      const log =
+        result.failedCategories.length > 0
+          ? this.logger.error.bind(this.logger)
+          : this.logger.log.bind(this.logger);
+      log(`Weekly Ranking Snapshot: ${result.message}`);
     } catch (err: any) {
       this.logger.error(
         `Weekly Ranking Snapshot failed: ${err.message}`,
@@ -42,7 +46,11 @@ export class RankingCronService {
 
     try {
       const result = await this.rankingService.triggerSnapshotRecalculate();
-      this.logger.log(`Monthly Ranking Snapshot completed: ${result.message}`);
+      const log =
+        result.failedCategories.length > 0
+          ? this.logger.error.bind(this.logger)
+          : this.logger.log.bind(this.logger);
+      log(`Monthly Ranking Snapshot: ${result.message}`);
     } catch (err: any) {
       this.logger.error(
         `Monthly Ranking Snapshot failed: ${err.message}`,

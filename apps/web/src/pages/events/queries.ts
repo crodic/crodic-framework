@@ -4,6 +4,7 @@ import http from '@/lib/http'
 import type { RestQueryParams } from '@/lib/query-builder'
 import {
   eventSchema,
+  eventParticipantSchema,
   type Event,
   type EventFormValues,
   type EventStatus,
@@ -26,6 +27,20 @@ export async function apiGetAdminEvents(params: RestQueryParams) {
 export async function apiGetAdminEventById(id: string): Promise<Event> {
   const response = await http.get(`/admin/events/${id}`)
   return eventSchema.parse(response.data)
+}
+
+export async function apiGetAdminEventParticipants({
+  id,
+  page,
+}: {
+  id: string
+  page: number
+}) {
+  const params = { page, limit: 20 }
+  const response = await http.get(`/admin/events/${id}/participants`, {
+    params,
+  })
+  return parsePaginatedResponse(eventParticipantSchema, response.data, params)
 }
 
 export async function apiCreateAdminEvent(
@@ -81,5 +96,12 @@ export const useDataAdminEventById = (id: string) =>
   useQuery({
     queryKey: ['admin-event', id],
     queryFn: () => apiGetAdminEventById(id),
+    enabled: Boolean(id),
+  })
+
+export const useDataAdminEventParticipants = (id: string, page: number) =>
+  useQuery({
+    queryKey: ['admin-event-participants', id, page],
+    queryFn: () => apiGetAdminEventParticipants({ id, page }),
     enabled: Boolean(id),
   })

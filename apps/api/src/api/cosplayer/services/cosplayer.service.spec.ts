@@ -226,7 +226,6 @@ describe('CosplayerService', () => {
         'user.deletedAt IS NULL',
       );
       expect(qbMock.where).toHaveBeenCalledWith('profile.deletedAt IS NULL');
-      expect(qbMock.andWhere).toHaveBeenCalledWith('user.deletedAt IS NULL');
       expect(qbMock.andWhere).toHaveBeenCalledWith(
         'profile.userId != :currentUserId',
         { currentUserId: id('100') },

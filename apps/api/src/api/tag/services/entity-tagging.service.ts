@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import {
   DEFAULT_MAX_TAGS_PER_ENTITY,
   EEntityTagLogAction,
@@ -354,97 +354,160 @@ export class EntityTaggingService {
     actor: TagActorContext,
     locale = 'en',
   ): Promise<EntityTagListResDto> {
-    await this.dataSource.transaction(async (manager) => {
-      let config = await manager.findOne(EntityTagConfigEntity, {
-        where: { entityType, entityId },
-      });
-
-      if (!config) {
-        config = manager.create(EntityTagConfigEntity, {
-          entityType,
-          entityId,
-          ownerUserId: dto.ownerUserId ?? actor.userId ?? null,
-          tagEditLocked: dto.tagEditLocked ?? false,
-          maxTags: DEFAULT_MAX_TAGS_PER_ENTITY,
-        });
-      } else {
-        if (dto.ownerUserId !== undefined) config.ownerUserId = dto.ownerUserId;
-        if (dto.tagEditLocked !== undefined) {
-          config.tagEditLocked = dto.tagEditLocked;
-        }
-      }
-      await manager.save(EntityTagConfigEntity, config);
-
-      const cleanNames = dto.tagNames
-        .map((n) => n.trim())
-        .filter(Boolean)
-        .slice(0, config.maxTags);
-
-      const resolvedTags: TagEntity[] = [];
-      const seenIds = new Set<string>();
-
-      for (const rawName of cleanNames) {
-        const canonical = await this.tagService.resolveOrCreateCanonicalTag(
-          rawName,
-          actor,
-          manager,
-        );
-        if (!seenIds.has(String(canonical.id))) {
-          seenIds.add(String(canonical.id));
-          resolvedTags.push(canonical);
-        }
-      }
-
-      const existing = await manager.find(EntityTagEntity, {
-        where: { entityType, entityId },
-      });
-      const existingByTagId = new Map(
-        existing.map((et) => [String(et.tagId), et]),
-      );
-
-      // Remove detached tags
-      const removed = existing.filter((et) => !seenIds.has(String(et.tagId)));
-      if (removed.length > 0) {
-        await manager.delete(EntityTagEntity, {
-          id: In(removed.map((r) => r.id)),
-        });
-        for (const rem of removed) {
-          await manager.query(
-            `UPDATE tags SET usage_count = GREATEST(usage_count - 1, 0) WHERE id = $1`,
-            [rem.tagId],
-          );
-        }
-      }
-
-      // Upsert & order desired tags
-      for (let idx = 0; idx < resolvedTags.length; idx++) {
-        const tag = resolvedTags[idx]!;
-        const prev = existingByTagId.get(String(tag.id));
-        if (prev) {
-          prev.sortOrder = idx;
-          prev.isAuthorTag = true;
-          await manager.save(EntityTagEntity, prev);
-        } else {
-          await manager.save(
-            EntityTagEntity,
-            manager.create(EntityTagEntity, {
-              entityType,
-              entityId,
-              tagId: tag.id,
-              isAuthorTag: true,
-              isLocked: false,
-              sortOrder: idx,
-              addedByUserId: actor.userId ?? null,
-              addedByAdminId: actor.adminId ?? null,
-            }),
-          );
-          await manager.increment(TagEntity, { id: tag.id }, 'usageCount', 1);
-        }
-      }
-    });
+    await this.dataSource.transaction((manager) =>
+      this.syncAuthorTagsInTransaction(
+        manager,
+        entityType,
+        entityId,
+        dto,
+        actor,
+      ),
+    );
 
     await this.cacheService.bumpVersion();
     return this.listEntityTags(entityType, entityId, locale, actor);
+  }
+
+  async syncAuthorTagsInTransaction(
+    manager: EntityManager,
+    entityType: ETaggableEntityType,
+    entityId: AutoIncrementID,
+    dto: SyncEntityTagsReqDto,
+    actor: TagActorContext,
+  ): Promise<void> {
+    let config = await manager.findOne(EntityTagConfigEntity, {
+      where: { entityType, entityId },
+    });
+
+    if (!config) {
+      config = manager.create(EntityTagConfigEntity, {
+        entityType,
+        entityId,
+        ownerUserId: dto.ownerUserId ?? actor.userId ?? null,
+        tagEditLocked: dto.tagEditLocked ?? false,
+        maxTags: DEFAULT_MAX_TAGS_PER_ENTITY,
+      });
+    } else {
+      if (dto.ownerUserId !== undefined) config.ownerUserId = dto.ownerUserId;
+      if (dto.tagEditLocked !== undefined) {
+        config.tagEditLocked = dto.tagEditLocked;
+      }
+    }
+    await manager.save(EntityTagConfigEntity, config);
+
+    const cleanNames = Array.from(
+      new Set(
+        dto.tagNames
+          .map((n) => n.trim())
+          .filter(Boolean)
+          .slice(0, config.maxTags),
+      ),
+    );
+
+    const resolvedTags: TagEntity[] = [];
+    const seenIds = new Set<string>();
+
+    for (const rawName of cleanNames) {
+      const canonical = await this.tagService.resolveOrCreateCanonicalTag(
+        rawName,
+        actor,
+        manager,
+      );
+      if (!seenIds.has(String(canonical.id))) {
+        seenIds.add(String(canonical.id));
+        resolvedTags.push(canonical);
+      }
+    }
+
+    const existing = await manager.find(EntityTagEntity, {
+      where: { entityType, entityId },
+    });
+    const existingByTagId = new Map(
+      existing.map((et) => [String(et.tagId), et]),
+    );
+
+    const removed = existing.filter((et) => !seenIds.has(String(et.tagId)));
+    if (removed.length > 0) {
+      await manager.delete(EntityTagEntity, {
+        id: In(removed.map((r) => r.id)),
+      });
+    }
+
+    const tagsToSave: EntityTagEntity[] = [];
+    const usageAdjustments: { tagId: AutoIncrementID; amount: number }[] =
+      removed.map((rem) => ({ tagId: rem.tagId, amount: -1 }));
+
+    for (let idx = 0; idx < resolvedTags.length; idx++) {
+      const tag = resolvedTags[idx]!;
+      const prev = existingByTagId.get(String(tag.id));
+      if (prev) {
+        prev.sortOrder = idx;
+        prev.isAuthorTag = true;
+        tagsToSave.push(prev);
+      } else {
+        tagsToSave.push(
+          manager.create(EntityTagEntity, {
+            entityType,
+            entityId,
+            tagId: tag.id,
+            isAuthorTag: true,
+            isLocked: false,
+            sortOrder: idx,
+            addedByUserId: actor.userId ?? null,
+            addedByAdminId: actor.adminId ?? null,
+          }),
+        );
+        usageAdjustments.push({ tagId: tag.id, amount: 1 });
+      }
+    }
+
+    if (tagsToSave.length > 0) {
+      await manager.save(EntityTagEntity, tagsToSave);
+    }
+    await this.adjustTagUsageCounts(manager, usageAdjustments);
+  }
+
+  private async adjustTagUsageCounts(
+    manager: EntityManager,
+    adjustments: { tagId: AutoIncrementID; amount: number }[],
+  ): Promise<void> {
+    const totals = new Map<
+      string,
+      { tagId: AutoIncrementID; amount: number }
+    >();
+    for (const adjustment of adjustments) {
+      const key = String(adjustment.tagId);
+      const current = totals.get(key);
+      if (current) current.amount += adjustment.amount;
+      else totals.set(key, { ...adjustment });
+    }
+
+    const entries = Array.from(totals.values()).filter(
+      ({ amount }) => amount !== 0,
+    );
+    if (entries.length === 0) return;
+
+    const parameters: (string | number)[] = [];
+    const values = entries
+      .map(({ tagId, amount }) => {
+        parameters.push(String(tagId), amount);
+        const idParameter = parameters.length - 1;
+        const amountParameter = parameters.length;
+        return `($${idParameter}::bigint, $${amountParameter}::integer)`;
+      })
+      .join(', ');
+
+    await manager.query(
+      `UPDATE tags AS tag
+       SET usage_count = GREATEST(tag.usage_count + changes.amount, 0)
+       FROM (VALUES ${values}) AS changes(tag_id, amount)
+       WHERE tag.id = changes.tag_id`,
+      parameters,
+    );
+  }
+
+  async invalidateCache(): Promise<void> {
+    await this.cacheService.bumpVersion();
   }
 
   /**

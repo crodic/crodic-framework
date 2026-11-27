@@ -72,7 +72,11 @@ describe('EntityTaggingService (Collaborative Folksonomy Governance)', () => {
       save: jest.fn(
         async (_entity: unknown, payload: Record<string, unknown>) => {
           if (_entity === EntityTagEntity) {
-            existing.push(payload as unknown as EntityTagEntity);
+            existing.push(
+              ...((Array.isArray(payload)
+                ? payload
+                : [payload]) as unknown as EntityTagEntity[]),
+            );
           }
           return payload;
         },
@@ -121,7 +125,7 @@ describe('EntityTaggingService (Collaborative Folksonomy Governance)', () => {
       tags: [],
     });
 
-    return { service, existing };
+    return { service, existing, manager, tagService };
   }
 
   it('enforces 10-tag maximum limit per entity', async () => {
@@ -138,6 +142,35 @@ describe('EntityTaggingService (Collaborative Folksonomy Governance)', () => {
         { userId: id('22') },
       ),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('saves synchronized tag links together and adjusts usage counts in one query', async () => {
+    const { service, manager, tagService } = createSetup({});
+    (tagService.resolveOrCreateCanonicalTag as jest.Mock)
+      .mockResolvedValueOnce({ id: id('201'), name: 'First', isSystem: false })
+      .mockResolvedValueOnce({
+        id: id('202'),
+        name: 'Second',
+        isSystem: false,
+      });
+
+    await service.syncAuthorTagsInTransaction(
+      manager as any,
+      ETaggableEntityType.ARTWORK,
+      id('1'),
+      { tagNames: ['First', 'Second'] },
+      { userId: id('10') },
+    );
+
+    expect(manager.save).toHaveBeenCalledWith(
+      EntityTagEntity,
+      expect.arrayContaining([
+        expect.objectContaining({ tagId: id('201'), sortOrder: 0 }),
+        expect.objectContaining({ tagId: id('202'), sortOrder: 1 }),
+      ]),
+    );
+    expect(manager.query).toHaveBeenCalledTimes(1);
+    expect(manager.query.mock.calls[0][1]).toEqual(['201', 1, '202', 1]);
   });
 
   it('blocks community tag additions when creator enables work-level tagEditLocked, while permitting creator', async () => {

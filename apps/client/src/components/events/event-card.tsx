@@ -20,9 +20,7 @@ export function EventCard({ event, onApply }: EventCardProps) {
   const t = useTranslations("Events");
   const eventLink = `/events/${event.slug || event.id}`;
   const isRecruitingOpen = canApplyToEvent(event);
-  const hasVerifiedParticipant = Boolean(
-    event.participants?.some((p) => p.isVerified)
-  );
+  const hasVerifiedParticipant = event.hasVerifiedParticipant;
 
   return (
     <article className="group border-border/80 hover:border-primary/40 bg-card relative flex flex-row overflow-hidden rounded-2xl border p-2.5 transition-colors duration-200 sm:flex-col sm:p-3">
@@ -68,37 +66,38 @@ export function EventCard({ event, onApply }: EventCardProps) {
           </div>
 
           {/* Participants Avatar Cluster */}
-          {event.participants && event.participants.length > 0 && (
-            <div className="mt-1 flex items-center gap-1.5 sm:mt-0">
-              <span className="text-muted-foreground hidden text-[11px] font-medium sm:inline">
-                {t("participatedBy")}
-              </span>
-              <div className="flex items-center -space-x-1.5">
-                {event.participants.slice(0, 3).map((p) => (
-                  <div
-                    key={p.id}
-                    className="ring-card relative size-5 overflow-hidden rounded-full ring-2 sm:size-5.5"
-                    title={p.name}
-                  >
-                    <UserAvatar
-                      avatarUrl={p.avatarUrl}
-                      name={p.name}
-                      sizes="22px"
-                      fallbackClassName="text-[9px]"
-                    />
-                  </div>
-                ))}
-              </div>
-              {hasVerifiedParticipant && (
-                <span
-                  className="bg-primary text-primary-foreground inline-flex size-4 items-center justify-center rounded-full"
-                  title={t("verified")}
-                >
-                  <Check className="size-2.5 stroke-[3]" aria-hidden="true" />
+          {event.participantsPreview &&
+            event.participantsPreview.length > 0 && (
+              <div className="mt-1 flex items-center gap-1.5 sm:mt-0">
+                <span className="text-muted-foreground hidden text-[11px] font-medium sm:inline">
+                  {t("participatedBy")}
                 </span>
-              )}
-            </div>
-          )}
+                <div className="flex items-center -space-x-1.5">
+                  {event.participantsPreview.map((p) => (
+                    <div
+                      key={p.id}
+                      className="ring-card relative size-5 overflow-hidden rounded-full ring-2 sm:size-5.5"
+                      title={p.name}
+                    >
+                      <UserAvatar
+                        avatarUrl={p.avatarUrl}
+                        name={p.name}
+                        sizes="22px"
+                        fallbackClassName="text-[9px]"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {hasVerifiedParticipant && (
+                  <span
+                    className="bg-primary text-primary-foreground inline-flex size-4 items-center justify-center rounded-full"
+                    title={t("verified")}
+                  >
+                    <Check className="size-2.5 stroke-[3]" aria-hidden="true" />
+                  </span>
+                )}
+              </div>
+            )}
 
           {/* Event Title (Links to Intercepting Route) */}
           <Link href={eventLink} scroll={false} className="mt-1.5 block">

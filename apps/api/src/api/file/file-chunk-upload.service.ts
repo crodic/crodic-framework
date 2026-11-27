@@ -8,6 +8,7 @@ import { FilesystemService } from '../../filesystem/filesystem.service';
 import { RedisService } from '../../redis/redis.service';
 import {
   BadRequestException,
+  InternalServerErrorException,
   Injectable,
   Logger,
   NotFoundException,
@@ -773,44 +774,90 @@ export class FileChunkUploadService {
   }
 
   async abortUploadSession(sessionId: string): Promise<{ message: string }> {
+    this.assertSafeSessionId(sessionId);
+
+    let session: ChunkUploadSession;
     try {
-      const session = await this.readUploadSession(sessionId);
-      if (session?.s3UploadId && session?.s3Key) {
-        const targetDriver = this.writeDisk(session.disk);
-        if (isMultipartCapable(targetDriver)) {
-          await targetDriver.abortMultipartUpload(
-            session.s3Key,
-            session.s3UploadId,
-          );
-        }
+      session = await this.readUploadSession(sessionId);
+    } catch (error) {
+      if (!(error instanceof NotFoundException)) {
+        throw error;
       }
-    } catch {
-      // Ignore if session already missing
+
+      if (this.redis) {
+        await this.redis.del(`chunk_session:${sessionId}`);
+      }
+      await this.removeSessionDirectoryBestEffort(sessionId);
+      return { message: 'Successfully aborted' };
     }
 
-    try {
-      await this.sessionRepository.update(
-        { id: sessionId },
-        { status: 'aborted' },
+    if (Boolean(session.s3UploadId) !== Boolean(session.s3Key)) {
+      throw new InternalServerErrorException(
+        'Upload session has incomplete multipart storage details',
       );
-    } catch {
-      // Ignore DB update failure
+    }
+
+    if (session.s3UploadId && session.s3Key) {
+      const targetDriver = this.writeDisk(session.disk);
+      if (!isMultipartCapable(targetDriver)) {
+        throw new InternalServerErrorException(
+          'Upload storage does not support multipart abort',
+        );
+      }
+
+      try {
+        await targetDriver.abortMultipartUpload(
+          session.s3Key,
+          session.s3UploadId,
+        );
+      } catch (error) {
+        if (!this.isMultipartUploadAlreadyMissing(error)) {
+          throw error;
+        }
+      }
     }
 
     if (this.redis) {
-      try {
-        await this.redis.del(`chunk_session:${sessionId}`);
-      } catch {
-        // Ignore redis delete failure
-      }
+      await this.redis.del(`chunk_session:${sessionId}`);
     }
 
-    try {
-      await rm(this.sessionPath(sessionId), { recursive: true, force: true });
-    } catch {
-      // Ignore directory removal failure
-    }
+    await this.sessionRepository.update(
+      { id: sessionId },
+      { status: 'aborted' },
+    );
+
+    await this.removeSessionDirectoryBestEffort(sessionId);
 
     return { message: 'Successfully aborted' };
+  }
+
+  private async removeSessionDirectoryBestEffort(
+    sessionId: string,
+  ): Promise<void> {
+    try {
+      await rm(this.sessionPath(sessionId), { recursive: true, force: true });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to remove upload session directory ${sessionId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private isMultipartUploadAlreadyMissing(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+
+    const multipartError = error as {
+      name?: string;
+      code?: string;
+      Code?: string;
+      $metadata?: { httpStatusCode?: number };
+    };
+
+    return (
+      multipartError.name === 'NoSuchUpload' ||
+      multipartError.code === 'NoSuchUpload' ||
+      multipartError.Code === 'NoSuchUpload' ||
+      multipartError.$metadata?.httpStatusCode === 404
+    );
   }
 }

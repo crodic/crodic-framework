@@ -43,6 +43,7 @@ describe('FileFolderService', () => {
       orderBy: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
       set: jest.fn().mockReturnThis(),
+      setParameters: jest.fn().mockReturnThis(),
       execute: jest.fn().mockResolvedValue({ affected: 1 }),
       getRawMany: jest.fn().mockResolvedValue([]),
       getRawOne: jest.fn().mockResolvedValue({ count: '0', size: '0' }),
@@ -63,7 +64,13 @@ describe('FileFolderService', () => {
     folderRepository = {
       findOne: jest.fn().mockResolvedValue(null),
       find: jest.fn().mockResolvedValue([]),
-      save: jest.fn((val) => Promise.resolve({ id: 1, ...val })),
+      save: jest.fn((val) =>
+        Promise.resolve(
+          Array.isArray(val)
+            ? val.map((item) => ({ id: 1, ...item }))
+            : { id: 1, ...val },
+        ),
+      ),
       create: jest.fn((val) => val),
       delete: jest.fn().mockResolvedValue({ affected: 1 }),
       createQueryBuilder: jest.fn(() => createQueryBuilderMock()),
@@ -144,6 +151,45 @@ describe('FileFolderService', () => {
     expect(qb.set).toHaveBeenCalledWith({ folder: 'new' });
     expect(qb.where).toHaveBeenCalledWith('folder = :folder', {
       folder: 'old',
+    });
+  });
+
+  it('renames descendant file folders with a single conditional update and delete', async () => {
+    const fileQb = createQueryBuilderMock();
+    const folderQb = createQueryBuilderMock({
+      getMany: jest.fn().mockResolvedValue([
+        { id: 2, name: 'old/child' },
+        { id: 3, name: 'old/child/grandchild' },
+      ]),
+    });
+    folderRepository.findOne
+      .mockResolvedValueOnce({ id: 1, name: 'old', title: 'old', depth: 0 })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 4, name: 'new', title: 'new', depth: 0 })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null);
+    folderRepository.find.mockResolvedValue([
+      { id: 4, name: 'new', title: 'new', depth: 0 },
+    ]);
+    folderRepository.createQueryBuilder.mockReturnValue(folderQb);
+    repository.createQueryBuilder.mockReturnValue(fileQb);
+    repository.count.mockResolvedValue(0);
+
+    await service.renameFolder('old', 'new');
+
+    expect(fileQb.set).toHaveBeenCalledWith({
+      folder: expect.any(Function),
+    });
+    expect(fileQb.setParameters).toHaveBeenCalledWith({
+      oldFolder0: 'old/child',
+      newFolder0: 'new/child',
+      oldFolder1: 'old/child/grandchild',
+      newFolder1: 'new/child/grandchild',
+    });
+    expect(repository.createQueryBuilder).toHaveBeenCalledTimes(3);
+    expect(folderRepository.delete).toHaveBeenCalledWith({
+      id: In([2, 3]),
     });
   });
 

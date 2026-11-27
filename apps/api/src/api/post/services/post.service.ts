@@ -294,7 +294,6 @@ export class PostService {
       .andWhere('post.status = :publishedStatus', {
         publishedStatus: EPostStatus.PUBLISHED,
       })
-      .andWhere('author.deletedAt IS NULL')
       .andWhere(
         new Brackets((b) => {
           b.where('post.isPublic = true').orWhere(
@@ -603,7 +602,7 @@ export class PostService {
 
     const slugCandidate = await this.generateUniqueSlug(dto);
 
-    return await this.dataSource.transaction(async (em) => {
+    const result = await this.dataSource.transaction(async (em) => {
       const post = em.create(PostEntity, {
         authorId,
         slug: slugCandidate,
@@ -716,16 +715,13 @@ export class PostService {
 
       // Sync tags with Tag Management system
       if (dto.tags && dto.tags.length > 0 && this.entityTaggingService) {
-        try {
-          await this.entityTaggingService.syncAuthorTags(
-            ETaggableEntityType.POST,
-            savedPost.id,
-            { tagNames: dto.tags, ownerUserId: authorId },
-            { userId: authorId },
-          );
-        } catch {
-          // Ignore if tag sync fails gracefully
-        }
+        await this.entityTaggingService.syncAuthorTagsInTransaction(
+          em,
+          ETaggableEntityType.POST,
+          savedPost.id,
+          { tagNames: dto.tags, ownerUserId: authorId },
+          { userId: authorId },
+        );
       }
 
       const profile = await em.findOne(CosplayerProfileEntity, {
@@ -740,6 +736,11 @@ export class PostService {
         dto.tags,
       );
     });
+
+    if (dto.tags && dto.tags.length > 0 && this.entityTaggingService) {
+      await this.entityTaggingService.invalidateCache();
+    }
+    return result;
   }
 
   /**
@@ -785,7 +786,7 @@ export class PostService {
       }
     }
 
-    return await this.dataSource.transaction(async (em) => {
+    const result = await this.dataSource.transaction(async (em) => {
       if (dto.title !== undefined) post.title = dto.title;
       if (dto.caption !== undefined) post.caption = dto.caption;
       if (dto.postType !== undefined) post.postType = dto.postType;
@@ -833,16 +834,13 @@ export class PostService {
       const savedPost = await em.save(PostEntity, post);
 
       if (dto.tags !== undefined && this.entityTaggingService) {
-        try {
-          await this.entityTaggingService.syncAuthorTags(
-            ETaggableEntityType.POST,
-            savedPost.id,
-            { tagNames: dto.tags, ownerUserId: authorId },
-            { userId: authorId },
-          );
-        } catch {
-          // Gracefully continue
-        }
+        await this.entityTaggingService.syncAuthorTagsInTransaction(
+          em,
+          ETaggableEntityType.POST,
+          savedPost.id,
+          { tagNames: dto.tags, ownerUserId: authorId },
+          { userId: authorId },
+        );
       }
 
       const [mediaList, profile] = await Promise.all([
@@ -862,6 +860,11 @@ export class PostService {
         dto.tags,
       );
     });
+
+    if (dto.tags !== undefined && this.entityTaggingService) {
+      await this.entityTaggingService.invalidateCache();
+    }
+    return result;
   }
 
   /**

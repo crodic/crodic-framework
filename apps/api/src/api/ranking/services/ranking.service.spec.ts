@@ -1,6 +1,7 @@
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { CosplayerProfileEntity } from '../../cosplayer/entities/cosplayer-profile.entity';
 import {
   ERankingFilterCategory,
@@ -22,6 +23,7 @@ describe('RankingService', () => {
   let followRepo: any;
   let postRepo: any;
   let settingsService: any;
+  let dataSource: any;
 
   beforeEach(async () => {
     snapshotRepo = {
@@ -63,10 +65,20 @@ describe('RankingService', () => {
       get: jest.fn().mockResolvedValue(DEFAULT_RANKING_SETTINGS),
       set: jest.fn().mockResolvedValue(true),
     };
+    const transactionManager = {
+      find: jest.fn().mockResolvedValue([]),
+      update: jest.fn().mockResolvedValue({ affected: 0 }),
+      create: jest.fn((_, values) => values),
+      save: jest.fn().mockResolvedValue([]),
+    };
+    dataSource = {
+      transaction: jest.fn((callback) => callback(transactionManager)),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RankingService,
+        { provide: DataSource, useValue: dataSource },
         {
           provide: getRepositoryToken(LeaderboardSnapshotEntity),
           useValue: snapshotRepo,
@@ -142,5 +154,23 @@ describe('RankingService', () => {
     expect(updated.followersWeight).toBe(6);
     expect(updated.enableCronJob).toBe(false);
     expect(settingsService.set).toHaveBeenCalled();
+  });
+
+  it('reports category failures and marks the snapshot run failed', async () => {
+    jest
+      .spyOn(service as any, 'computeRealtimeLeaderboard')
+      .mockResolvedValue({ data: [] });
+    dataSource.transaction.mockRejectedValueOnce(
+      new Error('snapshot write failed'),
+    );
+
+    const result = await service.triggerSnapshotRecalculate();
+
+    expect(result.failedCategories).toEqual([ERankingFilterCategory.WEEK]);
+    expect(result.processedCategories).toHaveLength(4);
+    expect(settingsService.set).toHaveBeenLastCalledWith(
+      expect.any(String),
+      expect.objectContaining({ lastSnapshotStatus: 'failed' }),
+    );
   });
 });

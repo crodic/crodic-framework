@@ -171,6 +171,75 @@ describe('CollectionService', () => {
     });
   });
 
+  describe('getMyCollections', () => {
+    it('loads only the first four non-empty cover previews per collection', async () => {
+      const collection = {
+        id: id('1'),
+        userId: id('100'),
+        title: 'Favorites',
+        slug: 'favorites',
+        itemsCount: 6,
+      };
+      const baseQueryBuilder = {
+        alias: 'col',
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[collection], 1]),
+      };
+      collectionRepo.createQueryBuilder.mockReturnValue(baseQueryBuilder);
+
+      const rankedBuilder = {
+        innerJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getQuery: jest.fn().mockReturnValue('SELECT ranked preview rows'),
+        getParameters: jest.fn().mockReturnValue({ colIds: [id('1')] }),
+      };
+      const previewRows = [1, 2, 3, 4].map((n) => ({
+        collectionId: id('1'),
+        coverImageUrl: `cover-${n}`,
+      }));
+      const previewsBuilder = {
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        from: jest.fn().mockReturnThis(),
+        setParameters: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getRawMany: jest.fn().mockResolvedValue(previewRows),
+      };
+      itemRepo.createQueryBuilder
+        .mockReturnValueOnce(rankedBuilder)
+        .mockReturnValueOnce(previewsBuilder);
+
+      const result = await service.getMyCollections(id('100'), {});
+
+      expect(result.data[0]?.previewThumbnails).toEqual([
+        'cover-1',
+        'cover-2',
+        'cover-3',
+        'cover-4',
+      ]);
+      expect(rankedBuilder.andWhere).toHaveBeenNthCalledWith(
+        1,
+        'post.coverImageUrl IS NOT NULL',
+      );
+      expect(rankedBuilder.andWhere).toHaveBeenNthCalledWith(
+        2,
+        "post.coverImageUrl <> ''",
+      );
+      expect(previewsBuilder.where).toHaveBeenCalledWith(
+        'preview.row_number <= 4',
+      );
+    });
+  });
+
   describe('addItem', () => {
     it('adds post to collection and increments count', async () => {
       collectionRepo.findOne.mockResolvedValue({

@@ -44,6 +44,7 @@ export class UpdateRankingSettingsReqDto {
 export class TriggerSnapshotResDto {
   message!: string;
   processedCategories!: string[];
+  failedCategories!: string[];
   timestamp!: string;
 }
 

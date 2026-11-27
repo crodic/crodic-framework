@@ -109,6 +109,62 @@ describe('FileChunkUploadService', () => {
     expect(service).toBeDefined();
   });
 
+  it('keeps abort idempotent for a missing upload session', async () => {
+    await expect(
+      service.abortUploadSession('missing-session'),
+    ).resolves.toEqual({ message: 'Successfully aborted' });
+    expect(sessionRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('propagates upload session database update failures during abort', async () => {
+    sessionRepository.findOne.mockResolvedValueOnce({
+      id: 'active-session',
+      status: 'pending',
+      originalName: 'upload.txt',
+      mime: 'text/plain',
+      size: 10,
+      disk: 'public',
+      visibility: 'public',
+      folder: null,
+      totalChunks: 1,
+      chunkSize: 10,
+      uploadedChunks: [],
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    const error = new Error('database unavailable');
+    sessionRepository.update.mockRejectedValueOnce(error);
+
+    await expect(service.abortUploadSession('active-session')).rejects.toBe(
+      error,
+    );
+  });
+
+  it('does not report a successful abort when multipart abort is unsupported', async () => {
+    sessionRepository.findOne.mockResolvedValueOnce({
+      id: 'multipart-session',
+      status: 'pending',
+      originalName: 'upload.txt',
+      mime: 'text/plain',
+      size: 10,
+      disk: 's3',
+      visibility: 'public',
+      folder: null,
+      totalChunks: 1,
+      chunkSize: 10,
+      uploadedChunks: [],
+      s3UploadId: 'upload-id',
+      s3Key: 'uploads/file.txt',
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    await expect(
+      service.abortUploadSession('multipart-session'),
+    ).rejects.toThrow('does not support multipart abort');
+    expect(sessionRepository.update).not.toHaveBeenCalled();
+  });
+
   it('uploads chunks and merges them into a stored file', async () => {
     diskRoot = await mkdtemp(join(tmpdir(), 'file-service-'));
     repository.create.mockImplementation((value) => value);
