@@ -47,7 +47,7 @@ function labelText(label: ReactNode): string {
     .join(' ')
 }
 
-/** One or two actions use icons; three or more use a menu. Dialogs remain mounted outside the controls. */
+/** Up to four actions stay visible as icons; five or more use a menu. */
 export function TableRowActions({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const actions: TableRowActionProps[] = []
@@ -69,11 +69,11 @@ export function TableRowActions({ children }: { children: ReactNode }) {
   collect(children)
   return (
     <div
-      className='flex items-center justify-end gap-1'
+      className='flex items-center justify-center gap-1'
       onClick={(event) => event.stopPropagation()}
     >
       {companions}
-      {actions.length > 2 ? (
+      {actions.length > 4 ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

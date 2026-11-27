@@ -166,6 +166,9 @@ export function DataTable<TData>({
                     <TableHead
                       key={header.id}
                       colSpan={header.colSpan}
+                      className={cn(
+                        header.column.id.includes('actions') && 'w-20 max-w-20'
+                      )}
                       style={{
                         ...getCommonPinningStyles({ column: header.column }),
                       }}
@@ -657,6 +660,10 @@ function DataTableRow<TData>({
         {row.getVisibleCells().map((cell) => (
           <TableCell
             key={cell.id}
+            className={cn(
+              cell.column.id.includes('actions') && 'w-20 max-w-20',
+              onClickRowAction && 'cursor-pointer'
+            )}
             style={{
               ...getCommonPinningStyles({ column: cell.column }),
               minWidth: `${cell.column.columnDef.minSize}px`,
@@ -668,7 +675,6 @@ function DataTableRow<TData>({
                 ? undefined
                 : onClickRowAction?.(row.original)
             }
-            className={cn(onClickRowAction && 'cursor-pointer')}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </TableCell>

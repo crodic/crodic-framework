@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  ArrowLeft,
   Code2Icon,
   Copy,
   DownloadIcon,
@@ -214,108 +213,94 @@ export default function PageWhiteLabelShow() {
         {/* Top Header Bar */}
         <PageHeader
           title={<>{item.name}</>}
+          backTo='/white-labels'
+          backLabel={t('whiteLabels.show.back')}
           description={<>{item.description || item.slug}</>}
           badges={
             <>
-              <Button
-                variant='ghost'
-                size='icon'
-                onClick={() => navigate('/white-labels')}
-                title={t('whiteLabels.show.back')}
-                aria-label={t('whiteLabels.show.back')}
-                className='shrink-0'
+              <Badge
+                variant={item.target === 'admin' ? 'default' : 'secondary'}
+                className='capitalize'
               >
-                <ArrowLeft className='size-5' />
-              </Button>
-              <div className='min-w-0 flex-1'>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Badge
-                    variant={item.target === 'admin' ? 'default' : 'secondary'}
-                    className='capitalize'
-                  >
-                    {item.target}
-                  </Badge>
-                  {item.isActive ? (
-                    <Badge variant='solid-success' className='gap-1'>
-                      <Wand2 className='size-3' />
-                      {t('whiteLabels.show.activeBadge')}
-                    </Badge>
-                  ) : (
-                    <Badge variant='outline' className='text-muted-foreground'>
-                      {t('whiteLabels.show.presetBadge')}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+                {item.target}
+              </Badge>
+              {item.isActive ? (
+                <Badge variant='solid-success' className='gap-1'>
+                  <Wand2 className='size-3' />
+                  {t('whiteLabels.show.activeBadge')}
+                </Badge>
+              ) : (
+                <Badge variant='outline' className='text-muted-foreground'>
+                  {t('whiteLabels.show.presetBadge')}
+                </Badge>
+              )}
             </>
           }
           actions={
-            <>
-              <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
-                {styles && (
-                  <>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() => setIsCodeDialogOpen(true)}
-                      className='gap-1.5'
-                    >
-                      <Code2Icon className='size-4' />
-                      <span>{t('whiteLabels.show.downloadCss')}</span>
-                    </Button>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={exportJson}
-                      className='gap-1.5'
-                    >
-                      <DownloadIcon className='size-4' />
-                      <span>{t('whiteLabels.show.exportJson')}</span>
-                    </Button>
-                  </>
-                )}
-
-                {canPublish && !item.isActive && (
-                  <Button
-                    variant='default'
-                    size='sm'
-                    onClick={() => activateMutation.mutate(item.id)}
-                    disabled={activateMutation.isPending}
-                    className='gap-1.5'
-                  >
-                    <Wand2 className='size-4' />
-                    {t('whiteLabels.show.activateTarget', {
-                      target: item.target,
-                    })}
-                  </Button>
-                )}
-
-                {canUpdate && (
+            <div className='flex flex-wrap items-center gap-2'>
+              {styles && (
+                <>
                   <Button
                     variant='outline'
                     size='sm'
-                    onClick={() => navigate(`/white-labels/${item.id}/edit`)}
+                    onClick={() => setIsCodeDialogOpen(true)}
                     className='gap-1.5'
                   >
-                    <Edit2 className='size-4' />
-                    {t('whiteLabels.actions.edit')}
+                    <Code2Icon className='size-4' />
+                    <span>{t('whiteLabels.show.downloadCss')}</span>
                   </Button>
-                )}
-
-                {canDelete && (
                   <Button
-                    variant='destructive'
+                    variant='outline'
                     size='sm'
-                    onClick={() => setIsDeleteOpen(true)}
-                    disabled={deleteMutation.isPending}
+                    onClick={exportJson}
                     className='gap-1.5'
                   >
-                    <Trash2 className='size-4' />
-                    {t('whiteLabels.actions.delete')}
+                    <DownloadIcon className='size-4' />
+                    <span>{t('whiteLabels.show.exportJson')}</span>
                   </Button>
-                )}
-              </div>
-            </>
+                </>
+              )}
+
+              {canPublish && !item.isActive && (
+                <Button
+                  variant='default'
+                  size='sm'
+                  onClick={() => activateMutation.mutate(item.id)}
+                  disabled={activateMutation.isPending}
+                  className='gap-1.5'
+                >
+                  <Wand2 className='size-4' />
+                  {t('whiteLabels.show.activateTarget', {
+                    target: item.target,
+                  })}
+                </Button>
+              )}
+
+              {canUpdate && (
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => navigate(`/white-labels/${item.id}/edit`)}
+                  className='gap-1.5'
+                >
+                  <Edit2 className='size-4' />
+                  {t('whiteLabels.actions.edit')}
+                </Button>
+              )}
+
+              {canDelete && (
+                <Button
+                  variant='destructive'
+                  size='sm'
+                  onClick={() => setIsDeleteOpen(true)}
+                  disabled={deleteMutation.isPending}
+                  className='gap-1.5'
+                >
+                  <Trash2 className='size-4' />
+                  {t('whiteLabels.actions.delete')}
+                </Button>
+              )}
+            </div>
           }
         />
 
