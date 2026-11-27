@@ -9,7 +9,7 @@ import {
   Clock,
   Link as LinkIcon,
   Loader2,
-  Sparkles,
+  BadgeCheck,
   User,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -361,7 +361,7 @@ export function ProfileEditDialog({
                         onClick={() => setIsApplicationDialogOpen(true)}
                         className="shrink-0 gap-1.5 rounded-xl font-semibold"
                       >
-                        <Sparkles className="size-3.5" />
+                        <BadgeCheck className="size-3.5" />
                         <span>{t("applyBtn")}</span>
                       </Button>
                     </div>

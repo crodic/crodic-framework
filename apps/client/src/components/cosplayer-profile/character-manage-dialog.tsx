@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Upload, ImageIcon, Loader2, Sparkles } from "lucide-react";
+import { Upload, ImageIcon, Loader2, UserRound } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -130,7 +130,7 @@ export function CharacterManageDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Sparkles className="text-primary size-4.5" />
+            <UserRound className="text-primary size-4.5" />
             {isEdit
               ? t("editCharacter") || "Chỉnh sửa nhân vật"
               : t("addCharacter") || "Thêm nhân vật mới"}

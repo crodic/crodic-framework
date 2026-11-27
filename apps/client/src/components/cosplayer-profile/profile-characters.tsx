@@ -9,7 +9,8 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  Sparkles,
+  Layers,
+  UserRound,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,7 +110,7 @@ export function ProfileCharacters({
       {characters.length === 0 ? (
         <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed px-4 py-12 text-center sm:py-16">
           <div className="bg-primary/10 text-primary mb-3 flex size-12 items-center justify-center rounded-2xl sm:size-14">
-            <Sparkles className="size-6 sm:size-7" />
+            <UserRound className="size-6 sm:size-7" />
           </div>
           <h3 className="text-foreground text-sm font-semibold sm:text-base">
             {t("emptyCharactersTitle") || "Chưa có nhân vật nào trong hồ sơ"}
@@ -138,18 +139,18 @@ export function ProfileCharacters({
               className="group relative flex flex-col space-y-2 overflow-hidden rounded-2xl"
             >
               {/* Character Thumbnail Container */}
-              <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all group-hover:shadow-md sm:rounded-2xl">
+              <div className="bg-muted/40 border-border/40 group-hover:border-primary/50 relative aspect-[3/4] w-full overflow-hidden rounded-xl border shadow-xs transition-all duration-300 group-hover:shadow-lg sm:rounded-2xl">
                 {char.coverImageUrl ? (
                   <Image
                     src={char.coverImageUrl}
                     alt={char.characterName}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                    className="object-cover transition-opacity duration-300 group-hover:opacity-95"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="bg-muted text-muted-foreground flex size-full items-center justify-center">
-                    <Sparkles className="size-8 opacity-40" />
+                    <Layers className="size-8 opacity-40" />
                   </div>
                 )}
 
