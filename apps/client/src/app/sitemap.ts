@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import type { PaginatedResponse } from "@repo/query-builder";
 import { routing } from "@/i18n/routing";
+import { getPathname } from "@/i18n/navigation";
 import { serverFetch } from "@/lib/server-fetch";
 import { fetchPublishedCmsPages } from "@/services/cms-pages";
 import type { EventSummaryResDto } from "@/services/events";
@@ -14,25 +15,26 @@ type SitemapFrequency = NonNullable<
   MetadataRoute.Sitemap[number]["changeFrequency"]
 >;
 
+function localizedUrl(baseUrl: string, locale: string, path: string) {
+  return `${baseUrl.replace(/\/+$/, "")}${getPathname({ locale, href: path || "/" })}`;
+}
+
 function buildLocalizedEntries(
   baseUrl: string,
   rawPath: string,
-  lastModified: Date,
+  lastModified: Date | undefined,
   changeFrequency: SitemapFrequency,
   priority: number
 ): MetadataRoute.Sitemap {
-  const cleanBase = baseUrl.replace(/\/+$/, "");
-  const normalizedPath = rawPath
-    ? rawPath.startsWith("/")
-      ? rawPath
-      : `/${rawPath}`
-    : "";
   const languages = Object.fromEntries(
-    routing.locales.map((loc) => [loc, `${cleanBase}/${loc}${normalizedPath}`])
+    routing.locales.map((locale) => [
+      locale,
+      localizedUrl(baseUrl, locale, rawPath),
+    ])
   );
   return routing.locales.map((locale) => ({
-    url: `${cleanBase}/${locale}${normalizedPath}`,
-    lastModified,
+    url: localizedUrl(baseUrl, locale, rawPath),
+    ...(lastModified ? { lastModified } : {}),
     changeFrequency,
     priority,
     alternates: { languages },
@@ -44,9 +46,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const results = await Promise.allSettled(
     sections.map((id) => sitemapSection({ id }))
   );
-  return results.flatMap((result) =>
+  const entries = results.flatMap((result) =>
     result.status === "fulfilled" ? result.value : []
   );
+  return [...new Map(entries.map((entry) => [entry.url, entry])).values()];
 }
 
 async function sitemapSection(props: {
@@ -54,7 +57,6 @@ async function sitemapSection(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const appBaseUrl = getAppExternalUrl().replace(/\/+$/, "");
   const rootBaseUrl = getRootExternalUrl().replace(/\/+$/, "");
-  const now = new Date();
 
   const id =
     props?.id && typeof (props.id as any).then === "function"
@@ -64,27 +66,15 @@ async function sitemapSection(props: {
   // 1. Pages Sitemap (Root Domain Landing Page + App Static Pages + Dynamic CMS Pages)
   if (id === "pages") {
     // 1a. Root Domain Landing Page (Canonical marketing entry on crodic.click)
-    const rootLandingEntries: MetadataRoute.Sitemap = routing.locales.map(
-      (locale) => {
-        const path = locale === routing.defaultLocale ? "" : `/${locale}`;
-        return {
-          url: `${rootBaseUrl}${path || "/"}`,
-          lastModified: now,
-          changeFrequency: "weekly" as SitemapFrequency,
-          priority: 1.0,
-          alternates: {
-            languages: Object.fromEntries(
-              routing.locales.map((loc) => [
-                loc,
-                `${rootBaseUrl}${loc === routing.defaultLocale ? "" : `/${loc}` || "/"}`,
-              ])
-            ),
-          },
-        };
-      }
+    const rootLandingEntries = buildLocalizedEntries(
+      rootBaseUrl,
+      "",
+      undefined,
+      "weekly",
+      1.0
     );
 
-    // 1b. App Static Pages on Subdomain (feed, explore, ranking, tags, events, cosplayer)
+    // 1b. App Static Pages on Subdomain (feed, explore, ranking, tags, events)
     const appStaticPages: {
       path: string;
       changeFrequency: SitemapFrequency;
@@ -96,7 +86,6 @@ async function sitemapSection(props: {
       { path: "/ranking", changeFrequency: "daily", priority: 0.8 },
       { path: "/tags", changeFrequency: "daily", priority: 0.8 },
       { path: "/events", changeFrequency: "daily", priority: 0.8 },
-      { path: "/cosplayer", changeFrequency: "weekly", priority: 0.8 },
     ];
 
     const appStaticEntries: MetadataRoute.Sitemap = appStaticPages.flatMap(
@@ -104,7 +93,7 @@ async function sitemapSection(props: {
         buildLocalizedEntries(
           appBaseUrl,
           page.path,
-          now,
+          undefined,
           page.changeFrequency,
           page.priority
         )
@@ -124,8 +113,10 @@ async function sitemapSection(props: {
           }
 
           cmsEntries.push({
-            url: `${rootBaseUrl}/${t.locale}/pages/${t.slug}`,
-            lastModified: page.updatedAt ? new Date(page.updatedAt) : now,
+            url: localizedUrl(rootBaseUrl, t.locale, `/pages/${t.slug}`),
+            ...(page.updatedAt
+              ? { lastModified: new Date(page.updatedAt) }
+              : {}),
             changeFrequency: "monthly",
             priority: 0.7,
           });
@@ -140,13 +131,7 @@ async function sitemapSection(props: {
 
   // 2. Events Sitemap
   if (id === "events") {
-    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
-      appBaseUrl,
-      "/events",
-      now,
-      "daily",
-      0.8
-    );
+    const entries: MetadataRoute.Sitemap = [];
 
     try {
       const eventsRes = await serverFetch<
@@ -159,7 +144,7 @@ async function sitemapSection(props: {
           ...buildLocalizedEntries(
             appBaseUrl,
             `/events/${slugOrId}`,
-            event.createdAt ? new Date(event.createdAt) : now,
+            event.createdAt ? new Date(event.createdAt) : undefined,
             "daily",
             0.8
           )
@@ -192,7 +177,7 @@ async function sitemapSection(props: {
           ...buildLocalizedEntries(
             appBaseUrl,
             `/posts/${slugOrId}`,
-            post.publishedAt ? new Date(post.publishedAt) : now,
+            post.publishedAt ? new Date(post.publishedAt) : undefined,
             "weekly",
             0.7
           )
@@ -207,13 +192,7 @@ async function sitemapSection(props: {
 
   // 4. Cosplayers Sitemap
   if (id === "cosplayers") {
-    const entries: MetadataRoute.Sitemap = buildLocalizedEntries(
-      appBaseUrl,
-      "/cosplayer",
-      now,
-      "weekly",
-      0.8
-    );
+    const entries: MetadataRoute.Sitemap = [];
 
     try {
       const cosplayersRes = await serverFetch<
@@ -234,7 +213,7 @@ async function sitemapSection(props: {
           ...buildLocalizedEntries(
             appBaseUrl,
             `/cosplayer/${cosplayer.slug}`,
-            cosplayer.createdAt ? new Date(cosplayer.createdAt) : now,
+            cosplayer.createdAt ? new Date(cosplayer.createdAt) : undefined,
             "weekly",
             0.8
           )

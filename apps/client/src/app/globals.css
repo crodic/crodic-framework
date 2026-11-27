@@ -159,10 +159,11 @@ html[data-theme-transition="circle-reveal"]::view-transition-new(root) {
 }
 
 html[data-theme-transition="gif-chika"]::view-transition-new(root) {
+  --tk-chika-size: min(420px, 70vw, 55vh);
   z-index: 9999;
   mask-image: url("/theme/chika.gif");
   mask-repeat: no-repeat;
-  mask-position: var(--tk-x) var(--tk-y);
+  mask-position: center;
   mask-size: 0;
   animation: tk-theme-gif-chika var(--tk-theme-duration, 1700ms)
     var(--tk-theme-easing, cubic-bezier(0.16, 1, 0.3, 1)) both;
@@ -171,18 +172,16 @@ html[data-theme-transition="gif-chika"]::view-transition-new(root) {
 @keyframes tk-theme-gif-chika {
   0% {
     mask-size: 0;
-    mask-position: var(--tk-x) var(--tk-y);
+    mask-position: center;
   }
   10%,
   90% {
-    mask-size: 50vmax;
-    mask-position: calc(var(--tk-x) - 50vmax / 2)
-      calc(var(--tk-y) - 50vmax * 1.2604 / 2);
+    mask-size: var(--tk-chika-size);
+    mask-position: center;
   }
   100% {
     mask-size: 2000vmax;
-    mask-position: calc(var(--tk-x) - 2000vmax / 2)
-      calc(var(--tk-y) - 2000vmax * 1.2604 / 2);
+    mask-position: center;
   }
 }
 
