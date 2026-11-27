@@ -190,7 +190,7 @@ AllowedFilter.endsWith("domain", "email"); // GET ?filter[domain]=.com ➔ email
 
 ### Static & Dynamic Comparison Operators (`operator` / `dynamic`)
 
-Supports static operators (`=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`) and dynamic operators (`'dynamic'`, matching Spatie v7):
+Use explicit string literals for static comparison operators. Set the operator to `'dynamic'` only when the client supplies the comparison prefix as part of the filter value:
 
 ```typescript
 // 1. Static operators (fixed on the backend):

@@ -189,7 +189,7 @@ AllowedFilter.endsWith("domain", "email"); // ?filter[domain]=.com ➔ email ILI
 
 ### Toán tử so sánh tĩnh & động (`operator` / `dynamic`)
 
-Hỗ trợ các toán tử tĩnh (`=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`) và toán tử động (`'dynamic'` chuẩn Spatie v7):
+Dùng chuỗi toán tử tường minh cho toán tử so sánh tĩnh. Chỉ đặt operator là `'dynamic'` khi client gửi tiền tố toán tử trong giá trị filter:
 
 ```typescript
 // 1. Toán tử tĩnh (cố định ở backend):
