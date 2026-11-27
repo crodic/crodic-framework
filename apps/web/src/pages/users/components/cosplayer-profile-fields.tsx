@@ -481,7 +481,10 @@ export function CosplayerProfileFields<T extends FieldValues = any>({
               <FormItem className='flex flex-row items-center justify-between gap-4 space-y-0 rounded-lg border p-4'>
                 <div className='min-w-0 space-y-1'>
                   <FormLabel className='cursor-pointer font-medium'>
-                    Crafting Creator (Thợ chế tác / Props)
+                    {t(
+                      'users.show.craftingCreator',
+                      'Crafting Creator (Props maker)'
+                    )}
                   </FormLabel>
                   <p className='text-muted-foreground text-sm'>
                     {t(
