@@ -10,18 +10,15 @@ import {
   UserX,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
-import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import {
   apiDeleteUser,
   apiHandleCosplayerRequest,
@@ -156,7 +153,7 @@ export default function ComponentTableRowActions({
 
   if (isDeleted) {
     return (
-      <div className='flex items-center gap-1'>
+      <TableRowActions>
         {isShowRestoreDialog && (
           <RestoreAlertDialog
             open={isShowRestoreDialog}
@@ -182,76 +179,68 @@ export default function ComponentTableRowActions({
             confirmText={t('users.deleteDialog.hardConfirm', 'Xóa vĩnh viễn')}
           />
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {canRestore ? (
-              <Button
-                variant='ghost'
-                size='icon'
-                aria-label={t('buttons.restore', 'Restore')}
-                onClick={() => setIsShowRestoreDialog(true)}
-                disabled={restoreUserMutation.isPending}
-              >
-                <RotateCcw
-                  size={16}
-                  aria-hidden='true'
-                  className='text-primary dark:text-primary'
-                />
-              </Button>
-            ) : (
-              <span className='inline-block cursor-not-allowed'>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  aria-label={t('buttons.restore', 'Restore')}
-                  disabled
-                  className='opacity-50'
-                >
-                  <RotateCcw
-                    size={16}
-                    aria-hidden='true'
-                    className='text-muted-foreground'
-                  />
-                </Button>
-              </span>
-            )}
-          </TooltipTrigger>
-          <TooltipContent side='left'>
-            {canRestore
-              ? t('buttons.restore', 'Restore')
-              : t(
-                  'users.errors.noPermissionRestore',
-                  'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
-                )}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant='ghost'
-              size='icon'
-              aria-label={t('users.actions.hardDelete', 'Xóa vĩnh viễn')}
-              onClick={() => setIsShowHardDeleteDialog(true)}
-              disabled={hardDeleteUserMutation.isPending}
-            >
-              <Trash2Icon
+        {canRestore ? (
+          <TableRowAction
+            label={
+              <>
+                {canRestore
+                  ? t('buttons.restore', 'Restore')
+                  : t(
+                      'users.errors.noPermissionRestore',
+                      'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                    )}
+              </>
+            }
+            icon={
+              <RotateCcw
                 size={16}
                 aria-hidden='true'
-                className='text-destructive hover:bg-destructive/10'
+                className='text-primary dark:text-primary'
               />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side='left'>
-            {t('users.actions.hardDelete', 'Xóa vĩnh viễn')}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+            }
+            onSelect={() => setIsShowRestoreDialog(true)}
+            disabled={restoreUserMutation.isPending}
+          />
+        ) : (
+          <TableRowAction
+            label={
+              <>
+                {canRestore
+                  ? t('buttons.restore', 'Restore')
+                  : t(
+                      'users.errors.noPermissionRestore',
+                      'Bạn không có quyền khôi phục người dùng này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                    )}
+              </>
+            }
+            icon={
+              <RotateCcw
+                size={16}
+                aria-hidden='true'
+                className='text-muted-foreground'
+              />
+            }
+            disabled={true}
+          />
+        )}
+        <TableRowAction
+          label={<>{t('users.actions.hardDelete', 'Xóa vĩnh viễn')}</>}
+          icon={
+            <Trash2Icon
+              size={16}
+              aria-hidden='true'
+              className='text-destructive hover:bg-destructive/10'
+            />
+          }
+          onSelect={() => setIsShowHardDeleteDialog(true)}
+          disabled={hardDeleteUserMutation.isPending}
+        />
+      </TableRowActions>
     )
   }
 
   return (
-    <div className='flex items-center gap-1'>
+    <TableRowActions>
       {isShowDeleteDialog && (
         <DeleteAlertDialog
           open={isShowDeleteDialog}
@@ -269,147 +258,117 @@ export default function ComponentTableRowActions({
           confirmText={t('users.deleteDialog.softConfirm', 'Đưa vào thùng rác')}
         />
       )}
-
-      <Button variant='ghost' size='icon' asChild>
-        <Link to={`/users/${row.original.id}/edit`} aria-label='Edit user'>
-          <Edit2Icon className='text-primary size-4' aria-hidden='true' />
-        </Link>
-      </Button>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant='ghost'
-            size='icon'
-            aria-label='Toggle email verification'
-            onClick={() => toggleVerifyMutation.mutate(row.original.id)}
-            disabled={toggleVerifyMutation.isPending}
-          >
-            <BadgeCheck
+      <TableRowAction
+        label={t('users.actions.edit', 'Edit user')}
+        icon={<Edit2Icon className='text-primary size-4' aria-hidden='true' />}
+        to={`/users/${row.original.id}/edit`}
+      />
+      <TableRowAction
+        label={
+          <>
+            {row.original.verifiedAt
+              ? t('users.actions.unverifyEmail', 'Hủy xác minh email')
+              : t('users.actions.verifyEmail', 'Xác minh email')}
+          </>
+        }
+        icon={
+          <BadgeCheck
+            className={`size-4 ${
+              row.original.verifiedAt
+                ? 'fill-primary text-primary dark:fill-primary'
+                : 'text-muted-foreground'
+            }`}
+            aria-hidden='true'
+          />
+        }
+        onSelect={() => toggleVerifyMutation.mutate(row.original.id)}
+        disabled={toggleVerifyMutation.isPending}
+      />
+      {row.original.cosplayerProfile && (
+        <TableRowAction
+          label={
+            <>
+              {row.original.cosplayerProfile.isVerified
+                ? t(
+                    'users.actions.unverifyCosplayer',
+                    'Thu hồi tích xanh Cosplayer'
+                  )
+                : t(
+                    'users.actions.verifyCosplayer',
+                    'Duyệt tích xanh Cosplayer'
+                  )}
+            </>
+          }
+          icon={
+            <CheckCircle2
               className={`size-4 ${
-                row.original.verifiedAt
+                row.original.cosplayerProfile.isVerified
                   ? 'fill-primary text-primary dark:fill-primary'
                   : 'text-muted-foreground'
               }`}
               aria-hidden='true'
             />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='left'>
-          {row.original.verifiedAt
-            ? t('users.actions.unverifyEmail', 'Hủy xác minh email')
-            : t('users.actions.verifyEmail', 'Xác minh email')}
-        </TooltipContent>
-      </Tooltip>
-
-      {row.original.cosplayerProfile && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant='ghost'
-              size='icon'
-              aria-label='Toggle Cosplayer verification'
-              onClick={() =>
-                toggleCosplayerVerifyMutation.mutate(row.original.id)
-              }
-              disabled={toggleCosplayerVerifyMutation.isPending}
-            >
-              <CheckCircle2
-                className={`size-4 ${
-                  row.original.cosplayerProfile.isVerified
-                    ? 'fill-primary text-primary dark:fill-primary'
-                    : 'text-muted-foreground'
-                }`}
-                aria-hidden='true'
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side='left'>
-            {row.original.cosplayerProfile.isVerified
-              ? t(
-                  'users.actions.unverifyCosplayer',
-                  'Thu hồi tích xanh Cosplayer'
-                )
-              : t('users.actions.verifyCosplayer', 'Duyệt tích xanh Cosplayer')}
-          </TooltipContent>
-        </Tooltip>
+          }
+          onSelect={() => toggleCosplayerVerifyMutation.mutate(row.original.id)}
+          disabled={toggleCosplayerVerifyMutation.isPending}
+        />
       )}
-
       {Boolean(
         row.original.cosplayerRequestPending ||
         (row.original.notifications?.cosplayerRoleRequested &&
           !row.original.cosplayerProfile?.isVerified)
       ) && (
         <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                aria-label='Approve Cosplayer request'
-                onClick={() =>
-                  handleCosplayerRequestMutation.mutate({
-                    id: row.original.id,
-                    approved: true,
-                  })
-                }
-                disabled={handleCosplayerRequestMutation.isPending}
-              >
-                <UserCheck
-                  className='text-primary dark:text-primary size-4'
-                  aria-hidden='true'
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side='left'>
-              {t('users.actions.approveCosplayer', 'Duyệt làm Cosplayer')}
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                aria-label='Reject Cosplayer request'
-                onClick={() =>
-                  handleCosplayerRequestMutation.mutate({
-                    id: row.original.id,
-                    approved: false,
-                  })
-                }
-                disabled={handleCosplayerRequestMutation.isPending}
-              >
-                <UserX
-                  className='text-primary dark:text-primary size-4'
-                  aria-hidden='true'
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side='left'>
-              {t('users.actions.rejectCosplayer', 'Từ chối yêu cầu Cosplayer')}
-            </TooltipContent>
-          </Tooltip>
+          <TableRowAction
+            label={
+              <>{t('users.actions.approveCosplayer', 'Duyệt làm Cosplayer')}</>
+            }
+            icon={
+              <UserCheck
+                className='text-primary dark:text-primary size-4'
+                aria-hidden='true'
+              />
+            }
+            onSelect={() =>
+              handleCosplayerRequestMutation.mutate({
+                id: row.original.id,
+                approved: true,
+              })
+            }
+            disabled={handleCosplayerRequestMutation.isPending}
+          />
+          <TableRowAction
+            label={
+              <>
+                {t(
+                  'users.actions.rejectCosplayer',
+                  'Từ chối yêu cầu Cosplayer'
+                )}
+              </>
+            }
+            icon={
+              <UserX
+                className='text-primary dark:text-primary size-4'
+                aria-hidden='true'
+              />
+            }
+            onSelect={() =>
+              handleCosplayerRequestMutation.mutate({
+                id: row.original.id,
+                approved: false,
+              })
+            }
+            disabled={handleCosplayerRequestMutation.isPending}
+          />
         </>
       )}
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant='ghost'
-            size='icon'
-            aria-label={t('users.actions.softDelete', 'Đưa vào thùng rác')}
-            onClick={() => setIsShowDeleteDialog(true)}
-          >
-            <Trash2Icon
-              className='text-destructive size-4'
-              aria-hidden='true'
-            />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side='left'>
-          {t('users.actions.softDelete', 'Đưa vào thùng rác')}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+      <TableRowAction
+        label={<>{t('users.actions.softDelete', 'Đưa vào thùng rác')}</>}
+        icon={
+          <Trash2Icon className='text-destructive size-4' aria-hidden='true' />
+        }
+        onSelect={() => setIsShowDeleteDialog(true)}
+      />
+    </TableRowActions>
   )
 }

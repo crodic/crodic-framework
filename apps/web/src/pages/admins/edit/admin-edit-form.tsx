@@ -75,7 +75,7 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         variant='outline'
         type='button'
@@ -90,7 +90,7 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
         <SaveIcon className='size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

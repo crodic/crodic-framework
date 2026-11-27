@@ -33,6 +33,7 @@ export function TagCategoryPage({ create = false }: { create?: boolean }) {
       title={t('navigation.management.tagCategories', 'Tag Categories')}
       backTo='/tag-categories'
       create={create}
+      showBack={false}
       load={async (id) =>
         tagCategorySchema.parse((await http.get(`/tag-categories/${id}`)).data)
       }
@@ -50,6 +51,7 @@ export function SpotlightBannerPage({ create = false }: { create?: boolean }) {
       title={t('navigation.kosume.spotlight', 'Spotlight Banners')}
       backTo='/spotlight-banners'
       create={create}
+      showBack={false}
       load={async (id) =>
         spotlightBannerSchema.parse(
           (await http.get(`/admin/spotlight-banners/${id}`)).data
@@ -70,6 +72,7 @@ export function PostPage({ edit = false }: { edit?: boolean }) {
       title={t('navigation.kosume.posts', 'Posts')}
       backTo='/posts'
       load={apiGetAdminPostById}
+      showBack={!edit}
     >
       {(post, onClose) =>
         edit ? (
@@ -147,6 +150,7 @@ export function LocationPage({
         title={title}
         backTo={backTo}
         create={create}
+        showBack={false}
         load={async (id) =>
           countrySchema.parse((await http.get(`/countries/${id}`)).data)
         }
@@ -162,6 +166,7 @@ export function LocationPage({
         title={title}
         backTo={backTo}
         create={create}
+        showBack={false}
         load={async (id) =>
           stateSchema.parse((await http.get(`/states/${id}`)).data)
         }
@@ -175,6 +180,7 @@ export function LocationPage({
         title={title}
         backTo={backTo}
         create={create}
+        showBack={false}
         load={async (id) =>
           citySchema.parse((await http.get(`/cities/${id}`)).data)
         }
@@ -187,6 +193,7 @@ export function LocationPage({
       title={title}
       backTo={backTo}
       create={create}
+      showBack={false}
       load={async (id) =>
         regionSchema.parse((await http.get(`/regions/${id}`)).data)
       }

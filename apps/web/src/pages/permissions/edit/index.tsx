@@ -93,7 +93,7 @@ export function PagePermissionEdit() {
   if (!data) return <NotFoundError />
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button type='button' variant='outline' onClick={() => navigate(-1)}>
         <ArrowLeftIcon className='size-4' aria-hidden='true' />
         Cancel
@@ -102,7 +102,7 @@ export function PagePermissionEdit() {
         <SaveIcon className='size-4' aria-hidden='true' />
         Save
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

@@ -4,8 +4,11 @@ import { Edit2Icon, Trash2Icon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
-import { Button } from '@/components/ui/button'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { apiDeleteRole } from './queries'
 import { isProtectedRole, type RoleSchema } from './schema'
 
@@ -42,7 +45,7 @@ export default function ComponentTableRowActions({
   const isProtected = isProtectedRole(row.original)
 
   return (
-    <div className='flex items-center gap-1'>
+    <TableRowActions>
       {isShowDeleteDialog && (
         <DeleteAlertDialog
           open={isShowDeleteDialog}
@@ -51,26 +54,22 @@ export default function ComponentTableRowActions({
           isLoading={deleteRoleMutation.isPending}
         />
       )}
-      <Button
-        variant='ghost'
-        size='icon'
-        aria-label='Edit role'
-        onClick={() => {
+      <TableRowAction
+        label={'Edit role'}
+        icon={<Edit2Icon className='text-primary size-4' aria-hidden='true' />}
+        onSelect={() => {
           navigate(`/roles/${row.original.id}/edit`)
         }}
         disabled={isProtected}
-      >
-        <Edit2Icon className='text-primary size-4' aria-hidden='true' />
-      </Button>
-      <Button
-        variant='ghost'
-        size='icon'
-        aria-label='Delete role'
-        onClick={() => setIsShowDeleteDialog(true)}
+      />
+      <TableRowAction
+        label={'Delete role'}
+        icon={
+          <Trash2Icon className='text-destructive size-4' aria-hidden='true' />
+        }
+        onSelect={() => setIsShowDeleteDialog(true)}
         disabled={isProtected}
-      >
-        <Trash2Icon className='text-destructive size-4' aria-hidden='true' />
-      </Button>
-    </div>
+      />
+    </TableRowActions>
   )
 }

@@ -1,22 +1,13 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import i18n from '@/i18n'
-import {
-  Edit2Icon,
-  GlobeIcon,
-  MoreHorizontalIcon,
-  TextIcon,
-  Trash2Icon,
-} from 'lucide-react'
+import { Edit2Icon, GlobeIcon, TextIcon, Trash2Icon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { CountryFlag } from '../components/country-flag'
 import {
   CountryColumnKey,
@@ -196,31 +187,19 @@ export function getCountriesTableColumns({
     {
       id: 'actions',
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='size-8'
-              aria-label='Actions'
-            >
-              <MoreHorizontalIcon className='size-4' aria-hidden='true' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              <Edit2Icon className='mr-2 size-4' />
-              {i18n.t('buttons.edit', 'Edit')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(row.original)}
-              className='text-destructive focus:text-destructive'
-            >
-              <Trash2Icon className='mr-2 size-4' />
-              {i18n.t('buttons.delete', 'Delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TableRowActions>
+          <TableRowAction
+            label={<>{i18n.t('buttons.edit', 'Edit')}</>}
+            icon={<Edit2Icon className='mr-2 size-4' />}
+            onSelect={() => onEdit(row.original)}
+          />
+          <TableRowAction
+            label={<>{i18n.t('buttons.delete', 'Delete')}</>}
+            icon={<Trash2Icon className='mr-2 size-4' />}
+            onSelect={() => onDelete(row.original)}
+            destructive
+          />
+        </TableRowActions>
       ),
       size: 50,
       enableSorting: false,

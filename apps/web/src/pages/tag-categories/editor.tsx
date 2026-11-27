@@ -149,7 +149,7 @@ export function TagCategoryEditor({
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -164,7 +164,7 @@ export function TagCategoryEditor({
           ? t('tagCategories.dialog.save', 'Lưu thay đổi')
           : t('tagCategories.dialog.create', 'Tạo danh mục')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

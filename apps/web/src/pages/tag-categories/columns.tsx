@@ -9,7 +9,6 @@ import {
   FolderTree,
   Heart,
   Layers,
-  MoreHorizontal,
   Palette,
   Scissors,
   Shield,
@@ -20,15 +19,11 @@ import {
   User,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import type { TagCategorySchema } from './schema'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -276,40 +271,31 @@ export function getTagCategoriesColumns({
       cell: ({ row }) => {
         const cat = row.original
         return (
-          <div className='flex items-center justify-end'>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='text-muted-foreground hover:text-foreground size-8'
-                >
-                  <MoreHorizontal className='size-4' />
-                  <span className='sr-only'>
-                    {t('tagCategories.actions.options', 'Tùy chọn')}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-36'>
-                <DropdownMenuItem onClick={() => onEdit(cat)}>
-                  <Edit className='mr-2 size-3.5' />
+          <TableRowActions>
+            <TableRowAction
+              label={
+                <>
                   <span>{t('tagCategories.actions.edit', 'Chỉnh sửa')}</span>
-                </DropdownMenuItem>
-                {!cat.isSystem && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onDelete(cat)}
-                      className='text-destructive focus:text-destructive'
-                    >
-                      <Trash2 className='mr-2 size-3.5' />
+                </>
+              }
+              icon={<Edit className='mr-2 size-3.5' />}
+              onSelect={() => onEdit(cat)}
+            />
+            {!cat.isSystem && (
+              <>
+                <TableRowAction
+                  label={
+                    <>
                       <span>{t('tagCategories.actions.delete', 'Xóa')}</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                    </>
+                  }
+                  icon={<Trash2 className='mr-2 size-3.5' />}
+                  onSelect={() => onDelete(cat)}
+                  destructive
+                />
+              </>
+            )}
+          </TableRowActions>
         )
       },
       size: 50,

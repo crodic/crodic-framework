@@ -5,23 +5,18 @@ import {
   Heart,
   Images,
   MessageSquare,
-  MoreHorizontal,
   ShieldAlert,
   ShieldCheck,
   Star,
   Trash2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { PostColumnKey, type Post } from './schema'
 
 interface GetPostColumnsProps {
@@ -287,34 +282,28 @@ export function getPostsTableColumns({
       cell: ({ row }) => {
         const post = row.original
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' size='icon' className='size-8'>
-                <MoreHorizontal className='size-4' />
-                <span className='sr-only'>
-                  {i18n.t('common.actions', 'Hành động')}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuItem onClick={() => onView(post)}>
-                <Eye className='mr-2 size-4' />
-                {i18n.t('posts.actions.view', 'Xem chi tiết & Album')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onStatusChange(post)}>
-                <ShieldAlert className='mr-2 size-4' />
-                {i18n.t('posts.actions.moderate', 'Kiểm duyệt trạng thái')}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className='text-destructive focus:text-destructive'
-                onClick={() => onDelete(post)}
-              >
-                <Trash2 className='mr-2 size-4' />
-                {i18n.t('posts.actions.delete', 'Xóa bài đăng')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TableRowActions>
+            <TableRowAction
+              label={
+                <>{i18n.t('posts.actions.view', 'Xem chi tiết & Album')}</>
+              }
+              icon={<Eye className='mr-2 size-4' />}
+              onSelect={() => onView(post)}
+            />
+            <TableRowAction
+              label={
+                <>{i18n.t('posts.actions.moderate', 'Kiểm duyệt trạng thái')}</>
+              }
+              icon={<ShieldAlert className='mr-2 size-4' />}
+              onSelect={() => onStatusChange(post)}
+            />
+            <TableRowAction
+              label={<>{i18n.t('posts.actions.delete', 'Xóa bài đăng')}</>}
+              icon={<Trash2 className='mr-2 size-4' />}
+              onSelect={() => onDelete(post)}
+              destructive
+            />
+          </TableRowActions>
         )
       },
       size: 50,

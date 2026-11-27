@@ -98,7 +98,7 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
   const isProtected = isProtectedRole(data)
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button variant='outline' type='button' onClick={() => navigate(-1)}>
         <ArrowLeftIcon className='size-4' aria-hidden='true' />
         {t('buttons.cancel')}
@@ -115,7 +115,7 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
         <SaveIcon className='size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

@@ -84,7 +84,7 @@ export function PageUserCreate() {
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         variant='outline'
         type='button'
@@ -99,7 +99,7 @@ export function PageUserCreate() {
         <SaveIcon className='size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

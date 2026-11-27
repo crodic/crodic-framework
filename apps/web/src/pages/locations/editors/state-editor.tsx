@@ -114,7 +114,7 @@ export function StateEditor({
       )
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -126,7 +126,7 @@ export function StateEditor({
       <Button type='submit' disabled={mutation.isPending}>
         {submitLabel}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

@@ -66,7 +66,7 @@ export function PostStatusEditor({
   if (!post) return null
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -80,7 +80,7 @@ export function PostStatusEditor({
           ? t('common.saving', 'Đang lưu...')
           : t('common.save', 'Lưu thay đổi')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

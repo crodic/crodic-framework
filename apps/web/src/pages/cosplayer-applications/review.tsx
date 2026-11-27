@@ -12,6 +12,7 @@ import {
   User,
   XCircle,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,7 @@ export function ApplicationReview({
   onClose,
 }: ApplicationReviewProps) {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [showRejectForm, setShowRejectForm] = useState(false)
 
   const form = useForm<ReviewCosplayerFormValues>({
@@ -76,13 +78,25 @@ export function ApplicationReview({
       queryClient.invalidateQueries({ queryKey: ['users'] })
       toast.success(
         variables.status === 'APPROVED'
-          ? 'Đã duyệt đơn và cấp tích xanh Cosplayer thành công!'
-          : 'Đã từ chối đơn đăng ký Cosplayer.'
+          ? t(
+              'cosplayerApplications.messages.approved',
+              'Application approved successfully.'
+            )
+          : t(
+              'cosplayerApplications.messages.rejected',
+              'Application rejected.'
+            )
       )
       onClose()
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Có lỗi xảy ra khi xử lý đơn')
+      toast.error(
+        err?.response?.data?.message ||
+          t(
+            'cosplayerApplications.messages.error',
+            'Unable to process this application.'
+          )
+      )
     },
   })
 
@@ -100,7 +114,10 @@ export function ApplicationReview({
   const handleReject = (values: ReviewCosplayerFormValues) => {
     if (!values.rejectionReason?.trim()) {
       form.setError('rejectionReason', {
-        message: 'Vui lòng nhập lý do từ chối để thông báo cho người dùng.',
+        message: t(
+          'cosplayerApplications.validation.rejectionReason',
+          'Enter a rejection reason so the user can update their application.'
+        ),
       })
       return
     }
@@ -119,13 +136,18 @@ export function ApplicationReview({
           title={
             <>
               <BadgeCheck className='text-primary size-5' />
-              Duyệt đơn đăng ký Cosplayer
+              {t(
+                'cosplayerApplications.review.title',
+                'Review cosplayer application'
+              )}
             </>
           }
           description={
             <>
-              Xem xét thông tin hồ sơ và quyết định cấp tích xanh Cosplayer cho
-              tài khoản này.
+              {t(
+                'cosplayerApplications.review.description',
+                'Review the profile and decide whether to verify this account.'
+              )}
             </>
           }
         />

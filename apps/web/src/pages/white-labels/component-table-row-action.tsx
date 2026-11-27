@@ -4,7 +4,6 @@ import {
   CopyIcon,
   Edit2Icon,
   EyeIcon,
-  MoreHorizontalIcon,
   PowerOffIcon,
   Wand2Icon,
   Trash2Icon,
@@ -31,15 +30,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import {
   apiActivateWhiteLabel,
   apiDeactivateWhiteLabel,
@@ -181,86 +176,83 @@ export default function ComponentTableRowActions({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant='ghost'
-            size='icon'
-            aria-label={t('whiteLabels.actions.more', 'More actions')}
-          >
-            <MoreHorizontalIcon className='size-4' aria-hidden='true' />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align='end'>
-          <DropdownMenuItem
-            onClick={() => navigate(`/white-labels/${item.id}/show`)}
-          >
-            <EyeIcon className='size-4' />
-            {t('whiteLabels.actions.viewStudio', {
-              defaultValue: 'View Studio',
-            })}
-          </DropdownMenuItem>
-          {canUpdate && (
-            <DropdownMenuItem
-              onClick={() => navigate(`/white-labels/${item.id}/edit`)}
-            >
-              <Edit2Icon className='size-4' />
-              {t('whiteLabels.actions.edit')}
-            </DropdownMenuItem>
-          )}
-          {canCreate && (
-            <DropdownMenuItem
-              onClick={() => duplicateMutation.mutate(item.id)}
-              disabled={isPending}
-            >
-              <CopyIcon className='size-4' />
-              {t('whiteLabels.actions.duplicate', {
-                defaultValue: 'Duplicate',
+      <TableRowActions>
+        <TableRowAction
+          label={
+            <>
+              {t('whiteLabels.actions.viewStudio', {
+                defaultValue: 'View Studio',
               })}
-            </DropdownMenuItem>
-          )}
-          {canPublish && (
-            <>
-              <DropdownMenuSeparator />
-              {item.isActive ? (
-                <DropdownMenuItem
-                  onClick={() => setActivationTarget('deactivate')}
-                  disabled={isPending}
-                >
-                  <PowerOffIcon className='size-4' />
-                  {t('whiteLabels.actions.deactivate', {
-                    defaultValue: 'Deactivate',
-                  })}
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() => setActivationTarget('activate')}
-                  disabled={isPending}
-                >
-                  <Wand2Icon className='size-4' />
-                  {t('whiteLabels.actions.setAsActive', {
-                    defaultValue: 'Set as Active',
-                  })}{' '}
-                  ({item.target})
-                </DropdownMenuItem>
-              )}
             </>
-          )}
-          {canDelete && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className='text-destructive focus:text-destructive'
-                onClick={() => setIsDeleteOpen(true)}
+          }
+          icon={<EyeIcon className='size-4' />}
+          onSelect={() => navigate(`/white-labels/${item.id}/show`)}
+        />
+        {canUpdate && (
+          <TableRowAction
+            label={<>{t('whiteLabels.actions.edit')}</>}
+            icon={<Edit2Icon className='size-4' />}
+            onSelect={() => navigate(`/white-labels/${item.id}/edit`)}
+          />
+        )}
+        {canCreate && (
+          <TableRowAction
+            label={
+              <>
+                {t('whiteLabels.actions.duplicate', {
+                  defaultValue: 'Duplicate',
+                })}
+              </>
+            }
+            icon={<CopyIcon className='size-4' />}
+            onSelect={() => duplicateMutation.mutate(item.id)}
+            disabled={isPending}
+          />
+        )}
+        {canPublish && (
+          <>
+            {item.isActive ? (
+              <TableRowAction
+                label={
+                  <>
+                    {t('whiteLabels.actions.deactivate', {
+                      defaultValue: 'Deactivate',
+                    })}
+                  </>
+                }
+                icon={<PowerOffIcon className='size-4' />}
+                onSelect={() => setActivationTarget('deactivate')}
                 disabled={isPending}
-              >
-                <Trash2Icon className='size-4' />
-                {t('whiteLabels.actions.delete')}
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              />
+            ) : (
+              <TableRowAction
+                label={
+                  <>
+                    {t('whiteLabels.actions.setAsActive', {
+                      defaultValue: 'Set as Active',
+                    })}{' '}
+                    ({item.target})
+                  </>
+                }
+                icon={<Wand2Icon className='size-4' />}
+                onSelect={() => setActivationTarget('activate')}
+                disabled={isPending}
+              />
+            )}
+          </>
+        )}
+        {canDelete && (
+          <>
+            <TableRowAction
+              label={<>{t('whiteLabels.actions.delete')}</>}
+              icon={<Trash2Icon className='size-4' />}
+              onSelect={() => setIsDeleteOpen(true)}
+              disabled={isPending}
+              destructive
+            />
+          </>
+        )}
+      </TableRowActions>
 
       <DeleteAlertDialog
         open={isDeleteOpen}

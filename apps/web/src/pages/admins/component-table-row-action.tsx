@@ -2,19 +2,15 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Edit2Icon, RotateCcw, Trash2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { deleteAdmin, restoreAdmin } from './queries'
 import { type AdminSchema } from './schema'
 
@@ -74,7 +70,7 @@ export default function ComponentTableRowActions({
 
   if (isDeleted) {
     return (
-      <div className='flex items-center gap-1'>
+      <TableRowActions>
         {isShowRestoreDialog && (
           <RestoreAlertDialog
             open={isShowRestoreDialog}
@@ -83,55 +79,56 @@ export default function ComponentTableRowActions({
             isLoading={restoreAdminMutation.isPending}
           />
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {canRestore ? (
-              <Button
-                variant='ghost'
-                size='icon'
-                aria-label='Restore admin'
-                onClick={() => setIsShowRestoreDialog(true)}
-                disabled={restoreAdminMutation.isPending}
-              >
-                <RotateCcw
-                  size={16}
-                  aria-hidden='true'
-                  className='text-primary dark:text-primary'
-                />
-              </Button>
-            ) : (
-              <span className='inline-block cursor-not-allowed'>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  aria-label='Restore admin'
-                  disabled
-                  className='opacity-50'
-                >
-                  <RotateCcw
-                    size={16}
-                    aria-hidden='true'
-                    className='text-muted-foreground'
-                  />
-                </Button>
-              </span>
-            )}
-          </TooltipTrigger>
-          <TooltipContent side='left'>
-            {canRestore
-              ? t('buttons.restore', 'Restore')
-              : t(
-                  'adminUsers.errors.noPermissionRestore',
-                  'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
-                )}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+        {canRestore ? (
+          <TableRowAction
+            label={
+              <>
+                {canRestore
+                  ? t('buttons.restore', 'Restore')
+                  : t(
+                      'adminUsers.errors.noPermissionRestore',
+                      'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                    )}
+              </>
+            }
+            icon={
+              <RotateCcw
+                size={16}
+                aria-hidden='true'
+                className='text-primary dark:text-primary'
+              />
+            }
+            onSelect={() => setIsShowRestoreDialog(true)}
+            disabled={restoreAdminMutation.isPending}
+          />
+        ) : (
+          <TableRowAction
+            label={
+              <>
+                {canRestore
+                  ? t('buttons.restore', 'Restore')
+                  : t(
+                      'adminUsers.errors.noPermissionRestore',
+                      'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                    )}
+              </>
+            }
+            icon={
+              <RotateCcw
+                size={16}
+                aria-hidden='true'
+                className='text-muted-foreground'
+              />
+            }
+            disabled={true}
+          />
+        )}
+      </TableRowActions>
     )
   }
 
   return (
-    <div className='flex items-center gap-1'>
+    <TableRowActions>
       {isShowDeleteDialog && (
         <DeleteAlertDialog
           open={isShowDeleteDialog}
@@ -140,12 +137,9 @@ export default function ComponentTableRowActions({
           isLoading={deleteUserMutation.isPending}
         />
       )}
-      <Button variant='ghost' size='icon' asChild>
-        <Link
-          to={`/admins/${row.original.id}/edit`}
-          aria-label='Edit admin'
-          className={cn({ 'pointer-events-none': row.original.id === id })}
-        >
+      <TableRowAction
+        label={t('adminUsers.actions.edit', 'Edit admin')}
+        icon={
           <Edit2Icon
             size={16}
             aria-hidden='true'
@@ -153,17 +147,22 @@ export default function ComponentTableRowActions({
               row.original.id === id ? 'text-primary/50' : 'text-primary'
             }
           />
-        </Link>
-      </Button>
-      <Button
-        variant='ghost'
-        size='icon'
-        aria-label='Delete admin'
+        }
+        to={`/admins/${row.original.id}/edit`}
         disabled={row.original.id === id}
-        onClick={() => setIsShowDeleteDialog(true)}
-      >
-        <Trash2Icon size={16} aria-hidden='true' className='text-destructive' />
-      </Button>
-    </div>
+      />
+      <TableRowAction
+        label={t('adminUsers.actions.delete', 'Delete admin')}
+        icon={
+          <Trash2Icon
+            size={16}
+            aria-hidden='true'
+            className='text-destructive'
+          />
+        }
+        onSelect={() => setIsShowDeleteDialog(true)}
+        disabled={row.original.id === id}
+      />
+    </TableRowActions>
   )
 }

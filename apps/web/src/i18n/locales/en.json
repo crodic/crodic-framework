@@ -1973,5 +1973,25 @@
         "description": "Platform flags, safety indicators, and AI markers..."
       }
     }
-  }
+  },
+  "common.status": "Status",
+  "common.actions": "Actions",
+  "cosplayerApplications.columns.id": "Application ID",
+  "cosplayerApplications.columns.applicant": "Applicant",
+  "cosplayerApplications.columns.stageName": "Stage name",
+  "cosplayerApplications.columns.stageNamePlaceholder": "Search by stage name...",
+  "cosplayerApplications.columns.bio": "Introduction",
+  "cosplayerApplications.columns.portfolio": "Portfolio",
+  "cosplayerApplications.status.pending": "Pending",
+  "cosplayerApplications.status.approved": "Approved",
+  "cosplayerApplications.status.rejected": "Rejected",
+  "cosplayerApplications.portfolio.count": "{{count}} images",
+  "cosplayerApplications.portfolio.empty": "None",
+  "cosplayerApplications.actions.review": "Review",
+  "cosplayerApplications.messages.approved": "Application approved successfully.",
+  "cosplayerApplications.messages.rejected": "Application rejected.",
+  "cosplayerApplications.messages.error": "Unable to process this application.",
+  "cosplayerApplications.validation.rejectionReason": "Enter a rejection reason so the user can update their application.",
+  "cosplayerApplications.review.title": "Review cosplayer application",
+  "cosplayerApplications.review.description": "Review the profile and decide whether to verify this account."
 }

@@ -15,27 +15,22 @@ import {
   GitMergeIcon,
   LayersIcon,
   LockIcon,
-  MoreHorizontalIcon,
   ShieldCheckIcon,
   TrashIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import {
   AuditActionBadge,
   TagCategoryBadge,
@@ -379,62 +374,62 @@ export function getTagsTableColumns({
             className='flex justify-end'
             onClick={(e) => e.stopPropagation()}
           >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='size-8 cursor-pointer'
-                  aria-label={`Actions for tag ${tag.name}`}
-                >
-                  <MoreHorizontalIcon className='size-4' aria-hidden='true' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-52'>
-                <DropdownMenuItem
-                  onClick={() => onViewStudio(tag)}
-                  className='cursor-pointer gap-2'
-                >
+            <TableRowActions>
+              <TableRowAction
+                label={
+                  <>
+                    <span>
+                      {t('tags.actions.openStudio', 'Open Governance Studio')}
+                    </span>
+                  </>
+                }
+                icon={
                   <EyeIcon className='text-primary size-4' aria-hidden='true' />
-                  <span>
-                    {t('tags.actions.openStudio', 'Open Governance Studio')}
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onEdit(tag)}
-                  className='cursor-pointer gap-2'
-                >
-                  <EditIcon className='size-4' aria-hidden='true' />
-                  <span>{t('buttons.edit', 'Edit')}</span>
-                </DropdownMenuItem>
-                {!tag.isSystem && tag.status !== 'merged' && (
-                  <DropdownMenuItem
-                    onClick={() => onMerge(tag)}
-                    className='cursor-pointer gap-2'
-                  >
+                }
+                onSelect={() => onViewStudio(tag)}
+              />
+              <TableRowAction
+                label={
+                  <>
+                    <span>{t('buttons.edit', 'Edit')}</span>
+                  </>
+                }
+                icon={<EditIcon className='size-4' aria-hidden='true' />}
+                onSelect={() => onEdit(tag)}
+              />
+              {!tag.isSystem && tag.status !== 'merged' && (
+                <TableRowAction
+                  label={
+                    <>
+                      <span>
+                        {t('tags.actions.mergeTag', 'Merge Into Tag...')}
+                      </span>
+                    </>
+                  }
+                  icon={
                     <GitMergeIcon
                       className='text-primary size-4'
                       aria-hidden='true'
                     />
-                    <span>
-                      {t('tags.actions.mergeTag', 'Merge Into Tag...')}
-                    </span>
-                  </DropdownMenuItem>
-                )}
-                {!tag.isSystem && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className='text-destructive focus:text-destructive cursor-pointer gap-2'
-                      onClick={() => onDelete(tag)}
-                    >
-                      <TrashIcon className='size-4' aria-hidden='true' />
-                      <span>{t('buttons.delete', 'Delete')}</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  }
+                  onSelect={() => onMerge(tag)}
+                />
+              )}
+              {!tag.isSystem && (
+                <>
+                  <TableRowAction
+                    label={
+                      <>
+                        <span>{t('buttons.delete', 'Delete')}</span>
+                      </>
+                    }
+                    icon={<TrashIcon className='size-4' aria-hidden='true' />}
+                    onSelect={() => onDelete(tag)}
+                    destructive
+                  />
+                </>
+              )}
+            </TableRowActions>
           </div>
         )
       },

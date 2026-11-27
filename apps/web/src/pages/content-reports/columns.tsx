@@ -12,8 +12,11 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { ReportColumnKey, type ContentReport } from './schema'
 
 interface GetReportColumnsProps {
@@ -272,14 +275,12 @@ export function getContentReportsTableColumns({
       id: 'actions',
       header: () => null,
       cell: ({ row }) => (
-        <Button
-          size='sm'
-          variant='outline'
-          className='h-7 text-xs'
-          onClick={() => onResolve(row.original)}
-        >
-          Xử lý
-        </Button>
+        <TableRowActions>
+          <TableRowAction
+            label={<>Xử lý</>}
+            onSelect={() => onResolve(row.original)}
+          />
+        </TableRowActions>
       ),
       size: 70,
       enableSorting: false,

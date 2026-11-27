@@ -6,7 +6,7 @@ import { useBreadcrumb } from '@/hooks/use-breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from './main'
-import { PageHeader, PageShell } from './page-shell'
+import { PageHeader, PageHeaderContext, PageShell } from './page-shell'
 
 /** Shared route boundary for record loading, recovery, breadcrumbs and return navigation. */
 export function RecordPage<T>({
@@ -15,12 +15,14 @@ export function RecordPage<T>({
   load,
   children,
   create = false,
+  showBack = true,
 }: {
   title: string
   backTo: string
   load: (id: string) => Promise<T>
   children: (record: T | null, onClose: () => void) => ReactNode
   create?: boolean
+  showBack?: boolean
 }) {
   const { t } = useTranslation()
   const { id } = useParams()
@@ -40,36 +42,41 @@ export function RecordPage<T>({
   return (
     <Main>
       <PageShell>
-        <Button variant='outline' className='w-fit' onClick={close}>
-          {t('buttons.back', 'Back')}
-        </Button>
-        {!create && query.isPending ? (
-          <div
-            role='status'
-            aria-label={t('recordPage.loading', 'Loading')}
-            className='space-y-6'
-          >
-            <Skeleton className='h-8 w-64 max-w-full' />
-            <Skeleton className='h-64 w-full' />
-          </div>
-        ) : !create && (query.isError || !query.data) ? (
-          <>
-            <PageHeader title={title} />
-            <div role='alert' className='space-y-4 rounded-xl border p-6'>
-              <p>
-                {t(
-                  'recordPage.loadError',
-                  'Unable to load this record. Please try again.'
-                )}
-              </p>
-              <Button variant='outline' onClick={() => void query.refetch()}>
-                {t('recordPage.retry', 'Retry')}
-              </Button>
+        <PageHeaderContext.Provider
+          value={{
+            backTo,
+            backLabel: t('buttons.back', 'Back'),
+            hideBack: create || !showBack,
+          }}
+        >
+          {!create && query.isPending ? (
+            <div
+              role='status'
+              aria-label={t('recordPage.loading', 'Loading')}
+              className='space-y-6'
+            >
+              <Skeleton className='h-8 w-64 max-w-full' />
+              <Skeleton className='h-64 w-full' />
             </div>
-          </>
-        ) : (
-          children(query.data ?? null, close)
-        )}
+          ) : !create && (query.isError || !query.data) ? (
+            <>
+              <PageHeader title={title} />
+              <div role='alert' className='space-y-4 rounded-xl border p-6'>
+                <p>
+                  {t(
+                    'recordPage.loadError',
+                    'Unable to load this record. Please try again.'
+                  )}
+                </p>
+                <Button variant='outline' onClick={() => void query.refetch()}>
+                  {t('recordPage.retry', 'Retry')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            children(query.data ?? null, close)
+          )}
+        </PageHeaderContext.Provider>
       </PageShell>
     </Main>
   )

@@ -312,7 +312,7 @@ export function EventForm({
   const backTarget = initialData ? `/events/${initialData.id}/show` : '/events'
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -344,7 +344,7 @@ export function EventForm({
           </>
         )}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (
@@ -379,8 +379,6 @@ export function EventForm({
               <EventRecruitingBadge isRecruiting={Boolean(watchedRecruiting)} />
             </>
           }
-          backTo={backTarget}
-          backLabel={t('buttons.back', 'Back')}
           actions={pageActions}
         />
 

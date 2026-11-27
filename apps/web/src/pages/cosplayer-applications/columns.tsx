@@ -1,8 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table'
+import i18n from '@/i18n'
 import { CheckCircle, Clock, Eye, Mail, User, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import type { CosplayerApplicationSchema } from './schema'
 
 interface GetColumnsProps {
@@ -17,7 +21,10 @@ export function getCosplayerApplicationsColumns({
       id: 'id',
       accessorFn: (row) => row.id,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Mã đơn' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('cosplayerApplications.columns.id', 'Application ID')}
+        />
       ),
       cell: ({ row }) => (
         <span className='text-xs font-medium'>#{row.original.id}</span>
@@ -27,7 +34,7 @@ export function getCosplayerApplicationsColumns({
     },
     {
       id: 'user',
-      header: 'Người nộp đơn',
+      header: i18n.t('cosplayerApplications.columns.applicant', 'Applicant'),
       cell: ({ row }) => {
         const app = row.original
         return (
@@ -61,7 +68,13 @@ export function getCosplayerApplicationsColumns({
       id: 'stageName',
       accessorFn: (row) => row.stageName,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Nghệ danh' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t(
+            'cosplayerApplications.columns.stageName',
+            'Stage name'
+          )}
+        />
       ),
       cell: ({ row }) => (
         <span className='text-primary text-xs font-semibold'>
@@ -69,8 +82,11 @@ export function getCosplayerApplicationsColumns({
         </span>
       ),
       meta: {
-        label: 'Nghệ danh',
-        placeholder: 'Tìm theo nghệ danh...',
+        label: i18n.t('cosplayerApplications.columns.stageName', 'Stage name'),
+        placeholder: i18n.t(
+          'cosplayerApplications.columns.stageNamePlaceholder',
+          'Search by stage name...'
+        ),
         variant: 'text',
       },
       enableColumnFilter: true,
@@ -78,7 +94,7 @@ export function getCosplayerApplicationsColumns({
     },
     {
       id: 'bio',
-      header: 'Giới thiệu',
+      header: i18n.t('cosplayerApplications.columns.bio', 'Introduction'),
       cell: ({ row }) => (
         <p className='text-muted-foreground max-w-[240px] truncate text-xs'>
           {row.original.bio}
@@ -90,37 +106,52 @@ export function getCosplayerApplicationsColumns({
       id: 'status',
       accessorFn: (row) => row.status,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label='Trạng thái' />
+        <DataTableColumnHeader
+          column={column}
+          label={i18n.t('common.status', 'Status')}
+        />
       ),
       cell: ({ row }) => {
         const status = row.original.status
         if (status === 'APPROVED') {
           return (
             <Badge variant='outline-success' className='gap-1 text-xs'>
-              <CheckCircle className='size-3' /> Đã duyệt
+              <CheckCircle className='size-3' />{' '}
+              {i18n.t('cosplayerApplications.status.approved', 'Approved')}
             </Badge>
           )
         }
         if (status === 'REJECTED') {
           return (
             <Badge variant='destructive' className='gap-1 text-xs'>
-              <XCircle className='size-3' /> Đã từ chối
+              <XCircle className='size-3' />{' '}
+              {i18n.t('cosplayerApplications.status.rejected', 'Rejected')}
             </Badge>
           )
         }
         return (
           <Badge variant='outline-warning' className='gap-1 text-xs'>
-            <Clock className='size-3' /> Chờ duyệt
+            <Clock className='size-3' />{' '}
+            {i18n.t('cosplayerApplications.status.pending', 'Pending')}
           </Badge>
         )
       },
       meta: {
         variant: 'select',
-        label: 'Trạng thái',
+        label: i18n.t('common.status', 'Status'),
         options: [
-          { label: 'Chờ duyệt', value: 'PENDING' },
-          { label: 'Đã duyệt', value: 'APPROVED' },
-          { label: 'Đã từ chối', value: 'REJECTED' },
+          {
+            label: i18n.t('cosplayerApplications.status.pending', 'Pending'),
+            value: 'PENDING',
+          },
+          {
+            label: i18n.t('cosplayerApplications.status.approved', 'Approved'),
+            value: 'APPROVED',
+          },
+          {
+            label: i18n.t('cosplayerApplications.status.rejected', 'Rejected'),
+            value: 'REJECTED',
+          },
         ],
       },
       enableColumnFilter: true,
@@ -128,12 +159,18 @@ export function getCosplayerApplicationsColumns({
     },
     {
       id: 'portfolioCount',
-      header: 'Tác phẩm',
+      header: i18n.t('cosplayerApplications.columns.portfolio', 'Portfolio'),
       cell: ({ row }) => {
         const count = row.original.portfolioUrls?.length || 0
         return (
           <span className='text-muted-foreground text-xs'>
-            {count > 0 ? `${count} ảnh` : 'Chưa có'}
+            {count > 0
+              ? i18n.t(
+                  'cosplayerApplications.portfolio.count',
+                  '{{count}} images',
+                  { count }
+                )
+              : i18n.t('cosplayerApplications.portfolio.empty', 'None')}
           </span>
         )
       },
@@ -149,7 +186,7 @@ export function getCosplayerApplicationsColumns({
         const date = new Date(row.original.createdAt)
         return (
           <span className='text-muted-foreground text-xs'>
-            {date.toLocaleDateString('vi-VN', {
+            {date.toLocaleDateString(i18n.language, {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric',
@@ -163,17 +200,15 @@ export function getCosplayerApplicationsColumns({
     },
     {
       id: 'actions',
-      header: 'Thao tác',
+      header: i18n.t('common.actions', 'Actions'),
       cell: ({ row }) => (
-        <Button
-          variant='ghost'
-          size='sm'
-          onClick={() => onReview(row.original)}
-          className='h-8 gap-1 text-xs font-semibold'
-        >
-          <Eye className='size-3.5' />
-          <span>Xem & Duyệt</span>
-        </Button>
+        <TableRowActions>
+          <TableRowAction
+            label={i18n.t('cosplayerApplications.actions.review', 'Review')}
+            icon={<Eye className='size-3.5' />}
+            onSelect={() => onReview(row.original)}
+          />
+        </TableRowActions>
       ),
       size: 110,
       enableSorting: false,

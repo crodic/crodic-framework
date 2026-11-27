@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { format, isValid } from 'date-fns'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  ArrowLeftIcon,
   BadgeCheckIcon,
   CheckIcon,
   CopyIcon,
@@ -114,6 +113,8 @@ export function PageEventShow() {
       <Main className='flex-1'>
         <PageHeader
           title={event.title}
+          backTo='/events'
+          backLabel={t('buttons.back', 'Quay lại')}
           badges={
             <>
               <EventStatusBadge status={event.status} />
@@ -161,14 +162,6 @@ export function PageEventShow() {
           }
           actions={
             <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => navigate('/events')}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.back', 'Quay lại')}
-              </Button>
               <Button variant='outline' asChild>
                 <a
                   href={`${clientUrl}/events/${event.slug}`}

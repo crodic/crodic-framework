@@ -1,6 +1,9 @@
 import { Edit2Icon } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button } from '@/components/ui/button'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import type { PermissionSchema } from './schema'
 
 export default function ComponentTableRowActions({
@@ -11,13 +14,14 @@ export default function ComponentTableRowActions({
   const navigate = useNavigate()
 
   return (
-    <Button
-      variant='ghost'
-      size='icon'
-      aria-label='Edit permission'
-      onClick={() => navigate(`/permissions/${row.original.id}/edit`)}
-    >
-      <Edit2Icon size={16} aria-hidden='true' className='text-primary' />
-    </Button>
+    <TableRowActions>
+      <TableRowAction
+        label={'Edit permission'}
+        icon={
+          <Edit2Icon size={16} aria-hidden='true' className='text-primary' />
+        }
+        onSelect={() => navigate(`/permissions/${row.original.id}/edit`)}
+      />
+    </TableRowActions>
   )
 }

@@ -233,7 +233,7 @@ export function TagForm({
     watchedTranslations?.[activeLocaleIndex]?.translatedName || ''
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -265,7 +265,7 @@ export function TagForm({
           </>
         )}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

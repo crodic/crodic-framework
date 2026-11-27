@@ -201,7 +201,7 @@ export function CmsPageForm({
   })
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button variant='outline' type='button' onClick={() => navigate(-1)}>
         <ArrowLeftIcon className='mr-2 size-4' aria-hidden='true' />
         {t('buttons.cancel')}
@@ -210,7 +210,7 @@ export function CmsPageForm({
         <SaveIcon className='mr-2 size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

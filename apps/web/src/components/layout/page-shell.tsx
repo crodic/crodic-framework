@@ -4,6 +4,12 @@ import { useNavigate } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
+export const PageHeaderContext = React.createContext<{
+  backTo?: string | -1
+  backLabel?: string
+  hideBack?: boolean
+}>({})
+
 interface PageShellProps extends React.HTMLAttributes<HTMLDivElement> {
   fixed?: boolean
 }
@@ -44,7 +50,7 @@ export function PageHeader({
   title,
   description,
   backTo,
-  backLabel = 'Back',
+  backLabel,
   badges,
   actions,
   children,
@@ -52,6 +58,9 @@ export function PageHeader({
   ...props
 }: PageHeaderProps) {
   const navigate = useNavigate()
+  const inherited = React.useContext(PageHeaderContext)
+  const resolvedBackTo = backTo ?? inherited.backTo
+  const resolvedBackLabel = backLabel ?? inherited.backLabel ?? 'Back'
 
   return (
     <div
@@ -62,24 +71,6 @@ export function PageHeader({
       {...props}
     >
       <div className='flex min-w-0 flex-1 items-start gap-3'>
-        {backTo !== undefined && (
-          <Button
-            type='button'
-            variant='outline'
-            size='icon'
-            aria-label={backLabel}
-            onClick={() => {
-              if (backTo === -1) {
-                navigate(-1)
-              } else {
-                navigate(backTo)
-              }
-            }}
-            className='mt-0.5 size-8 shrink-0'
-          >
-            <ArrowLeftIcon className='size-4' aria-hidden='true' />
-          </Button>
-        )}
         <div className='min-w-0 flex-1 space-y-2'>
           <div className='flex flex-wrap items-center gap-2'>
             <h1 className='text-2xl font-semibold tracking-tight text-balance break-words'>
@@ -95,8 +86,21 @@ export function PageHeader({
         </div>
       </div>
 
-      {(actions || children) && (
+      {(resolvedBackTo !== undefined || actions || children) && (
         <div className='flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0'>
+          {resolvedBackTo !== undefined && !inherited.hideBack && (
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => {
+                if (resolvedBackTo === -1) navigate(-1)
+                else navigate(resolvedBackTo)
+              }}
+            >
+              <ArrowLeftIcon className='size-4' aria-hidden='true' />
+              {resolvedBackLabel}
+            </Button>
+          )}
           {actions || children}
         </div>
       )}

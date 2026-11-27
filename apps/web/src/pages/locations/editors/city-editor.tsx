@@ -112,7 +112,7 @@ export function CityEditor({
       )
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -124,7 +124,7 @@ export function CityEditor({
       <Button type='submit' disabled={mutation.isPending}>
         {submitLabel}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

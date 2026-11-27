@@ -1,9 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { BadgeCheck, Edit2, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { SpotlightColumnKey, type SpotlightBanner } from './schema'
 
 interface GetSpotlightColumnsProps {
@@ -126,26 +129,19 @@ export function getSpotlightBannersTableColumns({
       id: 'actions',
       header: () => null,
       cell: ({ row }) => (
-        <div className='flex items-center gap-1'>
-          <Button
-            size='icon'
-            variant='ghost'
-            className='text-primary size-8'
-            onClick={() => onEdit(row.original)}
-            title='Chỉnh sửa'
-          >
-            <Edit2 className='size-3.5' />
-          </Button>
-          <Button
-            size='icon'
-            variant='ghost'
-            className='text-destructive hover:bg-destructive/10 size-8'
-            onClick={() => onDelete(row.original)}
-            title='Xóa'
-          >
-            <Trash2 className='size-3.5' />
-          </Button>
-        </div>
+        <TableRowActions>
+          <TableRowAction
+            label={'Actions'}
+            icon={<Edit2 className='size-3.5' />}
+            onSelect={() => onEdit(row.original)}
+          />
+          <TableRowAction
+            label={'Actions'}
+            icon={<Trash2 className='size-3.5' />}
+            onSelect={() => onDelete(row.original)}
+            destructive
+          />
+        </TableRowActions>
       ),
       size: 90,
       enableSorting: false,

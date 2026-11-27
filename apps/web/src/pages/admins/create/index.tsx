@@ -70,7 +70,7 @@ export function PageAdminCreate() {
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         variant='outline'
         type='button'
@@ -85,7 +85,7 @@ export function PageAdminCreate() {
         <SaveIcon className='size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

@@ -140,7 +140,7 @@ export function SpotlightBannerEditor({
   const isPending = createMutation.isPending || updateMutation.isPending
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -156,7 +156,7 @@ export function SpotlightBannerEditor({
             ? t('common.update', 'Cập nhật')
             : t('common.create', 'Tạo mới')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

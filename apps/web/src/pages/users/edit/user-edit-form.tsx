@@ -127,7 +127,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         variant='outline'
         type='button'
@@ -142,7 +142,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
         <SaveIcon className='size-4' aria-hidden='true' />
         {t('buttons.save')}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

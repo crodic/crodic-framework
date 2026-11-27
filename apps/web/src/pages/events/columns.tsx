@@ -7,21 +7,16 @@ import {
   FileText,
   Heart,
   MapPin,
-  MoreHorizontal,
   SlidersHorizontalIcon,
   Trash2Icon,
   Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import {
   EventFeaturedBadge,
   EventRecruitingBadge,
@@ -237,49 +232,47 @@ export function getEventsTableColumns({
       cell: ({ row }) => {
         const event = row.original
         return (
-          <div
-            className='flex items-center justify-end'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='text-muted-foreground hover:text-foreground size-8 cursor-pointer'
-                >
-                  <MoreHorizontal className='size-4' />
-                  <span className='sr-only'>
-                    {i18n.t('events.actions.menu', 'Thao tác')}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-44'>
-                <DropdownMenuItem onClick={() => onView(event)}>
-                  <EyeIcon className='mr-2 size-3.5' />
+          <TableRowActions>
+            <TableRowAction
+              label={
+                <>
                   <span>{i18n.t('events.actions.view', 'Xem chi tiết')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(event)}>
-                  <EditIcon className='mr-2 size-3.5' />
+                </>
+              }
+              icon={<EyeIcon className='mr-2 size-3.5' />}
+              onSelect={() => onView(event)}
+            />
+            <TableRowAction
+              label={
+                <>
                   <span>{i18n.t('events.actions.edit', 'Chỉnh sửa')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(event)}>
-                  <SlidersHorizontalIcon className='mr-2 size-3.5' />
+                </>
+              }
+              icon={<EditIcon className='mr-2 size-3.5' />}
+              onSelect={() => onEdit(event)}
+            />
+            <TableRowAction
+              label={
+                <>
                   <span>
                     {i18n.t('events.actions.status', 'Đổi trạng thái')}
                   </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onDelete(event)}
-                  className='text-destructive focus:text-destructive'
-                >
-                  <Trash2Icon className='mr-2 size-3.5' />
+                </>
+              }
+              icon={<SlidersHorizontalIcon className='mr-2 size-3.5' />}
+              onSelect={() => onStatusChange(event)}
+            />
+            <TableRowAction
+              label={
+                <>
                   <span>{i18n.t('events.actions.delete', 'Xóa')}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                </>
+              }
+              icon={<Trash2Icon className='mr-2 size-3.5' />}
+              onSelect={() => onDelete(event)}
+              destructive
+            />
+          </TableRowActions>
         )
       },
       size: 56,

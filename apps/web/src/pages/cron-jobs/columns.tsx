@@ -2,8 +2,11 @@ import { format } from 'date-fns'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Eye, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import { ColumnKey, type CronJobLogSchema } from './schema'
 
 interface GetCronJobLogColumnsProps {
@@ -160,18 +163,15 @@ export function getCronJobLogColumns({
       id: 'actions',
       header: () => <span className='sr-only'>Actions</span>,
       cell: ({ row }) => (
-        <Button
-          variant='ghost'
-          size='sm'
-          className='h-8 w-8 p-0'
-          onClick={(e) => {
-            e.stopPropagation()
-            onViewDetails(row.original)
-          }}
-          title='View Execution Details'
-        >
-          <Eye className='h-4 w-4' />
-        </Button>
+        <TableRowActions>
+          <TableRowAction
+            label={'Actions'}
+            icon={<Eye className='h-4 w-4' />}
+            onSelect={() => {
+              onViewDetails(row.original)
+            }}
+          />
+        </TableRowActions>
       ),
       enableSorting: false,
     },

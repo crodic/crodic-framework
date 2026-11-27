@@ -10,7 +10,6 @@ import {
   Globe,
   Link2,
   Lock,
-  MoreHorizontal,
   MoveRight,
   Pencil,
   RotateCcw,
@@ -24,18 +23,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header'
+import {
+  TableRowAction,
+  TableRowActions,
+} from '@/components/data-table/table-row-actions'
 import {
   getFileDiskLabel,
   getFileDiskTooltip,
@@ -454,94 +450,81 @@ export function getFilesTableColumns({
         const isTrash = Boolean(row.original.deletedAt)
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                aria-label={i18n.t('files.table.actions', 'Actions')}
-              >
-                <MoreHorizontal className='size-4' aria-hidden='true' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuItem onClick={() => onPreview(row.original)}>
-                <Eye className='size-4' />
-                {i18n.t('files.actions.preview')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadFile(row.original)}>
-                <Download className='size-4' />
-                {i18n.t('files.actions.download', 'Download')}
-              </DropdownMenuItem>
-
-              {isTrash ? (
-                <>
-                  <DropdownMenuSeparator />
-                  {canUpdate && onRestore && (
-                    <DropdownMenuItem
-                      onClick={() => onRestore(row.original)}
-                      className='text-primary'
-                    >
-                      <RotateCcw className='size-4' />
-                      {i18n.t('files.actions.restore', 'Restore')}
-                    </DropdownMenuItem>
-                  )}
-                  {canDelete && onPermanentDelete && (
-                    <DropdownMenuItem
-                      variant='destructive'
-                      onClick={() => onPermanentDelete(row.original)}
-                    >
-                      <Trash2 className='size-4' />
-                      {i18n.t(
-                        'files.actions.permanentDelete',
-                        'Delete permanently'
-                      )}
-                    </DropdownMenuItem>
-                  )}
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem onClick={() => onCopyUrl(row.original)}>
-                    <Copy className='size-4' />
-                    {i18n.t('files.actions.copyUrl')}
-                  </DropdownMenuItem>
-                  {isFilePrivate(row.original) && onShare && (
-                    <DropdownMenuItem
-                      onClick={() => onShare(row.original)}
-                      className='text-primary dark:text-primary'
-                    >
-                      <Link2 className='size-4' />
-                      {i18n.t('files.actions.share', 'Share link')}
-                    </DropdownMenuItem>
-                  )}
-                  {canUpdate && onRename && (
-                    <DropdownMenuItem onClick={() => onRename(row.original)}>
-                      <Pencil className='size-4' />
-                      {i18n.t('files.actions.rename', 'Rename')}
-                    </DropdownMenuItem>
-                  )}
-                  {canUpdate && (
-                    <DropdownMenuItem onClick={() => onMove(row.original)}>
-                      <MoveRight className='size-4' />
-                      {i18n.t('files.actions.move')}
-                    </DropdownMenuItem>
-                  )}
-                  {canDelete && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant='destructive'
-                        onClick={() => onDelete(row.original)}
-                      >
-                        <Trash2 className='size-4' />
-                        {i18n.t('files.actions.delete')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TableRowActions>
+            <TableRowAction
+              label={<>{i18n.t('files.actions.preview')}</>}
+              icon={<Eye className='size-4' />}
+              onSelect={() => onPreview(row.original)}
+            />
+            <TableRowAction
+              label={<>{i18n.t('files.actions.download', 'Download')}</>}
+              icon={<Download className='size-4' />}
+              onSelect={() => downloadFile(row.original)}
+            />
+            {isTrash ? (
+              <>
+                {canUpdate && onRestore && (
+                  <TableRowAction
+                    label={<>{i18n.t('files.actions.restore', 'Restore')}</>}
+                    icon={<RotateCcw className='size-4' />}
+                    onSelect={() => onRestore(row.original)}
+                  />
+                )}
+                {canDelete && onPermanentDelete && (
+                  <TableRowAction
+                    label={
+                      <>
+                        {i18n.t(
+                          'files.actions.permanentDelete',
+                          'Delete permanently'
+                        )}
+                      </>
+                    }
+                    icon={<Trash2 className='size-4' />}
+                    onSelect={() => onPermanentDelete(row.original)}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <TableRowAction
+                  label={<>{i18n.t('files.actions.copyUrl')}</>}
+                  icon={<Copy className='size-4' />}
+                  onSelect={() => onCopyUrl(row.original)}
+                />
+                {isFilePrivate(row.original) && onShare && (
+                  <TableRowAction
+                    label={<>{i18n.t('files.actions.share', 'Share link')}</>}
+                    icon={<Link2 className='size-4' />}
+                    onSelect={() => onShare(row.original)}
+                  />
+                )}
+                {canUpdate && onRename && (
+                  <TableRowAction
+                    label={<>{i18n.t('files.actions.rename', 'Rename')}</>}
+                    icon={<Pencil className='size-4' />}
+                    onSelect={() => onRename(row.original)}
+                  />
+                )}
+                {canUpdate && (
+                  <TableRowAction
+                    label={<>{i18n.t('files.actions.move')}</>}
+                    icon={<MoveRight className='size-4' />}
+                    onSelect={() => onMove(row.original)}
+                  />
+                )}
+                {canDelete && (
+                  <>
+                    <TableRowAction
+                      label={<>{i18n.t('files.actions.delete')}</>}
+                      icon={<Trash2 className='size-4' />}
+                      onSelect={() => onDelete(row.original)}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </TableRowActions>
         )
       },
       size: 64,

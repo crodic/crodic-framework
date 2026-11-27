@@ -125,7 +125,7 @@ export function CountryEditor({ onClose, country }: CountryEditorProps) {
       )
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -137,7 +137,7 @@ export function CountryEditor({ onClose, country }: CountryEditorProps) {
       <Button type='submit' disabled={mutation.isPending}>
         {submitLabel}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

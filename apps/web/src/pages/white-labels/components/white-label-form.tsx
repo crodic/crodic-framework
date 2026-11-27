@@ -212,7 +212,7 @@ export function WhiteLabelForm({
   }
 
   const pageActions = (
-    <FormActions>
+    <>
       {onCancel && (
         <Button
           type='button'
@@ -233,7 +233,7 @@ export function WhiteLabelForm({
         <Save className='size-3.5' />
         {isSubmitting ? 'Saving...' : 'Save Profile'}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (

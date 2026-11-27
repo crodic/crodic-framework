@@ -1973,5 +1973,25 @@
         "description": "Cờ nền tảng, chỉ số an toàn và đánh dấu AI..."
       }
     }
-  }
+  },
+  "common.status": "Trạng thái",
+  "common.actions": "Thao tác",
+  "cosplayerApplications.columns.id": "Mã đơn",
+  "cosplayerApplications.columns.applicant": "Người nộp đơn",
+  "cosplayerApplications.columns.stageName": "Nghệ danh",
+  "cosplayerApplications.columns.stageNamePlaceholder": "Tìm theo nghệ danh...",
+  "cosplayerApplications.columns.bio": "Giới thiệu",
+  "cosplayerApplications.columns.portfolio": "Tác phẩm",
+  "cosplayerApplications.status.pending": "Chờ duyệt",
+  "cosplayerApplications.status.approved": "Đã duyệt",
+  "cosplayerApplications.status.rejected": "Đã từ chối",
+  "cosplayerApplications.portfolio.count": "{{count}} ảnh",
+  "cosplayerApplications.portfolio.empty": "Chưa có",
+  "cosplayerApplications.actions.review": "Xem và duyệt",
+  "cosplayerApplications.messages.approved": "Đã duyệt đơn và cấp tích xanh Cosplayer thành công!",
+  "cosplayerApplications.messages.rejected": "Đã từ chối đơn đăng ký Cosplayer.",
+  "cosplayerApplications.messages.error": "Có lỗi xảy ra khi xử lý đơn.",
+  "cosplayerApplications.validation.rejectionReason": "Vui lòng nhập lý do từ chối để thông báo cho người dùng.",
+  "cosplayerApplications.review.title": "Duyệt đơn đăng ký Cosplayer",
+  "cosplayerApplications.review.description": "Xem xét thông tin hồ sơ và quyết định cấp tích xanh Cosplayer cho tài khoản này."
 }

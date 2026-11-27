@@ -83,7 +83,7 @@ export function RegionEditor({ onClose, region }: RegionEditorProps) {
       )
 
   const pageActions = (
-    <FormActions>
+    <>
       <Button
         type='button'
         variant='outline'
@@ -95,7 +95,7 @@ export function RegionEditor({ onClose, region }: RegionEditorProps) {
       <Button type='submit' disabled={mutation.isPending}>
         {submitLabel}
       </Button>
-    </FormActions>
+    </>
   )
 
   return (
