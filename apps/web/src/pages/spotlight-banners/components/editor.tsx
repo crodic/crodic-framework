@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import AutoCompleteAsyncSelectControl from '@/components/forms/auto-complete-async-select-control'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import {
   apiCreateAdminSpotlightBanner,
@@ -138,6 +139,26 @@ export function SpotlightBannerEditor({
 
   const isPending = createMutation.isPending || updateMutation.isPending
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+        onClick={() => onClose()}
+        disabled={isPending}
+      >
+        {t('common.cancel', 'Hủy')}
+      </Button>
+      <Button type='submit' disabled={isPending}>
+        {isPending
+          ? t('common.saving', 'Đang lưu...')
+          : isEdit
+            ? t('common.update', 'Cập nhật')
+            : t('common.create', 'Tạo mới')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
@@ -159,6 +180,8 @@ export function SpotlightBannerEditor({
             onSubmit={form.handleSubmit(onSubmit)}
             className='space-y-4 py-2'
           >
+            {pageActions}
+
             {/* Chọn Cosplayer để liên kết banner */}
             <FormField
               control={form.control}
@@ -342,23 +365,7 @@ export function SpotlightBannerEditor({
               )}
             />
 
-            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => onClose()}
-                disabled={isPending}
-              >
-                {t('common.cancel', 'Hủy')}
-              </Button>
-              <Button type='submit' disabled={isPending}>
-                {isPending
-                  ? t('common.saving', 'Đang lưu...')
-                  : isEdit
-                    ? t('common.update', 'Cập nhật')
-                    : t('common.create', 'Tạo mới')}
-              </Button>
-            </div>
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </div>

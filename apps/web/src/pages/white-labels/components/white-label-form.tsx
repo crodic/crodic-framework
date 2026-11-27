@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FormActions } from '@/components/layout/form-actions'
 import {
   type WhiteLabelFormSchema,
   type WhiteLabelSchema,
@@ -210,9 +211,36 @@ export function WhiteLabelForm({
     }
   }
 
+  const pageActions = (
+    <FormActions>
+      {onCancel && (
+        <Button
+          type='button'
+          variant='outline'
+
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+      )}
+
+      <Button
+        type='submit'
+
+        disabled={isSubmitting}
+      >
+        <Save className='size-3.5' />
+        {isSubmitting ? 'Saving...' : 'Save Profile'}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+        {pageActions}
+
         {/* Hidden file pickers for direct CSS & JSON import */}
         <input
           ref={cssInputRef}
@@ -279,31 +307,6 @@ export function WhiteLabelForm({
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <div className='flex items-center justify-end gap-2'>
-            {onCancel && (
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                className='h-8 text-xs'
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            )}
-
-            <Button
-              type='submit'
-              size='sm'
-              disabled={isSubmitting}
-              className='h-8 gap-1.5 text-xs'
-            >
-              <Save className='size-3.5' />
-              {isSubmitting ? 'Saving...' : 'Save Profile'}
-            </Button>
-          </div>
         </div>
 
         {/* Tab 1: Brand & Assets */}
@@ -390,6 +393,8 @@ export function WhiteLabelForm({
           cssText={cssText}
           onCopyCss={copyCss}
         />
+
+        <FormActions footer>{pageActions}</FormActions>
       </form>
     </Form>
   )

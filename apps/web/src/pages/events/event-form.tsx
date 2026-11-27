@@ -3,7 +3,6 @@ import { format, isSameDay, isSameMonth, isSameYear, isValid } from 'date-fns'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  ArrowLeftIcon,
   CalendarIcon,
   Loader2Icon,
   PlusIcon,
@@ -50,6 +49,8 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
+import { FormActions } from '@/components/layout/form-actions'
+import { PageHeader } from '@/components/layout/page-shell'
 import {
   EventFeaturedBadge,
   EventRecruitingBadge,
@@ -310,91 +311,78 @@ export function EventForm({
 
   const backTarget = initialData ? `/events/${initialData.id}/show` : '/events'
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+
+        onClick={() => navigate(backTarget)}
+        disabled={isSubmitting}
+      >
+        {t('buttons.cancel', 'Hủy')}
+      </Button>
+      <Button
+        type='submit'
+
+        disabled={isSubmitting}
+        className='cursor-pointer gap-2'
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2Icon className='size-4 animate-spin' aria-hidden='true' />
+            <span>{t('buttons.saving', 'Đang lưu...')}</span>
+          </>
+        ) : (
+          <>
+            <SaveIcon className='size-4' aria-hidden='true' />
+            <span>
+              {initialData
+                ? t('buttons.saveChanges', 'Lưu thay đổi')
+                : t('events.form.submit', 'Tạo sự kiện')}
+            </span>
+          </>
+        )}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1'>
+      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1 space-y-6'>
         {/* Clean Sticky Header Bar */}
-        <div className='bg-background border-border/70 sticky top-0 z-30 flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-start gap-3 sm:items-center'>
-            <Button
-              type='button'
-              variant='outline'
-              size='icon'
-              onClick={() => navigate(backTarget)}
-              className='size-8 shrink-0 cursor-pointer'
-              aria-label={t('buttons.back', 'Quay lại')}
-            >
-              <ArrowLeftIcon className='size-4' aria-hidden='true' />
-            </Button>
-
-            <div className='space-y-1'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <h1 className='text-foreground text-lg font-bold tracking-tight sm:text-xl'>
-                  {initialData
-                    ? watchedTitle?.trim() || initialData.title
-                    : t(
-                        'events.form.createTitle',
-                        'Tạo sự kiện & Festival mới'
-                      )}
-                </h1>
-                <EventStatusBadge status={watchedStatus} />
-                <EventFeaturedBadge isFeatured={Boolean(watchedFeatured)} />
-                <EventRecruitingBadge
-                  isRecruiting={Boolean(watchedRecruiting)}
-                />
-              </div>
-              <p className='text-muted-foreground text-xs'>
-                {initialData
-                  ? t(
-                      'events.form.editSubtitle',
-                      'Cập nhật thông tin tổ chức, lịch trình hoạt động, giá vé và trạng thái hiển thị công khai.'
-                    )
-                  : t(
-                      'events.form.createSubtitle',
-                      'Thiết lập đầy đủ thông tin sự kiện cosplay, lễ hội hoặc workshop để xuất bản lên cổng thông tin.'
-                    )}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex items-center justify-end gap-2'>
-            <Button
-              type='button'
-              variant='ghost'
-              size='sm'
-              onClick={() => navigate(backTarget)}
-              disabled={isSubmitting}
-              className='cursor-pointer text-xs'
-            >
-              {t('buttons.cancel', 'Hủy')}
-            </Button>
-            <Button
-              type='submit'
-              size='sm'
-              disabled={isSubmitting}
-              className='cursor-pointer gap-2'
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2Icon
-                    className='size-4 animate-spin'
-                    aria-hidden='true'
-                  />
-                  <span>{t('buttons.saving', 'Đang lưu...')}</span>
-                </>
-              ) : (
-                <>
-                  <SaveIcon className='size-4' aria-hidden='true' />
-                  <span>
-                    {initialData
-                      ? t('buttons.saveChanges', 'Lưu thay đổi')
-                      : t('events.form.submit', 'Tạo sự kiện')}
-                  </span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title={
+            <>
+              {initialData
+                ? watchedTitle?.trim() || initialData.title
+                : t('events.form.createTitle', 'Tạo sự kiện & Festival mới')}
+            </>
+          }
+          description={
+            <>
+              {initialData
+                ? t(
+                    'events.form.editSubtitle',
+                    'Cập nhật thông tin tổ chức, lịch trình hoạt động, giá vé và trạng thái hiển thị công khai.'
+                  )
+                : t(
+                    'events.form.createSubtitle',
+                    'Thiết lập đầy đủ thông tin sự kiện cosplay, lễ hội hoặc workshop để xuất bản lên cổng thông tin.'
+                  )}
+            </>
+          }
+          badges={
+            <>
+              <EventStatusBadge status={watchedStatus} />
+              <EventFeaturedBadge isFeatured={Boolean(watchedFeatured)} />
+              <EventRecruitingBadge isRecruiting={Boolean(watchedRecruiting)} />
+            </>
+          }
+          backTo={backTarget}
+          backLabel={t('buttons.back', 'Back')}
+          actions={pageActions}
+        />
 
         {/* 2-Column Operate Workspace */}
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
@@ -402,7 +390,7 @@ export function EventForm({
           <div className='space-y-6 lg:col-span-8'>
             {/* Card 1: Core Details */}
             <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.form.coreSection', 'Thông tin cơ bản')}
                 </CardTitle>
@@ -414,7 +402,7 @@ export function EventForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-5 p-5 sm:p-6'>
+              <CardContent className='space-y-6'>
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <FormField
                     control={form.control}
@@ -620,7 +608,7 @@ export function EventForm({
 
             {/* Card 2: Time & Schedule */}
             <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.form.scheduleSection', 'Thời gian & Lịch trình')}
                 </CardTitle>
@@ -632,7 +620,7 @@ export function EventForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-5 p-5 sm:p-6'>
+              <CardContent className='space-y-6'>
                 <div className='grid gap-4 sm:grid-cols-2'>
                   {/* Start Date + Time */}
                   <div className='space-y-2'>
@@ -918,12 +906,12 @@ export function EventForm({
           <div className='space-y-6 lg:col-span-4'>
             {/* Card 3: Status & Visibility */}
             <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.form.governanceSection', 'Trạng thái & Hiển thị')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-4 p-5'>
+              <CardContent className='space-y-4'>
                 <FormField
                   control={form.control}
                   name='status'
@@ -1029,12 +1017,12 @@ export function EventForm({
 
             {/* Card 4: Ticket Pricing */}
             <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.form.ticketSection', 'Vé vào cổng')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-4 p-5'>
+              <CardContent className='space-y-4'>
                 <div className='space-y-2'>
                   <Label className='text-xs font-semibold'>
                     {t('events.form.ticketMode', 'Hình thức vé')}
@@ -1115,12 +1103,12 @@ export function EventForm({
 
             {/* Card 5: Media Assets */}
             <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.form.mediaSection', 'Hình ảnh truyền thông')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-5 p-5'>
+              <CardContent className='space-y-6'>
                 <FormField
                   control={form.control}
                   name='imageUrl'
@@ -1169,6 +1157,8 @@ export function EventForm({
             </Card>
           </div>
         </div>
+
+        <FormActions footer>{pageActions}</FormActions>
       </form>
     </Form>
   )

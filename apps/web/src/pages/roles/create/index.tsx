@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { useDataPermissionFormOptions } from '@/pages/permissions/queries'
@@ -77,6 +78,26 @@ export default function PageRoleCreate() {
     createRoleMutate.mutate(values)
   }
 
+  const pageActions = (
+    <FormActions>
+      <Button type='button' variant='outline' onClick={() => navigate(-1)}>
+        <ArrowLeftIcon className='size-4' aria-hidden='true' />
+        {t('buttons.cancel')}
+      </Button>
+      <Button
+        type='submit'
+        disabled={
+          createRoleMutate.isPending ||
+          permissionsQuery.isLoading ||
+          permissionsQuery.isError
+        }
+      >
+        <SaveIcon className='size-4' aria-hidden='true' />
+        {t('buttons.save')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <Main>
@@ -84,31 +105,7 @@ export default function PageRoleCreate() {
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
             <PageHeader
               title={<>{t('roles.create.title')}</>}
-              actions={
-                <>
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      onClick={() => navigate(-1)}
-                    >
-                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                      {t('buttons.cancel')}
-                    </Button>
-                    <Button
-                      type='submit'
-                      disabled={
-                        createRoleMutate.isPending ||
-                        permissionsQuery.isLoading ||
-                        permissionsQuery.isError
-                      }
-                    >
-                      <SaveIcon className='size-4' aria-hidden='true' />
-                      {t('buttons.save')}
-                    </Button>
-                  </div>
-                </>
-              }
+              actions={pageActions}
             />
 
             <Card>
@@ -139,6 +136,8 @@ export default function PageRoleCreate() {
                 />
               </CardContent>
             </Card>
+
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </Main>

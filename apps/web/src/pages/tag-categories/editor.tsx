@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import { useCreateTagCategory, useUpdateTagCategory } from './queries'
 import {
@@ -147,6 +148,25 @@ export function TagCategoryEditor({
     }
   }
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+        onClick={() => onClose()}
+        disabled={isSubmitting}
+      >
+        {t('tagCategories.dialog.cancel', 'Hủy bỏ')}
+      </Button>
+      <Button type='submit' disabled={isSubmitting}>
+        {isSubmitting && <Loader2 className='mr-2 size-4 animate-spin' />}
+        {isEditing
+          ? t('tagCategories.dialog.save', 'Lưu thay đổi')
+          : t('tagCategories.dialog.create', 'Tạo danh mục')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
@@ -179,6 +199,8 @@ export function TagCategoryEditor({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {pageActions}
+
             <div className='grid items-start gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
@@ -406,24 +428,7 @@ export function TagCategoryEditor({
               )}
             />
 
-            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => onClose()}
-                disabled={isSubmitting}
-              >
-                {t('tagCategories.dialog.cancel', 'Hủy bỏ')}
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className='mr-2 size-4 animate-spin' />
-                )}
-                {isEditing
-                  ? t('tagCategories.dialog.save', 'Lưu thay đổi')
-                  : t('tagCategories.dialog.create', 'Tạo danh mục')}
-              </Button>
-            </div>
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </div>

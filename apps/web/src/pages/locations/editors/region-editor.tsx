@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import { apiCreateRegion, apiUpdateRegion } from '../queries'
 import {
@@ -81,6 +82,22 @@ export function RegionEditor({ onClose, region }: RegionEditorProps) {
         isEdit ? 'Save Changes' : 'Create'
       )
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+        disabled={mutation.isPending}
+        onClick={() => onClose()}
+      >
+        {t('buttons.cancel', 'Cancel')}
+      </Button>
+      <Button type='submit' disabled={mutation.isPending}>
+        {submitLabel}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
@@ -104,6 +121,8 @@ export function RegionEditor({ onClose, region }: RegionEditorProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {pageActions}
+
             <FormField
               control={form.control}
               name='name'
@@ -124,19 +143,7 @@ export function RegionEditor({ onClose, region }: RegionEditorProps) {
               )}
             />
 
-            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
-              <Button
-                type='button'
-                variant='outline'
-                disabled={mutation.isPending}
-                onClick={() => onClose()}
-              >
-                {t('buttons.cancel', 'Cancel')}
-              </Button>
-              <Button type='submit' disabled={mutation.isPending}>
-                {submitLabel}
-              </Button>
-            </div>
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </div>

@@ -6,6 +6,9 @@ The admin app is an Operate surface. Use the existing shadcn system and runtime 
 
 - `Main` owns page gutters and the 24px section gap. Do not add a second page gutter inside it.
 - Use `PageHeader` for the page heading, description, badges, back navigation and actions. It supplies the single h1 and responsive action wrapping.
+- Create/edit forms repeat the same action content at the top and bottom using `FormActions`; both copies share validation, pending and disabled state.
+- Keep `PageHeader` outside decorative summary cards. `badges` contains status badges only; navigation buttons belong in the back/action slots.
+- Use the default `CardHeader` and `CardContent` padding. Do not add vertical padding on top of the card’s own padding and gap.
 - Use `PageShell` / `PageBody` for stacked content. Form fields use 16px gaps, sections use 24px gaps.
 - Resource lists use `DataTable`, `DataTableToolbar` and the shared filtering, sorting and pagination controls.
 - Existing resource routes use `/resource/create`, `/resource/:id/edit` and `/resource/:id/show`. Direct URLs must load their own data, handle loading/errors and respect `RouteAuthorize` permissions.

@@ -9,7 +9,6 @@ import {
   EditIcon,
   ExternalLinkIcon,
   MapPinIcon,
-  SlidersHorizontalIcon,
   TrashIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -113,170 +112,142 @@ export function PageEventShow() {
       />
 
       <Main className='flex-1'>
-        {/* Top Summary Header Card */}
-        <div className='border-border/80 bg-card rounded-2xl border p-4 sm:p-6'>
-          <PageHeader
-            title={<>{event.title}</>}
-            badges={
-              <>
-                <Button
-                  variant='outline'
-                  size='icon'
-                  onClick={() => navigate('/events')}
-                  className='mt-0.5 size-9 shrink-0 cursor-pointer'
-                  aria-label={t('buttons.back', 'Quay lại')}
-                >
-                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                </Button>
-
-                <div className='min-w-0 flex-1 space-y-2'>
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <EventStatusBadge status={event.status} />
-                    <EventFeaturedBadge isFeatured={event.isFeaturedFestival} />
-                    <EventRecruitingBadge isRecruiting={event.isRecruiting} />
-                  </div>
-
-                  <div className='text-muted-foreground flex flex-wrap items-center gap-2 text-xs'>
-                    <span className='font-mono tabular-nums'>#{event.id}</span>
-                    <span>•</span>
-                    <div className='border-border/70 bg-muted/40 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
-                      <span>/{event.slug}</span>
-                      <Tooltip delayDuration={200}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type='button'
-                            onClick={() => copySlug(event.slug)}
-                            aria-label={t(
-                              'events.actions.copySlug',
-                              'Sao chép slug'
-                            )}
-                            className='text-muted-foreground hover:text-foreground cursor-pointer'
-                          >
-                            {copiedSlug ? (
-                              <CheckIcon
-                                className='text-primary size-3'
-                                aria-hidden='true'
-                              />
-                            ) : (
-                              <CopyIcon className='size-3' aria-hidden='true' />
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side='top' className='text-xs'>
-                          {copiedSlug ? 'Đã sao chép!' : 'Sao chép slug'}
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>•</span>
-                    <span className='inline-flex items-center gap-1'>
-                      <MapPinIcon className='size-3.5' aria-hidden='true' />
-                      <span>
-                        {event.locationLabel} — {event.venue}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </>
-            }
-            actions={
-              <>
-                <div className='grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:flex-wrap sm:items-center sm:justify-end'>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    asChild
-                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-                  >
-                    <a
-                      href={`${clientUrl}/events/${event.slug}`}
-                      target='_blank'
-                      rel='noopener noreferrer'
+        <PageHeader
+          title={event.title}
+          badges={
+            <>
+              <EventStatusBadge status={event.status} />
+              <EventFeaturedBadge isFeatured={event.isFeaturedFestival} />
+              <EventRecruitingBadge isRecruiting={event.isRecruiting} />
+            </>
+          }
+          description={
+            <div className='flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2'>
+              <span className='tabular-nums'>#{event.id}</span>
+              <div className='flex min-w-0 items-center gap-1'>
+                <span className='break-all'>/{event.slug}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon'
+                      className='size-8 shrink-0'
+                      onClick={() => copySlug(event.slug)}
+                      aria-label={t('events.actions.copySlug', 'Sao chép slug')}
                     >
-                      <ExternalLinkIcon
-                        className='size-3.5'
-                        aria-hidden='true'
-                      />
-                      <span>
-                        {t('events.actions.viewPublic', 'Xem trên web')}
-                      </span>
-                    </a>
-                  </Button>
-
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={() => navigate(`/events/${event.id}/edit`)}
-                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-                  >
-                    <SlidersHorizontalIcon
-                      className='size-3.5'
-                      aria-hidden='true'
-                    />
-                    <span>{t('events.actions.status', 'Trạng thái')}</span>
-                  </Button>
-
-                  <Button
-                    size='sm'
-                    onClick={() => navigate(`/events/${event.id}/edit`)}
-                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-                  >
-                    <EditIcon className='size-3.5' aria-hidden='true' />
-                    <span>{t('buttons.edit', 'Chỉnh sửa')}</span>
-                  </Button>
-
-                  <Button
-                    variant='destructive'
-                    size='sm'
-                    onClick={() => setIsDeleteOpen(true)}
-                    className='h-9 w-full cursor-pointer gap-1.5 text-xs sm:w-auto'
-                  >
-                    <TrashIcon className='size-3.5' aria-hidden='true' />
-                    <span>{t('buttons.delete', 'Xóa')}</span>
-                  </Button>
-                </div>
-              </>
-            }
-          />
-
-          {/* Compact 4-Column Metric Strip */}
-          <div className='mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4'>
-            <div className='bg-muted/30 border-border/60 rounded-xl border px-3.5 py-2.5'>
-              <p className='text-muted-foreground text-[11px] font-medium'>
-                {t('events.show.metricDate', 'Thời gian diễn ra')}
-              </p>
-              <p className='text-foreground mt-0.5 text-sm font-semibold tabular-nums'>
-                {event.dateString}
-              </p>
+                      {copiedSlug ? (
+                        <CheckIcon className='size-4' />
+                      ) : (
+                        <CopyIcon className='size-4' />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t('events.actions.copySlug', 'Sao chép slug')}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <span className='inline-flex min-w-0 items-start gap-1.5'>
+                <MapPinIcon
+                  className='mt-0.5 size-4 shrink-0'
+                  aria-hidden='true'
+                />
+                <span className='break-words'>
+                  {event.locationLabel} — {event.venue}
+                </span>
+              </span>
             </div>
-
-            <div className='bg-muted/30 border-border/60 rounded-xl border px-3.5 py-2.5'>
-              <p className='text-muted-foreground text-[11px] font-medium'>
-                {t('events.show.metricTicket', 'Giá vé vào cổng')}
-              </p>
-              <p className='text-foreground mt-0.5 font-mono text-sm font-semibold tabular-nums'>
-                {ticketDisplay}
-              </p>
+          }
+          actions={
+            <div className='flex flex-wrap items-center gap-2'>
+              <Button
+                variant='outline'
+                type='button'
+                onClick={() => navigate('/events')}
+              >
+                <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                {t('buttons.back', 'Quay lại')}
+              </Button>
+              <Button variant='outline' asChild>
+                <a
+                  href={`${clientUrl}/events/${event.slug}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <ExternalLinkIcon className='size-4' aria-hidden='true' />
+                  {t('events.actions.viewPublic', 'Xem trên web')}
+                </a>
+              </Button>
+              <Button
+                type='button'
+                onClick={() => navigate(`/events/${event.id}/edit`)}
+              >
+                <EditIcon className='size-4' aria-hidden='true' />
+                {t('buttons.edit', 'Chỉnh sửa')}
+              </Button>
+              <Button
+                variant='destructive'
+                type='button'
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <TrashIcon className='size-4' aria-hidden='true' />
+                {t('buttons.delete', 'Xóa')}
+              </Button>
             </div>
+          }
+        />
 
-            <div className='bg-muted/30 border-border/60 rounded-xl border px-3.5 py-2.5'>
-              <p className='text-muted-foreground text-[11px] font-medium'>
-                {t('events.show.metricEngagement', 'Quan tâm / Tham gia')}
-              </p>
-              <p className='text-foreground mt-0.5 font-mono text-sm font-semibold tabular-nums'>
-                {event.interestedCount.toLocaleString()} /{' '}
-                {event.participantsCount.toLocaleString()}
-              </p>
-            </div>
-
-            <div className='bg-muted/30 border-border/60 rounded-xl border px-3.5 py-2.5'>
-              <p className='text-muted-foreground text-[11px] font-medium'>
-                {t('events.show.metricApplications', 'Đơn ứng tuyển')}
-              </p>
-              <p className='text-foreground mt-0.5 font-mono text-sm font-semibold tabular-nums'>
-                {event.applicationsCount.toLocaleString()} hồ sơ
-              </p>
-            </div>
-          </div>
+        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+          <Card>
+            <CardContent>
+              <dl className='space-y-1'>
+                <dt className='text-muted-foreground text-sm'>
+                  {t('events.show.metricDate', 'Thời gian diễn ra')}
+                </dt>
+                <dd className='text-sm font-semibold tabular-nums'>
+                  {event.dateString}
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent>
+              <dl className='space-y-1'>
+                <dt className='text-muted-foreground text-sm'>
+                  {t('events.show.metricTicket', 'Giá vé vào cổng')}
+                </dt>
+                <dd className='text-sm font-semibold tabular-nums'>
+                  {ticketDisplay}
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent>
+              <dl className='space-y-1'>
+                <dt className='text-muted-foreground text-sm'>
+                  {t('events.show.metricEngagement', 'Quan tâm / Tham gia')}
+                </dt>
+                <dd className='text-sm font-semibold tabular-nums'>
+                  {event.interestedCount.toLocaleString()} /{' '}
+                  {event.participantsCount.toLocaleString()}
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent>
+              <dl className='space-y-1'>
+                <dt className='text-muted-foreground text-sm'>
+                  {t('events.show.metricApplications', 'Đơn ứng tuyển')}
+                </dt>
+                <dd className='text-sm font-semibold tabular-nums'>
+                  {event.applicationsCount.toLocaleString()} hồ sơ
+                </dd>
+              </dl>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Two-Column Detail Grid */}
@@ -284,18 +255,18 @@ export function PageEventShow() {
           {/* Left Column (8 Cols) */}
           <div className='space-y-6 lg:col-span-8'>
             {/* Description & Venue */}
-            <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+            <Card>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.show.aboutSection', 'Nội dung & Tổ chức')}
                 </CardTitle>
-                <CardDescription className='text-xs'>
+                <CardDescription>
                   {event.organizerName
                     ? `Đơn vị tổ chức: ${event.organizerName}`
                     : 'Thông tin giới thiệu và danh mục sự kiện'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4 p-5'>
+              <CardContent className='space-y-4'>
                 {event.categories && event.categories.length > 0 && (
                   <div className='flex flex-wrap gap-1.5'>
                     {event.categories.map((cat) => (
@@ -317,13 +288,13 @@ export function PageEventShow() {
             </Card>
 
             {/* Schedule Timeline */}
-            <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+            <Card>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.show.scheduleSection', 'Lịch trình hoạt động')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='p-5'>
+              <CardContent>
                 {event.schedule && event.schedule.length > 0 ? (
                   <div className='divide-border/60 border-border/60 divide-y rounded-lg border'>
                     {event.schedule.map((item, idx) => (
@@ -352,8 +323,8 @@ export function PageEventShow() {
             </Card>
 
             {/* Participants & Guests */}
-            <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+            <Card>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t(
                     'events.show.participantsSection',
@@ -361,7 +332,7 @@ export function PageEventShow() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='p-5'>
+              <CardContent>
                 {event.participants && event.participants.length > 0 ? (
                   <div className='grid gap-3 sm:grid-cols-2'>
                     {event.participants.map((p) => (
@@ -409,13 +380,13 @@ export function PageEventShow() {
           {/* Right Column (4 Cols) */}
           <div className='space-y-6 lg:col-span-4'>
             {/* Media Previews */}
-            <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+            <Card>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.show.mediaSection', 'Hình ảnh sự kiện')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-4 p-5'>
+              <CardContent className='space-y-4'>
                 <div className='space-y-1.5'>
                   <p className='text-muted-foreground text-xs font-medium'>
                     Ảnh đại diện (Poster)
@@ -447,13 +418,13 @@ export function PageEventShow() {
             </Card>
 
             {/* Technical Metadata */}
-            <Card className='border-border/80'>
-              <CardHeader className='border-b px-5 py-4'>
+            <Card>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('events.show.metadataSection', 'Thông tin kỹ thuật')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='divide-border/60 divide-y px-5 py-2 text-xs'>
+              <CardContent className='divide-border divide-y text-sm'>
                 <div className='flex items-center justify-between py-2.5'>
                   <span className='text-muted-foreground'>Bắt đầu</span>
                   <span className='font-mono font-medium tabular-nums'>

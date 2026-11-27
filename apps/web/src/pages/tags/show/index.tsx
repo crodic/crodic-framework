@@ -457,7 +457,7 @@ export function PageTagShow() {
             <div className='grid gap-6 md:grid-cols-2'>
               {/* Translations Card */}
               <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
-                <CardHeader className='border-b px-5 py-4'>
+                <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div>
                       <CardTitle className='text-base font-semibold'>
@@ -481,7 +481,7 @@ export function PageTagShow() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='flex flex-1 flex-col justify-center p-4 sm:p-5'>
+                <CardContent className='flex flex-1 flex-col justify-center p-4'>
                   {!tag.translations || tag.translations.length === 0 ? (
                     <Empty className='border-0 p-2 sm:p-4 md:p-6'>
                       <EmptyHeader>
@@ -546,7 +546,7 @@ export function PageTagShow() {
 
               {/* Aliases Card */}
               <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
-                <CardHeader className='border-b px-5 py-4'>
+                <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div>
                       <CardTitle className='text-base font-semibold'>
@@ -567,7 +567,7 @@ export function PageTagShow() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='flex flex-1 flex-col justify-center p-4 sm:p-5'>
+                <CardContent className='flex flex-1 flex-col justify-center p-4'>
                   {!tag.aliases || tag.aliases.length === 0 ? (
                     <Empty className='border-0 p-2 sm:p-4 md:p-6'>
                       <EmptyHeader>

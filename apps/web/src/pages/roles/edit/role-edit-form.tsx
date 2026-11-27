@@ -23,6 +23,7 @@ import {
   Form,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { useDataPermissionFormOptions } from '@/pages/permissions/queries'
@@ -96,38 +97,34 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
 
   const isProtected = isProtectedRole(data)
 
+  const pageActions = (
+    <FormActions>
+      <Button variant='outline' type='button' onClick={() => navigate(-1)}>
+        <ArrowLeftIcon className='size-4' aria-hidden='true' />
+        {t('buttons.cancel')}
+      </Button>
+      <Button
+        type='submit'
+        disabled={
+          isProtected ||
+          editRoleMutation.isPending ||
+          permissionsQuery.isLoading ||
+          permissionsQuery.isError
+        }
+      >
+        <SaveIcon className='size-4' aria-hidden='true' />
+        {t('buttons.save')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Main className='flex-1'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
           <PageHeader
             title={<>{t('roles.edit.title')}</>}
-            actions={
-              <>
-                <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-                  <Button
-                    variant='outline'
-                    type='button'
-                    onClick={() => navigate(-1)}
-                  >
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.cancel')}
-                  </Button>
-                  <Button
-                    type='submit'
-                    disabled={
-                      isProtected ||
-                      editRoleMutation.isPending ||
-                      permissionsQuery.isLoading ||
-                      permissionsQuery.isError
-                    }
-                  >
-                    <SaveIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.save')}
-                  </Button>
-                </div>
-              </>
-            }
+            actions={pageActions}
           />
 
           <Card>
@@ -135,7 +132,7 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
               <CardTitle>{t('roles.edit.title')}</CardTitle>
               <CardDescription>{t('roles.edit.description')}</CardDescription>
             </CardHeader>
-            <CardContent className='mt-4 flex flex-col gap-4 sm:gap-8 md:grid md:grid-cols-3'>
+            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
               {/* Name */}
               <FormField
                 control={form.control}
@@ -164,6 +161,8 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
               />
             </CardContent>
           </Card>
+
+          <FormActions footer>{pageActions}</FormActions>
         </form>
       </Form>
     </Main>

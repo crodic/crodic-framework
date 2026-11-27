@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import { apiUpdateFile, fileQueryKeys } from '../queries'
 import type { FileSchema } from '../schema'
@@ -97,6 +98,24 @@ export function RenameFileDialog({
     : DialogHeader
   const Title: ComponentType<PagePartProps> = page ? PageTitle : DialogTitle
   const Footer: ComponentType<PagePartProps> = page ? PageFooter : DialogFooter
+  const pageActions = (
+    <>
+      <Button
+        type='button'
+        variant='outline'
+        onClick={() => onOpenChange(false)}
+        disabled={mutation.isPending}
+      >
+        {t('buttons.cancel', 'Cancel')}
+      </Button>
+      <Button type='submit' disabled={mutation.isPending}>
+        {mutation.isPending
+          ? t('buttons.saving', 'Saving...')
+          : t('buttons.save', 'Save')}
+      </Button>
+    </>
+  )
+
   const content = (
     <>
       <Header>
@@ -105,6 +124,8 @@ export function RenameFileDialog({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          {page && <FormActions>{pageActions}</FormActions>}
+
           <FormField
             control={form.control}
             name='name'
@@ -124,21 +145,7 @@ export function RenameFileDialog({
             )}
           />
 
-          <Footer className='gap-2 sm:gap-0'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => onOpenChange(false)}
-              disabled={mutation.isPending}
-            >
-              {t('buttons.cancel', 'Cancel')}
-            </Button>
-            <Button type='submit' disabled={mutation.isPending}>
-              {mutation.isPending
-                ? t('buttons.saving', 'Saving...')
-                : t('buttons.save', 'Save')}
-            </Button>
-          </Footer>
+          <Footer className='gap-2 sm:gap-0'>{pageActions}</Footer>
         </form>
       </Form>
     </>

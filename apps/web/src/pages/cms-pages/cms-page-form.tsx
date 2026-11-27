@@ -27,6 +27,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { ImagePickerInput } from '@/components/forms/image-picker-input'
+import { FormActions } from '@/components/layout/form-actions'
+import { PageHeader } from '@/components/layout/page-shell'
 import {
   cmsPageFormSchema,
   DEFAULT_PAGE_CONTENT,
@@ -198,56 +200,54 @@ export function CmsPageForm({
     name: `translations.${currentTranslationIndex}.slug`,
   })
 
+  const pageActions = (
+    <FormActions>
+      <Button variant='outline' type='button' onClick={() => navigate(-1)}>
+        <ArrowLeftIcon className='mr-2 size-4' aria-hidden='true' />
+        {t('buttons.cancel')}
+      </Button>
+      <Button type='submit' disabled={isSubmitting}>
+        <SaveIcon className='mr-2 size-4' aria-hidden='true' />
+        {t('buttons.save')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Form {...form}>
       <form
         onSubmit={handleSubmit}
         className='bg-background flex h-full min-h-0 flex-col overflow-hidden'
       >
-        <div className='border-border flex h-14 shrink-0 items-center justify-between border-b px-4'>
-          <div className='flex min-w-0 items-center gap-3'>
-            <div className='truncate text-sm font-medium'>
-              {initialData
-                ? t('cmsPages.form.editTitle')
-                : t('cmsPages.form.createTitle')}
-            </div>
-            <div className='text-muted-foreground truncate text-xs'>
-              {currentSlug || t('cmsPages.form.draftPage')}
-            </div>
-          </div>
-          <div className='flex shrink-0 items-center gap-4'>
-            <div className='border-border flex items-center gap-2 border-r pr-4'>
-              <FormLabel>{t('cmsPages.form.locale')}:</FormLabel>
-              <Select value={currentLocale} onValueChange={setCurrentLocale}>
-                <SelectTrigger className='h-8 w-[140px]'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LOCALES.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>
-                      {l.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeftIcon className='mr-2 size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                <SaveIcon className='mr-2 size-4' aria-hidden='true' />
-                {t('buttons.save')}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          className='border-b pb-6'
+          title={
+            initialData
+              ? t('cmsPages.form.editTitle')
+              : t('cmsPages.form.createTitle')
+          }
+          description={currentSlug || t('cmsPages.form.draftPage')}
+          actions={
+            <>
+              <div className='border-border flex items-center gap-2 border-r pr-4'>
+                <FormLabel>{t('cmsPages.form.locale')}:</FormLabel>
+                <Select value={currentLocale} onValueChange={setCurrentLocale}>
+                  <SelectTrigger className='h-8 w-[140px]'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LOCALES.map((l) => (
+                      <SelectItem key={l.value} value={l.value}>
+                        {l.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {pageActions}
+            </>
+          }
+        />
 
         <div className='flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden'>
           <div className='min-w-0 flex-1 p-4 md:p-6 lg:overflow-y-auto'>
@@ -488,6 +488,8 @@ export function CmsPageForm({
             </Tabs>
           </div>
         </div>
+
+        <FormActions footer>{pageActions}</FormActions>
       </form>
     </Form>
   )

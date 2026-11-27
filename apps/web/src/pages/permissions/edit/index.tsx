@@ -27,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import DataLoader from '@/components/layout/data-loader'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { NotFoundError } from '@/pages/errors/not-found-error'
@@ -91,6 +92,19 @@ export function PagePermissionEdit() {
 
   if (!data) return <NotFoundError />
 
+  const pageActions = (
+    <FormActions>
+      <Button type='button' variant='outline' onClick={() => navigate(-1)}>
+        <ArrowLeftIcon className='size-4' aria-hidden='true' />
+        Cancel
+      </Button>
+      <Button type='submit' disabled={editPermissionMutation.isPending}>
+        <SaveIcon className='size-4' aria-hidden='true' />
+        Save
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <Main>
@@ -99,27 +113,7 @@ export function PagePermissionEdit() {
             <PageHeader
               title={<>Edit Permission Metadata</>}
               description={<>{data.key}</>}
-              actions={
-                <>
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      onClick={() => navigate(-1)}
-                    >
-                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                      Cancel
-                    </Button>
-                    <Button
-                      type='submit'
-                      disabled={editPermissionMutation.isPending}
-                    >
-                      <SaveIcon className='size-4' aria-hidden='true' />
-                      Save
-                    </Button>
-                  </div>
-                </>
-              }
+              actions={pageActions}
             />
 
             <Card>
@@ -165,6 +159,8 @@ export function PagePermissionEdit() {
                 />
               </CardContent>
             </Card>
+
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </Main>

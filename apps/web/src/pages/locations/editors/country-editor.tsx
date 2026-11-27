@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import AutoCompleteSelectControl from '@/components/forms/auto-complete-select-control'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import {
   apiCreateCountry,
@@ -123,6 +124,22 @@ export function CountryEditor({ onClose, country }: CountryEditorProps) {
         isEdit ? 'Save Changes' : 'Create'
       )
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+        disabled={mutation.isPending}
+        onClick={() => onClose()}
+      >
+        {t('buttons.cancel', 'Cancel')}
+      </Button>
+      <Button type='submit' disabled={mutation.isPending}>
+        {submitLabel}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
@@ -146,6 +163,8 @@ export function CountryEditor({ onClose, country }: CountryEditorProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {pageActions}
+
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
@@ -359,19 +378,7 @@ export function CountryEditor({ onClose, country }: CountryEditorProps) {
               />
             </div>
 
-            <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
-              <Button
-                type='button'
-                variant='outline'
-                disabled={mutation.isPending}
-                onClick={() => onClose()}
-              >
-                {t('buttons.cancel', 'Cancel')}
-              </Button>
-              <Button type='submit' disabled={mutation.isPending}>
-                {submitLabel}
-              </Button>
-            </div>
+            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </div>

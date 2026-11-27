@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea'
 import AutoCompleteSelectControl from '@/components/forms/auto-complete-select-control'
 import { DatePickerForm } from '@/components/forms/date-picker-form'
 import { PhoneInput } from '@/components/forms/phone-input'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { useDataRoleFormOptions } from '@/pages/roles/queries'
@@ -73,32 +74,32 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
     }
   }
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        variant='outline'
+        type='button'
+        onClick={() => {
+          void navigate(-1)
+        }}
+      >
+        <ArrowLeftIcon className='size-4' aria-hidden='true' />
+        {t('buttons.cancel')}
+      </Button>
+      <Button type='submit'>
+        <SaveIcon className='size-4' aria-hidden='true' />
+        {t('buttons.save')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Main className='flex-1'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
           <PageHeader
             title={<>{t('adminUsers.edit.title')}</>}
-            actions={
-              <>
-                <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-                  <Button
-                    variant='outline'
-                    type='button'
-                    onClick={() => {
-                      void navigate(-1)
-                    }}
-                  >
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.cancel')}
-                  </Button>
-                  <Button type='submit'>
-                    <SaveIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.save')}
-                  </Button>
-                </div>
-              </>
-            }
+            actions={pageActions}
           />
 
           <Card>
@@ -108,7 +109,7 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
                 {t('adminUsers.edit.description')}
               </CardDescription>
             </CardHeader>
-            <CardContent className='mt-4 flex flex-col gap-4 sm:gap-8 md:grid md:grid-cols-3'>
+            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
               <FormField
                 control={form.control}
                 name='firstName'
@@ -225,25 +226,7 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
             </CardContent>
           </Card>
 
-          <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
-            <div className='flex flex-row space-x-2'></div>
-            <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => {
-                  void navigate(-1)
-                }}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              <Button type='submit'>
-                <SaveIcon className='size-4' aria-hidden='true' />
-                {t('buttons.save')}
-              </Button>
-            </div>
-          </div>
+          <FormActions footer>{pageActions}</FormActions>
         </form>
       </Form>
     </Main>

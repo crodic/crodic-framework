@@ -904,7 +904,7 @@ export function PageHelpCenter() {
             </div>
           </CardHeader>
 
-          <CardContent className='space-y-5 divide-y p-5'>
+          <CardContent className='space-y-6 divide-y'>
             {filteredWorkflows.map((workflow, index) => {
               const title = isVi ? workflow.titleVi : workflow.titleEn
               const steps = isVi ? workflow.stepsVi : workflow.stepsEn

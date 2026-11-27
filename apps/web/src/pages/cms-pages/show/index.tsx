@@ -190,7 +190,7 @@ export function PageCmsPageShow() {
                   {t('cmsPages.show.pageDetails', 'Page details')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='p-5 pt-1'>
+              <CardContent className='pt-1'>
                 <div className='divide-border/60 divide-y text-sm'>
                   <div className='flex items-center justify-between py-2.5'>
                     <span className='text-muted-foreground text-xs font-medium'>
@@ -240,7 +240,7 @@ export function PageCmsPageShow() {
                   {t('cmsPages.show.seoDetails', 'Technical SEO Metadata')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='p-5 pt-1'>
+              <CardContent className='pt-1'>
                 <div className='divide-border/60 divide-y text-sm'>
                   <div className='py-2.5'>
                     <span className='text-muted-foreground mb-1 block text-xs font-medium'>

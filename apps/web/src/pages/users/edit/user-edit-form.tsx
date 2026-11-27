@@ -23,6 +23,7 @@ import {
   Form,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { CosplayerProfileFields } from '../components/cosplayer-profile-fields'
@@ -125,32 +126,32 @@ export function UserEditForm({ data }: { data: UserSchema }) {
     }
   }
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        variant='outline'
+        type='button'
+        onClick={() => {
+          void navigate(-1)
+        }}
+      >
+        <ArrowLeftIcon className='size-4' aria-hidden='true' />
+        {t('buttons.cancel')}
+      </Button>
+      <Button type='submit'>
+        <SaveIcon className='size-4' aria-hidden='true' />
+        {t('buttons.save')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Main className='flex-1'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
           <PageHeader
             title={<>{t('users.edit.title')}</>}
-            actions={
-              <>
-                <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-                  <Button
-                    variant='outline'
-                    type='button'
-                    onClick={() => {
-                      void navigate(-1)
-                    }}
-                  >
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.cancel')}
-                  </Button>
-                  <Button type='submit'>
-                    <SaveIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.save')}
-                  </Button>
-                </div>
-              </>
-            }
+            actions={pageActions}
           />
 
           {isPendingRequest && (
@@ -196,7 +197,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
               <CardTitle>{t('users.edit.title')}</CardTitle>
               <CardDescription>{t('users.edit.description')}</CardDescription>
             </CardHeader>
-            <CardContent className='mt-4 flex flex-col gap-4 sm:gap-8 md:grid md:grid-cols-3'>
+            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
               <FormField
                 control={form.control}
                 name='email'
@@ -258,25 +259,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
 
           <CosplayerProfileFields control={form.control} />
 
-          <div className='mb-2 flex flex-col items-baseline justify-between space-y-2 sm:flex-row sm:items-center'>
-            <div className='flex flex-row space-x-2'></div>
-            <div className='flex w-full flex-wrap justify-end gap-2 sm:block sm:w-auto sm:justify-normal sm:space-x-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => {
-                  void navigate(-1)
-                }}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              <Button type='submit'>
-                <SaveIcon className='size-4' aria-hidden='true' />
-                {t('buttons.save')}
-              </Button>
-            </div>
-          </div>
+          <FormActions footer>{pageActions}</FormActions>
         </form>
       </Form>
     </Main>

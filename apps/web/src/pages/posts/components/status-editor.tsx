@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import { apiUpdateAdminPostStatus } from '../queries'
 import type { Post, PostStatus } from '../schema'
@@ -64,6 +65,24 @@ export function PostStatusEditor({
 
   if (!post) return null
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+        onClick={() => onClose()}
+        disabled={isPending}
+      >
+        {t('common.cancel', 'Hủy')}
+      </Button>
+      <Button type='submit' disabled={isPending}>
+        {isPending
+          ? t('common.saving', 'Đang lưu...')
+          : t('common.save', 'Lưu thay đổi')}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
@@ -72,6 +91,8 @@ export function PostStatusEditor({
         />
 
         <form onSubmit={handleSubmit} className='space-y-4 pt-2'>
+          {pageActions}
+
           <div className='space-y-1.5'>
             <Label>{t('posts.fields.title', 'Tiêu đề bài viết')}</Label>
             <p className='text-muted-foreground line-clamp-2 text-sm font-medium'>
@@ -148,21 +169,7 @@ export function PostStatusEditor({
             </div>
           )}
 
-          <div className='flex flex-wrap justify-end gap-2 border-t pt-4'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => onClose()}
-              disabled={isPending}
-            >
-              {t('common.cancel', 'Hủy')}
-            </Button>
-            <Button type='submit' disabled={isPending}>
-              {isPending
-                ? t('common.saving', 'Đang lưu...')
-                : t('common.save', 'Lưu thay đổi')}
-            </Button>
-          </div>
+          <FormActions footer>{pageActions}</FormActions>
         </form>
       </div>
     </>

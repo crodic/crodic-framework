@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FormActions } from '@/components/layout/form-actions'
 import { PageHeader } from '@/components/layout/page-shell'
 import { FOLDER_COLOR_PALETTE } from '../file-types'
 import { isValidFolderName } from '../schema'
@@ -118,11 +119,29 @@ export function FolderDialog({
     : DialogHeader
   const Title: ComponentType<PagePartProps> = page ? PageTitle : DialogTitle
   const Footer: ComponentType<PagePartProps> = page ? PageFooter : DialogFooter
+  const pageActions = (
+    <>
+      <Button variant='outline' onClick={() => onOpenChange(false)}>
+        {t('buttons.cancel')}
+      </Button>
+      <Button
+        onClick={() => mutation.mutate()}
+        disabled={
+          !normalizedFolder || Boolean(folderError) || mutation.isPending
+        }
+      >
+        {submitLabel}
+      </Button>
+    </>
+  )
+
   const content = (
     <>
       <Header>
         <Title>{title}</Title>
       </Header>
+      {page && <FormActions>{pageActions}</FormActions>}
+
       <div className='flex flex-col gap-4 py-1'>
         {parentFolder && (
           <div className='text-muted-foreground flex items-center gap-1 text-xs'>
@@ -198,19 +217,7 @@ export function FolderDialog({
         </div>
       </div>
 
-      <Footer>
-        <Button variant='outline' onClick={() => onOpenChange(false)}>
-          {t('buttons.cancel')}
-        </Button>
-        <Button
-          onClick={() => mutation.mutate()}
-          disabled={
-            !normalizedFolder || Boolean(folderError) || mutation.isPending
-          }
-        >
-          {submitLabel}
-        </Button>
-      </Footer>
+      <Footer>{pageActions}</Footer>
     </>
   )
   return page ? (

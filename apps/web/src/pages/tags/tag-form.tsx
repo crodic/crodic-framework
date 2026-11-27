@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  ArrowLeftIcon,
   BadgeCheckIcon,
   CheckIcon,
   CopyIcon,
@@ -46,6 +45,8 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormActions } from '@/components/layout/form-actions'
+import { PageHeader } from '@/components/layout/page-shell'
 import { FormFieldHelp } from './components/form-field-help'
 import {
   TagNodeChip,
@@ -231,93 +232,85 @@ export function TagForm({
   const activeTranslation =
     watchedTranslations?.[activeLocaleIndex]?.translatedName || ''
 
+  const pageActions = (
+    <FormActions>
+      <Button
+        type='button'
+        variant='outline'
+
+        onClick={() => navigate(-1)}
+        disabled={isSubmitting}
+      >
+        {t('buttons.cancel', 'Cancel')}
+      </Button>
+      <Button
+        type='submit'
+
+        disabled={isSubmitting}
+        className='gap-2'
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2Icon className='size-4 animate-spin' aria-hidden='true' />
+            <span>{t('buttons.saving', 'Saving...')}</span>
+          </>
+        ) : (
+          <>
+            <SaveIcon className='size-4' aria-hidden='true' />
+            <span>
+              {initialData
+                ? t('buttons.saveChanges', 'Save Changes')
+                : t('buttons.createTag', 'Create Tag')}
+            </span>
+          </>
+        )}
+      </Button>
+    </FormActions>
+  )
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1'>
+      <form onSubmit={form.handleSubmit(onSubmit)} className='flex-1 space-y-6'>
         {/* Clean Sticky Header Bar */}
-        <div className='bg-background/95 border-border/70 sticky top-0 z-30 flex flex-col gap-3 border-b pb-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-start gap-3 sm:items-center'>
-            <Button
-              type='button'
-              variant='outline'
-              size='icon'
-              onClick={() => navigate(-1)}
-              className='size-8 shrink-0 cursor-pointer'
-              aria-label={t('buttons.back', 'Back')}
-            >
-              <ArrowLeftIcon className='size-4' aria-hidden='true' />
-            </Button>
-
-            <div className='space-y-1'>
-              <div className='flex flex-wrap items-center gap-2.5'>
-                <h1 className='text-foreground text-lg font-bold tracking-tight sm:text-xl'>
-                  {initialData
-                    ? `#${watchedName || initialData.name}`
-                    : t('tags.form.createTitle', 'Create Canonical Tag')}
-                </h1>
-                <TagNodeChip
-                  name={watchedName?.trim() || 'preview'}
-                  translatedName={activeTranslation}
-                  category={watchedCategory}
-                  isOfficial={watchedIsOfficial}
-                  isSystem={watchedIsSystem}
-                  usageCount={initialData?.usageCount ?? 0}
-                />
-                <TagSafetyBadge safetyRating={watchedSafety} />
-                <TagStatusBadge status={watchedStatus} />
-              </div>
-              <p className='text-muted-foreground text-xs'>
-                {initialData
-                  ? t(
-                      'tags.form.editSubtitle',
-                      'Configure canonical identity, multilingual localizations, and aliases.'
-                    )
-                  : t(
-                      'tags.form.createSubtitle',
-                      'Register a new canonical tag into the platform taxonomy.'
-                    )}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex items-center justify-end gap-2'>
-            <Button
-              type='button'
-              variant='ghost'
-              size='sm'
-              onClick={() => navigate(-1)}
-              disabled={isSubmitting}
-              className='cursor-pointer text-xs'
-            >
-              {t('buttons.cancel', 'Cancel')}
-            </Button>
-            <Button
-              type='submit'
-              size='sm'
-              disabled={isSubmitting}
-              className='cursor-pointer gap-2 shadow-xs'
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2Icon
-                    className='size-4 animate-spin'
-                    aria-hidden='true'
-                  />
-                  <span>{t('buttons.saving', 'Saving...')}</span>
-                </>
-              ) : (
-                <>
-                  <SaveIcon className='size-4' aria-hidden='true' />
-                  <span>
-                    {initialData
-                      ? t('buttons.saveChanges', 'Save Changes')
-                      : t('buttons.createTag', 'Create Tag')}
-                  </span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title={
+            <>
+              {initialData
+                ? `#${watchedName || initialData.name}`
+                : t('tags.form.createTitle', 'Create Canonical Tag')}
+            </>
+          }
+          description={
+            <>
+              {initialData
+                ? t(
+                    'tags.form.editSubtitle',
+                    'Configure canonical identity, multilingual localizations, and aliases.'
+                  )
+                : t(
+                    'tags.form.createSubtitle',
+                    'Register a new canonical tag into the platform taxonomy.'
+                  )}
+            </>
+          }
+          badges={
+            <>
+              <TagNodeChip
+                name={watchedName?.trim() || 'preview'}
+                translatedName={activeTranslation}
+                category={watchedCategory}
+                isOfficial={watchedIsOfficial}
+                isSystem={watchedIsSystem}
+                usageCount={initialData?.usageCount ?? 0}
+              />
+              <TagSafetyBadge safetyRating={watchedSafety} />
+              <TagStatusBadge status={watchedStatus} />
+            </>
+          }
+          backTo={-1}
+          backLabel={t('buttons.back', 'Back')}
+          actions={pageActions}
+        />
 
         {/* 2-Column Responsive Workspace Grid */}
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
@@ -325,7 +318,7 @@ export function TagForm({
           <div className='space-y-6 lg:col-span-8'>
             {/* Card 1: Core Canonical Identity */}
             <Card className='border-border/80 shadow-xs'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t('tags.form.canonicalSection', 'Canonical Identity')}
                 </CardTitle>
@@ -337,7 +330,7 @@ export function TagForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-5 p-5 sm:p-6'>
+              <CardContent className='space-y-6'>
                 {/* Row 1: Canonical Name & Permastyle Slug */}
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <FormField
@@ -690,7 +683,7 @@ export function TagForm({
 
             {/* Card 2: Multilingual Translations Studio */}
             <Card className='border-border/80 shadow-xs'>
-              <CardHeader className='border-b px-5 py-4 sm:px-6'>
+              <CardHeader>
                 <CardTitle className='text-base font-semibold'>
                   {t(
                     'tags.form.translationsSection',
@@ -705,7 +698,7 @@ export function TagForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-5 p-5 sm:p-6'>
+              <CardContent className='space-y-6'>
                 {/* Language Selection Tabs Bar */}
                 <div className='flex flex-wrap items-center gap-1.5 border-b pb-3'>
                   {TAG_LOCALES.map((localeItem, idx) => {
@@ -852,7 +845,7 @@ export function TagForm({
           <div className='space-y-6 lg:col-span-4'>
             {/* Card 3: Governance & Security Flags */}
             <Card className='border-border/80 shadow-xs'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <CardTitle className='text-sm font-semibold'>
                   {t('tags.form.governanceSection', 'Governance & Protection')}
                 </CardTitle>
@@ -864,7 +857,7 @@ export function TagForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-3 p-5'>
+              <CardContent className='space-y-3'>
                 <FormField
                   control={form.control}
                   name='isOfficial'
@@ -947,7 +940,7 @@ export function TagForm({
 
             {/* Card 4: Orthographic Aliases */}
             <Card className='border-border/80 shadow-xs'>
-              <CardHeader className='border-b px-5 py-4'>
+              <CardHeader>
                 <div className='flex items-center justify-between'>
                   <CardTitle className='text-sm font-semibold'>
                     {t('tags.form.aliasesSection', 'Orthographic Aliases')}
@@ -967,7 +960,7 @@ export function TagForm({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className='space-y-4 p-5'>
+              <CardContent className='space-y-4'>
                 {/* Quick-Add Toolbar */}
                 <div className='border-border/70 bg-muted/20 space-y-2 rounded-xl border p-2.5'>
                   <Input
@@ -1065,6 +1058,8 @@ export function TagForm({
             </Card>
           </div>
         </div>
+
+        <FormActions footer>{pageActions}</FormActions>
       </form>
     </Form>
   )
