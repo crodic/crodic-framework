@@ -312,10 +312,10 @@
     "charactersTab": "Nhân vật",
     "aboutTab": "Giới thiệu",
     "allFilters": "Tất cả album",
-    "seriesFilter": "Series",
-    "studioFilter": "Studio",
-    "eventFilter": "Event",
-    "originalFilter": "Original",
+    "seriesFilter": "Nhân vật & Series",
+    "generalFilter": "Album Tổng Hợp",
+    "groupFilter": "Nhóm & Doujin",
+    "premiumFilter": "Studio Cao Cấp",
     "emptyAlbums": "Chưa có album nào trong mục này",
     "viewAlbum": "Xem album",
     "photosCount": "{count, number} ảnh",
@@ -1565,10 +1565,10 @@
     "seriesPlaceholder": "VD: Honkai: Star Rail, Genshin Impact...",
     "categoryLabel": "Chuyên mục Album",
     "categories": {
-      "series": "Series Photoset",
-      "studio": "Chụp Studio",
-      "event": "Festival / Sự kiện",
-      "original": "Original / Tự thiết kế"
+      "series": "Nhân vật & Series",
+      "general": "Album Tổng Hợp",
+      "group": "Nhóm & Doujin",
+      "premium": "Studio Cao Cấp"
     },
     "visibilityLabel": "Quyền riêng tư",
     "visibility": {

@@ -171,7 +171,7 @@ export function ProfileSavedCollections({
           variant="outline"
           size="sm"
           onClick={() => setIsCreateOpen(true)}
-          className="border-border/70 h-8 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold"
+          className="border-border/70 h-8 cursor-pointer gap-1.5 px-3 text-xs font-semibold"
         >
           <Plus className="size-3.5" />
           <span>{t("createCollection")}</span>
@@ -187,23 +187,25 @@ export function ProfileSavedCollections({
         )}
       >
         {collections.map((col) => {
-          const hasThumbs =
-            col.previewThumbnails && col.previewThumbnails.length > 0;
+          const uniqueThumbs = Array.from(
+            new Set(col.previewThumbnails || [])
+          ).filter(Boolean);
 
           return (
             <div
               key={col.id}
               onClick={() => setSelectedCollection(col)}
-              className="group border-border/70 bg-card hover:border-border relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border shadow-xs transition-colors"
+              className="group border-border/70 bg-card hover:border-border relative flex cursor-pointer flex-col overflow-hidden rounded-xl border shadow-xs transition-colors"
             >
-              {/* Mosaic Banner or Clean Placeholder */}
+              {/* Mosaic Banner or Single Cover */}
               <div className="bg-muted relative aspect-[16/11] w-full overflow-hidden">
-                {hasThumbs ? (
+                {uniqueThumbs.length >= 3 ? (
+                  /* 3+ distinct images: Mosaic grid */
                   <div className="grid h-full grid-cols-3 gap-1 p-1">
                     {/* Hero Left (2 cols) */}
-                    <div className="relative col-span-2 h-full overflow-hidden rounded-l-2xl">
+                    <div className="relative col-span-2 h-full overflow-hidden rounded-l-lg">
                       <Image
-                        src={col.previewThumbnails[0] || ""}
+                        src={uniqueThumbs[0] || ""}
                         alt={col.title}
                         fill
                         sizes="(max-width: 640px) 70vw, (max-width: 1024px) 35vw, 25vw"
@@ -213,27 +215,23 @@ export function ProfileSavedCollections({
 
                     {/* Stacked Right (1 col, 2 rows) */}
                     <div className="grid h-full grid-rows-2 gap-1">
-                      <div className="relative h-full overflow-hidden rounded-tr-2xl">
-                        {col.previewThumbnails[1] && (
-                          <Image
-                            src={col.previewThumbnails[1]}
-                            alt={col.title}
-                            fill
-                            sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                            className="object-cover transition-opacity duration-300 group-hover:opacity-95"
-                          />
-                        )}
+                      <div className="relative h-full overflow-hidden rounded-tr-lg">
+                        <Image
+                          src={uniqueThumbs[1] || ""}
+                          alt={col.title}
+                          fill
+                          sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
+                          className="object-cover transition-opacity duration-300 group-hover:opacity-95"
+                        />
                       </div>
-                      <div className="relative h-full overflow-hidden rounded-br-2xl">
-                        {col.previewThumbnails[2] && (
-                          <Image
-                            src={col.previewThumbnails[2]}
-                            alt={col.title}
-                            fill
-                            sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
-                            className="object-cover transition-opacity duration-300 group-hover:opacity-95"
-                          />
-                        )}
+                      <div className="relative h-full overflow-hidden rounded-br-lg">
+                        <Image
+                          src={uniqueThumbs[2] || ""}
+                          alt={col.title}
+                          fill
+                          sizes="(max-width: 640px) 30vw, (max-width: 1024px) 15vw, 12vw"
+                          className="object-cover transition-opacity duration-300 group-hover:opacity-95"
+                        />
                         {col.itemsCount > 3 && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/60 font-mono text-xs font-bold text-white/95 backdrop-blur-xs">
                             +{col.itemsCount - 2}
@@ -241,6 +239,39 @@ export function ProfileSavedCollections({
                         )}
                       </div>
                     </div>
+                  </div>
+                ) : uniqueThumbs.length === 2 ? (
+                  /* 2 distinct images: Half & Half */
+                  <div className="grid h-full grid-cols-2 gap-1 p-1">
+                    <div className="relative h-full overflow-hidden rounded-l-lg">
+                      <Image
+                        src={uniqueThumbs[0] || ""}
+                        alt={col.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                        className="object-cover object-top transition-opacity duration-300 group-hover:opacity-95"
+                      />
+                    </div>
+                    <div className="relative h-full overflow-hidden rounded-r-lg">
+                      <Image
+                        src={uniqueThumbs[1] || ""}
+                        alt={col.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                        className="object-cover transition-opacity duration-300 group-hover:opacity-95"
+                      />
+                    </div>
+                  </div>
+                ) : uniqueThumbs.length === 1 ? (
+                  /* Single distinct image: Clean Full Cover */
+                  <div className="relative size-full overflow-hidden">
+                    <Image
+                      src={uniqueThumbs[0] || ""}
+                      alt={col.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover object-top transition-opacity duration-300 group-hover:opacity-95"
+                    />
                   </div>
                 ) : (
                   <div className="bg-muted/40 flex h-full w-full items-center justify-center">
@@ -281,7 +312,7 @@ export function ProfileSavedCollections({
           if (!open) setSelectedCollection(null);
         }}
       >
-        <DialogContent className="border-border/80 bg-background/95 max-h-[90vh] overflow-hidden rounded-3xl p-0 backdrop-blur-xl sm:max-w-4xl">
+        <DialogContent className="border-border/80 bg-background/95 max-h-[90vh] overflow-hidden p-0 backdrop-blur-xl sm:max-w-4xl">
           {selectedCollection && (
             <div className="flex max-h-[90vh] flex-col">
               {/* Modal Header */}
@@ -289,7 +320,7 @@ export function ProfileSavedCollections({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <DialogTitle className="flex items-center gap-2.5 text-xl font-bold tracking-tight sm:text-2xl">
-                      <div className="bg-primary/15 text-primary flex size-8 items-center justify-center rounded-xl">
+                      <div className="bg-primary/15 text-primary flex size-8 items-center justify-center rounded-md">
                         <FolderHeart className="size-4.5" />
                       </div>
                       <span>
@@ -325,7 +356,7 @@ export function ProfileSavedCollections({
                       variant="outline"
                       size="sm"
                       onClick={handleShareCollection}
-                      className="border-border/70 h-8 gap-1.5 rounded-xl text-xs"
+                      className="border-border/70 h-8 gap-1.5 text-xs"
                     >
                       <Share2 className="size-3.5" />
                     </Button>
@@ -336,7 +367,7 @@ export function ProfileSavedCollections({
                       onClick={() =>
                         handleDeleteCollection(selectedCollection.id)
                       }
-                      className="h-8 gap-1.5 rounded-xl text-xs"
+                      className="h-8 gap-1.5 text-xs"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -397,7 +428,7 @@ export function ProfileSavedCollections({
                                 e.stopPropagation();
                                 removeItemMutation.mutate(item.id);
                               }}
-                              className="hover:bg-destructive flex size-7 items-center justify-center rounded-lg bg-black/70 text-white backdrop-blur-xs transition-colors"
+                              className="hover:bg-destructive flex size-7 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur-xs transition-colors"
                             >
                               <Trash2 className="size-3.5" />
                             </button>
@@ -411,7 +442,7 @@ export function ProfileSavedCollections({
                             key={item.id}
                             href={`/posts/${encodeURIComponent(String(postSlug).trim())}`}
                             onClick={() => setSelectedCollection(null)}
-                            className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
+                            className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-xl border shadow-xs transition-all hover:shadow-md"
                           >
                             {cardInner}
                           </Link>
@@ -422,7 +453,7 @@ export function ProfileSavedCollections({
                         <div
                           key={item.id}
                           onClick={() => mediaUrl && setActivePhoto(mediaUrl)}
-                          className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border shadow-xs transition-all hover:shadow-md"
+                          className="group border-border/60 bg-muted/30 relative aspect-[3/4] cursor-pointer overflow-hidden rounded-xl border shadow-xs transition-all hover:shadow-md"
                         >
                           {cardInner}
                         </div>
@@ -451,7 +482,7 @@ export function ProfileSavedCollections({
         <DialogContent className="border-none bg-black/95 p-2 backdrop-blur-2xl sm:max-w-4xl">
           {activePhoto && (
             <div className="relative flex flex-col items-center">
-              <div className="relative aspect-[3/4] max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-2xl">
+              <div className="relative aspect-[3/4] max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-xl">
                 <Image
                   src={activePhoto}
                   alt="Full photo"
@@ -467,7 +498,7 @@ export function ProfileSavedCollections({
 
       {/* Create Collection Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="border-border/80 bg-background/95 rounded-3xl backdrop-blur-xl sm:max-w-md">
+        <DialogContent className="border-border/80 bg-background/95 backdrop-blur-xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <FolderHeart className="text-primary size-5" />
@@ -491,7 +522,6 @@ export function ProfileSavedCollections({
                     <FormControl>
                       <Input
                         placeholder={t("collectionPlaceholder")}
-                        className="rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -505,14 +535,14 @@ export function ProfileSavedCollections({
                   type="button"
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
-                  className="rounded-xl text-xs font-semibold"
+                  className="text-xs font-semibold"
                 >
                   {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="bg-primary text-primary-foreground rounded-xl text-xs font-semibold"
+                  className="bg-primary text-primary-foreground text-xs font-semibold"
                 >
                   {createMutation.isPending ? (
                     <Loader2 className="size-4 animate-spin" />

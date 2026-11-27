@@ -16,6 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createPost } from "@/services/posts";
@@ -98,6 +105,7 @@ export function CreateAlbumForm({
     resolver: zodResolver(albumSchema),
     defaultValues: {
       title: "",
+      albumCategory: "series",
       character: "",
       fandom: "",
       tags: [],
@@ -141,7 +149,7 @@ export function CreateAlbumForm({
           title: values.title,
           caption: values.description,
           postType: "video",
-          albumCategory: "series",
+          albumCategory: values.albumCategory,
           characterName: values.character || undefined,
           fandomName: values.fandom || undefined,
           isPublic: values.isPublic,
@@ -199,7 +207,7 @@ export function CreateAlbumForm({
         title: values.title,
         caption: values.description,
         postType: "photoset",
-        albumCategory: "series",
+        albumCategory: values.albumCategory,
         characterName: values.character || undefined,
         fandomName: values.fandom || undefined,
         isPublic: values.isPublic,
@@ -270,6 +278,41 @@ export function CreateAlbumForm({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            {/* Chuyên mục Album */}
+            <FormField
+              control={form.control}
+              name="albumCategory"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-foreground text-sm font-medium">
+                    {t("categoryLabel")}
+                  </FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full data-[size=default]:h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="series">
+                        {t("categories.series")}
+                      </SelectItem>
+                      <SelectItem value="general">
+                        {t("categories.general")}
+                      </SelectItem>
+                      <SelectItem value="group">
+                        {t("categories.group")}
+                      </SelectItem>
+                      <SelectItem value="premium">
+                        {t("categories.premium")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}

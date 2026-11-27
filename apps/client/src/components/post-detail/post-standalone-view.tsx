@@ -46,7 +46,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PhotoLightbox } from "@/components/feed/photo-lightbox";
-import { EditPostModal } from "@/components/studio/edit-post-modal";
 import { cn } from "@/lib/utils";
 import type {
   PostDetailResDto,
@@ -97,8 +96,7 @@ export function PostStandaloneView({
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Edit / Delete modals
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // Delete / Report modals
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
@@ -416,7 +414,11 @@ export function PostStandaloneView({
                   {isOwnPost ? (
                     <>
                       <DropdownMenuItem
-                        onClick={() => setIsEditModalOpen(true)}
+                        onClick={() =>
+                          router.push(
+                            `/posts/${encodeURIComponent(post.slug || post.id)}/edit`
+                          )
+                        }
                         className="cursor-pointer gap-2.5"
                       >
                         <Pencil className="size-3.5" />
@@ -993,15 +995,6 @@ export function PostStandaloneView({
         }}
         caption={post.caption || undefined}
       />
-
-      {/* Edit Post Modal (if owner) */}
-      {isOwnPost && (
-        <EditPostModal
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
-          post={post}
-        />
-      )}
 
       {/* Delete Confirmation Alert Dialog */}
       <AlertDialog

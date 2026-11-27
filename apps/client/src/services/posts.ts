@@ -96,19 +96,19 @@ export interface PostCommentResDto {
   createdAt: string;
 }
 
+export interface CreatePostMediaInput {
+  mediaUrl: string;
+  mediaType?: "image" | "video";
+  sortOrder?: number;
+  caption?: string;
+  isCover?: boolean;
+}
+
 export interface CreatePostPayload {
   title: string;
   caption?: string;
   postType?: "photoset" | "wip" | "crafting" | "video" | "single" | "reel";
-  albumCategory?:
-    | "series"
-    | "general"
-    | "group"
-    | "premium"
-    | "event"
-    | "original"
-    | "studio"
-    | "casual";
+  albumCategory?: "series" | "general" | "group" | "premium";
   characterName?: string;
   fandomName?: string;
   coverImageUrl?: string;
@@ -116,13 +116,7 @@ export interface CreatePostPayload {
   isPublic?: boolean;
   enableWatermark?: boolean;
   collaborators?: PostCollaboratorDto[];
-  media?: {
-    mediaUrl: string;
-    mediaType?: "image" | "video";
-    sortOrder?: number;
-    caption?: string;
-    isCover?: boolean;
-  }[];
+  media?: CreatePostMediaInput[];
 }
 
 export const getPosts = async (
@@ -231,21 +225,14 @@ export interface UpdatePostPayload {
   title?: string;
   caption?: string;
   postType?: "photoset" | "wip" | "crafting" | "video";
-  albumCategory?:
-    | "series"
-    | "general"
-    | "group"
-    | "premium"
-    | "event"
-    | "original"
-    | "studio"
-    | "casual";
+  albumCategory?: "series" | "general" | "group" | "premium";
   characterName?: string;
   fandomName?: string;
   coverImageUrl?: string;
   tags?: string[];
   isPublic?: boolean;
   enableWatermark?: boolean;
+  media?: CreatePostMediaInput[];
 }
 
 export const createPost = async (

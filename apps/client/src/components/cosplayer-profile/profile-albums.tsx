@@ -17,16 +17,16 @@ import { useTranslations } from "next-intl";
 type FilterKey =
   | "allFilters"
   | "seriesFilter"
-  | "studioFilter"
-  | "eventFilter"
-  | "originalFilter";
+  | "generalFilter"
+  | "groupFilter"
+  | "premiumFilter";
 
 const PROFILE_ALBUM_FILTERS: { id: string; labelKey: FilterKey }[] = [
   { id: "all", labelKey: "allFilters" },
   { id: "series", labelKey: "seriesFilter" },
-  { id: "studio", labelKey: "studioFilter" },
-  { id: "event", labelKey: "eventFilter" },
-  { id: "original", labelKey: "originalFilter" },
+  { id: "general", labelKey: "generalFilter" },
+  { id: "group", labelKey: "groupFilter" },
+  { id: "premium", labelKey: "premiumFilter" },
 ];
 
 interface ProfileAlbumsProps {
@@ -36,9 +36,30 @@ interface ProfileAlbumsProps {
 
 export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
   const t = useTranslations("Profile");
+  const tStudio = useTranslations("Studio");
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedAlbum, setSelectedAlbum] = useState<PostSummaryResDto | null>(
     null
+  );
+
+  const getCategoryLabel = (category?: string) => {
+    if (
+      category === "series" ||
+      category === "general" ||
+      category === "group" ||
+      category === "premium"
+    ) {
+      return tStudio(`categories.${category}`);
+    }
+    return category || "";
+  };
+
+  // Only show category filters that exist in the user's albums (if more than 1 category exists)
+  const existingCategories = new Set(
+    albums.map((a) => a.albumCategory).filter(Boolean)
+  );
+  const visibleFilters = PROFILE_ALBUM_FILTERS.filter(
+    (f) => f.id === "all" || existingCategories.has(f.id)
   );
 
   const filteredAlbums = albums.filter((album) => {
@@ -53,30 +74,32 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* 1. Sub-filter pills */}
-      <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-2">
-        {PROFILE_ALBUM_FILTERS.map((filter) => {
-          const isActive = activeFilter === filter.id;
-          return (
-            <button
-              key={filter.id}
-              type="button"
-              onClick={() => setActiveFilter(filter.id)}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all sm:rounded-xl sm:text-sm ${
-                isActive
-                  ? "bg-foreground text-background font-semibold shadow-xs"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/50 border"
-              }`}
-            >
-              {t(filter.labelKey)}
-            </button>
-          );
-        })}
-      </div>
+      {/* 1. Sub-filter pills (only shown when user has multiple distinct categories) */}
+      {visibleFilters.length > 2 && (
+        <div className="flex scrollbar-none items-center gap-2 overflow-x-auto pb-2">
+          {visibleFilters.map((filter) => {
+            const isActive = activeFilter === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => setActiveFilter(filter.id)}
+                className={`rounded-md px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all sm:text-sm ${
+                  isActive
+                    ? "bg-foreground text-background font-semibold shadow-xs"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border-border/50 border"
+                }`}
+              >
+                {t(filter.labelKey)}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* 2. Spotlight Masterpiece Banner (Only when filter is "all" and there are albums) */}
       {featuredAlbum && (
-        <div className="group border-border/50 bg-card relative overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-xl sm:rounded-3xl">
+        <div className="group border-border/50 bg-card relative overflow-hidden rounded-xl border shadow-sm transition-all duration-300 hover:shadow-xl">
           <Link
             href={`/posts/${encodeURIComponent(String(featuredAlbum.slug || featuredAlbum.id).trim())}`}
             className="relative block aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9] md:aspect-[2.5/1]"
@@ -120,8 +143,8 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
             <div className="absolute inset-x-4 bottom-4 z-10 flex flex-col justify-between gap-3 text-white sm:inset-x-6 sm:bottom-6 sm:flex-row sm:items-end">
               <div className="max-w-2xl space-y-1 sm:space-y-1.5">
                 <div className="flex items-center gap-2 text-xs text-white/80 sm:text-sm">
-                  <span className="font-medium capitalize">
-                    {featuredAlbum.albumCategory}
+                  <span className="font-medium">
+                    {getCategoryLabel(featuredAlbum.albumCategory)}
                   </span>
                   <span>•</span>
                   <span className="inline-flex items-center gap-1">
@@ -153,7 +176,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                 )}
               </div>
 
-              <div className="group-hover:bg-primary group-hover:text-primary-foreground inline-flex shrink-0 items-center gap-1.5 self-start rounded-xl bg-white/95 px-3.5 py-2 text-xs font-semibold text-black shadow-lg backdrop-blur-md transition-all sm:self-end sm:text-sm">
+              <div className="group-hover:bg-primary group-hover:text-primary-foreground inline-flex shrink-0 items-center gap-1.5 self-start rounded-md bg-white/95 px-3.5 py-2 text-xs font-semibold text-black shadow-lg backdrop-blur-md transition-all sm:self-end sm:text-sm">
                 <span>{t("viewAlbum")}</span>
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </div>
@@ -176,10 +199,10 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                 <Link
                   key={album.id}
                   href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
-                  className="group flex cursor-pointer flex-col space-y-2 rounded-2xl transition-all duration-300"
+                  className="group flex cursor-pointer flex-col space-y-2 rounded-xl transition-all duration-300"
                 >
                   {/* Cover Image Container */}
-                  <div className="bg-muted/50 border-border/40 group-hover:border-primary/50 relative aspect-[4/5] w-full overflow-hidden rounded-xl border shadow-xs transition-all duration-300 group-hover:shadow-md sm:rounded-2xl">
+                  <div className="bg-muted/50 border-border/40 group-hover:border-primary/50 relative aspect-[4/5] w-full overflow-hidden rounded-xl border shadow-xs transition-all duration-300 group-hover:shadow-md">
                     {/* Video Badge */}
                     {(album.postType === "video" ||
                       Boolean(album.videoUrl)) && (
@@ -232,7 +255,7 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
 
                     {/* Hover overlay hint */}
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 transition-opacity group-hover:opacity-100">
-                      <span className="bg-background/90 text-foreground inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md">
+                      <span className="bg-background/90 text-foreground inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md">
                         <Eye className="text-primary size-3.5" />
                         {t("viewAlbum")}
                       </span>
@@ -245,7 +268,9 @@ export function ProfileAlbums({ albums, cosplayerName }: ProfileAlbumsProps) {
                       {album.title}
                     </h3>
                     <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                      <span className="truncate">{album.albumCategory}</span>
+                      <span className="truncate">
+                        {getCategoryLabel(album.albumCategory)}
+                      </span>
                       <span
                         className="flex shrink-0 items-center gap-1"
                         suppressHydrationWarning

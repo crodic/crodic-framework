@@ -33,7 +33,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
       {/* Left 2 Columns: Bio, Specs & Skills */}
       <div className="space-y-6 md:col-span-2">
         {/* Detailed Biography Card */}
-        <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
+        <Card className="border-border/60 bg-card/50 shadow-xs">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold sm:text-lg">
               <User className="text-primary size-4" />
@@ -62,7 +62,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
         {/* Specifications & Skills */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Specs */}
-          <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
+          <Card className="border-border/60 bg-card/50 shadow-xs">
             <CardHeader className="pb-2">
               <CardTitle className="text-muted-foreground flex items-center gap-2 text-sm font-bold">
                 <Ruler className="text-primary size-4" />
@@ -96,7 +96,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
           </Card>
 
           {/* Skills */}
-          <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
+          <Card className="border-border/60 bg-card/50 shadow-xs">
             <CardHeader className="pb-2">
               <CardTitle className="text-muted-foreground flex items-center gap-2 text-sm font-bold">
                 <User className="text-primary size-4" />
@@ -125,7 +125,7 @@ export function ProfileAbout({ profile }: ProfileAboutProps) {
 
       {/* Right Column: Contact & Social Channels */}
       <div className="space-y-6">
-        <Card className="border-border/60 bg-card/50 rounded-2xl shadow-xs">
+        <Card className="border-border/60 bg-card/50 shadow-xs">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-bold">
               <Mail className="text-primary size-4" />

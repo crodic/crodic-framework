@@ -312,10 +312,10 @@
     "charactersTab": "Characters",
     "aboutTab": "About",
     "allFilters": "All albums",
-    "seriesFilter": "Series",
-    "studioFilter": "Studio",
-    "eventFilter": "Event",
-    "originalFilter": "Original",
+    "seriesFilter": "Characters & Series",
+    "generalFilter": "General Album",
+    "groupFilter": "Group & Doujin",
+    "premiumFilter": "Premium Studio",
     "emptyAlbums": "No albums found in this category",
     "viewAlbum": "View album",
     "photosCount": "{count, number} photos",
@@ -1565,10 +1565,10 @@
     "seriesPlaceholder": "E.g. Honkai: Star Rail, Genshin Impact...",
     "categoryLabel": "Album Category",
     "categories": {
-      "series": "Series Photoset",
-      "studio": "Studio Photoshoot",
-      "event": "Festival / Event",
-      "original": "Original Design"
+      "series": "Characters & Series",
+      "general": "General Album",
+      "group": "Group & Doujin",
+      "premium": "Premium Studio"
     },
     "visibilityLabel": "Visibility",
     "visibility": {

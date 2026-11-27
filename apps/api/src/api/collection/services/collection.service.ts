@@ -89,8 +89,14 @@ export class CollectionService {
       for (const preview of previews) {
         const key = String(preview.collectionId);
         const thumbnails = thumbsMap.get(key) ?? [];
-        thumbnails.push(preview.coverImageUrl);
-        thumbsMap.set(key, thumbnails);
+        if (
+          preview.coverImageUrl &&
+          !thumbnails.includes(preview.coverImageUrl) &&
+          thumbnails.length < 4
+        ) {
+          thumbnails.push(preview.coverImageUrl);
+          thumbsMap.set(key, thumbnails);
+        }
       }
     }
 

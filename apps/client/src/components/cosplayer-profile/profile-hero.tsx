@@ -251,7 +251,7 @@ export function ProfileHero({
 
       {/* Visitor Preview Banner (Visible when owner switches to visitor mode) */}
       {isOwner && viewMode === "visitor" && (
-        <div className="bg-primary/10 border-primary/20 mb-4 flex items-center justify-between rounded-2xl border px-4 py-2 text-xs backdrop-blur-xs">
+        <div className="bg-primary/10 border-primary/20 mb-4 flex items-center justify-between rounded-xl border px-4 py-2 text-xs backdrop-blur-xs">
           <div className="flex items-center gap-2">
             <Eye className="text-primary size-4" />
             <span className="text-foreground font-medium">
@@ -262,7 +262,7 @@ export function ProfileHero({
             size="sm"
             variant="outline"
             onClick={onToggleViewMode}
-            className="bg-background h-7 cursor-pointer rounded-lg px-2.5 text-xs font-semibold"
+            className="bg-background h-7 cursor-pointer px-2.5 text-xs font-semibold"
           >
             {t("viewModeOwner")}
           </Button>
@@ -270,7 +270,7 @@ export function ProfileHero({
       )}
 
       {/* 1. Panoramic Cover Banner */}
-      <div className="group/cover bg-muted/60 border-border/40 relative h-48 w-full overflow-hidden rounded-2xl border shadow-sm sm:h-60 sm:rounded-3xl md:h-72 lg:h-80">
+      <div className="group/cover bg-muted/60 border-border/40 relative h-48 w-full overflow-hidden rounded-xl border shadow-sm sm:h-60 md:h-72 lg:h-80">
         {profile.coverUrl ? (
           <Image
             src={profile.coverUrl}
@@ -296,7 +296,7 @@ export function ProfileHero({
               variant="secondary"
               disabled={isUploadingCover}
               onClick={() => coverFileRef.current?.click()}
-              className="h-8 cursor-pointer gap-1.5 rounded-xl border border-white/10 bg-black/60 px-3 text-xs font-semibold text-white shadow-md backdrop-blur-md transition-all hover:bg-black/85"
+              className="h-8 cursor-pointer gap-1.5 border border-white/10 bg-black/60 px-3 text-xs font-semibold text-white shadow-md backdrop-blur-md transition-all hover:bg-black/85"
             >
               {isUploadingCover ? (
                 <Loader2 className="size-3.5 animate-spin" />

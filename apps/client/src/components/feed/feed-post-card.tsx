@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Bookmark,
   Check,
@@ -38,7 +38,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EditPostModal } from "@/components/studio/edit-post-modal";
 import {
   addPostComment,
   deletePost,
@@ -81,6 +80,7 @@ interface LocalComment {
 
 export function FeedPostCard({ post }: FeedPostCardProps) {
   const t = useTranslations("Feed");
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useProfile();
@@ -109,7 +109,6 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const isOwnPost = Boolean(profile?.id && profile.id === post.author.id);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
@@ -332,7 +331,11 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => setIsEditModalOpen(true)}
+                    onClick={() =>
+                      router.push(
+                        `/posts/${encodeURIComponent(post.slug || post.id)}/edit`
+                      )
+                    }
                     className="cursor-pointer text-xs"
                   >
                     <Pencil className="mr-2 size-4" />
@@ -675,52 +678,41 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         caption={captionText}
       />
 
-      {/* Author Actions: Edit Post Modal & Delete Confirm Dialog */}
+      {/* Author Actions: Delete Confirm Dialog */}
       {isOwnPost && (
-        <>
-          <EditPostModal
-            post={post}
-            open={isEditModalOpen}
-            onOpenChange={setIsEditModalOpen}
-          />
-
-          <AlertDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-          >
-            <AlertDialogContent className="rounded-2xl">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-base font-bold">
-                  {t("deletePostConfirmTitle")}
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-xs">
-                  {t("deletePostConfirmDesc")}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel
-                  disabled={isDeleting}
-                  className="rounded-xl text-xs"
-                >
-                  {t("close")}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDeletePost();
-                  }}
-                  disabled={isDeleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold"
-                >
-                  {isDeleting && (
-                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                  )}
-                  {t("deletePost")}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-base font-bold">
+                {t("deletePostConfirmTitle")}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs">
+                {t("deletePostConfirmDesc")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting} className="text-xs">
+                {t("close")}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeletePost();
+                }}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs font-semibold"
+              >
+                {isDeleting && (
+                  <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                )}
+                {t("deletePost")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
 
       {/* Report Post Dialog */}
