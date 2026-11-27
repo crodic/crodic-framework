@@ -5,14 +5,28 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { ArrowRight, Compass, ShieldCheck, Layers } from "lucide-react";
+import { HERO_STATS } from "@/config/landing";
+import { motion } from "@/components/ui/motion-primitives";
 
 export function HeroBanner() {
   const t = useTranslations("Landing.hero");
 
   return (
-    <section className="bg-background relative overflow-hidden">
+    <section className="bg-background border-border/60 relative overflow-hidden border-b">
+      {/* Ambient Background Light Orbs */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-60 overflow-hidden select-none sm:inset-y-0 sm:h-auto lg:left-auto lg:w-[68%]"
+        className="bg-primary/15 pointer-events-none absolute -top-32 -left-32 z-0 size-96 rounded-full blur-3xl"
+        aria-hidden="true"
+      />
+      <div
+        className="bg-primary/10 pointer-events-none absolute right-1/4 bottom-0 z-0 size-80 rounded-full blur-3xl"
+        aria-hidden="true"
+      />
+
+      {/* Panoramic Hero Visual */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 overflow-hidden select-none sm:inset-y-0 sm:h-auto lg:left-auto lg:w-[64%]"
         aria-hidden="true"
       >
         <Image
@@ -24,32 +38,56 @@ export function HeroBanner() {
           className="object-cover object-[65%_38%] sm:object-[75%_center] lg:object-right"
         />
 
-        <div className="from-background via-background/85 absolute inset-y-0 left-0 hidden w-3/4 bg-linear-to-r to-transparent sm:block lg:w-2/3" />
-        <div className="from-background via-background/65 absolute inset-x-0 bottom-0 h-24 bg-linear-to-t to-transparent sm:h-32" />
+        <div className="from-background via-background/90 absolute inset-y-0 left-0 hidden w-4/5 bg-linear-to-r to-transparent sm:block lg:w-3/4" />
+        <div className="from-background via-background/70 absolute inset-x-0 bottom-0 h-28 bg-linear-to-t to-transparent sm:h-36" />
       </div>
 
+      {/* Main Content Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-center pt-56 pb-10 sm:min-h-[480px] sm:py-16 lg:min-h-[540px]">
-          <div className="max-w-xl lg:max-w-2xl">
-            <h1 className="text-foreground text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-              {t("titleLead")} <span className="text-primary">Cosplay</span>{" "}
+        <div className="flex flex-col justify-center pt-64 pb-12 sm:min-h-[540px] sm:py-20 lg:min-h-[620px]">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-xl lg:max-w-2xl"
+          >
+            {/* Editorial Pill Badge */}
+            <div className="border-primary/25 bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold tracking-wider uppercase">
+              <Layers className="size-3.5" aria-hidden="true" />
+              <span>Cosplay Portfolio & Creator Hub</span>
+            </div>
+
+            <h1 className="text-foreground text-4xl leading-[1.1] font-extrabold tracking-tight text-balance uppercase sm:text-5xl lg:text-6xl">
+              {t("titleLead")}{" "}
+              <span className="text-primary relative inline-block">
+                Cosplay
+                <span className="bg-primary absolute -bottom-1 left-0 h-1 w-1/2 rounded-full" />
+              </span>{" "}
               {t("titleTrail")}
             </h1>
 
-            <p className="text-foreground/80 mt-4 max-w-lg text-base leading-relaxed text-pretty lg:text-lg">
+            <p className="text-muted-foreground mt-5 max-w-xl text-base leading-relaxed text-pretty sm:text-lg">
               {t("subtitle")}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
-              <Button asChild size="lg" className="h-11 rounded-lg">
-                <a href="#albums">{t("exploreNow")}</a>
+            {/* Primary & Secondary CTAs */}
+            <div className="mt-7 flex flex-wrap items-center gap-3 sm:mt-8">
+              <Button
+                asChild
+                size="lg"
+                className="h-11 gap-2 px-6 font-semibold"
+              >
+                <a href="#albums">
+                  <span>{t("exploreNow")}</span>
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </a>
               </Button>
 
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="bg-background h-11 rounded-lg shadow-none"
+                className="bg-background/80 h-11 px-6 font-semibold backdrop-blur-xs"
               >
                 <Link href="/auth/sign-up">{t("signUp")}</Link>
               </Button>
@@ -58,12 +96,31 @@ export function HeroBanner() {
                 asChild
                 size="lg"
                 variant="ghost"
-                className="text-foreground hover:text-primary h-11 rounded-lg px-4"
+                className="text-foreground hover:text-primary h-11 gap-1.5 px-4 font-medium"
               >
-                <Link href="/tags">{t("viewTags")}</Link>
+                <Link href="/tags">
+                  <Compass className="size-4" aria-hidden="true" />
+                  <span>{t("viewTags")}</span>
+                </Link>
               </Button>
             </div>
-          </div>
+
+            {/* Platform Live Metrics Bar (Inspired by Coser.ID data-driven clarity) */}
+            <div className="border-border/70 mt-10 grid max-w-lg grid-cols-3 gap-4 border-t pt-6 sm:gap-8">
+              {HERO_STATS.map((stat) => (
+                <div key={stat.key} className="space-y-0.5">
+                  <p className="text-foreground text-2xl font-black tracking-tight tabular-nums sm:text-3xl">
+                    {stat.value}
+                  </p>
+                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                    {t(
+                      `stats.${stat.key as "cosplayers" | "artworks" | "engagements"}`
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

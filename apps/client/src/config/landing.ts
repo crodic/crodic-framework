@@ -33,6 +33,7 @@ export interface HighlightFeatureItem {
   iconName: "folder" | "book" | "calendar" | "trophy" | "users" | "shield";
   href: string;
   badge: string;
+  image: string;
 }
 
 export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
@@ -42,8 +43,9 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     defaultDesc:
       "Đăng tải bộ sưu tập ảnh cosplay chất lượng cao, tự do chọn ảnh bìa, lưu trữ tối đa 20 ảnh độ nét cao mỗi album.",
     iconName: "folder",
-    href: "/studio",
+    href: "/upload",
     badge: "Creator Studio",
+    image: "/landing/art-acheron.jpg",
   },
   {
     id: "encyclopedia",
@@ -53,6 +55,7 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     iconName: "book",
     href: "/tags",
     badge: "Encyclopedia",
+    image: "/landing/art-raiden-1.jpg",
   },
   {
     id: "events",
@@ -62,6 +65,7 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     iconName: "calendar",
     href: "/events",
     badge: "Cosplay Fes",
+    image: "/landing/cosplay-work-1.jpg",
   },
   {
     id: "ranking",
@@ -71,6 +75,7 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     iconName: "trophy",
     href: "/ranking",
     badge: "Leaderboard",
+    image: "/landing/art-kafka.jpg",
   },
   {
     id: "community",
@@ -80,6 +85,7 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     iconName: "users",
     href: "/feed",
     badge: "Social Feed",
+    image: "/landing/cosplay-work-2.jpg",
   },
   {
     id: "protection",
@@ -89,6 +95,7 @@ export const HIGHLIGHT_FEATURES: HighlightFeatureItem[] = [
     iconName: "shield",
     href: "/pages/privacy",
     badge: "Trust & Safety",
+    image: "/landing/cosplay-work-3.jpg",
   },
 ];
 

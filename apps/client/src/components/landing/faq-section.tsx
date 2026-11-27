@@ -64,7 +64,7 @@ export function FaqSection() {
         </div>
 
         {/* FAQ Accordion */}
-        <div className="border-border/70 bg-card mt-12 rounded-2xl border p-6 shadow-sm sm:p-8">
+        <div className="border-border/70 bg-card mt-12 rounded-xl border p-6 shadow-sm sm:p-8">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq) => (
               <AccordionItem key={faq.id} value={faq.id}>

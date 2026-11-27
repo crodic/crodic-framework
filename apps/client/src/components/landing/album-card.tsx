@@ -30,7 +30,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
   const authorName = album.author?.displayName;
 
   return (
-    <article className="group relative isolate flex aspect-[3/4] items-end overflow-hidden rounded-2xl bg-neutral-800 p-4 text-white sm:aspect-[9/13]">
+    <article className="group relative isolate flex aspect-[3/4] items-end overflow-hidden rounded-xl bg-neutral-800 p-4 text-white sm:aspect-[9/13]">
       {album.coverImageUrl && (
         <Image
           src={album.coverImageUrl}
@@ -48,7 +48,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
       <div className="flex w-full items-center gap-3">
         <Link
           href={`/posts/${encodeURIComponent(String(album.slug || album.id).trim())}`}
-          className="z-10 flex min-w-0 flex-1 items-center gap-2 rounded-md text-sm font-semibold underline-offset-4 after:absolute after:inset-0 hover:underline focus-visible:outline-none focus-visible:after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-inset"
+          className="z-10 flex min-w-0 flex-1 items-center gap-2 rounded-md text-sm font-semibold underline-offset-4 after:absolute after:inset-0 hover:underline focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-white focus-visible:after:ring-inset"
         >
           {authorName && (
             <span className="relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-700 text-xs">

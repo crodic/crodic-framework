@@ -60,12 +60,12 @@ export function CosplayerCard({ cosplayer }: CosplayerCardProps) {
   const previewImage = cosplayer.coverUrl || cosplayer.avatarUrl;
 
   return (
-    <article className="group border-border bg-card relative flex h-full flex-col gap-4 rounded-2xl border p-4">
+    <article className="group border-border bg-card relative flex h-full flex-col gap-4 rounded-xl border p-4">
       {/* Card Header: Avatar + Info + Follow Button */}
       <div className="flex items-center justify-between gap-3">
         <Link
           href={`/cosplayer/${cosplayer.slug || cosplayer.id}`}
-          className="focus-visible:after:ring-ring flex min-w-0 items-center gap-3 after:absolute after:inset-0 after:z-10 after:rounded-2xl focus-visible:outline-none focus-visible:after:ring-2"
+          className="focus-visible:after:ring-ring flex min-w-0 items-center gap-3 after:absolute after:inset-0 after:z-10 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2"
         >
           {/* Avatar with subtle ring */}
           <Avatar className="size-10 shrink-0">

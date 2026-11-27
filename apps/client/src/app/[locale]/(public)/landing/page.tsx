@@ -14,7 +14,6 @@ import { FeaturesHighlight } from "@/components/landing/features-highlight";
 import { CosplayerShowcase } from "@/components/landing/cosplayer-showcase";
 import { AlbumShowcase } from "@/components/landing/album-showcase";
 import { FounderMission } from "@/components/landing/founder-mission";
-import { CommunityTestimonials } from "@/components/landing/community-testimonials";
 import { FaqSection } from "@/components/landing/faq-section";
 import { CtaBanner } from "@/components/landing/cta-banner";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -245,11 +244,10 @@ export default async function LandingPage({ params }: LandingPageProps) {
       <LandingNavbar />
       <main className="flex-1">
         <HeroBanner />
-        <FeaturesHighlight />
-        <FounderMission />
         <CosplayerShowcase initialCosplayers={cosplayers} />
         <AlbumShowcase initialAlbums={albums} />
-        <CommunityTestimonials />
+        <FeaturesHighlight />
+        <FounderMission />
         <FaqSection />
         <CtaBanner />
       </main>
