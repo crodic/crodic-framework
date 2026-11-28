@@ -190,10 +190,12 @@ export const getMyLikedPosts = async (
 };
 
 export const getPostBySlug = async (
-  slug: string
+  slug: string,
+  trackView = true
 ): Promise<PostDetailResDto> => {
+  const qs = trackView ? "" : "?trackView=false";
   const { data } = await http.get<PostDetailResDto>(
-    `/api/v1/public/posts/${slug}`
+    `/api/v1/public/posts/${slug}${qs}`
   );
   return data;
 };

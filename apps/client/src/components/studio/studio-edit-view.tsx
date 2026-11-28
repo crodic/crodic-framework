@@ -59,7 +59,7 @@ export function StudioEditView({ postSlug }: StudioEditViewProps) {
     isError,
   } = useQuery({
     queryKey: ["post-detail", postSlug],
-    queryFn: () => getPostBySlug(postSlug),
+    queryFn: () => getPostBySlug(postSlug, false),
     enabled: Boolean(postSlug),
   });
 

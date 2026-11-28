@@ -84,6 +84,7 @@ export class TagEncyclopediaService {
     slug: string,
     locale = 'en',
     incrementView = true,
+    viewerKey?: string | null,
   ): Promise<TagEncyclopediaResDto> {
     const tagDetail = await this.tagService.findBySlugOrAlias(slug, locale);
 
@@ -121,11 +122,19 @@ export class TagEncyclopediaService {
     }
 
     if (incrementView) {
-      await this.encyclopediaRepository.increment(
-        { id: chosen.id },
-        'viewCount',
-        1,
-      );
+      const shouldIncrement =
+        await this.cacheService.shouldCountEncyclopediaView(
+          chosen.id,
+          viewerKey,
+        );
+      if (shouldIncrement) {
+        await this.encyclopediaRepository.increment(
+          { id: chosen.id },
+          'viewCount',
+          1,
+        );
+        chosen.viewCount = Number(chosen.viewCount || 0) + 1;
+      }
     }
 
     const revisions = await this.revisionRepository.find({

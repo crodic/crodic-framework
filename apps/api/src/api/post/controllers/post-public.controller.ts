@@ -2,8 +2,9 @@ import { AllowedFilter, QueryParams } from '../../../common/query-builder';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { ApiAuthOptional } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
   PostCommentResDto,
@@ -69,9 +70,27 @@ export class PostPublicController {
   })
   findBySlug(
     @Param('slug') slug: string,
+    @Query('trackView') trackView?: string,
     @CurrentUser('id') currentUserId?: AutoIncrementID,
+    @Req() req?: FastifyRequest,
   ) {
-    return this.postService.findBySlug(slug, currentUserId);
+    const shouldTrack = trackView !== 'false' && trackView !== '0';
+    const forwardedFor = req?.headers?.['x-forwarded-for'];
+    const clientIp = Array.isArray(forwardedFor)
+      ? forwardedFor[0]
+      : typeof forwardedFor === 'string'
+        ? forwardedFor.split(',')[0]?.trim()
+        : req?.ip;
+    const viewerKey = currentUserId
+      ? `u:${currentUserId}`
+      : `ip:${clientIp || 'unknown'}`;
+
+    return this.postService.findBySlug(
+      slug,
+      currentUserId,
+      shouldTrack,
+      viewerKey,
+    );
   }
 
   @Get(':id/comments')

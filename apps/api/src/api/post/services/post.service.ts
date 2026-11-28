@@ -56,10 +56,12 @@ import {
 import { NotificationEntity } from '../../notification/entities/notification.entity';
 import { SettingsService } from '../../settings/settings.service';
 import { SettingKeys } from '../../settings/enums/setting-keys';
+import { RedisService } from '../../../redis/redis.service';
 
 @Injectable()
 export class PostService {
   private readonly logger = new Logger(PostService.name);
+  private readonly localViewFallback = new Map<string, number>();
 
   constructor(
     @InjectDataSource()
@@ -94,6 +96,8 @@ export class PostService {
     private readonly emailQueueService?: EmailQueueService,
     @Optional()
     private readonly configService?: ConfigService<AllConfigType>,
+    @Optional()
+    private readonly redisService?: RedisService,
   ) {}
 
   /**
@@ -402,12 +406,45 @@ export class PostService {
     return new Paginated(mapped, paginated.meta, paginated.links);
   }
 
+  private async shouldCountPostView(
+    postId: AutoIncrementID,
+    viewerKey?: string | null,
+    ttlSeconds = 1800,
+  ): Promise<boolean> {
+    const cleanViewer = (viewerKey || 'anon').trim();
+    const cacheKey = `post:view:${postId}:${cleanViewer}`;
+    const now = Date.now();
+
+    if (this.redisService) {
+      try {
+        const result = await this.redisService
+          .getClient()
+          .set(cacheKey, '1', 'EX', ttlSeconds, 'NX');
+        return result === 'OK';
+      } catch {
+        // Fallback to in-memory map
+      }
+    }
+
+    const expiresAt = this.localViewFallback.get(cacheKey);
+    if (expiresAt && expiresAt > now) {
+      return false;
+    }
+    if (this.localViewFallback.size > 5000) {
+      this.localViewFallback.clear();
+    }
+    this.localViewFallback.set(cacheKey, now + ttlSeconds * 1000);
+    return true;
+  }
+
   /**
    * Find post detail by slug or numeric ID fallback.
    */
   async findBySlug(
     slugOrId: string,
     currentUserId?: AutoIncrementID,
+    incrementView = true,
+    viewerKey?: string | null,
   ): Promise<PostDetailResDto> {
     let post = await this.postRepo.findOne({
       where: { slug: slugOrId },
@@ -452,10 +489,20 @@ export class PostService {
       throw new NotFoundException(`Post "${slugOrId}" not found`);
     }
 
-    // Increment views count asynchronously
-    this.postRepo
-      .increment({ id: post.id }, 'viewsCount', 1)
-      .catch(() => undefined);
+    if (incrementView) {
+      const resolvedViewerKey =
+        viewerKey || (currentUserId ? `u:${currentUserId}` : null);
+      const shouldIncrement = await this.shouldCountPostView(
+        post.id,
+        resolvedViewerKey,
+      );
+      if (shouldIncrement) {
+        this.postRepo
+          .increment({ id: post.id }, 'viewsCount', 1)
+          .catch(() => undefined);
+        post.viewsCount = Number(post.viewsCount || 0) + 1;
+      }
+    }
 
     const [mediaList, profile, likeRecord, savedItem, tagsByPostId] =
       await Promise.all([

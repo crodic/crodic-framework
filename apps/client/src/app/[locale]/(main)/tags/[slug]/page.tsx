@@ -22,7 +22,7 @@ export async function generateMetadata({
 
   try {
     const tag = await getTagBySlug(slug, locale);
-    const wiki = await getTagEncyclopedia(slug, locale);
+    const wiki = await getTagEncyclopedia(slug, locale, false);
 
     const titlePrefix =
       tag.translatedName && tag.translatedName !== tag.name

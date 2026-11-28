@@ -112,6 +112,39 @@ export class TagCacheService {
     }
   }
 
+  private readonly localViewFallback = new Map<string, number>();
+
+  /**
+   * Deduplicates encyclopedia view counts per viewer (userId or IP) within a cooldown window (default 30 minutes).
+   * Returns true only when this viewer has not been counted recently.
+   */
+  async shouldCountEncyclopediaView(
+    encyclopediaId: AutoIncrementID,
+    viewerKey?: string | null,
+    ttlSeconds = 1800,
+  ): Promise<boolean> {
+    const cleanViewer = (viewerKey || 'anon').trim();
+    const cacheKey = `tag:enc_view:${encyclopediaId}:${cleanViewer}`;
+    const now = Date.now();
+
+    try {
+      const result = await this.redisService
+        .getClient()
+        .set(cacheKey, '1', 'EX', ttlSeconds, 'NX');
+      return result === 'OK';
+    } catch {
+      const expiresAt = this.localViewFallback.get(cacheKey);
+      if (expiresAt && expiresAt > now) {
+        return false;
+      }
+      if (this.localViewFallback.size > 5000) {
+        this.localViewFallback.clear();
+      }
+      this.localViewFallback.set(cacheKey, now + ttlSeconds * 1000);
+      return true;
+    }
+  }
+
   async invalidateUserMutedCache(userId: AutoIncrementID): Promise<void> {
     try {
       await this.redisService.del(`user:${userId}:muted_tag_ids`);

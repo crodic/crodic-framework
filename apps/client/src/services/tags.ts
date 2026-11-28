@@ -158,11 +158,13 @@ export const getTagBySlug = async (
 
 export const getTagEncyclopedia = async (
   slug: string,
-  locale = "en"
+  locale = "en",
+  trackView = true
 ): Promise<TagEncyclopediaResDto | null> => {
   try {
+    const trackParam = trackView ? "" : "&trackView=false";
     const { data } = await http.get<TagEncyclopediaResDto>(
-      `/api/v1/public/tags/encyclopedia/${encodeURIComponent(slug)}?locale=${locale}`
+      `/api/v1/public/tags/encyclopedia/${encodeURIComponent(slug)}?locale=${locale}${trackParam}`
     );
     return data;
   } catch (err: any) {

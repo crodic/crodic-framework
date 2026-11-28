@@ -6,8 +6,9 @@ import {
   ApiPublic,
 } from '../../../decorators/http.decorators';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 import { ETaggableEntityType } from '../constants/tag.constant';
 import { AutocompleteTagQueryDto } from '../dto/tag-req.dto';
 import {
@@ -178,7 +179,8 @@ export class TagPublicController {
   }
 
   @Get('encyclopedia/:slug')
-  @ApiPublic({
+  @UseGuards(UserAuthGuard)
+  @ApiAuthOptional({
     type: TagEncyclopediaResDto,
     summary: 'Read localized tag encyclopedia article',
   })
@@ -186,7 +188,26 @@ export class TagPublicController {
   getEncyclopedia(
     @Param('slug') slug: string,
     @Query('locale') locale?: string,
+    @Query('trackView') trackView?: string,
+    @CurrentUser('id') currentUserId?: AutoIncrementID,
+    @Req() req?: FastifyRequest,
   ) {
-    return this.encyclopediaService.findByTagSlug(slug, locale || 'en', true);
+    const shouldTrack = trackView !== 'false' && trackView !== '0';
+    const forwardedFor = req?.headers?.['x-forwarded-for'];
+    const clientIp = Array.isArray(forwardedFor)
+      ? forwardedFor[0]
+      : typeof forwardedFor === 'string'
+        ? forwardedFor.split(',')[0]?.trim()
+        : req?.ip;
+    const viewerKey = currentUserId
+      ? `u:${currentUserId}`
+      : `ip:${clientIp || 'unknown'}`;
+
+    return this.encyclopediaService.findByTagSlug(
+      slug,
+      locale || 'en',
+      shouldTrack,
+      viewerKey,
+    );
   }
 }

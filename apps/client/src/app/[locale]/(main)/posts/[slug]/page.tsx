@@ -29,7 +29,7 @@ export async function generateMetadata({
   try {
     const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
     const post = await serverFetch<PostDetailResDto>(
-      `/api/v1/public/posts/${cleanSlug}`
+      `/api/v1/public/posts/${cleanSlug}?trackView=false`
     );
     const isVi = locale === "vi";
     const authorName = post.author?.displayName || "Cosplayer";

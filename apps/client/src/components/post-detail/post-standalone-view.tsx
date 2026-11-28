@@ -101,11 +101,11 @@ export function PostStandaloneView({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
-  // Synchronized Post detail
+  // Synchronized Post detail (do not double-count view on client refetch)
   const postSlugOrId = initialPost.slug || initialPost.id;
   const { data: post = initialPost } = useQuery({
     queryKey: ["post-detail", postSlugOrId],
-    queryFn: () => getPostBySlug(postSlugOrId),
+    queryFn: () => getPostBySlug(postSlugOrId, false),
     initialData: initialPost,
     staleTime: 60 * 1000,
     refetchOnMount: true,

@@ -259,12 +259,11 @@ export function TagDetailView({ tag, wiki }: TagDetailViewProps) {
         value={activeTab}
         onValueChange={(val) => {
           setActiveTab(val);
-          router.replace(
-            `/tags/${tag.slug || encodeURIComponent(tag.name)}?tab=${val}`,
-            {
-              scroll: false,
-            }
-          );
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("tab", val);
+            window.history.replaceState(null, "", url.toString());
+          }
         }}
         className="space-y-6"
       >
