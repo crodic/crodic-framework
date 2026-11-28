@@ -38,7 +38,12 @@ describe('PostPublicController', () => {
   it('findBySlug delegates to service', async () => {
     const res = await controller.findBySlug('acheron', id('100'));
     expect(res.slug).toBe('acheron');
-    expect(service.findBySlug).toHaveBeenCalledWith('acheron', id('100'));
+    expect(service.findBySlug).toHaveBeenCalledWith(
+      'acheron',
+      id('100'),
+      true,
+      'u:100',
+    );
   });
 
   it('findComments delegates to service', async () => {

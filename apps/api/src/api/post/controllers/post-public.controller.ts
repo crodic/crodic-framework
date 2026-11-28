@@ -70,8 +70,8 @@ export class PostPublicController {
   })
   findBySlug(
     @Param('slug') slug: string,
-    @Query('trackView') trackView?: string,
     @CurrentUser('id') currentUserId?: AutoIncrementID,
+    @Query('trackView') trackView?: string,
     @Req() req?: Request,
   ) {
     const shouldTrack = trackView !== 'false' && trackView !== '0';
