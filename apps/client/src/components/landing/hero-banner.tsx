@@ -5,8 +5,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Compass, ShieldCheck, Layers } from "lucide-react";
-import { HERO_STATS } from "@/config/landing";
+import { ArrowRight, Compass, Layers } from "lucide-react";
 import { motion } from "@/components/ui/motion-primitives";
 
 export function HeroBanner() {
@@ -44,7 +43,7 @@ export function HeroBanner() {
 
       {/* Main Content Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-center pt-64 pb-12 sm:min-h-[540px] sm:py-20 lg:min-h-[620px]">
+        <div className="flex flex-col justify-center pt-64 pb-12 sm:min-h-[500px] sm:py-20 lg:min-h-[580px]">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -103,22 +102,6 @@ export function HeroBanner() {
                   <span>{t("viewTags")}</span>
                 </Link>
               </Button>
-            </div>
-
-            {/* Platform Live Metrics Bar (Inspired by Coser.ID data-driven clarity) */}
-            <div className="border-border/70 mt-10 grid max-w-lg grid-cols-3 gap-4 border-t pt-6 sm:gap-8">
-              {HERO_STATS.map((stat) => (
-                <div key={stat.key} className="space-y-0.5">
-                  <p className="text-foreground text-2xl font-black tracking-tight tabular-nums sm:text-3xl">
-                    {stat.value}
-                  </p>
-                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    {t(
-                      `stats.${stat.key as "cosplayers" | "artworks" | "engagements"}`
-                    )}
-                  </p>
-                </div>
-              ))}
             </div>
           </motion.div>
         </div>

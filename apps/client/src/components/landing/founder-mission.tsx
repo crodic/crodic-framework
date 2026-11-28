@@ -37,24 +37,6 @@ export function FounderMission() {
     },
   ];
 
-  const impactStats = [
-    {
-      percent: "60%",
-      title: "Tìm kiếm không gian lưu trữ chuyên nghiệp",
-      desc: "Mong muốn xây dựng Portfolio nghiêm túc nhưng ảnh trên mạng xã hội truyền thống bị nén vỡ hạt và nhanh chóng trôi mất.",
-    },
-    {
-      percent: "45%",
-      title: "Khó tiếp cận đúng khán giả & cộng sự",
-      desc: "Tác phẩm tâm huyết bị thuật toán bóp tương tác, khó tìm kiếm theo đúng tên nhân vật và series fandom.",
-    },
-    {
-      percent: "72%",
-      title: "Đề cao sự ghi nhận & bảo vệ bản quyền",
-      desc: "Cần một nền tảng ghi danh đầy đủ ekip (Cosplayer, Photographer, MUA, Prop Maker) và đóng dấu bản quyền an toàn.",
-    },
-  ];
-
   const journeySteps = [
     {
       step: "01",
@@ -89,8 +71,8 @@ export function FounderMission() {
         aria-hidden="true"
       />
 
-      <div className="mx-auto max-w-7xl space-y-20 px-4 sm:space-y-28 sm:px-6 lg:px-8">
-        {/* Part 1: Asymmetric Editorial Showcase — "More Than Just Likes" (Inspired by Coser.ID) */}
+      <div className="mx-auto max-w-7xl space-y-20 px-4 sm:space-y-24 sm:px-6 lg:px-8">
+        {/* Part 1: Asymmetric Editorial Showcase — "More Than Just Likes" */}
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
           {/* Left Visual Showcase Card */}
           <motion.div
@@ -202,49 +184,7 @@ export function FounderMission() {
           </div>
         </div>
 
-        {/* Part 2: Data-Driven Insights (Inspired by Coser.ID "FUTURE" Stats Section) */}
-        <div className="space-y-10">
-          <div className="relative text-center">
-            <span
-              className="text-foreground/[0.04] dark:text-foreground/[0.06] pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl font-black tracking-widest uppercase select-none sm:text-8xl"
-              aria-hidden="true"
-            >
-              FUTURE
-            </span>
-            <div className="relative z-10 mx-auto max-w-2xl space-y-2">
-              <h3 className="text-foreground text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">
-                Thực trạng cộng đồng sáng tạo Cosplay
-              </h3>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Những rào cản lớn nhất khiến các bộ ảnh tâm huyết chưa nhận được
-                giá trị xứng đáng.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {impactStats.map((stat, idx) => (
-              <div
-                key={idx}
-                className="border-border/70 bg-card hover:border-primary/40 flex flex-col justify-between rounded-xl border p-6 shadow-xs transition-colors sm:p-8"
-              >
-                <div>
-                  <div className="text-primary mb-3 text-5xl font-black tracking-tight tabular-nums sm:text-6xl">
-                    {stat.percent}
-                  </div>
-                  <h4 className="text-foreground mb-2 text-lg font-bold tracking-tight uppercase">
-                    {stat.title}
-                  </h4>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {stat.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Part 3: 4-Step Creator Journey (Inspired by Coser.ID "How It Works") */}
+        {/* Part 2: 4-Step Creator Journey */}
         <div className="border-border/70 bg-muted/30 rounded-xl border p-6 sm:p-10">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
@@ -285,7 +225,7 @@ export function FounderMission() {
           </div>
         </div>
 
-        {/* Part 4: Founder Letter & 3 Core Pillars */}
+        {/* Part 3: Founder Letter & 3 Core Pillars */}
         <div>
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">

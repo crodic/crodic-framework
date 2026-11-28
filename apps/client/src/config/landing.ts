@@ -14,12 +14,6 @@ export const LANDING_NAV_LINKS: LandingNavLink[] = [
   { key: "faq", defaultLabel: "Hỏi đáp", href: "#faq" },
 ];
 
-export const HERO_STATS = [
-  { value: "12K+", key: "cosplayers", defaultLabel: "Cosplayers" },
-  { value: "85K+", key: "artworks", defaultLabel: "Tác phẩm" },
-  { value: "500K+", key: "engagements", defaultLabel: "Lượt tương tác" },
-];
-
 export interface HighlightFeatureItem {
   id:
     | "portfolio"
