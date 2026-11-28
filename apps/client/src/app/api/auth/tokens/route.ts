@@ -9,63 +9,7 @@ import {
 
 export const GET = async () => {
   const cookieStore = await cookies();
-  let accessToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value || "";
-  const refreshToken = cookieStore.get(COOKIE_REFRESH_TOKEN)?.value || "";
-
-  let needsRefresh = !accessToken && Boolean(refreshToken);
-  if (accessToken && refreshToken) {
-    try {
-      const exp = decodeJwt(accessToken).exp;
-      if (!exp || exp * 1000 < Date.now() + 30_000) {
-        needsRefresh = true;
-      }
-    } catch {
-      needsRefresh = true;
-    }
-  }
-
-  if (needsRefresh && refreshToken) {
-    try {
-      const apiUrl =
-        process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL;
-      const res = await fetch(`${apiUrl}/api/v1/user/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const newAccessToken = data?.data?.accessToken || data?.accessToken;
-        const newRefreshToken = data?.data?.refreshToken || data?.refreshToken;
-
-        if (newAccessToken) {
-          const expAccess = decodeJwt(newAccessToken).exp;
-          if (expAccess) {
-            cookieStore.set(
-              COOKIE_ACCESS_TOKEN,
-              newAccessToken,
-              getAuthCookieOptions(new Date(expAccess * 1000))
-            );
-          }
-          accessToken = newAccessToken;
-        }
-
-        if (newRefreshToken) {
-          const expRefresh = decodeJwt(newRefreshToken).exp;
-          if (expRefresh) {
-            cookieStore.set(
-              COOKIE_REFRESH_TOKEN,
-              newRefreshToken,
-              getAuthCookieOptions(new Date(expRefresh * 1000))
-            );
-          }
-        }
-      }
-    } catch {
-      // ignore transient error
-    }
-  }
+  const accessToken = cookieStore.get(COOKIE_ACCESS_TOKEN)?.value || "";
 
   return Response.json({ accessToken }, { status: 200 });
 };

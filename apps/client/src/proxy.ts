@@ -78,31 +78,17 @@ export async function proxy(request: NextRequest) {
       });
     }
 
-    // 1c. Refresh expired accessToken on Root Domain if refreshToken cookie is present
-    const rootAccessToken =
-      request.cookies.get(COOKIE_ACCESS_TOKEN)?.value || "";
-    const rootRefreshToken =
-      request.cookies.get(COOKIE_REFRESH_TOKEN)?.value || "";
-    const { isCorrupt: isRootCorrupt, shouldRefresh: shouldRootRefresh } =
-      evaluateTokenState(rootAccessToken, rootRefreshToken);
-
-    if (isRootCorrupt) {
-      deleteAuthCookies(intlResponse.cookies);
-    } else if (shouldRootRefresh) {
-      await refreshTokenMiddleware(request, intlResponse, locale, "/");
-    }
-
-    // 1d. Root home ("/" or "") -> rewrite internally to Landing page
+    // 1c. Root home ("/" or "") -> rewrite internally to Landing page
     if (pathname === "/" || pathname === "") {
       return rewriteToLanding(request, intlResponse, locale);
     }
 
-    // 1e. Configured Root Domain routes (CMS pages, marketing, legal)
+    // 1d. Configured Root Domain routes (CMS pages, marketing, legal)
     if (isRootDomainRoute(pathname)) {
       return finalizeResponse(request, intlResponse, pathname, null);
     }
 
-    // 1f. Any App route accessed on root domain -> redirect to app subdomain (if enabled)
+    // 1e. Any App route accessed on root domain -> redirect to app subdomain (if enabled)
     if (isSubdomainRoutingEnabled()) {
       const targetSubdomain = getDefaultSubdomain();
       const appUrl = buildSubdomainUrl({
