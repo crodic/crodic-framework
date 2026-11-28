@@ -8,6 +8,21 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, Compass, Layers } from "lucide-react";
 import { motion } from "@/components/ui/motion-primitives";
 
+const HERO_VALUE_SPECS = [
+  {
+    value: "100% HD",
+    label: "Lưu trữ độ nét gốc",
+  },
+  {
+    value: "20 Ảnh / Bộ",
+    label: "Dung lượng mỗi Album",
+  },
+  {
+    value: "Bảo vệ Tác quyền",
+    label: "Watermark & Ghi danh Ekip",
+  },
+];
+
 export function HeroBanner() {
   const t = useTranslations("Landing.hero");
 
@@ -43,7 +58,7 @@ export function HeroBanner() {
 
       {/* Main Content Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-center pt-64 pb-12 sm:min-h-[500px] sm:py-20 lg:min-h-[580px]">
+        <div className="flex flex-col justify-center pt-64 pb-12 sm:min-h-[540px] sm:py-20 lg:min-h-[620px]">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -102,6 +117,20 @@ export function HeroBanner() {
                   <span>{t("viewTags")}</span>
                 </Link>
               </Button>
+            </div>
+
+            {/* Platform Real Technical Specifications & Value Commitments */}
+            <div className="border-border/70 mt-10 grid max-w-xl grid-cols-1 gap-4 border-t pt-6 sm:grid-cols-3 sm:gap-6">
+              {HERO_VALUE_SPECS.map((spec) => (
+                <div key={spec.value} className="space-y-0.5">
+                  <p className="text-foreground text-lg font-extrabold tracking-tight sm:text-xl">
+                    {spec.value}
+                  </p>
+                  <p className="text-muted-foreground text-xs font-medium">
+                    {spec.label}
+                  </p>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>

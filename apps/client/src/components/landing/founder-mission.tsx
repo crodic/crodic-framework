@@ -11,6 +11,7 @@ import {
   Quote,
   Check,
   ArrowRight,
+  Users,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -19,21 +20,24 @@ import { motion } from "@/components/ui/motion-primitives";
 export function FounderMission() {
   const t = useTranslations("Landing.founder") as any;
 
-  const coreValues = [
-    {
-      icon: ShieldCheck,
-      title: t("values.protection.title"),
-      desc: t("values.protection.desc"),
-    },
+  const valueCommitments = [
     {
       icon: ImageIcon,
-      title: t("values.quality.title"),
-      desc: t("values.quality.desc"),
+      highlight: "100% Độ Nét Gốc",
+      title: "Không gian lưu trữ Portfolio chuẩn Studio",
+      desc: "Tôn trọng từng chi tiết trang phục, ánh sáng và hậu kỳ. Hình ảnh được hiển thị sắc nét như một triển lãm cá nhân thay vì bị nén vỡ hạt và trôi mất trên bảng tin mạng xã hội.",
     },
     {
-      icon: BookOpen,
-      title: t("values.encyclopedia.title"),
-      desc: t("values.encyclopedia.desc"),
+      icon: Users,
+      highlight: "Vinh Danh Cả Ekip",
+      title: "Kết nối đúng cộng đồng & đồng đội sáng tạo",
+      desc: "Mỗi bộ ảnh là tâm huyết của cả tập thể. Ghi danh đầy đủ Cosplayer, Photographer, MUA, Prop Maker và phân loại chính xác theo cây phả hệ Nhân vật & Series Fandom.",
+    },
+    {
+      icon: ShieldCheck,
+      highlight: "An Toàn Tác Quyền",
+      title: "Bảo vệ chất xám & bản quyền người sáng tạo",
+      desc: "Tích hợp cơ chế đóng dấu Watermark tự động khi tải ảnh, xác thực thẻ tác giả (*) và kiểm soát quyền hiển thị minh bạch cho từng bộ sưu tập.",
     },
   ];
 
@@ -60,6 +64,24 @@ export function FounderMission() {
     },
   ];
 
+  const coreValues = [
+    {
+      icon: ShieldCheck,
+      title: t("values.protection.title"),
+      desc: t("values.protection.desc"),
+    },
+    {
+      icon: ImageIcon,
+      title: t("values.quality.title"),
+      desc: t("values.quality.desc"),
+    },
+    {
+      icon: BookOpen,
+      title: t("values.encyclopedia.title"),
+      desc: t("values.encyclopedia.desc"),
+    },
+  ];
+
   return (
     <section
       id="about"
@@ -71,7 +93,7 @@ export function FounderMission() {
         aria-hidden="true"
       />
 
-      <div className="mx-auto max-w-7xl space-y-20 px-4 sm:space-y-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-20 px-4 sm:space-y-28 sm:px-6 lg:px-8">
         {/* Part 1: Asymmetric Editorial Showcase — "More Than Just Likes" */}
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
           {/* Left Visual Showcase Card */}
@@ -184,7 +206,57 @@ export function FounderMission() {
           </div>
         </div>
 
-        {/* Part 2: 4-Step Creator Journey */}
+        {/* Part 2: Core Value Commitments (Replacing percentage stats with concrete commitments) */}
+        <div className="space-y-10">
+          <div className="relative text-center">
+            <span
+              className="text-foreground/[0.04] dark:text-foreground/[0.06] pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl font-black tracking-widest uppercase select-none sm:text-8xl"
+              aria-hidden="true"
+            >
+              COMMITMENT
+            </span>
+            <div className="relative z-10 mx-auto max-w-2xl space-y-2">
+              <h3 className="text-foreground text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">
+                Cam kết giá trị dành cho người sáng tạo
+              </h3>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Ba trụ cột cốt lõi giúp tác phẩm tâm huyết của bạn luôn được
+                trân trọng và lưu giữ bền vững.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {valueCommitments.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={idx}
+                  className="border-border/70 bg-card hover:border-primary/40 flex flex-col justify-between rounded-xl border p-6 shadow-xs transition-colors sm:p-8"
+                >
+                  <div>
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="bg-primary/15 text-primary flex size-11 shrink-0 items-center justify-center rounded-md">
+                        <Icon className="size-5" />
+                      </div>
+                      <span className="text-primary text-xl font-black tracking-tight uppercase sm:text-2xl">
+                        {item.highlight}
+                      </span>
+                    </div>
+                    <h4 className="text-foreground mb-2 text-lg font-bold tracking-tight">
+                      {item.title}
+                    </h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Part 3: 4-Step Creator Journey */}
         <div className="border-border/70 bg-muted/30 rounded-xl border p-6 sm:p-10">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
@@ -225,7 +297,7 @@ export function FounderMission() {
           </div>
         </div>
 
-        {/* Part 3: Founder Letter & 3 Core Pillars */}
+        {/* Part 4: Founder Letter & 3 Core Pillars */}
         <div>
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">
