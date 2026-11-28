@@ -8,7 +8,7 @@ import {
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import type { FastifyRequest } from 'fastify';
+import type { Request } from 'express';
 import { ETaggableEntityType } from '../constants/tag.constant';
 import { AutocompleteTagQueryDto } from '../dto/tag-req.dto';
 import {
@@ -190,7 +190,7 @@ export class TagPublicController {
     @Query('locale') locale?: string,
     @Query('trackView') trackView?: string,
     @CurrentUser('id') currentUserId?: AutoIncrementID,
-    @Req() req?: FastifyRequest,
+    @Req() req?: Request,
   ) {
     const shouldTrack = trackView !== 'false' && trackView !== '0';
     const forwardedFor = req?.headers?.['x-forwarded-for'];

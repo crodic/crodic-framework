@@ -4,7 +4,7 @@ import { ApiAuthOptional } from '../../../decorators/http.decorators';
 import { AutoIncrementID } from '../../../common/types/common.type';
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import type { FastifyRequest } from 'fastify';
+import type { Request } from 'express';
 import { UserAuthGuard } from '../../../guards/user-auth.guard';
 import {
   PostCommentResDto,
@@ -72,7 +72,7 @@ export class PostPublicController {
     @Param('slug') slug: string,
     @Query('trackView') trackView?: string,
     @CurrentUser('id') currentUserId?: AutoIncrementID,
-    @Req() req?: FastifyRequest,
+    @Req() req?: Request,
   ) {
     const shouldTrack = trackView !== 'false' && trackView !== '0';
     const forwardedFor = req?.headers?.['x-forwarded-for'];
