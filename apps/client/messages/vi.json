@@ -59,12 +59,27 @@
       "toggleMenuAria": "Mở menu"
     },
     "hero": {
+      "badge": "Cosplay Portfolio & Creator Hub",
       "titleLead": "Nơi Đam Mê",
       "titleTrail": "Tỏa Sáng",
       "subtitle": "Đăng album cosplay, theo dõi các nhà sáng tạo và tìm bộ ảnh về nhân vật bạn yêu thích.",
       "exploreNow": "Khám phá ngay",
       "signUp": "Đăng ký thành viên",
       "viewTags": "Khám phá Bách khoa",
+      "specs": {
+        "hd": {
+          "value": "100% HD",
+          "label": "Lưu trữ độ nét gốc"
+        },
+        "capacity": {
+          "value": "20 Ảnh / Bộ",
+          "label": "Dung lượng mỗi Album"
+        },
+        "copyright": {
+          "value": "Bảo vệ Tác quyền",
+          "label": "Watermark & Ghi danh Ekip"
+        }
+      },
       "stats": {
         "cosplayers": "Cosplayers",
         "artworks": "Tác phẩm",
@@ -114,13 +129,17 @@
       "subtitle": "Xem portfolio và theo dõi những cosplayer bạn yêu thích.",
       "viewAll": "Xem tất cả Cosplayer",
       "follow": "Theo dõi",
-      "following": "Đã theo dõi"
+      "following": "Đã theo dõi",
+      "point1": "Hồ sơ nghệ thuật & danh mục nhân vật độc lập",
+      "point2": "Gắn thẻ Photographer, MUA & Prop Maker đồng sáng tạo",
+      "point3": "Kết nối trực tiếp với Fan, Studio & Ban tổ chức Fes"
     },
     "albums": {
       "badge": "Tác phẩm thịnh hành",
       "title": "Album cosplay mới nhất",
       "subtitle": "Xem các bộ ảnh mới từ cộng đồng.",
       "viewAll": "Khám phá thêm tác phẩm",
+      "allCategories": "Tất cả",
       "like": "Thích",
       "likeAlbumAria": "Thích album {name}"
     },
@@ -128,6 +147,71 @@
       "badge": "Tâm Huyết & Sứ Mệnh",
       "title": "Vì sao chúng tôi tạo nên Kosume?",
       "subtitle": "Một thánh địa số tôn vinh từng khoảnh khắc hóa thân và bảo vệ quyền tác giả cho cộng đồng cosplay.",
+      "consolidate": {
+        "cardBadge": "All-In-One Cosplay Hub",
+        "cardTitle": "Đại bản doanh cho mọi màn hóa thân của bạn",
+        "cardDesc": "Gom toàn bộ bộ ảnh, danh sách nhân vật, lịch chạy Fes và thông tin liên hệ Booking về một nơi duy nhất.",
+        "headingLead": "Vì tác phẩm Cosplay của bạn xứng đáng",
+        "headingHighlight": "hơn cả những lượt Like",
+        "introLead": "Chúng tôi không tạo ra một bảng tin lướt vội. Kosume là",
+        "introHighlight": "kho lưu trữ nghệ thuật",
+        "introTrail": "giúp bạn tổ chức, trình diễn và phát triển danh tính Cosplayer chuyên nghiệp.",
+        "item1Lead": "Xây dựng ",
+        "item1Highlight": "Portfolio cá nhân hóa",
+        "item1Trail": " với độ phân giải ảnh gốc sắc nét",
+        "item2Lead": "Tự động phân loại bộ ảnh theo từng ",
+        "item2Highlight": "Nhân vật & Series Fandom",
+        "item2Trail": "",
+        "item3Lead": "Ghi nhận công sức cả ekip với tính năng ",
+        "item3Highlight": "gắn thẻ Collaborators",
+        "item3Trail": " (Photographer, MUA, Prop Maker)",
+        "item4Lead": "Bảo vệ chất xám bằng ",
+        "item4Highlight": "Watermark tự động",
+        "item4Trail": " và cơ chế kiểm duyệt bản quyền",
+        "item5Lead": "Mở trạng thái ",
+        "item5Highlight": "nhận Booking & Hợp tác",
+        "item5Trail": " trực tiếp trên trang hồ sơ"
+      },
+      "commitments": {
+        "title": "Cam kết giá trị dành cho người sáng tạo",
+        "subtitle": "Ba trụ cột cốt lõi giúp tác phẩm tâm huyết của bạn luôn được trân trọng và lưu giữ bền vững.",
+        "c1": {
+          "highlight": "100% Độ Nét Gốc",
+          "title": "Không gian lưu trữ Portfolio chuẩn Studio",
+          "desc": "Tôn trọng từng chi tiết trang phục, ánh sáng và hậu kỳ. Hình ảnh được hiển thị sắc nét như một triển lãm cá nhân thay vì bị nén vỡ hạt và trôi mất trên bảng tin mạng xã hội."
+        },
+        "c2": {
+          "highlight": "Vinh Danh Cả Ekip",
+          "title": "Kết nối đúng cộng đồng & đồng đội sáng tạo",
+          "desc": "Mỗi bộ ảnh là tâm huyết của cả tập thể. Ghi danh đầy đủ Cosplayer, Photographer, MUA, Prop Maker và phân loại chính xác theo cây phả hệ Nhân vật & Series Fandom."
+        },
+        "c3": {
+          "highlight": "An Toàn Tác Quyền",
+          "title": "Bảo vệ chất xám & bản quyền người sáng tạo",
+          "desc": "Tích hợp cơ chế đóng dấu Watermark tự động khi tải ảnh, xác thực thẻ tác giả (*) và kiểm soát quyền hiển thị minh bạch cho từng bộ sưu tập."
+        }
+      },
+      "journey": {
+        "badge": "Lộ trình 4 bước",
+        "title": "Hành trình phát triển trên Kosume",
+        "cta": "Bắt đầu ngay",
+        "s1": {
+          "title": "Khởi tạo Portfolio Nghệ Thuật",
+          "desc": "Tạo hồ sơ cá nhân với đường dẫn định danh riêng, giới thiệu phong cách, chiều cao, kỹ năng và trạng thái nhận Booking."
+        },
+        "s2": {
+          "title": "Lưu trữ Bộ sưu tập & Nhân vật",
+          "desc": "Đăng tải photoset độ phân giải gốc (tối đa 20 ảnh/album), tự động gom nhóm theo từng Nhân vật và Series."
+        },
+        "s3": {
+          "title": "Ghi danh Ekip & Đồng sáng tạo",
+          "desc": "Tag trực tiếp Photographer, Make-up Artist, Prop Maker vào tác phẩm và bảo vệ ảnh với Watermark tự động."
+        },
+        "s4": {
+          "title": "Tỏa sáng tại Sự kiện & Bảng xếp hạng",
+          "desc": "Theo dõi lịch trình Cosplay Festival, góp mặt trên bảng xếp hạng thịnh hành và mở rộng cơ hội hợp tác."
+        }
+      },
       "letterGreeting": "Gửi những người bạn chung niềm đam mê hóa thân,",
       "letterParagraph1": "Khi ngắm nhìn những bộ ảnh cosplay kỳ công, chúng tôi luôn trăn trở: Tại sao những tác phẩm nghệ thuật tiêu tốn hàng tháng trời chuẩn bị trang phục, trang điểm và bấm máy lại bị nén mờ căm trên mạng xã hội đại trà, rồi nhanh chóng trôi dạt vào quên lãng chỉ sau vài giờ? Tại sao công sức của cả một ekip — từ cosplayer, photographer đến props maker — lại thường xuyên bị cắt xén watermark và đánh cắp bản quyền?",
       "letterParagraph2": "Đó là lý do Kosume ra đời. Chúng tôi không định vị mình là một mạng xã hội hời hợt, mà là một ngôi nhà nghệ thuật trang trọng: nơi từng bức ảnh được lưu trữ ở độ phân giải gốc nguyên bản, từng nhân vật được định danh chính xác theo cây phả hệ bách khoa, và từng lễ hội fes trở thành cầu nối gắn kết những tâm hồn đồng điệu. Nơi đây thuộc về các bạn — những người đang thổi hồn vào từng nhân vật.",

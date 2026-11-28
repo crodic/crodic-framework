@@ -23,44 +23,44 @@ export function FounderMission() {
   const valueCommitments = [
     {
       icon: ImageIcon,
-      highlight: "100% Độ Nét Gốc",
-      title: "Không gian lưu trữ Portfolio chuẩn Studio",
-      desc: "Tôn trọng từng chi tiết trang phục, ánh sáng và hậu kỳ. Hình ảnh được hiển thị sắc nét như một triển lãm cá nhân thay vì bị nén vỡ hạt và trôi mất trên bảng tin mạng xã hội.",
+      highlight: t("commitments.c1.highlight"),
+      title: t("commitments.c1.title"),
+      desc: t("commitments.c1.desc"),
     },
     {
       icon: Users,
-      highlight: "Vinh Danh Cả Ekip",
-      title: "Kết nối đúng cộng đồng & đồng đội sáng tạo",
-      desc: "Mỗi bộ ảnh là tâm huyết của cả tập thể. Ghi danh đầy đủ Cosplayer, Photographer, MUA, Prop Maker và phân loại chính xác theo cây phả hệ Nhân vật & Series Fandom.",
+      highlight: t("commitments.c2.highlight"),
+      title: t("commitments.c2.title"),
+      desc: t("commitments.c2.desc"),
     },
     {
       icon: ShieldCheck,
-      highlight: "An Toàn Tác Quyền",
-      title: "Bảo vệ chất xám & bản quyền người sáng tạo",
-      desc: "Tích hợp cơ chế đóng dấu Watermark tự động khi tải ảnh, xác thực thẻ tác giả (*) và kiểm soát quyền hiển thị minh bạch cho từng bộ sưu tập.",
+      highlight: t("commitments.c3.highlight"),
+      title: t("commitments.c3.title"),
+      desc: t("commitments.c3.desc"),
     },
   ];
 
   const journeySteps = [
     {
       step: "01",
-      title: "Khởi tạo Portfolio Nghệ Thuật",
-      desc: "Tạo hồ sơ cá nhân với đường dẫn định danh riêng, giới thiệu phong cách, chiều cao, kỹ năng và trạng thái nhận Booking.",
+      title: t("journey.s1.title"),
+      desc: t("journey.s1.desc"),
     },
     {
       step: "02",
-      title: "Lưu trữ Bộ sưu tập & Nhân vật",
-      desc: "Đăng tải photoset độ phân giải gốc (tối đa 20 ảnh/album), tự động gom nhóm theo từng Nhân vật và Series.",
+      title: t("journey.s2.title"),
+      desc: t("journey.s2.desc"),
     },
     {
       step: "03",
-      title: "Ghi danh Ekip & Đồng sáng tạo",
-      desc: "Tag trực tiếp Photographer, Make-up Artist, Prop Maker vào tác phẩm và bảo vệ ảnh với Watermark tự động.",
+      title: t("journey.s3.title"),
+      desc: t("journey.s3.desc"),
     },
     {
       step: "04",
-      title: "Tỏa sáng tại Sự kiện & Bảng xếp hạng",
-      desc: "Theo dõi lịch trình Cosplay Festival, góp mặt trên bảng xếp hạng thịnh hành và mở rộng cơ hội hợp tác.",
+      title: t("journey.s4.title"),
+      desc: t("journey.s4.desc"),
     },
   ];
 
@@ -79,6 +79,34 @@ export function FounderMission() {
       icon: BookOpen,
       title: t("values.encyclopedia.title"),
       desc: t("values.encyclopedia.desc"),
+    },
+  ];
+
+  const checklistItems = [
+    {
+      lead: t("consolidate.item1Lead"),
+      highlight: t("consolidate.item1Highlight"),
+      trail: t("consolidate.item1Trail"),
+    },
+    {
+      lead: t("consolidate.item2Lead"),
+      highlight: t("consolidate.item2Highlight"),
+      trail: t("consolidate.item2Trail"),
+    },
+    {
+      lead: t("consolidate.item3Lead"),
+      highlight: t("consolidate.item3Highlight"),
+      trail: t("consolidate.item3Trail"),
+    },
+    {
+      lead: t("consolidate.item4Lead"),
+      highlight: t("consolidate.item4Highlight"),
+      trail: t("consolidate.item4Trail"),
+    },
+    {
+      lead: t("consolidate.item5Lead"),
+      highlight: t("consolidate.item5Highlight"),
+      trail: t("consolidate.item5Trail"),
     },
   ];
 
@@ -107,7 +135,7 @@ export function FounderMission() {
             <div className="border-border/70 bg-card relative aspect-[4/3] overflow-hidden rounded-xl border shadow-xl">
               <Image
                 src="/landing/cosplay-work-6.jpg"
-                alt="Consolidated Cosplay Portfolio"
+                alt={t("consolidate.cardTitle")}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
@@ -115,14 +143,13 @@ export function FounderMission() {
               <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent" />
               <div className="absolute inset-x-5 bottom-5 text-white">
                 <span className="bg-primary text-primary-foreground mb-2 inline-block rounded-md px-2.5 py-0.5 text-xs font-semibold">
-                  All-In-One Cosplay Hub
+                  {t("consolidate.cardBadge")}
                 </span>
                 <h3 className="text-xl font-bold sm:text-2xl">
-                  Đại bản doanh cho mọi màn hóa thân của bạn
+                  {t("consolidate.cardTitle")}
                 </h3>
                 <p className="mt-1 text-xs text-white/80 sm:text-sm">
-                  Gom toàn bộ bộ ảnh, danh sách nhân vật, lịch chạy Fes và thông
-                  tin liên hệ Booking về một nơi duy nhất.
+                  {t("consolidate.cardDesc")}
                 </p>
               </div>
             </div>
@@ -145,50 +172,25 @@ export function FounderMission() {
                 </span>
 
                 <h2 className="text-foreground text-3xl leading-tight font-extrabold tracking-tight uppercase sm:text-4xl">
-                  Vì tác phẩm Cosplay của bạn xứng đáng{" "}
-                  <span className="text-primary">hơn cả những lượt Like</span>
+                  {t("consolidate.headingLead")}{" "}
+                  <span className="text-primary">
+                    {t("consolidate.headingHighlight")}
+                  </span>
                 </h2>
                 <span className="bg-primary block h-1 w-20 rounded-full" />
               </div>
             </div>
 
             <p className="text-muted-foreground text-base leading-relaxed">
-              Chúng tôi không tạo ra một bảng tin lướt vội. Kosume là{" "}
+              {t("consolidate.introLead")}{" "}
               <span className="text-foreground font-semibold">
-                kho lưu trữ nghệ thuật
+                {t("consolidate.introHighlight")}
               </span>{" "}
-              giúp bạn tổ chức, trình diễn và phát triển danh tính Cosplayer
-              chuyên nghiệp.
+              {t("consolidate.introTrail")}
             </p>
 
             <ul className="space-y-3.5 text-sm sm:text-base">
-              {[
-                {
-                  lead: "Xây dựng ",
-                  highlight: "Portfolio cá nhân hóa",
-                  trail: " với độ phân giải ảnh gốc sắc nét",
-                },
-                {
-                  lead: "Tự động phân loại bộ ảnh theo từng ",
-                  highlight: "Nhân vật & Series Fandom",
-                  trail: "",
-                },
-                {
-                  lead: "Ghi nhận công sức cả ekip với tính năng ",
-                  highlight: "gắn thẻ Collaborators",
-                  trail: " (Photographer, MUA, Prop Maker)",
-                },
-                {
-                  lead: "Bảo vệ chất xám bằng ",
-                  highlight: "Watermark tự động",
-                  trail: " và cơ chế kiểm duyệt bản quyền",
-                },
-                {
-                  lead: "Mở trạng thái ",
-                  highlight: "nhận Booking & Hợp tác",
-                  trail: " trực tiếp trên trang hồ sơ",
-                },
-              ].map((item, idx) => (
+              {checklistItems.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <span className="bg-primary/15 text-primary mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md">
                     <Check className="size-3.5" />
@@ -206,7 +208,7 @@ export function FounderMission() {
           </div>
         </div>
 
-        {/* Part 2: Core Value Commitments (Replacing percentage stats with concrete commitments) */}
+        {/* Part 2: Core Value Commitments */}
         <div className="space-y-10">
           <div className="relative text-center">
             <span
@@ -217,11 +219,10 @@ export function FounderMission() {
             </span>
             <div className="relative z-10 mx-auto max-w-2xl space-y-2">
               <h3 className="text-foreground text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">
-                Cam kết giá trị dành cho người sáng tạo
+                {t("commitments.title")}
               </h3>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Ba trụ cột cốt lõi giúp tác phẩm tâm huyết của bạn luôn được
-                trân trọng và lưu giữ bền vững.
+                {t("commitments.subtitle")}
               </p>
             </div>
           </div>
@@ -261,15 +262,15 @@ export function FounderMission() {
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <span className="text-primary text-xs font-bold tracking-wider uppercase">
-                Lộ trình 4 bước
+                {t("journey.badge")}
               </span>
               <h3 className="text-foreground mt-1 text-2xl font-extrabold tracking-tight uppercase sm:text-3xl">
-                Hành trình phát triển trên Kosume
+                {t("journey.title")}
               </h3>
             </div>
             <Button asChild size="sm" className="w-fit gap-1.5 font-semibold">
               <Link href="/auth/sign-up">
-                <span>Bắt đầu ngay</span>
+                <span>{t("journey.cta")}</span>
                 <ArrowRight className="size-3.5" />
               </Link>
             </Button>

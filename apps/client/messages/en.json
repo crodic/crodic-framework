@@ -59,12 +59,27 @@
       "toggleMenuAria": "Toggle navigation menu"
     },
     "hero": {
+      "badge": "Cosplay Portfolio & Creator Hub",
       "titleLead": "Where Passion",
       "titleTrail": "Shines",
       "subtitle": "Share your cosplay albums, follow creators, and find work featuring your favorite characters.",
       "exploreNow": "Explore Now",
       "signUp": "Register",
       "viewTags": "Browse Encyclopedia",
+      "specs": {
+        "hd": {
+          "value": "100% HD",
+          "label": "Original resolution storage"
+        },
+        "capacity": {
+          "value": "20 Photos / Set",
+          "label": "Capacity per Album"
+        },
+        "copyright": {
+          "value": "Copyright Guard",
+          "label": "Watermark & Crew Credits"
+        }
+      },
       "stats": {
         "cosplayers": "Cosplayers",
         "artworks": "Artworks",
@@ -114,13 +129,17 @@
       "subtitle": "Browse portfolios and follow the creators you want to keep up with.",
       "viewAll": "View All Cosplayers",
       "follow": "Follow",
-      "following": "Following"
+      "following": "Following",
+      "point1": "Dedicated artistic portfolio & character archive",
+      "point2": "Tag co-creating Photographers, MUAs & Prop Makers",
+      "point3": "Connect directly with Fans, Studios & Event Organizers"
     },
     "albums": {
       "badge": "Trending Creations",
       "title": "Latest cosplay albums",
       "subtitle": "See recent photo sets from the community.",
       "viewAll": "Explore More Artworks",
+      "allCategories": "All",
       "like": "Like",
       "likeAlbumAria": "Like album {name}"
     },
@@ -128,6 +147,71 @@
       "badge": "Our Story & Vision",
       "title": "Why We Built Kosume",
       "subtitle": "A dedicated digital holy land honoring cosplay artistry and safeguarding creator copyrights.",
+      "consolidate": {
+        "cardBadge": "All-In-One Cosplay Hub",
+        "cardTitle": "The Home Base for Every Transformation",
+        "cardDesc": "Consolidate your photosets, character archive, festival schedules, and booking details into one place.",
+        "headingLead": "Because Your Cosplay Art Deserves",
+        "headingHighlight": "More Than Just Likes",
+        "introLead": "We are not building an ephemeral social feed. Kosume is an",
+        "introHighlight": "artistic archive",
+        "introTrail": "built to help you organize, present, and grow your professional cosplay identity.",
+        "item1Lead": "Build a ",
+        "item1Highlight": "personalized Portfolio",
+        "item1Trail": " in crisp original resolution",
+        "item2Lead": "Automatically organize albums by ",
+        "item2Highlight": "Character & Series Fandom",
+        "item2Trail": "",
+        "item3Lead": "Credit the entire creative crew with ",
+        "item3Highlight": "Collaborator tags",
+        "item3Trail": " (Photographer, MUA, Prop Maker)",
+        "item4Lead": "Protect your craft with ",
+        "item4Highlight": "automatic Watermarking",
+        "item4Trail": " and copyright verification",
+        "item5Lead": "Enable ",
+        "item5Highlight": "Booking & Collaboration status",
+        "item5Trail": " directly on your profile"
+      },
+      "commitments": {
+        "title": "Value Commitments to Creators",
+        "subtitle": "Three core pillars ensuring your passionate creations are always respected and preserved.",
+        "c1": {
+          "highlight": "100% Original HD",
+          "title": "Studio-Grade Portfolio Storage",
+          "desc": "Honoring every costume detail, lighting setup, and post-processing effort. Your photos are showcased like a personal art gallery instead of getting compressed and buried on social feeds."
+        },
+        "c2": {
+          "highlight": "Full Crew Credit",
+          "title": "Connect with the Right Community & Collaborators",
+          "desc": "Every photoset is a team effort. Properly credit Cosplayers, Photographers, MUAs, and Prop Makers while indexing works accurately by Character & Franchise."
+        },
+        "c3": {
+          "highlight": "Copyright Guard",
+          "title": "Safeguard Intellectual Property & Artistry",
+          "desc": "Built-in automatic watermarking on upload, verified creator tags (*), and transparent visibility controls for every collection."
+        }
+      },
+      "journey": {
+        "badge": "4-Step Journey",
+        "title": "Grow Your Presence on Kosume",
+        "cta": "Get Started",
+        "s1": {
+          "title": "Create Your Artistic Portfolio",
+          "desc": "Set up a custom handle, showcase your style, measurements, skills, and open your Booking availability."
+        },
+        "s2": {
+          "title": "Archive Albums & Characters",
+          "desc": "Publish original-resolution photosets (up to 20 photos/album), automatically grouped by Character and Series."
+        },
+        "s3": {
+          "title": "Credit Crew & Co-Creators",
+          "desc": "Tag Photographers, Make-up Artists, and Prop Makers on your works and protect images with automatic Watermarks."
+        },
+        "s4": {
+          "title": "Shine at Events & Leaderboards",
+          "desc": "Track Cosplay Festival schedules, climb trending leaderboards, and unlock collaboration opportunities."
+        }
+      },
       "letterGreeting": "To everyone who shares the passion for creative incarnation,",
       "letterParagraph1": "When looking at elaborate cosplay collections, we always asked ourselves: Why should artworks that require months of costume tailoring, makeup, and photography get heavily compressed on mainstream social feeds, only to disappear into obscurity after a few hours? Why should the creative effort of an entire crew — from cosplayers and photographers to prop makers — constantly suffer from cropped watermarks and uncredited re-uploads?",
       "letterParagraph2": "That is why Kosume was born. We are not just another ephemeral social app; we are a dedicated digital sanctuary: where every photo is preserved in its original high-definition glory, every character is faithfully indexed through a multi-tier encyclopedia genealogy, and every festival event unites kindred spirits. This space belongs to you — the creators who breathe life into imagination.",

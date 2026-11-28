@@ -81,17 +81,15 @@ export function CosplayerShowcase({
             <ul className="text-foreground/90 space-y-2.5 text-sm">
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="text-primary size-4 shrink-0" />
-                <span>Hồ sơ nghệ thuật & danh mục nhân vật độc lập</span>
+                <span>{t("point1")}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="text-primary size-4 shrink-0" />
-                <span>
-                  Gắn thẻ Photographer, MUA & Prop Maker đồng sáng tạo
-                </span>
+                <span>{t("point2")}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="text-primary size-4 shrink-0" />
-                <span>Kết nối trực tiếp với Fan, Studio & Ban tổ chức Fes</span>
+                <span>{t("point3")}</span>
               </li>
             </ul>
 

@@ -104,7 +104,9 @@ export function AlbumShowcase({ initialAlbums }: AlbumShowcaseProps) {
           {CATEGORY_PILLS.map((pill) => {
             const isActive = activeCategory === pill.id;
             const label =
-              pill.id === "all" ? "Tất cả" : tStudio(`categories.${pill.id}`);
+              pill.id === "all"
+                ? t("allCategories")
+                : tStudio(`categories.${pill.id}`);
             return (
               <button
                 key={pill.id}

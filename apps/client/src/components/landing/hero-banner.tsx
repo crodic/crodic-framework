@@ -8,20 +8,7 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, Compass, Layers } from "lucide-react";
 import { motion } from "@/components/ui/motion-primitives";
 
-const HERO_VALUE_SPECS = [
-  {
-    value: "100% HD",
-    label: "Lưu trữ độ nét gốc",
-  },
-  {
-    value: "20 Ảnh / Bộ",
-    label: "Dung lượng mỗi Album",
-  },
-  {
-    value: "Bảo vệ Tác quyền",
-    label: "Watermark & Ghi danh Ekip",
-  },
-];
+const HERO_SPEC_KEYS = ["hd", "capacity", "copyright"] as const;
 
 export function HeroBanner() {
   const t = useTranslations("Landing.hero");
@@ -68,7 +55,7 @@ export function HeroBanner() {
             {/* Editorial Pill Badge */}
             <div className="border-primary/25 bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold tracking-wider uppercase">
               <Layers className="size-3.5" aria-hidden="true" />
-              <span>Cosplay Portfolio & Creator Hub</span>
+              <span>{t("badge")}</span>
             </div>
 
             <h1 className="text-foreground text-4xl leading-[1.1] font-extrabold tracking-tight text-balance uppercase sm:text-5xl lg:text-6xl">
@@ -121,13 +108,13 @@ export function HeroBanner() {
 
             {/* Platform Real Technical Specifications & Value Commitments */}
             <div className="border-border/70 mt-10 grid max-w-xl grid-cols-1 gap-4 border-t pt-6 sm:grid-cols-3 sm:gap-6">
-              {HERO_VALUE_SPECS.map((spec) => (
-                <div key={spec.value} className="space-y-0.5">
+              {HERO_SPEC_KEYS.map((key) => (
+                <div key={key} className="space-y-0.5">
                   <p className="text-foreground text-lg font-extrabold tracking-tight sm:text-xl">
-                    {spec.value}
+                    {t(`specs.${key}.value`)}
                   </p>
                   <p className="text-muted-foreground text-xs font-medium">
-                    {spec.label}
+                    {t(`specs.${key}.label`)}
                   </p>
                 </div>
               ))}
