@@ -7,7 +7,7 @@ import { DataTableColumnHeader } from '@/components/data-table/data-table-column
 import { ColumnKey, type ActivityLogSchema } from './schema'
 
 export function getActionBadge(action: string) {
-  switch (action) {
+  switch (action.toUpperCase()) {
     case 'INSERT':
     case 'CREATE':
       return (

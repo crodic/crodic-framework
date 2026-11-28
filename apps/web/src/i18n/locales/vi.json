@@ -515,7 +515,7 @@
   "activityLogs.table.action_insert": "Tạo mới",
   "activityLogs.table.action_create": "Tạo mới",
   "activityLogs.table.action_update": "Cập nhật",
-  "activityLogs.table.action_delete": "Xóa vĩnh viễn",
+  "activityLogs.table.action_delete": "Xóa",
   "activityLogs.table.action_soft_delete": "Xóa tạm",
   "activityLogs.table.action_restore": "Khôi phục",
   "activityLogs.table.entity": "Đối tượng",

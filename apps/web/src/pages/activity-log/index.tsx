@@ -14,7 +14,7 @@ import { Main } from '@/components/layout/main'
 import { PageHeader } from '@/components/layout/page-shell'
 import { getActivitiesTableColumns } from './columns'
 import { useDataLogOverview } from './queries'
-import { type ActivityLogSchema, ColumnKey } from './schema'
+import { activityLogActions, type ActivityLogSchema, ColumnKey } from './schema'
 
 const activitiesFilterParsers = {
   entityId: parseAsString.withDefault(''),
@@ -35,7 +35,7 @@ export function PageActivityLogOverview() {
   const columns = useMemo(
     () =>
       getActivitiesTableColumns({
-        actions: ['INSERT', 'UPDATE', 'DELETE', 'SOFT_DELETE', 'RESTORE'],
+        actions: activityLogActions,
       }),
     []
   )

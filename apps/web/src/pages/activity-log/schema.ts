@@ -1,5 +1,8 @@
 import z from 'zod'
 
+// Event values persisted by AuditLogSubscriber.defaultTapActivity.
+export const activityLogActions = ['create', 'update', 'delete', 'restore']
+
 export const ColumnKey = {
   id: 'id',
   entityId: 'entityId',
