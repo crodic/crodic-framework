@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
@@ -39,21 +39,21 @@ interface TagCategoryEditorProps {
 }
 
 const COMMON_ICONS = [
-  { value: 'Tag', label: 'Tag (Thẻ)' },
-  { value: 'Sparkles', label: 'Sparkles (Lấp lánh / Đặc biệt)' },
-  { value: 'User', label: 'User (Nhân vật / Character)' },
-  { value: 'Palette', label: 'Palette (Nghệ thuật / Artist)' },
-  { value: 'Camera', label: 'Camera (Nhiếp ảnh / Cosplay)' },
-  { value: 'Shirt', label: 'Shirt (Trang phục / Costume)' },
-  { value: 'BookOpen', label: 'BookOpen (Tác phẩm / Copyright)' },
-  { value: 'Heart', label: 'Heart (Fandom / Yêu thích)' },
-  { value: 'Film', label: 'Film (Phim ảnh / Video)' },
-  { value: 'Layers', label: 'Layers (Phân loại / Meta)' },
-  { value: 'Shield', label: 'Shield (Hệ thống / Bảo mật)' },
-  { value: 'Scissors', label: 'Scissors (Chế tác / Props)' },
-  { value: 'Flame', label: 'Flame (Xu hướng / Hot)' },
-  { value: 'FolderTree', label: 'FolderTree (Danh mục cha)' },
-]
+  { value: 'Tag' },
+  { value: 'Wand2' },
+  { value: 'User' },
+  { value: 'Palette' },
+  { value: 'Camera' },
+  { value: 'Shirt' },
+  { value: 'BookOpen' },
+  { value: 'Heart' },
+  { value: 'Film' },
+  { value: 'Layers' },
+  { value: 'Shield' },
+  { value: 'Scissors' },
+  { value: 'Flame' },
+  { value: 'FolderTree' },
+] as const
 
 const COLOR_PRESETS = [
   '#3b82f6', // blue
@@ -73,6 +73,7 @@ export function TagCategoryEditor({
   category,
 }: TagCategoryEditorProps) {
   const { t } = useTranslation()
+  const formId = useId()
   const isEditing = Boolean(category)
   const createMutation = useCreateTagCategory()
   const updateMutation = useUpdateTagCategory()
@@ -143,7 +144,7 @@ export function TagCategoryEditor({
       const message =
         error?.response?.data?.message ||
         error?.message ||
-        'Có lỗi xảy ra, vui lòng thử lại'
+        t('tagCategories.saveError')
       toast.error(message)
     }
   }
@@ -158,7 +159,7 @@ export function TagCategoryEditor({
       >
         {t('tagCategories.dialog.cancel', 'Hủy bỏ')}
       </Button>
-      <Button type='submit' disabled={isSubmitting}>
+      <Button type='submit' form={formId} disabled={isSubmitting}>
         {isSubmitting && <Loader2 className='mr-2 size-4 animate-spin' />}
         {isEditing
           ? t('tagCategories.dialog.save', 'Lưu thay đổi')
@@ -171,6 +172,7 @@ export function TagCategoryEditor({
     <>
       <div className='flex w-full min-w-0 flex-col gap-6'>
         <PageHeader
+          actions={pageActions}
           title={
             <>
               {isEditing
@@ -198,9 +200,11 @@ export function TagCategoryEditor({
         />
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            {pageActions}
-
+          <form
+            id={formId}
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-6'
+          >
             <div className='grid items-start gap-4 sm:grid-cols-2'>
               <FormField
                 control={form.control}
@@ -296,13 +300,17 @@ export function TagCategoryEditor({
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Chọn icon' />
+                          <SelectValue
+                            placeholder={t(
+                              'tagCategories.dialog.iconPlaceholder'
+                            )}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {COMMON_ICONS.map((icon) => (
                           <SelectItem key={icon.value} value={icon.value}>
-                            {icon.label}
+                            {t(`tagCategories.icons.${icon.value}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -389,7 +397,9 @@ export function TagCategoryEditor({
                           }`}
                           style={{ backgroundColor: color }}
                           title={color}
-                          aria-label={`Chọn màu ${color}`}
+                          aria-label={t('tagCategories.dialog.chooseColor', {
+                            color,
+                          })}
                         />
                       ))}
                     </div>
@@ -403,7 +413,7 @@ export function TagCategoryEditor({
               control={form.control}
               name='isActive'
               render={({ field }) => (
-                <FormItem className='bg-muted/20 flex flex-row items-center justify-between gap-4 rounded-lg border p-3.5 shadow-xs'>
+                <FormItem className='bg-muted/20 flex flex-row items-center justify-between gap-4 rounded-lg border p-4 shadow-xs'>
                   <div className='space-y-0.5'>
                     <FormLabel className='text-sm'>
                       {t(

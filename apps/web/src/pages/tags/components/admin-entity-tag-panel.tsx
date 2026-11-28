@@ -176,7 +176,9 @@ export function AdminEntityTagPanel({
                       <button
                         type='button'
                         disabled={idx === 0}
-                        aria-label={`Move tag ${tagName} left`}
+                        aria-label={t('tags.actions.moveLeft', {
+                          name: tagName,
+                        })}
                         onClick={() => moveTag(idx, -1)}
                         className='text-muted-foreground hover:text-foreground cursor-pointer rounded p-0.5 transition-colors disabled:opacity-30'
                       >
@@ -188,7 +190,9 @@ export function AdminEntityTagPanel({
                       <button
                         type='button'
                         disabled={idx === draftTags.length - 1}
-                        aria-label={`Move tag ${tagName} right`}
+                        aria-label={t('tags.actions.moveRight', {
+                          name: tagName,
+                        })}
                         onClick={() => moveTag(idx, 1)}
                         className='text-muted-foreground hover:text-foreground cursor-pointer rounded p-0.5 transition-colors disabled:opacity-30'
                       >
@@ -199,7 +203,7 @@ export function AdminEntityTagPanel({
                       </button>
                       <button
                         type='button'
-                        aria-label={`Remove tag ${tagName}`}
+                        aria-label={t('tags.actions.remove', { name: tagName })}
                         onClick={() => removeAt(idx)}
                         className='text-muted-foreground hover:bg-destructive/15 hover:text-destructive ml-0.5 cursor-pointer rounded p-0.5 transition-colors'
                       >
@@ -274,7 +278,7 @@ export function AdminEntityTagPanel({
             )}
 
             {/* Work-Level Community Tag Lock */}
-            <div className='border-border/70 bg-muted/20 flex items-center justify-between gap-3 rounded-xl border p-3.5 shadow-2xs'>
+            <div className='border-border/70 bg-muted/20 flex items-center justify-between gap-3 rounded-xl border p-4 shadow-2xs'>
               <div className='flex items-center gap-2.5 text-xs'>
                 <div className='bg-primary/10 text-primary dark:text-primary shrink-0 rounded-lg p-1.5'>
                   <LockIcon className='size-3.5' aria-hidden='true' />

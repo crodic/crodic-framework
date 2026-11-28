@@ -209,7 +209,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
 
       {/* Modern Spotlight-Style Tag Linking Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl md:max-w-2xl'>
+        <DialogContent className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-lg sm:max-w-xl md:max-w-2xl'>
           {/* Header Bar */}
           <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
             <div>
@@ -469,7 +469,7 @@ export function DagHierarchyPanel({ tag }: { tag: TagDetail }) {
       {/* Semantic DAG Hierarchy Flow Canvas */}
       <div className='space-y-6'>
         {/* Header Action Bar */}
-        <div className='border-border/80 bg-card flex flex-col gap-3.5 rounded-2xl border p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-5'>
+        <div className='border-border/80 bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-6'>
           <div className='space-y-0.5'>
             <div className='flex items-center gap-2'>
               <h2 className='text-foreground text-base font-semibold'>

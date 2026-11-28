@@ -161,7 +161,7 @@ export function FileInspector({
         <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-5'>
           <StorageOverviewWidget files={files} folders={folders} />
           <div className='flex flex-1 flex-col items-center justify-center p-6 text-center'>
-            <div className='bg-muted text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-2xl'>
+            <div className='bg-muted text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-xl'>
               <FileIcon className='size-6' />
             </div>
             <p className='text-muted-foreground text-xs font-medium'>

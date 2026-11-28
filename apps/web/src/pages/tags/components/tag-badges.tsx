@@ -422,7 +422,7 @@ export function TagNodeChip({
             e.stopPropagation()
             onUnlink()
           }}
-          aria-label={`Unlink tag ${name}`}
+          aria-label={t('tags.actions.unlink', { name: name })}
           className='hover:bg-destructive/15 hover:text-destructive focus-visible:ring-ring -mr-1 ml-0.5 inline-flex size-4.5 cursor-pointer items-center justify-center rounded-full opacity-60 transition-all hover:opacity-100 focus-visible:ring-1'
         >
           <XIcon className='size-3' aria-hidden='true' />

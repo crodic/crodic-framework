@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/tooltip'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
 import { DescriptionItem, Descriptions } from '@/components/common/descriptions'
+import { HardDeleteAccountButton } from '@/components/common/hard-delete-account-button'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import DataLoader from '@/components/layout/data-loader'
 import { Main } from '@/components/layout/main'
@@ -211,95 +212,104 @@ export function PageAdminShow() {
         />
       )}
 
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         <PageHeader
           title={data?.fullName || t('adminUsers.show.title')}
           description={t('adminUsers.show.description')}
           actions={
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => {
-                  void navigate(-1)
-                }}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                {t('buttons.cancel')}
-              </Button>
-              {isDeleted ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {canRestore ? (
-                      <Button
-                        variant='outline-success'
-                        type='button'
-                        onClick={() => setIsShowRestoreDialog(true)}
-                        disabled={restoreAdminMutation.isPending}
-                      >
-                        {restoreAdminMutation.isPending ? (
-                          <Loader2
-                            className='size-4 animate-spin'
-                            aria-hidden='true'
-                          />
-                        ) : (
-                          <RotateCcw className='size-4' aria-hidden='true' />
-                        )}
-                        {t('buttons.restore', 'Restore')}
-                      </Button>
-                    ) : (
-                      <span className='inline-block cursor-not-allowed'>
+            <>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Button
+                  variant='outline'
+                  type='button'
+                  onClick={() => {
+                    void navigate(-1)
+                  }}
+                >
+                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                  {t('buttons.cancel')}
+                </Button>
+                {isDeleted ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {canRestore ? (
                         <Button
-                          variant='outline'
+                          variant='outline-success'
                           type='button'
-                          disabled
-                          className='text-muted-foreground border-primary/30 opacity-50'
+                          onClick={() => setIsShowRestoreDialog(true)}
+                          disabled={restoreAdminMutation.isPending}
                         >
-                          <RotateCcw className='size-4' aria-hidden='true' />
+                          {restoreAdminMutation.isPending ? (
+                            <Loader2
+                              className='size-4 animate-spin'
+                              aria-hidden='true'
+                            />
+                          ) : (
+                            <RotateCcw className='size-4' aria-hidden='true' />
+                          )}
                           {t('buttons.restore', 'Restore')}
                         </Button>
-                      </span>
+                      ) : (
+                        <span className='inline-block cursor-not-allowed'>
+                          <Button
+                            variant='outline'
+                            type='button'
+                            disabled
+                            className='text-muted-foreground border-emerald-500/30 opacity-50'
+                          >
+                            <RotateCcw className='size-4' aria-hidden='true' />
+                            {t('buttons.restore', 'Restore')}
+                          </Button>
+                        </span>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {canRestore
+                        ? t('buttons.restore', 'Restore')
+                        : t(
+                            'adminUsers.errors.noPermissionRestore',
+                            'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
+                          )}
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <>
+                    {!data?.verifiedAt && (
+                      <Button
+                        variant='outline-warning'
+                        type='button'
+                        onClick={() => resendMutation.mutate()}
+                        disabled={resendMutation.isPending || cooldown > 0}
+                      >
+                        {renderResendButtonContent()}
+                      </Button>
                     )}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {canRestore
-                      ? t('buttons.restore', 'Restore')
-                      : t(
-                          'adminUsers.errors.noPermissionRestore',
-                          'Bạn không có quyền khôi phục quản trị viên này. Vui lòng liên hệ Quản trị viên cấp cao.'
-                        )}
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <>
-                  {!data?.verifiedAt && (
                     <Button
-                      variant='outline-warning'
-                      type='button'
-                      onClick={() => resendMutation.mutate()}
-                      disabled={resendMutation.isPending || cooldown > 0}
+                      onClick={() => navigate(`/admins/${data?.id}/edit`)}
+                      disabled={id === userId}
                     >
-                      {renderResendButtonContent()}
+                      <EditIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.edit')}
                     </Button>
-                  )}
-                  <Button
-                    onClick={() => navigate(`/admins/${data?.id}/edit`)}
-                    disabled={id === userId}
-                  >
-                    <EditIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.edit')}
-                  </Button>
-                  <Button
-                    variant='destructive'
-                    onClick={() => setIsShowDeleteDialog(true)}
-                    disabled={id === userId}
-                  >
-                    <TrashIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.delete')}
-                  </Button>
-                </>
+                    <Button
+                      variant='destructive'
+                      onClick={() => setIsShowDeleteDialog(true)}
+                      disabled={id === userId}
+                    >
+                      <TrashIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.delete')}
+                    </Button>
+                  </>
+                )}
+              </div>
+              {isDeleted && (
+                <HardDeleteAccountButton
+                  id={id}
+                  subject='ADMIN'
+                  onDeleted={() => navigate('/admins')}
+                />
               )}
-            </div>
+            </>
           }
         />
 
@@ -320,7 +330,7 @@ export function PageAdminShow() {
           </div>
         )}
 
-        <div className='grid grid-cols-1 gap-8 md:grid-cols-[250px_1fr]'>
+        <div className='grid grid-cols-1 gap-6 md:grid-cols-[250px_1fr]'>
           <Card className='h-max'>
             <CardContent>
               <div className='flex flex-col items-center gap-4'>
@@ -395,11 +405,11 @@ export function PageAdminShow() {
                 </DescriptionItem>
                 <DescriptionItem
                   label={t('adminUsers.show.createdAt')}
-                  value={format(new Date(data.createdAt), 'dd/MM/yyyy HH:mm')}
+                  value={format(data.createdAt, 'dd/MM/yyyy HH:mm aa')}
                 />
                 <DescriptionItem
                   label={t('adminUsers.show.updatedAt')}
-                  value={format(new Date(data.updatedAt), 'dd/MM/yyyy HH:mm')}
+                  value={format(data.updatedAt, 'dd/MM/yyyy HH:mm aa')}
                 />
               </Descriptions>
             </CardContent>

@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { FormActions } from './form-actions'
 
 export const PageHeaderContext = React.createContext<{
   backTo?: string | -1
@@ -23,7 +24,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        'flex w-full min-w-0 flex-col gap-6',
+        'flex w-full flex-col gap-6',
         fixed && 'flex-1 overflow-hidden',
         className
       )}
@@ -64,16 +65,35 @@ export function PageHeader({
 
   return (
     <div
+      data-slot='page-header'
       className={cn(
-        'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between',
+        'flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between',
         className
       )}
       {...props}
     >
-      <div className='flex min-w-0 flex-1 items-start gap-3'>
-        <div className='min-w-0 flex-1 space-y-2'>
+      <div className='flex min-w-0 items-start gap-2.5 sm:gap-4'>
+        {resolvedBackTo !== undefined && !inherited.hideBack && (
+          <Button
+            type='button'
+            variant='outline'
+            size='icon'
+            aria-label={resolvedBackLabel}
+            onClick={() => {
+              if (resolvedBackTo === -1) {
+                navigate(-1)
+              } else {
+                navigate(resolvedBackTo!)
+              }
+            }}
+            className='mt-0.5 size-8 shrink-0'
+          >
+            <ArrowLeftIcon className='size-4' aria-hidden='true' />
+          </Button>
+        )}
+        <div className='min-w-0 flex-1 space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
-            <h1 className='text-2xl font-semibold tracking-tight text-balance break-words'>
+            <h1 className='text-xl font-bold tracking-tight text-balance break-words sm:text-2xl'>
               {title}
             </h1>
             {badges}
@@ -86,23 +106,10 @@ export function PageHeader({
         </div>
       </div>
 
-      {(resolvedBackTo !== undefined || actions || children) && (
-        <div className='flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0'>
-          {resolvedBackTo !== undefined && !inherited.hideBack && (
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => {
-                if (resolvedBackTo === -1) navigate(-1)
-                else navigate(resolvedBackTo)
-              }}
-            >
-              <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              {resolvedBackLabel}
-            </Button>
-          )}
+      {(actions || children) && (
+        <FormActions className='sm:ml-auto sm:w-auto sm:shrink-0'>
           {actions || children}
-        </div>
+        </FormActions>
       )}
     </div>
   )

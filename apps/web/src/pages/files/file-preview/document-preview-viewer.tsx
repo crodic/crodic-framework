@@ -83,11 +83,11 @@ export function DocumentPreviewViewer({
     return (
       <div
         className={cn(
-          'border-border/80 bg-muted/20 flex size-full min-h-[380px] flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center',
+          'border-border/80 bg-muted/20 flex size-full min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center',
           className
         )}
       >
-        <div className='bg-primary/10 text-primary dark:text-primary mb-4 flex size-20 items-center justify-center rounded-2xl shadow-sm ring-1 ring-amber-500/20'>
+        <div className='bg-primary/10 text-primary dark:text-primary mb-4 flex size-20 items-center justify-center rounded-xl shadow-sm ring-1 ring-amber-500/20'>
           <FileText className='size-10' />
         </div>
         <div className='mb-2 flex items-center gap-2'>
@@ -144,11 +144,11 @@ export function DocumentPreviewViewer({
   return (
     <div
       className={cn(
-        'border-border/80 bg-muted/20 flex size-full min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center',
+        'border-border/80 bg-muted/20 flex size-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center',
         className
       )}
     >
-      <div className='bg-primary/10 text-primary ring-primary/20 mb-4 flex size-20 items-center justify-center rounded-2xl shadow-sm ring-1'>
+      <div className='bg-primary/10 text-primary ring-primary/20 mb-4 flex size-20 items-center justify-center rounded-xl shadow-sm ring-1'>
         <FileText className='size-10' />
       </div>
       <h4 className='text-foreground mb-1 max-w-md truncate text-base font-semibold'>

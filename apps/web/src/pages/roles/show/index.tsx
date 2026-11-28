@@ -113,40 +113,36 @@ export default function PageRoleShow() {
             description={<>{data.description || t('roles.show.description')}</>}
             badges={
               <>
-                <div className='flex flex-wrap items-center gap-2'>
-                  {isSystemRole ? (
-                    <Badge variant='secondary'>System role</Badge>
-                  ) : (
-                    <Badge variant='outline'>Custom role</Badge>
-                  )}
-                  {isSuperAdmin && <Badge>Full access</Badge>}
-                </div>
+                {isSystemRole ? (
+                  <Badge variant='secondary'>System role</Badge>
+                ) : (
+                  <Badge variant='outline'>Custom role</Badge>
+                )}
+                {isSuperAdmin && <Badge>Full access</Badge>}
               </>
             }
             actions={
               <>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Button onClick={() => navigate(-1)} variant='outline'>
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    <span>{t('buttons.back')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => navigate(`/roles/${data.id}/edit`)}
-                    variant='default'
-                    disabled={isProtected}
-                  >
-                    <Edit2Icon className='size-4' aria-hidden='true' />
-                    <span>{t('buttons.edit')}</span>
-                  </Button>
-                  <Button
-                    variant='destructive'
-                    onClick={() => setIsShowDeleteDialog(true)}
-                    disabled={isProtected}
-                  >
-                    <Trash2Icon className='size-4' aria-hidden='true' />
-                    <span>{t('buttons.delete')}</span>
-                  </Button>
-                </div>
+                <Button onClick={() => navigate(-1)} variant='outline'>
+                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                  <span>{t('buttons.back')}</span>
+                </Button>
+                <Button
+                  onClick={() => navigate(`/roles/${data.id}/edit`)}
+                  variant='default'
+                  disabled={isProtected}
+                >
+                  <Edit2Icon className='size-4' aria-hidden='true' />
+                  <span>{t('buttons.edit')}</span>
+                </Button>
+                <Button
+                  variant='destructive'
+                  onClick={() => setIsShowDeleteDialog(true)}
+                  disabled={isProtected}
+                >
+                  <Trash2Icon className='size-4' aria-hidden='true' />
+                  <span>{t('buttons.delete')}</span>
+                </Button>
               </>
             }
           />

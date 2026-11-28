@@ -25,7 +25,7 @@ import {
   Palette,
   Plus,
   Search,
-  Sparkles,
+  Wand2,
   User,
   X,
 } from "lucide-react";
@@ -760,7 +760,7 @@ export function OnboardingWizard() {
                                   className="hover:bg-primary/10 text-primary flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors"
                                 >
                                   <div className="flex items-center gap-1.5">
-                                    <Sparkles className="size-3.5" />
+                                    <Wand2 className="size-3.5" />
                                     <span>
                                       {t("step2.fields.addCustomTag")}:{" "}
                                       <strong className="underline">

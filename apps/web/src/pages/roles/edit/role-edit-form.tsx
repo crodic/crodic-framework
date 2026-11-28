@@ -7,13 +7,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   FormControl,
   FormField,
@@ -97,42 +91,43 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
 
   const isProtected = isProtectedRole(data)
 
-  const pageActions = (
-    <>
-      <Button variant='outline' type='button' onClick={() => navigate(-1)}>
-        <ArrowLeftIcon className='size-4' aria-hidden='true' />
-        {t('buttons.cancel')}
-      </Button>
-      <Button
-        type='submit'
-        disabled={
-          isProtected ||
-          editRoleMutation.isPending ||
-          permissionsQuery.isLoading ||
-          permissionsQuery.isError
-        }
-      >
-        <SaveIcon className='size-4' aria-hidden='true' />
-        {t('buttons.save')}
-      </Button>
-    </>
-  )
-
   return (
-    <Main className='flex-1'>
+    <Main className='flex flex-1 flex-col'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <PageHeader
             title={<>{t('roles.edit.title')}</>}
-            actions={pageActions}
+            actions={
+              <>
+                <FormActions>
+                  <Button
+                    variant='outline'
+                    type='button'
+                    onClick={() => navigate(-1)}
+                  >
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.cancel')}
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={
+                      isProtected ||
+                      editRoleMutation.isPending ||
+                      permissionsQuery.isLoading ||
+                      permissionsQuery.isError
+                    }
+                  >
+                    <SaveIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.save')}
+                  </Button>
+                </FormActions>
+              </>
+            }
+            description={<>{t('roles.edit.description')}</>}
           />
 
           <Card>
-            <CardHeader>
-              <CardTitle>{t('roles.edit.title')}</CardTitle>
-              <CardDescription>{t('roles.edit.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
+            <CardContent className='grid grid-cols-1 gap-6 md:grid-cols-3'>
               {/* Name */}
               <FormField
                 control={form.control}
@@ -161,8 +156,6 @@ export function RoleEditForm({ data }: { data: RoleSchema }) {
               />
             </CardContent>
           </Card>
-
-          <FormActions footer>{pageActions}</FormActions>
         </form>
       </Form>
     </Main>

@@ -17,7 +17,6 @@ import {
   PaletteIcon,
   SearchIcon,
   ShieldCheckIcon,
-  Wand2Icon,
   TerminalIcon,
   UsersIcon,
   XIcon,
@@ -99,7 +98,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: GitBranchIcon,
     badgeVi: 'Taxonomy DAG',
     badgeEn: 'Taxonomy DAG',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent: 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20',
     link: '/tags',
     bulletsVi: [
       'Liên kết phân cấp đa tầng (Parent, Child, Related, Disambiguation)',
@@ -126,7 +125,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: BookMarkedIcon,
     badgeVi: 'Wiki & Snapshots',
     badgeEn: 'Wiki & Snapshots',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
     link: '/tag-encyclopedias',
     bulletsVi: [
       'Trình biên tập Rich-text Tiptap WYSIWYG chuyên sâu',
@@ -153,7 +153,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: GitMergeIcon,
     badgeVi: 'Atomic Merge',
     badgeEn: 'Atomic Merge',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
     link: '/tags',
     bulletsVi: [
       'Bảng xem trước tác động (Impact Preview) kiểm toán số lượng',
@@ -180,7 +181,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: FolderSearchIcon,
     badgeVi: 'Multi-Disk Storage',
     badgeEn: 'Multi-Disk Storage',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
     link: '/files',
     bulletsVi: [
       'Hỗ trợ đa ổ lưu trữ: Local Disk, Cloud S3 Public & S3 Private',
@@ -207,7 +209,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: ShieldCheckIcon,
     badgeVi: 'RBAC Security',
     badgeEn: 'RBAC Security',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
     link: '/roles',
     bulletsVi: [
       'Ma trận phân quyền trực quan theo từng phân hệ nghiệp vụ',
@@ -235,7 +238,7 @@ const FEATURE_MODULES: FeatureModule[] = [
     badgeVi: 'CMS Studio',
     badgeEn: 'CMS Studio',
     accent:
-      'text-destructive dark:text-destructive bg-destructive/10 border-destructive/20',
+      'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
     link: '/cms-pages',
     bulletsVi: [
       'Biên tập trực quan với công cụ định dạng phong phú Tiptap',
@@ -262,7 +265,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: PaletteIcon,
     badgeVi: 'Theme & Brand',
     badgeEn: 'Theme & Brand',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-pink-600 dark:text-pink-400 bg-pink-500/10 border-pink-500/20',
     link: '/white-labels',
     bulletsVi: [
       'Tải lên logo và favicon riêng biệt cho từng thương hiệu',
@@ -289,7 +293,8 @@ const FEATURE_MODULES: FeatureModule[] = [
     icon: LayersIcon,
     badgeVi: 'Audit Trail',
     badgeEn: 'Audit Trail',
-    accent: 'text-primary dark:text-primary bg-primary/10 border-primary/20',
+    accent:
+      'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
     link: '/logs',
     bulletsVi: [
       'Nhật ký thao tác chi tiết: Hành động, thực thể đích, người thực hiện, thời gian',
@@ -590,37 +595,9 @@ export function PageHelpCenter() {
   )
 
   return (
-    <Main className='space-y-8'>
+    <Main className=''>
       {/* Executive Hero Banner & Interactive Search */}
-      <section className='border-border/80 bg-card relative overflow-hidden rounded-2xl border p-6 shadow-2xs backdrop-blur-xs sm:p-8'>
-        <div className='bg-primary/5 pointer-events-none absolute top-0 right-0 h-64 w-64 translate-x-12 -translate-y-12 rounded-full blur-3xl' />
-
-        <div className='flex flex-wrap items-center justify-between gap-3 pb-4'>
-          <Badge
-            variant='secondary'
-            className='gap-1.5 px-3 py-1 text-xs font-semibold shadow-2xs'
-          >
-            <Wand2Icon className='text-primary size-3.5' aria-hidden='true' />
-            {t('helpCenter.badge', 'Cẩm nang Vận hành Hệ thống')}
-          </Badge>
-
-          <Button
-            type='button'
-            variant='outline'
-            size='sm'
-            onClick={() => setCommandMenuOpen(true)}
-            className='h-8 cursor-pointer gap-2 font-mono text-xs shadow-2xs'
-          >
-            <CommandIcon className='text-primary size-3.5' aria-hidden='true' />
-            <span>
-              {t('helpCenter.triggerCommandMenu', 'Mở Menu Lệnh (⌘K)')}
-            </span>
-            <kbd className='bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]'>
-              ⌘K
-            </kbd>
-          </Button>
-        </div>
-
+      <section className='space-y-6'>
         <PageHeader
           title={
             <>
@@ -629,13 +606,43 @@ export function PageHelpCenter() {
           }
           description={
             <>
-              <p className='text-muted-foreground text-xs leading-relaxed sm:text-sm sm:leading-6'>
-                {t(
-                  'helpCenter.description',
-                  'Hướng dẫn vận hành toàn diện: Phân cấp thẻ ngữ nghĩa & Wiki bách khoa (DAG), Quản trị tệp tin Media, Quản lý người dùng & Ma trận phân quyền, Soạn thảo nội dung CMS và Tùy biến thương hiệu.'
-                )}
-              </p>
+              {t(
+                'helpCenter.description',
+                'Hướng dẫn vận hành toàn diện: Phân cấp thẻ ngữ nghĩa & Wiki bách khoa (DAG), Quản trị tệp tin Media, Quản lý người dùng & Ma trận phân quyền, Soạn thảo nội dung CMS và Tùy biến thương hiệu.'
+              )}
             </>
+          }
+          badges={
+            <Badge
+              variant='secondary'
+              className='gap-1.5 px-3 py-1 text-xs font-semibold shadow-2xs'
+            >
+              <BookOpenIcon
+                className='text-primary size-3.5'
+                aria-hidden='true'
+              />
+              {t('helpCenter.badge', 'Cẩm nang Vận hành Hệ thống')}
+            </Badge>
+          }
+          actions={
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setCommandMenuOpen(true)}
+              className='h-8 cursor-pointer gap-2 font-mono text-xs shadow-2xs'
+            >
+              <CommandIcon
+                className='text-primary size-3.5'
+                aria-hidden='true'
+              />
+              <span>
+                {t('helpCenter.triggerCommandMenu', 'Mở Menu Lệnh (⌘K)')}
+              </span>
+              <kbd className='bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]'>
+                ⌘K
+              </kbd>
+            </Button>
           }
         />
 
@@ -860,7 +867,7 @@ export function PageHelpCenter() {
         </div>
 
         {filteredModules.length === 0 && (
-          <div className='border-border/70 text-muted-foreground space-y-2 rounded-2xl border border-dashed p-12 text-center text-xs'>
+          <div className='border-border/70 text-muted-foreground space-y-2 rounded-xl border border-dashed p-12 text-center text-xs'>
             <LifeBuoyIcon className='text-muted-foreground/40 mx-auto size-10' />
             <p className='text-foreground text-sm font-semibold'>
               {t(
@@ -904,7 +911,7 @@ export function PageHelpCenter() {
             </div>
           </CardHeader>
 
-          <CardContent className='space-y-6 divide-y'>
+          <CardContent className='space-y-5 divide-y p-5'>
             {filteredWorkflows.map((workflow, index) => {
               const title = isVi ? workflow.titleVi : workflow.titleEn
               const steps = isVi ? workflow.stepsVi : workflow.stepsEn
@@ -991,14 +998,16 @@ export function PageHelpCenter() {
                     className={cn(
                       'flex w-full cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 text-left text-xs transition-all',
                       isChecked
-                        ? 'border-primary/50 bg-primary/5 dark:bg-primary/20'
+                        ? 'border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-950/20'
                         : 'border-border/70 hover:bg-muted/40 bg-card'
                     )}
                   >
                     <CheckCircle2Icon
                       className={cn(
                         'mt-0.5 size-4 shrink-0 transition-colors',
-                        isChecked ? 'text-primary' : 'text-muted-foreground/40'
+                        isChecked
+                          ? 'text-emerald-500'
+                          : 'text-muted-foreground/40'
                       )}
                     />
                     <span
@@ -1016,7 +1025,7 @@ export function PageHelpCenter() {
               })}
 
               {allDiagnosticsCompleted && (
-                <div className='border-primary/40 bg-primary/10 text-primary dark:text-primary rounded-xl border p-3 text-center text-xs font-semibold'>
+                <div className='rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300'>
                   ✓{' '}
                   {isVi
                     ? 'Bạn đã hoàn tất cả 4 bước chẩn đoán kiểm tra!'
@@ -1091,7 +1100,7 @@ export function PageHelpCenter() {
       </section>
 
       {/* Practical FAQs Collapsible Section */}
-      <section className='border-border/80 bg-card rounded-2xl border p-5 shadow-xs sm:p-6'>
+      <section className='border-border/80 bg-card rounded-xl border p-5 shadow-xs sm:p-6'>
         <div className='flex flex-wrap items-center justify-between gap-4 border-b pb-4'>
           <div className='flex items-center gap-2.5'>
             <div className='bg-primary/10 text-primary flex size-9 items-center justify-center rounded-xl'>
@@ -1163,7 +1172,7 @@ export function PageHelpCenter() {
       </section>
 
       {/* Escalated Support Contact Strip */}
-      <section className='border-border/80 bg-muted/20 flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between'>
+      <section className='border-border/80 bg-muted/20 flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-center sm:justify-between'>
         <div className='space-y-0.5'>
           <h3 className='text-foreground text-sm font-bold'>
             {t('helpCenter.contactSupport', 'Cần trợ giúp thêm?')}

@@ -75,7 +75,7 @@ export function PageWhiteLabelOverview() {
 
   return (
     <>
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         <PageHeader
           title={t('whiteLabels.overview.title')}
           description={t('whiteLabels.overview.description')}

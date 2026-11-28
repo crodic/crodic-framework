@@ -16,6 +16,7 @@ import {
 } from '@/components/data-table/data-table'
 import { DataTableViewOptions } from '@/components/data-table/data-table-view-options'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 
 function getWorkflowStatusVariant(status: WorkflowDemoRow['status']) {
   switch (status) {
@@ -166,15 +167,16 @@ function makeWorkflowDemoRow({
 export function PageUiPreview() {
   return (
     <>
-      <Main className='flex-1'>
-        <div>
-          <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-            UI Preview
-          </h1>
-          <p className='text-muted-foreground'>
-            Preview complex UI components like the DataTable feature playground.
-          </p>
-        </div>
+      <Main className='flex flex-1 flex-col'>
+        <PageHeader
+          title={<>UI Preview</>}
+          description={
+            <>
+              Preview complex UI components like the DataTable feature
+              playground.
+            </>
+          }
+        />
         <ExpandingDataTableDemo />
       </Main>
     </>

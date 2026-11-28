@@ -13,7 +13,7 @@ import {
   Scissors,
   Shield,
   Shirt,
-  Sparkles,
+  Wand2,
   Tag,
   Trash2,
   User,
@@ -28,7 +28,7 @@ import type { TagCategorySchema } from './schema'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Tag,
-  Sparkles,
+  Wand2,
   User,
   Palette,
   Camera,

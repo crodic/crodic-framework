@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import i18n from '@/i18n'
 
 export const tagCategorySchema = z.enum([
   'general',
@@ -206,27 +207,56 @@ export const entityTagListSchema = z.object({
 })
 
 export const tagTranslationFormSchema = z.object({
-  locale: z.string().min(2).max(10),
-  translatedName: z.string().max(120),
-  shortSummary: z.string().max(280).optional(),
+  locale: z
+    .string()
+    .min(2, { error: () => i18n.t('tags.validation.minLength', { count: 2 }) })
+    .max(10, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 10 }),
+    }),
+  translatedName: z.string().max(120, {
+    error: () => i18n.t('tags.validation.maxLength', { count: 120 }),
+  }),
+  shortSummary: z
+    .string()
+    .max(280, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 280 }),
+    })
+    .optional(),
 })
 
 export const tagAliasFormSchema = z.object({
-  aliasName: z.string().trim().min(1, 'Alias keyword is required').max(120),
+  aliasName: z
+    .string()
+    .trim()
+    .min(1, { error: () => i18n.t('tags.validation.aliasRequired') })
+    .max(120, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 120 }),
+    }),
   aliasType: tagAliasTypeSchema,
-  locale: z.string().max(10).optional(),
+  locale: z
+    .string()
+    .max(10, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 10 }),
+    })
+    .optional(),
 })
 
 export const tagFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, 'Canonical tag name is required')
-    .max(100, 'Tag name must be at most 100 characters')
+    .min(1, { error: () => i18n.t('tags.validation.nameRequired') })
+    .max(100, { error: () => i18n.t('tags.validation.nameMax') })
     .refine((val) => !val.startsWith('-'), {
-      message: 'Tag name cannot start with "-"',
+      error: () => i18n.t('tags.validation.namePrefix'),
     }),
-  slug: z.string().trim().max(160).optional(),
+  slug: z
+    .string()
+    .trim()
+    .max(160, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 160 }),
+    })
+    .optional(),
   category: tagCategorySchema,
   safetyRating: tagSafetyRatingSchema,
   status: tagStatusSchema,
@@ -237,12 +267,35 @@ export const tagFormSchema = z.object({
 })
 
 export const tagEncyclopediaFormSchema = z.object({
-  locale: z.string().min(2).max(10),
-  summary: z.string().trim().min(1, 'Summary is required').max(500),
-  body: z.string().min(1, 'Wiki article body is required'),
-  featuredImageUrl: z.string().max(500).optional(),
+  locale: z
+    .string()
+    .min(2, { error: () => i18n.t('tags.validation.minLength', { count: 2 }) })
+    .max(10, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 10 }),
+    }),
+  summary: z
+    .string()
+    .trim()
+    .min(1, { error: () => i18n.t('tags.validation.summaryRequired') })
+    .max(500, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 500 }),
+    }),
+  body: z
+    .string()
+    .min(1, { error: () => i18n.t('tags.validation.bodyRequired') }),
+  featuredImageUrl: z
+    .string()
+    .max(500, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 500 }),
+    })
+    .optional(),
   featuredFileId: z.string().nullish(),
-  changeNote: z.string().max(255).optional(),
+  changeNote: z
+    .string()
+    .max(255, {
+      error: () => i18n.t('tags.validation.maxLength', { count: 255 }),
+    })
+    .optional(),
   isEditLocked: z.boolean(),
 })
 

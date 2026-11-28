@@ -1,15 +1,15 @@
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { useDeleteTagCategory } from './queries'
 import type { TagCategorySchema } from './schema'
 
@@ -52,13 +52,13 @@ export function DeleteTagCategoryDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-md'>
-        <DialogHeader>
-          <DialogTitle>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className='sm:max-w-md'>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
             {t('tagCategories.deleteDialog.title', 'Xác nhận xóa danh mục thẻ')}
-          </DialogTitle>
-          <DialogDescription>
+          </AlertDialogTitle>
+          <AlertDialogDescription>
             {t(
               'tagCategories.deleteDialog.description',
               `Bạn có chắc chắn muốn xóa danh mục ${category.name} (${category.slug})?`,
@@ -73,9 +73,9 @@ export function DeleteTagCategoryDialog({
                 )}
               </span>
             ) : null}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className='gap-2 sm:justify-end'>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className='gap-2 sm:justify-end'>
           <Button
             type='button'
             variant='outline'
@@ -95,8 +95,8 @@ export function DeleteTagCategoryDialog({
             )}
             {t('tagCategories.deleteDialog.confirm', 'Xác nhận xóa')}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

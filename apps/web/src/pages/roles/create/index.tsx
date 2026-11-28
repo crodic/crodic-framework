@@ -78,38 +78,42 @@ export default function PageRoleCreate() {
     createRoleMutate.mutate(values)
   }
 
-  const pageActions = (
-    <>
-      <Button type='button' variant='outline' onClick={() => navigate(-1)}>
-        <ArrowLeftIcon className='size-4' aria-hidden='true' />
-        {t('buttons.cancel')}
-      </Button>
-      <Button
-        type='submit'
-        disabled={
-          createRoleMutate.isPending ||
-          permissionsQuery.isLoading ||
-          permissionsQuery.isError
-        }
-      >
-        <SaveIcon className='size-4' aria-hidden='true' />
-        {t('buttons.save')}
-      </Button>
-    </>
-  )
-
   return (
     <>
       <Main>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <PageHeader
               title={<>{t('roles.create.title')}</>}
-              actions={pageActions}
+              actions={
+                <>
+                  <FormActions>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => navigate(-1)}
+                    >
+                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.cancel')}
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={
+                        createRoleMutate.isPending ||
+                        permissionsQuery.isLoading ||
+                        permissionsQuery.isError
+                      }
+                    >
+                      <SaveIcon className='size-4' aria-hidden='true' />
+                      {t('buttons.save')}
+                    </Button>
+                  </FormActions>
+                </>
+              }
             />
 
             <Card>
-              <CardContent className='grid grid-cols-1 items-start gap-8 md:grid-cols-3'>
+              <CardContent className='grid grid-cols-1 items-start gap-6 md:grid-cols-3'>
                 <FormField
                   control={form.control}
                   name='name'
@@ -136,8 +140,6 @@ export default function PageRoleCreate() {
                 />
               </CardContent>
             </Card>
-
-            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </Main>

@@ -58,7 +58,7 @@ export const DEFAULT_TAG_CATEGORIES: Array<{
     name: 'Copyright / Series',
     description: 'Original franchises, games, anime, and media series',
     color: '#a855f7',
-    icon: 'Sparkles',
+    icon: 'Wand2',
     sortOrder: 3,
     isSystem: true,
   },

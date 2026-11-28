@@ -84,7 +84,7 @@ export function PageAdminOverview() {
   )
 
   return (
-    <Main className='flex-1'>
+    <Main className='flex flex-1 flex-col'>
       <PageHeader
         title={t('adminUsers.overview.title')}
         description={t('adminUsers.overview.description')}

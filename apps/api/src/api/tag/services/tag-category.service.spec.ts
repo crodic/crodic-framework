@@ -155,7 +155,7 @@ describe('TagCategoryService', () => {
     const result = await service.create({
       name: 'Props & Accessories',
       color: '#06b6d4',
-      icon: 'Sparkles',
+      icon: 'Wand2',
     });
 
     expect(result.slug).toBe('props-and-accessories');

@@ -1,20 +1,22 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
 
-/** Repeat the same action content at the start and end of a resource form. */
+/** Shared alignment and spacing for header and footer form actions. */
 export function FormActions({
   children,
   footer = false,
-}: {
-  children: ReactNode
-  footer?: boolean
-}) {
+  className,
+  ...props
+}: ComponentProps<'div'> & { footer?: boolean }) {
   return (
     <div
+      data-slot='form-actions'
       className={cn(
-        'flex flex-wrap items-center justify-end gap-2',
-        footer && 'border-t pt-6'
+        'flex w-full flex-wrap items-center justify-end gap-2',
+        footer && 'border-t pt-6',
+        className
       )}
+      {...props}
     >
       {children}
     </div>

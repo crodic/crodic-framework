@@ -61,7 +61,7 @@ export function PageCmsPageOverview() {
 
   return (
     <>
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         <PageHeader
           title={t('cmsPages.overview.title')}
           description={t('cmsPages.overview.description')}

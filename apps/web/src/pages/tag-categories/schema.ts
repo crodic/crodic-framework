@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import i18n from '@/i18n'
 
 export const tagCategorySchema = z.object({
   id: z.string(),
@@ -18,22 +19,29 @@ export const tagCategorySchema = z.object({
 export type TagCategorySchema = z.infer<typeof tagCategorySchema>
 
 export const tagCategoryFormSchema = z.object({
-  name: z.string().min(1, 'Tên danh mục là bắt buộc').max(100),
+  name: z
+    .string()
+    .min(1, { error: () => i18n.t('tagCategories.validation.nameRequired') })
+    .max(100, { error: () => i18n.t('tagCategories.validation.nameMax') }),
   slug: z
     .string()
-    .max(60)
-    .regex(
-      /^[a-z0-9_-]*$/,
-      'Slug chỉ gồm chữ thường, số, dấu gạch nối và gạch dưới'
-    )
+    .max(60, { error: () => i18n.t('tagCategories.validation.slugMax') })
+    .regex(/^[a-z0-9_-]*$/, {
+      error: () => i18n.t('tagCategories.validation.slugInvalid'),
+    })
     .optional()
     .or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  color: z
+  color: z.string().regex(/^#([0-9a-fA-F]{3,8})$/, {
+    error: () => i18n.t('tagCategories.validation.colorInvalid'),
+  }),
+  icon: z
     .string()
-    .regex(/^#([0-9a-fA-F]{3,8})$/, 'Mã màu hex không hợp lệ (ví dụ: #3b82f6)'),
-  icon: z.string().min(1, 'Vui lòng chọn hoặc nhập icon').max(50),
-  sortOrder: z.number().min(0, 'Thứ tự sắp xếp phải lớn hơn hoặc bằng 0'),
+    .min(1, { error: () => i18n.t('tagCategories.validation.iconRequired') })
+    .max(50, { error: () => i18n.t('tagCategories.validation.iconMax') }),
+  sortOrder: z
+    .number()
+    .min(0, { error: () => i18n.t('tagCategories.validation.sortOrderMin') }),
   isActive: z.boolean(),
 })
 

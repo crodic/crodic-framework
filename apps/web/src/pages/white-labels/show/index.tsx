@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+  ArrowLeft,
   Code2Icon,
   Copy,
   DownloadIcon,
@@ -14,7 +15,7 @@ import {
   Paintbrush,
   Search,
   Share2,
-  Wand2,
+  Palette,
   Sun,
   Trash2,
 } from 'lucide-react'
@@ -209,12 +210,10 @@ export default function PageWhiteLabelShow() {
         handleDelete={handleDelete}
         isLoading={deleteMutation.isPending}
       />
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         {/* Top Header Bar */}
         <PageHeader
           title={<>{item.name}</>}
-          backTo='/white-labels'
-          backLabel={t('whiteLabels.show.back')}
           description={<>{item.description || item.slug}</>}
           badges={
             <>
@@ -226,7 +225,7 @@ export default function PageWhiteLabelShow() {
               </Badge>
               {item.isActive ? (
                 <Badge variant='solid-success' className='gap-1'>
-                  <Wand2 className='size-3' />
+                  <Palette className='size-3' />
                   {t('whiteLabels.show.activeBadge')}
                 </Badge>
               ) : (
@@ -237,7 +236,17 @@ export default function PageWhiteLabelShow() {
             </>
           }
           actions={
-            <div className='flex flex-wrap items-center gap-2'>
+            <>
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => navigate('/white-labels')}
+                title={t('whiteLabels.show.back')}
+                aria-label={t('whiteLabels.show.back')}
+                className='shrink-0'
+              >
+                <ArrowLeft className='size-5' />
+              </Button>
               {styles && (
                 <>
                   <Button
@@ -260,7 +269,6 @@ export default function PageWhiteLabelShow() {
                   </Button>
                 </>
               )}
-
               {canPublish && !item.isActive && (
                 <Button
                   variant='default'
@@ -269,13 +277,12 @@ export default function PageWhiteLabelShow() {
                   disabled={activateMutation.isPending}
                   className='gap-1.5'
                 >
-                  <Wand2 className='size-4' />
+                  <Palette className='size-4' />
                   {t('whiteLabels.show.activateTarget', {
                     target: item.target,
                   })}
                 </Button>
               )}
-
               {canUpdate && (
                 <Button
                   variant='outline'
@@ -287,7 +294,6 @@ export default function PageWhiteLabelShow() {
                   {t('whiteLabels.actions.edit')}
                 </Button>
               )}
-
               {canDelete && (
                 <Button
                   variant='destructive'
@@ -300,7 +306,7 @@ export default function PageWhiteLabelShow() {
                   {t('whiteLabels.actions.delete')}
                 </Button>
               )}
-            </div>
+            </>
           }
         />
 
@@ -316,7 +322,7 @@ export default function PageWhiteLabelShow() {
                 value='brand'
                 className='gap-1.5 py-1.5 text-xs sm:py-1 sm:text-sm'
               >
-                <Wand2 className='size-3.5 shrink-0 sm:size-4' />
+                <Palette className='size-3.5 shrink-0 sm:size-4' />
                 <span className='truncate'>
                   {t('whiteLabels.form.brandAssets')}
                 </span>

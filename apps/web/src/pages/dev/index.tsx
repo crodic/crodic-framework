@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import { FormExamplesDemo } from './examples'
 import { ExpandingDataTableDemo } from './ui-preview'
 
@@ -25,28 +26,22 @@ export function PageDevPlayground() {
 
   return (
     <>
-      <Main className='space-y-6'>
-        <div className='flex flex-col gap-1 border-b pb-5'>
-          <div className='flex items-center gap-2.5'>
-            <div className='bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg'>
+      <Main className=''>
+        <PageHeader
+          title={<>{t('dev.playground.title')}</>}
+          description={<>{t('dev.playground.description')}</>}
+          badges={
+            <>
               <FlaskConical className='size-5' />
-            </div>
-            <div className='flex items-center gap-2'>
-              <h1 className='text-2xl font-bold tracking-tight'>
-                {t('dev.playground.title')}
-              </h1>
               <Badge
                 variant='outline-warning'
                 className='font-mono text-xs font-semibold'
               >
                 {t('dev.playground.badge')}
               </Badge>
-            </div>
-          </div>
-          <p className='text-muted-foreground pl-11.5 text-sm'>
-            {t('dev.playground.description')}
-          </p>
-        </div>
+            </>
+          }
+        />
 
         <Tabs
           value={activeTab}

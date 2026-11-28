@@ -95,8 +95,8 @@ export function FileDropzoneOverlay({
         'bg-background/80 backdrop-blur-md transition-all duration-200'
       )}
     >
-      <div className='border-primary bg-card/90 animate-in fade-in zoom-in-95 flex max-w-md flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-8 text-center shadow-2xl duration-200'>
-        <div className='bg-primary/10 text-primary flex size-16 animate-pulse items-center justify-center rounded-2xl'>
+      <div className='border-primary bg-card/90 animate-in fade-in zoom-in-95 flex max-w-md flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-8 text-center shadow-2xl duration-200'>
+        <div className='bg-primary/10 text-primary flex size-16 animate-pulse items-center justify-center rounded-xl'>
           <Upload className='size-8' />
         </div>
         <div className='flex flex-col gap-1'>

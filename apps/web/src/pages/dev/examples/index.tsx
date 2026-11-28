@@ -10,6 +10,7 @@ import { Form } from '@/components/ui/form'
 import CoverUploadField from '@/components/forms/cover-upload-field'
 import SortableImageUploadField from '@/components/forms/sortable-image-upload-field'
 import type { ExistingImage, ImagePayload } from '@/components/forms/types'
+import { FormActions } from '@/components/layout/form-actions'
 import { Main } from '@/components/layout/main'
 
 const existingImageSchema = z.object({
@@ -322,7 +323,7 @@ export function FormExamplesDemo() {
             />
           </section>
 
-          <div className='flex justify-center gap-4'>
+          <FormActions>
             <Button type='submit' size='lg' disabled={isSavingImages}>
               {isSavingImages
                 ? t('dev.forms.saving')
@@ -337,7 +338,7 @@ export function FormExamplesDemo() {
             >
               {t('dev.forms.reset')}
             </Button>
-          </div>
+          </FormActions>
         </form>
       </Form>
     </div>
@@ -347,7 +348,7 @@ export function FormExamplesDemo() {
 export function PageFormExamples() {
   return (
     <>
-      <Main className='space-y-6'>
+      <Main className=''>
         <FormExamplesDemo />
       </Main>
     </>

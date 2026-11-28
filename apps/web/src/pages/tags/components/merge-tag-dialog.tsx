@@ -117,7 +117,7 @@ export function MergeTagDialog({
             e.preventDefault()
             document.getElementById('merge-target-search')?.focus()
           }}
-          className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-xl'
+          className='border-border/80 flex max-h-[min(90vh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-lg sm:max-w-xl'
         >
           <DialogHeader className='border-border/60 bg-card shrink-0 border-b px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4'>
             <div className='flex items-center gap-3'>
@@ -140,7 +140,7 @@ export function MergeTagDialog({
 
           <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-6'>
             {/* Source & Target Comparison Bar */}
-            <div className='border-border/70 bg-muted/20 flex flex-col items-stretch justify-between gap-2.5 rounded-xl border p-3 shadow-2xs sm:flex-row sm:items-center sm:gap-3 sm:p-3.5'>
+            <div className='border-border/70 bg-muted/20 flex flex-col items-stretch justify-between gap-2.5 rounded-xl border p-3 shadow-2xs sm:flex-row sm:items-center sm:gap-3 sm:p-4'>
               <div className='space-y-1.5'>
                 <span className='text-muted-foreground flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase'>
                   {t(

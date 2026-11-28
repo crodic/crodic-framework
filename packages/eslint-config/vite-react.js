@@ -33,6 +33,26 @@ export const viteReactConfig = [
       "react-refresh": reactRefresh,
     },
     rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "lucide-react",
+              importNames: ["Sparkles", "SparklesIcon", "LucideSparkles"],
+              message:
+                "Sparkles is not allowed. Choose an icon that describes the action or content.",
+            },
+          ],
+          patterns: [
+            {
+              group: ["lucide-react/*sparkles*", "lucide-react/**/sparkles*"],
+              message:
+                "Sparkles is not allowed. Choose an icon that describes the action or content.",
+            },
+          ],
+        },
+      ],
       ...reactHooks.configs.recommended.rules,
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/immutability": "off",

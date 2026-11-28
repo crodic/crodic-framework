@@ -8,7 +8,6 @@ import {
   FileTextIcon,
   GlobeIcon,
   Share2Icon,
-  Wand2Icon,
   TrashIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -99,82 +98,65 @@ export function PageCmsPageShow() {
         handleDelete={() => deleteMutation.mutate(id)}
         isLoading={deleteMutation.isPending}
       />
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         {/* Top Header */}
         <PageHeader
           title={<>{translation?.title ?? 'Untitled'}</>}
           description={<>/{translation?.slug}</>}
           badges={
             <>
-              <div className='flex items-center gap-2'>
-                <Badge variant={isPublished ? 'default' : 'secondary'}>
-                  {isPublished
-                    ? t('cmsPages.form.statusPublished', 'Published')
-                    : t('cmsPages.form.statusDraft', 'Draft')}
-                </Badge>
-              </div>
+              <Badge variant={isPublished ? 'default' : 'secondary'}>
+                {isPublished
+                  ? t('cmsPages.form.statusPublished', 'Published')
+                  : t('cmsPages.form.statusDraft', 'Draft')}
+              </Badge>
+              <span className='text-sm font-medium'>
+                {t('cmsPages.form.locale')}:
+              </span>
+              <Select value={activeLocale} onValueChange={setCurrentLocale}>
+                <SelectTrigger className='bg-background h-8 w-[140px]'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {data.translations?.map((item) => {
+                    const matchedLocale = LOCALES.find(
+                      (l) => l.value === item.locale
+                    )
+                    return (
+                      <SelectItem key={item.locale} value={item.locale}>
+                        {matchedLocale?.label || item.locale.toUpperCase()}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
             </>
           }
           actions={
             <>
-              <div className='flex flex-wrap items-center gap-4'>
-                <div className='border-border flex items-center gap-2 border-r pr-4'>
-                  <span className='text-sm font-medium'>
-                    {t('cmsPages.form.locale')}:
-                  </span>
-                  <Select value={activeLocale} onValueChange={setCurrentLocale}>
-                    <SelectTrigger className='bg-background h-8 w-[140px]'>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {data.translations?.map((item) => {
-                        const matchedLocale = LOCALES.find(
-                          (l) => l.value === item.locale
-                        )
-                        return (
-                          <SelectItem key={item.locale} value={item.locale}>
-                            {matchedLocale?.label || item.locale.toUpperCase()}
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Button variant='outline' onClick={() => navigate(-1)}>
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.back', 'Back')}
-                  </Button>
-
-                  {translation?.slug && (
-                    <Button variant='outline' asChild>
-                      <a href={displayUrl} target='_blank' rel='noreferrer'>
-                        <ExternalLinkIcon
-                          className='size-4'
-                          aria-hidden='true'
-                        />
-                        {t('buttons.open', 'Open')}
-                      </a>
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={() => navigate(`/cms-pages/${data.id}/edit`)}
-                  >
-                    <EditIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.edit', 'Edit')}
-                  </Button>
-
-                  <Button
-                    variant='destructive'
-                    onClick={() => setIsDeleteOpen(true)}
-                  >
-                    <TrashIcon className='size-4' aria-hidden='true' />
-                    {t('buttons.delete', 'Delete')}
-                  </Button>
-                </div>
-              </div>
+              <Button variant='outline' onClick={() => navigate(-1)}>
+                <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                {t('buttons.back', 'Back')}
+              </Button>
+              {translation?.slug && (
+                <Button variant='outline' asChild>
+                  <a href={displayUrl} target='_blank' rel='noreferrer'>
+                    <ExternalLinkIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.open', 'Open')}
+                  </a>
+                </Button>
+              )}
+              <Button onClick={() => navigate(`/cms-pages/${data.id}/edit`)}>
+                <EditIcon className='size-4' aria-hidden='true' />
+                {t('buttons.edit', 'Edit')}
+              </Button>
+              <Button
+                variant='destructive'
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <TrashIcon className='size-4' aria-hidden='true' />
+                {t('buttons.delete', 'Delete')}
+              </Button>
             </>
           }
         />
@@ -190,7 +172,7 @@ export function PageCmsPageShow() {
                   {t('cmsPages.show.pageDetails', 'Page details')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='pt-1'>
+              <CardContent className='p-5 pt-1'>
                 <div className='divide-border/60 divide-y text-sm'>
                   <div className='flex items-center justify-between py-2.5'>
                     <span className='text-muted-foreground text-xs font-medium'>
@@ -240,7 +222,7 @@ export function PageCmsPageShow() {
                   {t('cmsPages.show.seoDetails', 'Technical SEO Metadata')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className='pt-1'>
+              <CardContent className='p-5 pt-1'>
                 <div className='divide-border/60 divide-y text-sm'>
                   <div className='py-2.5'>
                     <span className='text-muted-foreground mb-1 block text-xs font-medium'>
@@ -360,7 +342,7 @@ export function PageCmsPageShow() {
                   value='seo'
                   className='gap-2 py-1.5 text-xs sm:py-1 sm:text-sm'
                 >
-                  <Wand2Icon className='text-primary size-4 shrink-0' />
+                  <FileTextIcon className='text-primary size-4 shrink-0' />
                   <span className='truncate'>
                     {t('cmsPages.show.seoPreview', 'SEO & Social Preview')}
                   </span>
@@ -379,7 +361,7 @@ export function PageCmsPageShow() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className='dark:bg-muted min-h-100 overflow-auto rounded-md border bg-white p-6'>
+                  <div className='min-h-100 overflow-auto rounded-md border bg-white p-6 dark:bg-zinc-950'>
                     <div
                       className='prose dark:prose-invert max-w-none'
                       dangerouslySetInnerHTML={{
@@ -397,7 +379,7 @@ export function PageCmsPageShow() {
               <Card>
                 <CardHeader className='pb-3'>
                   <CardTitle className='flex items-center gap-2 text-base'>
-                    <GlobeIcon className='text-primary size-4' />
+                    <GlobeIcon className='size-4 text-blue-500' />
                     {t(
                       'cmsPages.show.googleSearchPreview',
                       'Google Search Result Preview'
@@ -425,7 +407,7 @@ export function PageCmsPageShow() {
                     </div>
 
                     {/* Blue Title */}
-                    <h3 className='text-primary dark:text-primary line-clamp-1 cursor-pointer text-lg leading-snug font-medium hover:underline'>
+                    <h3 className='line-clamp-1 cursor-pointer text-lg leading-snug font-medium text-blue-600 hover:underline dark:text-blue-400'>
                       {translation?.seoTitle ||
                         translation?.title ||
                         'Untitled Page'}

@@ -200,19 +200,6 @@ export function CmsPageForm({
     name: `translations.${currentTranslationIndex}.slug`,
   })
 
-  const pageActions = (
-    <>
-      <Button variant='outline' type='button' onClick={() => navigate(-1)}>
-        <ArrowLeftIcon className='mr-2 size-4' aria-hidden='true' />
-        {t('buttons.cancel')}
-      </Button>
-      <Button type='submit' disabled={isSubmitting}>
-        <SaveIcon className='mr-2 size-4' aria-hidden='true' />
-        {t('buttons.save')}
-      </Button>
-    </>
-  )
-
   return (
     <Form {...form}>
       <form
@@ -220,7 +207,7 @@ export function CmsPageForm({
         className='bg-background flex h-full min-h-0 flex-col overflow-hidden'
       >
         <PageHeader
-          className='border-b pb-6'
+          className='shrink-0 border-b p-4 sm:p-6'
           title={
             initialData
               ? t('cmsPages.form.editTitle')
@@ -228,8 +215,8 @@ export function CmsPageForm({
           }
           description={currentSlug || t('cmsPages.form.draftPage')}
           actions={
-            <>
-              <div className='border-border flex items-center gap-2 border-r pr-4'>
+            <div className='flex min-w-0 flex-col items-stretch gap-2 sm:shrink-0 sm:flex-row sm:items-center sm:justify-start sm:gap-4'>
+              <div className='border-border flex min-w-0 items-center gap-2 sm:border-r sm:pr-4'>
                 <FormLabel>{t('cmsPages.form.locale')}:</FormLabel>
                 <Select value={currentLocale} onValueChange={setCurrentLocale}>
                   <SelectTrigger className='h-8 w-[140px]'>
@@ -244,8 +231,22 @@ export function CmsPageForm({
                   </SelectContent>
                 </Select>
               </div>
-              {pageActions}
-            </>
+
+              <FormActions>
+                <Button
+                  variant='outline'
+                  type='button'
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeftIcon className='mr-2 size-4' aria-hidden='true' />
+                  {t('buttons.cancel')}
+                </Button>
+                <Button type='submit' disabled={isSubmitting}>
+                  <SaveIcon className='mr-2 size-4' aria-hidden='true' />
+                  {t('buttons.save')}
+                </Button>
+              </FormActions>
+            </div>
           }
         />
 
@@ -286,7 +287,7 @@ export function CmsPageForm({
             </div>
           </div>
 
-          <div className='border-border bg-muted/50 dark:bg-muted/50 w-full shrink-0 border-t lg:w-[320px] lg:overflow-y-auto lg:border-t-0 lg:border-l'>
+          <div className='border-border w-full shrink-0 border-t bg-slate-50/50 lg:w-[320px] lg:overflow-y-auto lg:border-t-0 lg:border-l dark:bg-slate-900/50'>
             <Tabs defaultValue='page' className='flex flex-col'>
               <TabsList className='mx-4 mt-4 grid grid-cols-2'>
                 <TabsTrigger value='page'>
@@ -488,8 +489,6 @@ export function CmsPageForm({
             </Tabs>
           </div>
         </div>
-
-        <FormActions footer>{pageActions}</FormActions>
       </form>
     </Form>
   )

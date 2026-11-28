@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { FolderPlus, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 import { useAuthStore } from '@/stores/auth-store'
@@ -9,6 +10,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { DataTableSortList } from '@/components/data-table/data-table-sort-list'
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/layout/page-shell'
 import {
   DeleteFolderDialog,
   FileDropzoneOverlay,
@@ -17,6 +19,10 @@ import {
   FilesHeader,
   FilesSubSidebar,
   FolderCardGrid,
+  FolderDialog,
+  FileInspector,
+  PreviewDialog,
+  RenameFileDialog,
   MoveFileDialog,
   QuickFilterChips,
   ShareUrlDialog,
@@ -66,10 +72,22 @@ export function PageFileOverview() {
     table,
 
     // Modal States & Setters
+    folderDialogOpen,
+    setFolderDialogOpen,
+    renameFolderOpen,
+    setRenameFolderOpen,
+    folderToRename,
+    setFolderToRename,
     uploadOpen,
     droppedFiles,
     setUploadOpen,
     setDroppedFiles,
+    previewFile,
+    inspectorOpen,
+    setInspectorOpen,
+    inspectedFile,
+    setInspectedFile,
+    renamingFile,
     setPreviewFile,
     pickerOpen,
     setPickerOpen,
@@ -95,6 +113,8 @@ export function PageFileOverview() {
 
     // Actions & Operations
     invalidateFiles,
+    handleCreateFolder,
+    handleRenameFolder,
     handleInspectFile,
     handleMoveFile,
     copyFileUrl,
@@ -132,6 +152,26 @@ export function PageFileOverview() {
     setPermanentDeletingFile,
   ])
 
+  useEffect(() => {
+    const task = location.state?.folderTask
+    if (task !== 'folder' && task !== 'rename-folder') return
+    if (task === 'folder') setFolderDialogOpen(true)
+    else {
+      setFolderToRename(location.state?.folder ?? null)
+      setRenameFolderOpen(true)
+    }
+    navigate(location.pathname + location.search, {
+      replace: true,
+      state: null,
+    })
+  }, [
+    location,
+    navigate,
+    setFolderDialogOpen,
+    setFolderToRename,
+    setRenameFolderOpen,
+  ])
+
   const { data: globalStats } = useDataFileStorageStats(null)
   const { data: folderStats } = useDataFileStorageStats(activeFolder)
   const effectiveStats = activeFolder ? folderStats : globalStats
@@ -145,6 +185,43 @@ export function PageFileOverview() {
       />
 
       <Main>
+        <PageHeader
+          title={
+            activeFolder ||
+            t(
+              activeView === 'starred'
+                ? 'files.nav.starred'
+                : activeView === 'recent'
+                  ? 'files.nav.recent'
+                  : activeView === 'trash'
+                    ? 'files.nav.trash'
+                    : 'files.nav.allFiles'
+            )
+          }
+          description={t('files.overview.description')}
+          actions={
+            ability.can('create', 'FILE') && (
+              <>
+                <Button
+                  variant='outline'
+                  onClick={() => setFolderDialogOpen(true)}
+                >
+                  <FolderPlus aria-hidden='true' />
+                  {t('files.actions.createFolder')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setDroppedFiles([])
+                    setUploadOpen(true)
+                  }}
+                >
+                  <Upload aria-hidden='true' />
+                  {t('files.actions.upload')}
+                </Button>
+              </>
+            )
+          }
+        />
         {/* Top Header with Breadcrumbs, Search, Quick Actions & View Toggle */}
         <FilesHeader
           view={activeView}
@@ -158,15 +235,11 @@ export function PageFileOverview() {
             setDroppedFiles([])
             setUploadOpen(true)
           }}
-          onCreateFolderClick={() =>
-            navigate(
-              `/files/folders/create${activeFolder ? `?folder=${encodeURIComponent(activeFolder)}` : ''}`
-            )
-          }
+          onCreateFolderClick={() => setFolderDialogOpen(true)}
           onOpenPicker={() => setPickerOpen(true)}
           totalItems={totalItems}
           isFetching={isFetching}
-          canCreate={ability.can('create', 'FILE')}
+          canCreate={false}
         />
 
         {/* Demo Picker Result indicator (if used) */}
@@ -203,15 +276,10 @@ export function PageFileOverview() {
               setDroppedFiles([])
               setUploadOpen(true)
             }}
-            onCreateFolderClick={() =>
-              navigate(
-                `/files/folders/create${activeFolder ? `?folder=${encodeURIComponent(activeFolder)}` : ''}`
-              )
-            }
+            onCreateFolderClick={() => setFolderDialogOpen(true)}
             onRenameFolder={(folder) => {
-              navigate(
-                `/files/folders/edit?folder=${encodeURIComponent(folder)}`
-              )
+              setFolderToRename(folder)
+              setRenameFolderOpen(true)
             }}
             onDeleteFolder={(folder) => setDeletingFolder(folder)}
             canCreate={ability.can('create', 'FILE')}
@@ -247,9 +315,8 @@ export function PageFileOverview() {
                     activeFolder={activeFolder}
                     onSelectFolder={handleFolderSelect}
                     onRenameFolder={(folder) => {
-                      navigate(
-                        `/files/folders/edit?folder=${encodeURIComponent(folder)}`
-                      )
+                      setFolderToRename(folder)
+                      setRenameFolderOpen(true)
                     }}
                     onDeleteFolder={(folder) => setDeletingFolder(folder)}
                     canUpdate={ability.can('update', 'FILE')}
@@ -324,6 +391,25 @@ export function PageFileOverview() {
         disabled={ability.can('delete', 'FILE') === false}
       />
 
+      <FileInspector
+        open={inspectorOpen}
+        onOpenChange={setInspectorOpen}
+        file={inspectedFile}
+        files={currentFiles}
+        folders={folders}
+        onPreview={setPreviewFile}
+        onCopyUrl={copyFileUrl}
+        onMove={setMovingFile}
+        onDelete={setDeletingFile}
+        onRestore={(file) => restoreFileMutation.mutate(file)}
+        onPermanentDelete={setPermanentDeletingFile}
+        onRename={setRenamingFile}
+        onShare={setSharingFile}
+        onFileUpdated={(file) => setInspectedFile(file)}
+        canUpdate={ability.can('update', 'FILE')}
+        canDelete={ability.can('delete', 'FILE')}
+      />
+
       <UploadDialog
         open={uploadOpen}
         folder={activeFolder}
@@ -337,6 +423,35 @@ export function PageFileOverview() {
         onCreateLocalFolder={handleFolderSelect}
       />
 
+      {/* Create Folder Dialog */}
+      <FolderDialog
+        open={folderDialogOpen}
+        parentFolder={activeFolder}
+        title={t('files.folders.createTitle')}
+        submitLabel={t('files.actions.createFolder')}
+        existingFolders={folders.map((item) => item.folder)}
+        onOpenChange={setFolderDialogOpen}
+        onSubmit={handleCreateFolder}
+      />
+
+      {/* Rename Folder Dialog */}
+      <FolderDialog
+        open={renameFolderOpen}
+        title={t('files.folders.renameTitle')}
+        submitLabel={t('buttons.save')}
+        defaultValue={folderToRename ?? activeFolder ?? ''}
+        defaultColor={
+          folders.find((f) => f.folder === (folderToRename ?? activeFolder))
+            ?.color ?? '#8B5CF6'
+        }
+        existingFolders={folders.map((item) => item.folder)}
+        onOpenChange={(open) => {
+          setRenameFolderOpen(open)
+          if (!open) setFolderToRename(null)
+        }}
+        onSubmit={handleRenameFolder}
+      />
+
       {/* Move File Dialog */}
       <MoveFileDialog
         file={movingFile}
@@ -345,11 +460,29 @@ export function PageFileOverview() {
         onMoved={handleMoveFile}
       />
 
+      {/* Rename File Dialog */}
+      <RenameFileDialog
+        open={Boolean(renamingFile)}
+        file={renamingFile}
+        onOpenChange={(open) => !open && setRenamingFile(null)}
+        onRenamed={(updated) => {
+          if (inspectedFile?.public_id === updated.public_id) {
+            setInspectedFile(updated)
+          }
+        }}
+      />
+
       {/* Share URL Dialog */}
       <ShareUrlDialog
         open={Boolean(sharingFile)}
         file={sharingFile}
         onOpenChange={(open) => !open && setSharingFile(null)}
+      />
+
+      {/* Preview Dialog */}
+      <PreviewDialog
+        file={previewFile}
+        onOpenChange={(open) => !open && setPreviewFile(null)}
       />
 
       {/* Delete Folder Dialog */}

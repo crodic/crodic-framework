@@ -301,6 +301,39 @@ export class AdminUserService {
     await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
   }
 
+  /** Permanently remove a trashed admin and revoke all credentials and sessions. */
+  async hardRemove(
+    id: AutoIncrementID,
+    actorId?: AutoIncrementID,
+  ): Promise<void> {
+    if (actorId !== undefined && String(id) === String(actorId)) {
+      throw new BadRequestException(
+        'You cannot permanently delete your own admin account',
+      );
+    }
+    const admin = await this.adminUserRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+    if (!admin) throw new NotFoundException('Admin user not found');
+    if (!admin.deletedAt)
+      throw new BadRequestException(
+        'Move the admin to trash before permanent deletion',
+      );
+    await this.dataSource.transaction(async (manager) => {
+      await manager
+        .getRepository(AdminSessionEntity)
+        .delete({ adminUserId: id });
+      await manager
+        .getRepository(AdminAccountEntity)
+        .delete({ adminUserId: id });
+      // Membership rows cascade; authored records retain their SET NULL references.
+      await manager.getRepository(AdminUserEntity).delete(id);
+    });
+    await this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
+    this.logger.log(`Admin #${id} has been permanently deleted.`);
+  }
+
   async restore(id: AutoIncrementID): Promise<AdminUserResDto> {
     const admin = await this.adminUserRepository.findOne({
       where: { id },

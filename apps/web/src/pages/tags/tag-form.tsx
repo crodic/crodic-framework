@@ -296,7 +296,7 @@ export function TagForm({
           badges={
             <>
               <TagNodeChip
-                name={watchedName?.trim() || 'preview'}
+                name={watchedName?.trim() || t('tags.form.preview')}
                 translatedName={activeTranslation}
                 category={watchedCategory}
                 isOfficial={watchedIsOfficial}
@@ -1035,17 +1035,23 @@ export function TagForm({
                           className='border-border/70 bg-card hover:border-foreground/30 flex items-center gap-1.5 rounded-lg border py-1 pr-1.5 pl-2 text-xs font-normal transition-colors'
                         >
                           <span className='text-foreground text-[11px] font-semibold'>
-                            {val?.aliasName || `Alias #${idx + 1}`}
+                            {val?.aliasName ||
+                              t('tags.form.aliasNumber', { number: idx + 1 })}
                           </span>
                           <span className='bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[9px] uppercase'>
-                            {val?.aliasType}
+                            {t(
+                              `tags.aliasType.${val?.aliasType}`,
+                              val?.aliasType ?? ''
+                            )}
                           </span>
                           <button
                             type='button'
                             onClick={() => removeAlias(idx)}
                             className='text-muted-foreground hover:bg-destructive/15 hover:text-destructive cursor-pointer rounded p-0.5 transition-colors'
                             title={t('tags.form.removeAlias', 'Remove alias')}
-                            aria-label={`Remove alias ${val?.aliasName}`}
+                            aria-label={t('tags.form.removeAliasLabel', {
+                              name: val?.aliasName,
+                            })}
                           >
                             <XIcon className='size-3' aria-hidden='true' />
                           </button>

@@ -28,7 +28,7 @@ export function AudioMediaPlayer({
     <MediaPlayer
       key={src}
       className={cn(
-        'border-border/60 from-card/80 to-background/90 relative flex w-full max-w-xl flex-col items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-b p-8 shadow-2xl backdrop-blur-md',
+        'border-border/60 from-card/80 to-background/90 relative flex w-full max-w-xl flex-col items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-b p-8 shadow-2xl backdrop-blur-md',
         className
       )}
     >

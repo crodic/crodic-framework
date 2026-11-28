@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Link } from "@/i18n/navigation";
-import { GitBranch, FolderTree, Sparkles, HelpCircle } from "lucide-react";
+import { GitBranch, FolderTree, Wand2, HelpCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { TagGraphResDto, TagSummaryResDto } from "@/services/tags";
 import { TagCategoryBadge } from "./tag-category-badge";
@@ -115,7 +115,7 @@ export function TagHierarchyTree({ graph, tagName }: TagHierarchyTreeProps) {
         <Card className="border-border/70 shadow-2xs">
           <CardHeader className="border-border/50 border-b p-4 pb-3">
             <CardTitle className="text-muted-foreground flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-              <Sparkles className="size-4 text-amber-500" />
+              <Wand2 className="size-4 text-amber-500" />
               <span>{t("relatedTags")}</span>
               <span className="text-foreground ml-auto font-mono text-xs font-bold">
                 ({graph.related.length})

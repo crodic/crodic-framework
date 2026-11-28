@@ -15,15 +15,9 @@ export function SettingsWebsite() {
       <Main>
         <PageHeader
           title={<>{t('settings.website.title')}</>}
-          description={
-            <>
-              <p className='text-muted-foreground'>
-                {t('settings.website.description')}
-              </p>
-            </>
-          }
+          description={<>{t('settings.website.description')}</>}
         />
-        <Separator />
+        <Separator className='my-4 lg:my-6' />
         <WebsiteForm />
       </Main>
     </>

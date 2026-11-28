@@ -101,11 +101,7 @@ export function Apps() {
         <PageHeader
           title={<>App Integrations</>}
           description={
-            <>
-              <p className='text-muted-foreground'>
-                Here&apos;s a list of your apps for the integration!
-              </p>
-            </>
+            <>Here&apos;s a list of your apps for the integration!</>
           }
         />
         <div className='my-4 flex items-end justify-between sm:my-0 sm:items-center'>
@@ -166,14 +162,14 @@ export function Apps() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className={`${app.connected ? 'border-primary bg-primary hover:bg-primary dark:border-primary dark:bg-primary dark:hover:bg-primary border' : ''}`}
+                  className={`${app.connected ? 'border border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900' : ''}`}
                 >
                   {app.connected ? 'Connected' : 'Connect'}
                 </Button>
               </div>
               <div>
                 <h2 className='mb-1 font-semibold'>{app.name}</h2>
-                <p className='text-muted-foreground line-clamp-2'>{app.desc}</p>
+                <p className='line-clamp-2 text-gray-500'>{app.desc}</p>
               </div>
             </li>
           ))}

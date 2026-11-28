@@ -99,13 +99,13 @@ export function FilesHeader({
         return {
           title: t('files.nav.starred', 'Starred Files'),
           icon: Star,
-          color: 'text-primary fill-primary',
+          color: 'text-amber-500 fill-amber-400',
         }
       case 'recent':
         return {
           title: t('files.nav.recent', 'Recent Files'),
           icon: Clock,
-          color: 'text-primary',
+          color: 'text-blue-500',
         }
       case 'trash':
         return {
@@ -128,9 +128,9 @@ export function FilesHeader({
           {specialView ? (
             <div className='flex items-center gap-2 px-1'>
               <specialView.icon className={cn('size-4', specialView.color)} />
-              <h2 className='text-sm font-semibold tracking-tight'>
+              <span className='text-sm font-semibold tracking-tight'>
                 {specialView.title}
-              </h2>
+              </span>
               {typeof totalItems === 'number' && (
                 <Badge
                   variant='secondary'
@@ -187,7 +187,7 @@ export function FilesHeader({
                 onClick={onCreateFolderClick}
                 className='h-8 gap-1.5 px-2.5 text-xs font-medium'
               >
-                <FolderPlus className='text-primary size-3.5' />
+                <FolderPlus className='size-3.5 text-amber-500' />
                 <span>{t('files.actions.createFolder', 'New Folder')}</span>
               </Button>
               <Button
@@ -211,7 +211,6 @@ export function FilesHeader({
               size='sm'
               className='h-8 gap-1.5 px-2.5 text-xs font-medium'
               onClick={onOpenPicker}
-              aria-label={t('files.picker.demoButton')}
             >
               <MousePointer className='size-3.5' />
               <span className='hidden sm:inline'>

@@ -19,7 +19,7 @@ import {
   Pencil,
   Plus,
   Share2,
-  Sparkles,
+  Wand2,
   Trash2,
 } from "lucide-react";
 import { ReportDialog } from "@/components/common/report-dialog";
@@ -895,7 +895,7 @@ export function PostStandaloneView({
                           />
                         ) : (
                           <div className="bg-muted text-muted-foreground flex size-full items-center justify-center">
-                            <Sparkles className="size-4 opacity-40" />
+                            <Wand2 className="size-4 opacity-40" />
                           </div>
                         )}
                       </div>

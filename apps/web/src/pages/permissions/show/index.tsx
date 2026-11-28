@@ -57,26 +57,22 @@ export default function PagePermissionShow() {
             description={<>{data.key}</>}
             badges={
               <>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Badge variant='secondary'>{data.group}</Badge>
-                  {isReserved && <Badge>Reserved</Badge>}
-                </div>
+                <Badge variant='secondary'>{data.group}</Badge>
+                {isReserved && <Badge>Reserved</Badge>}
               </>
             }
             actions={
               <>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Button onClick={() => navigate(-1)} variant='outline'>
-                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={() => navigate(`/permissions/${data.id}/edit`)}
-                  >
-                    <Edit2Icon className='size-4' aria-hidden='true' />
-                    Edit metadata
-                  </Button>
-                </div>
+                <Button onClick={() => navigate(-1)} variant='outline'>
+                  <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                  Back
+                </Button>
+                <Button
+                  onClick={() => navigate(`/permissions/${data.id}/edit`)}
+                >
+                  <Edit2Icon className='size-4' aria-hidden='true' />
+                  Edit metadata
+                </Button>
               </>
             }
           />

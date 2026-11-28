@@ -222,7 +222,7 @@ export function PageTagOverview() {
         sourceTag={tagToMerge}
       />
 
-      <Main className='flex flex-1 flex-col gap-5'>
+      <Main className='flex flex-1 flex-col'>
         <PageHeader
           title={t('tags.overview.title', 'Tags Governance')}
           description={t(

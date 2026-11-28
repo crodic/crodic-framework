@@ -76,7 +76,7 @@ export function PageActivityLogOverview() {
 
   return (
     <>
-      <Main fluid className='flex-1'>
+      <Main fluid className='flex flex-1 flex-col'>
         <PageHeader
           title={t('activityLogs.overview.title')}
           description={t('activityLogs.overview.description')}

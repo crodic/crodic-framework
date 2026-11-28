@@ -771,7 +771,7 @@ export function FilePickerDialog(props: FilePickerDialogProps) {
 
                   {!isFetching && files.length === 0 && (
                     <div className='text-muted-foreground col-span-full py-16 text-center text-xs'>
-                      <div className='border-border/60 bg-muted/30 mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl border'>
+                      <div className='border-border/60 bg-muted/30 mx-auto mb-2 flex size-12 items-center justify-center rounded-xl border'>
                         <UploadCloud className='text-muted-foreground/60 size-6' />
                       </div>
                       <p className='text-foreground text-sm font-medium'>

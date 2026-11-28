@@ -7,7 +7,7 @@ import {
   Eye,
   History,
   Lock,
-  Sparkles,
+  Wand2,
   Unlock,
   Calendar,
 } from "lucide-react";
@@ -96,7 +96,7 @@ export function TagEncyclopediaView({
         <div className="bg-muted rounded-xl p-4 sm:p-5">
           <div className="flex items-start gap-3.5">
             <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-xl">
-              <Sparkles className="size-4" />
+              <Wand2 className="size-4" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="text-foreground text-sm leading-relaxed font-semibold">

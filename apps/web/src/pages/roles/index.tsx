@@ -59,7 +59,7 @@ export function PageRoleOverview() {
   )
 
   return (
-    <Main className='flex-1'>
+    <Main className='flex flex-1 flex-col'>
       <PageHeader
         title={t('roles.overview.title')}
         description={t('roles.overview.description')}

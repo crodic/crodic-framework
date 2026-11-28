@@ -7,13 +7,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   FormControl,
   FormField,
@@ -74,42 +68,37 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
     }
   }
 
-  const pageActions = (
-    <>
-      <Button
-        variant='outline'
-        type='button'
-        onClick={() => {
-          void navigate(-1)
-        }}
-      >
-        <ArrowLeftIcon className='size-4' aria-hidden='true' />
-        {t('buttons.cancel')}
-      </Button>
-      <Button type='submit'>
-        <SaveIcon className='size-4' aria-hidden='true' />
-        {t('buttons.save')}
-      </Button>
-    </>
-  )
-
   return (
-    <Main className='flex-1'>
+    <Main className='flex flex-1 flex-col'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <PageHeader
             title={<>{t('adminUsers.edit.title')}</>}
-            actions={pageActions}
+            actions={
+              <>
+                <FormActions>
+                  <Button
+                    variant='outline'
+                    type='button'
+                    onClick={() => {
+                      void navigate(-1)
+                    }}
+                  >
+                    <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.cancel')}
+                  </Button>
+                  <Button type='submit'>
+                    <SaveIcon className='size-4' aria-hidden='true' />
+                    {t('buttons.save')}
+                  </Button>
+                </FormActions>
+              </>
+            }
+            description={<>{t('adminUsers.edit.description')}</>}
           />
 
           <Card>
-            <CardHeader>
-              <CardTitle>{t('adminUsers.edit.title')}</CardTitle>
-              <CardDescription>
-                {t('adminUsers.edit.description')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
+            <CardContent className='grid grid-cols-1 gap-6 md:grid-cols-3'>
               <FormField
                 control={form.control}
                 name='firstName'
@@ -204,7 +193,7 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
                   </FormItem>
                 )}
               />
-              <div className='col-span-3'>
+              <div className='md:col-span-3'>
                 <FormField
                   control={form.control}
                   name='bio'
@@ -226,7 +215,22 @@ export function AdminEditForm({ data }: { data: AdminSchema }) {
             </CardContent>
           </Card>
 
-          <FormActions footer>{pageActions}</FormActions>
+          <FormActions footer>
+            <Button
+              variant='outline'
+              type='button'
+              onClick={() => {
+                void navigate(-1)
+              }}
+            >
+              <ArrowLeftIcon className='size-4' aria-hidden='true' />
+              {t('buttons.cancel')}
+            </Button>
+            <Button type='submit'>
+              <SaveIcon className='size-4' aria-hidden='true' />
+              {t('buttons.save')}
+            </Button>
+          </FormActions>
         </form>
       </Form>
     </Main>

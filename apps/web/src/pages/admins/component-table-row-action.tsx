@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { restApiErrorHandler } from '@/lib/rest-api-handler'
 import { DeleteAlertDialog } from '@/components/common/delete-alert-dialog'
+import { HardDeleteAccountButton } from '@/components/common/hard-delete-account-button'
 import { RestoreAlertDialog } from '@/components/common/restore-alert-dialog'
 import {
   TableRowAction,
@@ -123,6 +124,11 @@ export default function ComponentTableRowActions({
             disabled={true}
           />
         )}
+        <HardDeleteAccountButton
+          id={row.original.id}
+          subject='ADMIN'
+          iconOnly
+        />
       </TableRowActions>
     )
   }

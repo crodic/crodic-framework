@@ -71,6 +71,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { FormActions } from '@/components/layout/form-actions'
 import { FormFieldHelp } from '../components/form-field-help'
 import { TagFeaturedImageInput } from '../components/tag-featured-image-input'
 import {
@@ -311,7 +312,7 @@ export function EncyclopediaEditorPanel({
             </div>
           </SheetHeader>
 
-          <div className='flex-1 overflow-y-auto p-5'>
+          <div className='flex-1 overflow-y-auto p-6'>
             {!wiki || !wiki.revisions || wiki.revisions.length === 0 ? (
               <Empty className='p-8'>
                 <EmptyHeader>
@@ -367,7 +368,7 @@ export function EncyclopediaEditorPanel({
                       {/* Revision Card */}
                       <div
                         className={cn(
-                          'rounded-xl border p-3.5 text-xs shadow-2xs transition-all',
+                          'rounded-xl border p-4 text-xs shadow-2xs transition-all',
                           isCurrent
                             ? 'border-primary/50 bg-primary/5 ring-primary/20 ring-1'
                             : 'border-border/70 bg-card hover:border-border'
@@ -449,7 +450,7 @@ export function EncyclopediaEditorPanel({
 
       {/* 100% Full-Width Wiki Studio Editor */}
       <Card className='border-border/80 shadow-xs'>
-        <CardHeader className='flex flex-col gap-3.5 border-b pb-4 sm:flex-row sm:items-center sm:justify-between'>
+        <CardHeader className='flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='space-y-1'>
             <CardTitle className='flex flex-wrap items-center gap-2 text-base font-semibold'>
               <BookMarkedIcon
@@ -758,7 +759,7 @@ export function EncyclopediaEditorPanel({
                     )}
                   />
 
-                  <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center'>
+                  <FormActions>
                     <Button
                       type='button'
                       variant='outline'
@@ -797,7 +798,7 @@ export function EncyclopediaEditorPanel({
                             'Save & Publish Revision'
                           )}
                     </Button>
-                  </div>
+                  </FormActions>
                 </div>
               </form>
             </Form>

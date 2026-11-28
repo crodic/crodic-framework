@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useMemo, useEffect } from "react";
-import { Film, Plus, Check, Sparkles, BookOpen } from "lucide-react";
+import { Film, Plus, Check, Wand2, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -210,7 +210,7 @@ export function SeriesAutocomplete({
           {ownSeries.length > 0 && (
             <div>
               <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-xs font-medium">
-                <Sparkles className="size-3 text-amber-500" />
+                <Wand2 className="size-3 text-amber-500" />
                 <span>
                   {locale === "vi" ? "Series bạn từng làm" : "From your series"}
                 </span>

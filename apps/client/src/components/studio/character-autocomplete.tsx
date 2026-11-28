@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useMemo, useEffect } from "react";
-import { User, Plus, Check, Sparkles, BookOpen } from "lucide-react";
+import { User, Plus, Check, Wand2, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -241,7 +241,7 @@ export function CharacterAutocomplete({
           {ownSuggestions.length > 0 && (
             <div>
               <div className="text-muted-foreground flex items-center gap-1.5 px-2 py-1 text-xs font-medium">
-                <Sparkles className="size-3 text-amber-500" />
+                <Wand2 className="size-3 text-amber-500" />
                 <span>
                   {locale === "vi"
                     ? "Nhân vật trong hồ sơ của bạn"

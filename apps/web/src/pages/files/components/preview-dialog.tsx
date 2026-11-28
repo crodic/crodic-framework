@@ -325,7 +325,7 @@ export function PreviewDialog({
               <FilePreviewDetail file={file} url={previewUrl} />
             ) : (
               <div className='text-muted-foreground flex animate-pulse flex-col items-center justify-center gap-3'>
-                <div className='text-muted-foreground/60 flex size-12 items-center justify-center rounded-2xl bg-white/5'>
+                <div className='text-muted-foreground/60 flex size-12 items-center justify-center rounded-xl bg-white/5'>
                   <Loader2 className='size-6 animate-spin' />
                 </div>
               </div>
@@ -386,7 +386,7 @@ export function PreviewDialog({
     <div className='flex min-w-0 flex-col gap-6'>{content}</div>
   ) : (
     <Dialog open={Boolean(file)} onOpenChange={onOpenChange}>
-      <DialogContent className='border-border/80 bg-background data-[state=open]:zoom-in-100 data-[state=open]:fade-in-0 flex h-[min(92vh,calc(100dvh-1.5rem))] max-h-[min(92vh,calc(100dvh-1.5rem))] w-[calc(100vw-1rem)] transform-gpu flex-col overflow-hidden rounded-2xl border p-0 shadow-2xl duration-150 ease-out will-change-transform sm:w-[94vw] sm:max-w-6xl xl:max-w-7xl'>
+      <DialogContent className='border-border/80 bg-background data-[state=open]:zoom-in-100 data-[state=open]:fade-in-0 flex h-[min(92vh,calc(100dvh-1.5rem))] max-h-[min(92vh,calc(100dvh-1.5rem))] w-[calc(100vw-1rem)] transform-gpu flex-col overflow-hidden rounded-xl border p-0 shadow-2xl duration-150 ease-out will-change-transform sm:w-[94vw] sm:max-w-6xl xl:max-w-7xl'>
         {content}
       </DialogContent>
     </Dialog>

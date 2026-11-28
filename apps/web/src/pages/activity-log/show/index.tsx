@@ -71,22 +71,20 @@ export default function PageActivityLogShow() {
   return (
     <>
       <Main>
-        <div className='space-y-8'>
+        <div className='space-y-6'>
           <PageHeader
             title={<>{t('activityLogs.show.title')}</>}
             actions={
               <>
-                <div className='flex items-center gap-2 self-start sm:self-auto'>
-                  <Button
-                    onClick={() => navigate(-1)}
-                    variant='outline'
-                    size='sm'
-                    className='gap-1.5'
-                  >
-                    <ArrowLeftIcon size={16} />
-                    <span>{t('buttons.back')}</span>
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => navigate(-1)}
+                  variant='outline'
+                  size='sm'
+                  className='gap-1.5'
+                >
+                  <ArrowLeftIcon size={16} />
+                  <span>{t('buttons.back')}</span>
+                </Button>
               </>
             }
           />

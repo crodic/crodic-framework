@@ -29,7 +29,7 @@ export function PageLocationOverview() {
 
   return (
     <>
-      <Main className='flex-1'>
+      <Main className='flex flex-1 flex-col'>
         <PageHeader
           title={t('locations.overview.title', 'Location Management')}
           description={t(

@@ -71,35 +71,35 @@ export function PageWhiteLabelEdit() {
 
   return (
     <>
-      <Main className='flex-1'>
-        <div className='flex items-center gap-4'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => navigate('/white-labels')}
-            aria-label={t('buttons.back', 'Back')}
-          >
-            <ArrowLeft className='size-5' />
-          </Button>
-          <PageHeader
-            title={
-              <>
-                {t('whiteLabels.edit.title', {
-                  defaultValue: 'Edit White Label Profile',
-                })}
-              </>
-            }
-            description={
-              <>
-                <p className='text-muted-foreground text-sm'>
-                  {t('whiteLabels.edit.description', {
-                    defaultValue: `Modify brand assets, theme tokens, and metadata for ${whiteLabel?.name || 'profile'}.`,
-                  })}
-                </p>
-              </>
-            }
-          />
-        </div>
+      <Main className='flex flex-1 flex-col'>
+        <PageHeader
+          title={
+            <>
+              {t('whiteLabels.edit.title', {
+                defaultValue: 'Edit White Label Profile',
+              })}
+            </>
+          }
+          description={
+            <>
+              {t('whiteLabels.edit.description', {
+                defaultValue: `Modify brand assets, theme tokens, and metadata for ${whiteLabel?.name || 'profile'}.`,
+              })}
+            </>
+          }
+          actions={
+            <>
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => navigate('/white-labels')}
+                aria-label={t('buttons.back', 'Back')}
+              >
+                <ArrowLeft className='size-5' />
+              </Button>
+            </>
+          }
+        />
 
         {isLoading ? (
           <div className='flex h-64 items-center justify-center'>

@@ -148,7 +148,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
   return (
     <Main className='flex-1'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <PageHeader
             title={<>{t('users.edit.title')}</>}
             actions={pageActions}
@@ -197,7 +197,7 @@ export function UserEditForm({ data }: { data: UserSchema }) {
               <CardTitle>{t('users.edit.title')}</CardTitle>
               <CardDescription>{t('users.edit.description')}</CardDescription>
             </CardHeader>
-            <CardContent className='flex flex-col gap-4 sm:gap-6 md:grid md:grid-cols-3'>
+            <CardContent className='grid grid-cols-1 gap-6 md:grid-cols-3'>
               <FormField
                 control={form.control}
                 name='email'

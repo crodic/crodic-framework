@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  ArrowLeftIcon,
   BadgeCheckIcon,
   BookMarkedIcon,
   CheckIcon,
@@ -147,179 +146,156 @@ export function PageTagShow() {
         {/* Tag summary */}
         <div className='space-y-6'>
           {/* Top Row: Title, Category Badges & Action Toolbar */}
-          <div className='border-border/60 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='flex items-start gap-3 sm:items-center'>
-              <Button
-                variant='outline'
-                size='icon'
-                onClick={() => navigate('/tags')}
-                className='mt-0.5 size-9 shrink-0 cursor-pointer shadow-2xs sm:mt-0'
-                aria-label={t('buttons.back', 'Back')}
-              >
-                <ArrowLeftIcon className='size-4' aria-hidden='true' />
-              </Button>
-
-              <div className='min-w-0 flex-1 space-y-1.5'>
-                <div className='flex flex-wrap items-center gap-2 sm:gap-2.5'>
-                  <div className='group/header-name flex items-center gap-1.5'>
-                    <PageHeader
-                      title={
-                        <>
-                          <span className='text-primary mr-0.5 opacity-80'>
-                            #
-                          </span>
-                          {tag.name}
-                        </>
-                      }
-                    />
-                    <Tooltip delayDuration={200}>
-                      <TooltipTrigger asChild>
-                        <button
-                          type='button'
-                          onClick={() => copyToClipboard(tag.name, 'name')}
-                          aria-label={t(
-                            'tags.actions.copyName',
-                            'Copy tag name'
-                          )}
-                          className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:opacity-100'
-                        >
-                          {copiedItem === 'name' ? (
-                            <CheckIcon
-                              className='text-primary size-3.5'
-                              aria-hidden='true'
-                            />
-                          ) : (
-                            <CopyIcon className='size-3.5' aria-hidden='true' />
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side='top' className='text-xs'>
-                        {copiedItem === 'name'
-                          ? t('tags.actions.copied', 'Copied!')
-                          : t('tags.actions.copyName', 'Copy tag name')}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                  <div className='flex flex-wrap items-center gap-1.5'>
-                    <TagStatusBadge status={tag.status} />
-                    <TagCategoryBadge category={tag.category} />
-                    <TagSafetyBadge safetyRating={tag.safetyRating} />
-
-                    {tag.isOfficial && (
-                      <Badge
-                        variant='secondary'
-                        className='border-primary/20 bg-primary/10 text-primary gap-1 text-[11px] font-semibold shadow-2xs'
-                      >
-                        <BadgeCheckIcon
+          <PageHeader
+            title={<>#{tag.name}</>}
+            backTo='/tags'
+            backLabel={t('buttons.back')}
+            badges={
+              <>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type='button'
+                      onClick={() => copyToClipboard(tag.name, 'name')}
+                      aria-label={t('tags.actions.copyName', 'Copy tag name')}
+                      className='text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:opacity-100'
+                    >
+                      {copiedItem === 'name' ? (
+                        <CheckIcon
                           className='text-primary size-3.5'
                           aria-hidden='true'
                         />
-                        {t('tags.flags.official', 'Official Curated')}
-                      </Badge>
-                    )}
-
-                    {tag.isSystem && (
-                      <Badge
-                        variant='outline-warning'
-                        className='gap-1 text-[11px] font-semibold'
-                      >
-                        <LockIcon className='size-3' aria-hidden='true' />
-                        {t('tags.flags.system', 'System Protected')}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Subtitle with Slug & Direct Link */}
-                <div className='text-muted-foreground flex flex-wrap items-center gap-2 text-xs'>
-                  <div className='border-border/70 bg-background/60 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
-                    <span>/{tag.slug}</span>
-                    <button
-                      type='button'
-                      onClick={() => copyToClipboard(tag.slug, 'slug')}
-                      aria-label={t('tags.actions.copySlug', 'Copy slug')}
-                      className='text-muted-foreground hover:text-foreground cursor-pointer'
-                    >
-                      {copiedItem === 'slug' ? (
-                        <CheckIcon
-                          className='text-primary size-3'
-                          aria-hidden='true'
-                        />
                       ) : (
-                        <CopyIcon className='size-3' aria-hidden='true' />
+                        <CopyIcon className='size-3.5' aria-hidden='true' />
                       )}
                     </button>
-                  </div>
+                  </TooltipTrigger>
+                  <TooltipContent side='top' className='text-xs'>
+                    {copiedItem === 'name'
+                      ? t('tags.actions.copied', 'Copied!')
+                      : t('tags.actions.copyName', 'Copy tag name')}
+                  </TooltipContent>
+                </Tooltip>
+                <div className='flex flex-wrap items-center gap-1.5'>
+                  <TagStatusBadge status={tag.status} />
+                  <TagCategoryBadge category={tag.category} />
+                  <TagSafetyBadge safetyRating={tag.safetyRating} />
 
-                  {tag.translatedName && tag.translatedName !== tag.name && (
-                    <>
-                      <span>•</span>
-                      <span className='text-foreground/85 font-medium'>
-                        {tag.translatedName}
-                      </span>
-                    </>
+                  {tag.isOfficial && (
+                    <Badge
+                      variant='secondary'
+                      className='border-primary/20 bg-primary/10 text-primary gap-1 text-[11px] font-semibold shadow-2xs'
+                    >
+                      <BadgeCheckIcon
+                        className='text-primary size-3.5'
+                        aria-hidden='true'
+                      />
+                      {t('tags.flags.official', 'Official Curated')}
+                    </Badge>
+                  )}
+
+                  {tag.isSystem && (
+                    <Badge
+                      variant='outline-warning'
+                      className='gap-1 text-[11px] font-semibold'
+                    >
+                      <LockIcon className='size-3' aria-hidden='true' />
+                      {t('tags.flags.system', 'System Protected')}
+                    </Badge>
                   )}
                 </div>
+              </>
+            }
+            description={
+              <div className='text-muted-foreground flex flex-wrap items-center gap-2 text-xs'>
+                <div className='border-border/70 bg-background/60 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
+                  <span>/{tag.slug}</span>
+                  <button
+                    type='button'
+                    onClick={() => copyToClipboard(tag.slug, 'slug')}
+                    aria-label={t('tags.actions.copySlug', 'Copy slug')}
+                    className='text-muted-foreground hover:text-foreground cursor-pointer'
+                  >
+                    {copiedItem === 'slug' ? (
+                      <CheckIcon
+                        className='text-primary size-3'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <CopyIcon className='size-3' aria-hidden='true' />
+                    )}
+                  </button>
+                </div>
+
+                {tag.translatedName && tag.translatedName !== tag.name && (
+                  <>
+                    <span>•</span>
+                    <span className='text-foreground/85 font-medium'>
+                      {tag.translatedName}
+                    </span>
+                  </>
+                )}
               </div>
-            </div>
-
-            {/* Right Action Cluster */}
-            <div className='grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end'>
-              <Button
-                variant='outline'
-                size='sm'
-                asChild
-                className='h-9 w-full cursor-pointer shadow-2xs sm:w-auto'
-              >
-                <a
-                  href={`${clientUrl}/en/tags/${tag.slug}`}
-                  target='_blank'
-                  rel='noreferrer'
-                  className='gap-1.5'
-                >
-                  <ExternalLinkIcon className='size-3.5' aria-hidden='true' />
-                  <span>{t('tags.show.publicPage', 'Public Hub')}</span>
-                </a>
-              </Button>
-
-              {!tag.isSystem && tag.status !== 'merged' && (
+            }
+            actions={
+              <div className='grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end'>
                 <Button
                   variant='outline'
                   size='sm'
-                  onClick={() => setIsMergeOpen(true)}
-                  className='h-9 w-full cursor-pointer gap-1.5 shadow-2xs sm:w-auto'
+                  asChild
+                  className='h-9 w-full cursor-pointer shadow-2xs sm:w-auto'
                 >
-                  <GitMergeIcon
-                    className='text-primary size-3.5'
-                    aria-hidden='true'
-                  />
-                  <span>{t('tags.actions.mergeTag', 'Merge Into Tag...')}</span>
+                  <a
+                    href={`${clientUrl}/en/tags/${tag.slug}`}
+                    target='_blank'
+                    rel='noreferrer'
+                    className='gap-1.5'
+                  >
+                    <ExternalLinkIcon className='size-3.5' aria-hidden='true' />
+                    <span>{t('tags.show.publicPage', 'Public Hub')}</span>
+                  </a>
                 </Button>
-              )}
 
-              <Button
-                size='sm'
-                onClick={() => navigate(`/tags/${tag.id}/edit`)}
-                className='h-9 w-full cursor-pointer gap-1.5 shadow-xs sm:w-auto'
-              >
-                <EditIcon className='size-3.5' aria-hidden='true' />
-                <span>{t('buttons.edit', 'Edit')}</span>
-              </Button>
+                {!tag.isSystem && tag.status !== 'merged' && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setIsMergeOpen(true)}
+                    className='h-9 w-full cursor-pointer gap-1.5 shadow-2xs sm:w-auto'
+                  >
+                    <GitMergeIcon
+                      className='text-primary size-3.5'
+                      aria-hidden='true'
+                    />
+                    <span>
+                      {t('tags.actions.mergeTag', 'Merge Into Tag...')}
+                    </span>
+                  </Button>
+                )}
 
-              {!tag.isSystem && (
                 <Button
-                  variant='destructive'
                   size='sm'
-                  onClick={() => setIsDeleteOpen(true)}
+                  onClick={() => navigate(`/tags/${tag.id}/edit`)}
                   className='h-9 w-full cursor-pointer gap-1.5 shadow-xs sm:w-auto'
                 >
-                  <TrashIcon className='size-3.5' aria-hidden='true' />
-                  <span>{t('buttons.delete', 'Delete')}</span>
+                  <EditIcon className='size-3.5' aria-hidden='true' />
+                  <span>{t('buttons.edit', 'Edit')}</span>
                 </Button>
-              )}
-            </div>
-          </div>
+
+                {!tag.isSystem && (
+                  <Button
+                    variant='destructive'
+                    size='sm'
+                    onClick={() => setIsDeleteOpen(true)}
+                    className='h-9 w-full cursor-pointer gap-1.5 shadow-xs sm:w-auto'
+                  >
+                    <TrashIcon className='size-3.5' aria-hidden='true' />
+                    <span>{t('buttons.delete', 'Delete')}</span>
+                  </Button>
+                )}
+              </div>
+            }
+          />
 
           {/* Bottom Row: Executive Metrics Strip */}
           <div className='grid grid-cols-2 gap-3 pt-5 sm:grid-cols-4'>
@@ -382,7 +358,7 @@ export function PageTagShow() {
             next.set('tab', nextTab)
             setSearchParams(next, { replace: true })
           }}
-          className='flex flex-1 flex-col gap-5'
+          className='flex flex-1 flex-col gap-6'
         >
           <div className='-mx-1 w-full [scrollbar-width:none] overflow-x-auto px-1'>
             <TabsList className='h-auto min-w-full justify-start gap-1 p-1 sm:h-9 sm:w-fit sm:justify-center'>
@@ -456,7 +432,7 @@ export function PageTagShow() {
           >
             <div className='grid gap-6 md:grid-cols-2'>
               {/* Translations Card */}
-              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
+              <Card className='border-border/80 flex flex-col gap-0 shadow-xs'>
                 <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div>
@@ -507,7 +483,7 @@ export function PageTagShow() {
                       {tag.translations.map((tr: TagTranslation) => (
                         <div
                           key={tr.id}
-                          className='border-border/70 bg-card hover:border-border rounded-xl border p-3.5 transition-colors'
+                          className='border-border/70 bg-card hover:border-border rounded-xl border p-4 transition-colors'
                         >
                           <div className='border-border/50 flex items-center justify-between border-b pb-2.5'>
                             <div className='flex items-center gap-2'>
@@ -545,7 +521,7 @@ export function PageTagShow() {
               </Card>
 
               {/* Aliases Card */}
-              <Card className='border-border/80 flex flex-col gap-0 py-0 shadow-xs'>
+              <Card className='border-border/80 flex flex-col gap-0 shadow-xs'>
                 <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div>

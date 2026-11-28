@@ -92,19 +92,6 @@ export function PagePermissionEdit() {
 
   if (!data) return <NotFoundError />
 
-  const pageActions = (
-    <>
-      <Button type='button' variant='outline' onClick={() => navigate(-1)}>
-        <ArrowLeftIcon className='size-4' aria-hidden='true' />
-        Cancel
-      </Button>
-      <Button type='submit' disabled={editPermissionMutation.isPending}>
-        <SaveIcon className='size-4' aria-hidden='true' />
-        Save
-      </Button>
-    </>
-  )
-
   return (
     <>
       <Main>
@@ -113,7 +100,27 @@ export function PagePermissionEdit() {
             <PageHeader
               title={<>Edit Permission Metadata</>}
               description={<>{data.key}</>}
-              actions={pageActions}
+              actions={
+                <>
+                  <FormActions>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => navigate(-1)}
+                    >
+                      <ArrowLeftIcon className='size-4' aria-hidden='true' />
+                      Cancel
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={editPermissionMutation.isPending}
+                    >
+                      <SaveIcon className='size-4' aria-hidden='true' />
+                      Save
+                    </Button>
+                  </FormActions>
+                </>
+              }
             />
 
             <Card>
@@ -159,8 +166,6 @@ export function PagePermissionEdit() {
                 />
               </CardContent>
             </Card>
-
-            <FormActions footer>{pageActions}</FormActions>
           </form>
         </Form>
       </Main>

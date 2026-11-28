@@ -1,3 +1,4 @@
+import { CurrentUser } from '../../decorators/current-user.decorator';
 import { AutoIncrementID } from '../../common/types/common.type';
 import { ApiAuth } from '../../decorators/http.decorators';
 import { CheckPolicies } from '../../decorators/policies.decorator';
@@ -125,6 +126,22 @@ export class AdminUserController {
   }
 
   // --------------------------------------------------
+
+  @Delete(':id/permanent')
+  @ApiAuth({
+    summary: 'Permanently delete a trashed admin account',
+    errorResponses: [400, 401, 403, 404, 500],
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Delete, AppSubjects.Admin),
+  )
+  hardRemoveUser(
+    @Param('id') id: AutoIncrementID,
+    @CurrentUser('id') actorId: AutoIncrementID,
+  ) {
+    return this.adminUserService.hardRemove(id, actorId);
+  }
 
   @Delete(':id')
   @ApiAuth({

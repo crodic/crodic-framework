@@ -735,7 +735,7 @@ export function FileGridView({
   if (files.length === 0) {
     return (
       <div className='border-border/70 flex min-h-75 flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center'>
-        <div className='bg-muted/60 text-muted-foreground mb-3 flex size-14 items-center justify-center rounded-2xl'>
+        <div className='bg-muted/60 text-muted-foreground mb-3 flex size-14 items-center justify-center rounded-xl'>
           <File className='size-7' />
         </div>
         <h4 className='text-foreground text-sm font-semibold'>

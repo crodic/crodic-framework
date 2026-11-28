@@ -39,7 +39,7 @@ export function SettingsAccount() {
       title={t('settings.account.title')}
       desc={t('settings.account.description')}
     >
-      <div className='space-y-8'>
+      <div className='space-y-6'>
         <AccountForm user={currentUser} />
         <DeleteAccount />
       </div>

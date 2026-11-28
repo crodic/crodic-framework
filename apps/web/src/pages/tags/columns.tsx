@@ -123,7 +123,7 @@ function TagNameCell({ tag, t }: { tag: TagSummary; t: TFunction }) {
             variant='secondary'
             className='bg-muted/70 px-1.5 py-0 font-mono text-[10px] font-normal tabular-nums'
           >
-            +{aliasCount} alias
+            {t('tags.table.aliasCount', { count: aliasCount })}
           </Badge>
         )}
       </div>
@@ -157,7 +157,7 @@ export function getTagsTableColumns({
       id: 'select',
       header: ({ table }) => (
         <Checkbox
-          aria-label='Select all'
+          aria-label={t('tags.actions.selectAll')}
           className='translate-y-0.5'
           checked={
             table.getIsAllPageRowsSelected() ||
@@ -168,7 +168,7 @@ export function getTagsTableColumns({
       ),
       cell: ({ row }) => (
         <Checkbox
-          aria-label='Select row'
+          aria-label={t('tags.actions.selectRow')}
           className='translate-y-0.5'
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
