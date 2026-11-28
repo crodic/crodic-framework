@@ -6,10 +6,7 @@ export interface LandingNavLink {
 
 export const LANDING_NAV_LINKS: LandingNavLink[] = [
   { key: "explore", defaultLabel: "Khám phá", href: "#albums" },
-  { key: "tags", defaultLabel: "Bách khoa Tags", href: "/tags" },
   { key: "community", defaultLabel: "Cosplayers", href: "#cosplayers" },
-  { key: "events", defaultLabel: "Sự kiện", href: "/events" },
-  { key: "ranking", defaultLabel: "Bảng xếp hạng", href: "/ranking" },
   { key: "about", defaultLabel: "Về Kosume", href: "#about" },
   { key: "faq", defaultLabel: "Hỏi đáp", href: "#faq" },
 ];
